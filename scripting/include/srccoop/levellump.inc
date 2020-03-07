@@ -105,7 +105,7 @@ enum struct CGlobalLevelLump
 	bool IsCoopMap(const char[] szMapName)
 	{
 		char szMapPath[MAX_FORMAT];
-		return view_as<bool>(BuildPath(Path_SM, szMapPath, sizeof(szMapPath), "data/%s.edt", szMapName) && FileExists(szMapPath));
+		return view_as<bool>(BuildPath(Path_SM, szMapPath, sizeof(szMapPath), "data/srccoop/%s.edt", szMapName) && FileExists(szMapPath));
 	}
 	void ParseMapEntities(const char szMapEntities[2097152])
 	{

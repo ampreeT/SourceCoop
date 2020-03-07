@@ -2,7 +2,7 @@
 - checkpoint system
 - scripted scenes now filter for all players
 - re-enables flashlight functionality in multiplayer
-- fixes sniper's crashing upon
+- fixes sniper's crashing upon its first tick of running
 - fixed scientists crash when seeing a non-friendly
 - fixed npcs from not being able to shoot with anything but the shotgun
 - fixed a crash caused by round restarts
@@ -32,7 +32,7 @@
 	- custom marine ai
 		- CBaseCombatCharacter::CalcWeaponProficiency(...) hook for accuracy
 
-# map-issues
+## map-issues
 - bm_c0a0a
 	- need soundtrack on join
 	- remove fade and teleport
