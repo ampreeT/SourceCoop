@@ -1,0 +1,36 @@
+"bm_c0a0a"
+{
+	"nextmap" "bm_c0a0b"
+	"equipment"
+	{
+		"suit"	"0"
+	}
+	"entity"
+	{
+		"modify"
+		{
+			"globalname"	"train"
+			"remove"
+			{
+				"globalname"	"train"
+			}
+		}
+		"modify"
+		{
+			"globalname"	"train_model"
+			"remove"
+			{
+				"globalname"	"train_model"
+			}
+		}
+	}
+	"checkpoint"
+	{
+		"spawn"
+		{
+			"origin"	"0 0 24"
+			"angles"	"0 90 0"
+			"followid"	"train_model"
+		}
+	}
+}

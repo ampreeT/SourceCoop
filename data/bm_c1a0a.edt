@@ -1,0 +1,49 @@
+"bm_c1a0a"
+{
+	"nextmap"	"bm_c1a0b"
+	"equipment"
+	{
+		"suit"	"0"
+	}
+	"entity"
+	{
+		"delete"
+		{
+			"targetname"	"lift_block"
+			"classname"		"func_block"
+		}
+		"modify"
+		{
+			"globalname"	"train_model"
+			"remove"
+			{
+				"globalname"	"train_model"
+			}
+		}
+		"modify"
+		{
+			"globalname"	"train_door"
+			"remove"
+			{
+				"globalname"	"train_door"
+			}
+		}
+	}
+	"checkpoint"
+	{
+		"spawn"
+		{
+			"origin"	"0 0 24"
+			"angles"	"0 90 0"
+			"followid"	"train_model"
+		}
+		"door_closing"
+		{
+			"origin"	"271.696381 28.334362 515.031250"
+			"angles"	"0.0 90.0 0.0"
+			"delay"		"1.5"
+			"triggerid"	"LCS_AM_Airlock_trigger"
+			"output"	"OnTrigger"
+		}
+	}
+}
