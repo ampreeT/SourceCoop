@@ -195,7 +195,7 @@ enum struct CGlobalLevelLump
 		this.m_pNextMapList.Clear();
 		
 		char szMapPath[MAX_FORMAT];
-		if (!(BuildPath(Path_SM, szMapPath, sizeof(szMapPath), "data/%s.edt", szMapName) && FileExists(szMapPath)))
+		if (!(BuildPath(Path_SM, szMapPath, sizeof(szMapPath), "data/srccoop/%s.edt", szMapName) && FileExists(szMapPath)))
 			ThrowError("Couldn't find map file %s", szMapName);
 
 		KeyValues kv = new KeyValues(szMapName);

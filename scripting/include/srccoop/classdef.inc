@@ -250,7 +250,7 @@ public int FindEntityByHammerID(int iHammerID)
 	while ((startEnt = FindEntityByClassname(startEnt, "*")) != -1)
 	{
 		CBaseEntity pEntity = CBaseEntity(startEnt);
-		if (pEntity.GetHammerID == iHammerID)
+		if (pEntity.GetHammerID() == iHammerID)
 		{
 			return startEnt;
 		}
