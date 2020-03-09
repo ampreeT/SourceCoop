@@ -224,7 +224,7 @@ enum struct CGlobalLevelLump
 					}
 					else
 					{
-						if (strcmp(szType, "console", false) == 0)
+						if (strcmp(szType, "console", false) == 0)	// is this needed? this is kinda risky
 						{
 							if (kv.GotoFirstSubKey(false))
 							{
