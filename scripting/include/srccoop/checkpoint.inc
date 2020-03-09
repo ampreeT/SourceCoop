@@ -198,6 +198,7 @@ enum struct CCoopSpawn
 								{
 									do
 									{
+										int iHammerID = 0;
 										char szKey[MAX_KEY];
 										char szValue[MAX_VALUE];
 										if (kv.GetSectionName(szKey, sizeof(szKey)) && kv.GetDataType(NULL_STRING) != KvData_None)
@@ -211,43 +212,48 @@ enum struct CCoopSpawn
 											}
 											else if (strcmp(szKey, "delay", false) == 0)
 											{
-												pEntry.m_flDelay = StringToFloat(szValue);
+												if (!StringToFloatEx(szValue, pEntry.m_flDelay))
+													ThrowError("Delay parameter is not a float type");
 											}
 											else if (strcmp(szKey, "origin", false) == 0 && ExplodeString(szValue, " ", szVector, 3, MAX_FORMAT, false) == 3)
 											{
-												pEntry.m_vecPosition[0] = StringToFloat(szVector[0]);
-												pEntry.m_vecPosition[1] = StringToFloat(szVector[1]);
-												pEntry.m_vecPosition[2] = StringToFloat(szVector[2]);
+												if (!StringToFloatEx(szVector[0], pEntry.m_vecPosition[0]))
+													ThrowError("Origin x parameter is not a float");
+												if (!StringToFloatEx(szVector[1], pEntry.m_vecPosition[1]))
+													ThrowError("Origin y parameter is not a float");
+												if (!StringToFloatEx(szVector[2], pEntry.m_vecPosition[2]))
+													ThrowError("Origin z parameter is not a float");
 											}
 											else if (strcmp(szKey, "angles", false) == 0 && ExplodeString(szValue, " ", szVector, 3, MAX_FORMAT, false) == 3)
 											{
-												pEntry.m_vecAngles[0] = StringToFloat(szVector[0]);
-												pEntry.m_vecAngles[1] = StringToFloat(szVector[1]);
-												pEntry.m_vecAngles[2] = StringToFloat(szVector[2]);
+												if (!StringToFloatEx(szVector[0], pEntry.m_vecAngles[0]))
+													ThrowError("Angles x parameter is not a float");
+												if (!StringToFloatEx(szVector[1], pEntry.m_vecAngles[1]))
+													ThrowError("Angles y parameter is not a float");
+												if (!StringToFloatEx(szVector[2], pEntry.m_vecAngles[2]))
+													ThrowError("Angles z parameter is not a float");
 											}
-											else if (strcmp(szKey, "followid", false) == 0)
+											else if (strcmp(szKey, "followid", false) == 0)		// accepts a int hammerid or a string targetname
 											{
-												int iHammerID = 0;
 												if (StringToIntEx(szValue, iHammerID))
-												{
 													pEntry.m_pFollowEnt = CBaseEntity(FindEntityByHammerID(iHammerID));
-												}
 												else
-												{
 													pEntry.m_pFollowEnt = CBaseEntity(FindEntityByTargetname(-1, szValue));
-												}
+												if (!pEntry.m_pFollowEnt.IsValid())
+													ThrowError("Couldn't find followid entity %s", szValue);
 											}
-											else if (strcmp(szKey, "triggerid", false) == 0)
+											else if (strcmp(szKey, "triggerid", false) == 0)	// accepts a int hammerid or a string targetname
 											{
-												int iHammerID = 0;
 												if (StringToIntEx(szValue, iHammerID))
-												{
 													pEntry.m_pTriggerEnt = CBaseEntity(FindEntityByHammerID(iHammerID));
-												}
 												else
-												{
 													pEntry.m_pTriggerEnt = CBaseEntity(FindEntityByTargetname(-1, szValue));
-												}
+												if (!pEntry.m_pTriggerEnt.IsValid())
+													ThrowError("Couldn't find triggerid entity %s", szValue);
+											}
+											else
+											{
+												ThrowError("Could not find parameter type %s", szKey);
 											}
 										}
 									}
@@ -302,6 +308,10 @@ enum struct CCoopSpawn
 											pWeaponEntry.m_iPrimaryAmmo = -1;
 											pWeaponEntry.m_iSecondaryAmmo = -1;
 											this.m_pDefaultEquipment.m_pWeaponList.PushArray(pWeaponEntry, sizeof(pWeaponEntry));
+										}
+										else
+										{
+											ThrowError("Could not find parameter type %s", szKey);
 										}
 									}
 									else
@@ -366,11 +376,19 @@ enum struct CCoopSpawn
 														{
 															this.m_pDefaultEquipment.m_iAmmoCount[AMMO_SNARKS] = StringToInt(szAmmoValue);
 														}
+														else
+														{
+															ThrowError("Could not find ammo parameter type %s", szAmmoKey);
+														}
 													}
 												}
 												while (kv.GotoNextKey(false));
 												kv.GoBack();
 											}
+										}
+										else
+										{
+											ThrowError("Could not find parameter type %s", szKey);
 										}
 									}
 								}

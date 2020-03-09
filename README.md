@@ -1,17 +1,19 @@
 ## features & fixes (not everything)
 - checkpoint system
 - scripted scenes now filter for all players
-- re-enables flashlight functionality in multiplayer
+- re-enables flashlight and object pickup functionality in multiplayer
 - fixes sniper's crashing upon its first tick of running
 - fixed scientists crash when seeing a non-friendly
 - fixed npcs from not being able to shoot with anything but the shotgun
 - fixed a crash caused by round restarts
 
 ## todo
+- should ignore spawnflag for physboxs and physics objects that disables player-pickup
+	- spawnflag is different per entity class
+- find alternative to current warmup time method
 - xen portal checkpoint effect
 - sniper HasCondition(...) offset should go in gamedata
 - first-person camera death code needs to set original viewentity on callback OnMapEnd()
-- strict type-error checking for checkpoint & map filesystem
 - sprinting animations in a clean way
 	- old method consisted of forcing animations
 - add back old friendly-fire protection for allies from old plugin
@@ -19,6 +21,7 @@
 		- ff can be griefed by using nades and disconnecting
 - npc sleepstates sometimes dont work
 - lag compensation for npcs
+	- test whether if adding entities to lag compensation table on entity initialization will work
 - crossbow/357 sp zoom
 	- convar exists for zoom smoothing
 - crossbow sp bolts

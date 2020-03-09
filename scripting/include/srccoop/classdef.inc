@@ -114,9 +114,7 @@ methodmap CBaseEntity
 			char szTitle[] = "npc_";
 			char szClassname[sizeof(szTitle)];
 			if (this.GetClassname(szClassname, sizeof(szClassname)))
-			{
 				return view_as<bool>(strcmp(szClassname, szTitle, false) == 0);
-			}
 		}
 		
 		return false;
@@ -221,22 +219,6 @@ methodmap CBaseEntity
 	public void SetMins(const float vecMins[3])
 	{
 		SetEntPropVector(this.GetEntIndex(), Prop_Data, "m_vecMins", vecMins);
-	}
-	public void GetMaxs(float vecBuffer[3])
-	{
-		GetEntPropVector(this.GetEntIndex(), Prop_Data, "m_vecMaxs", vecBuffer);
-	}
-	public void SetMaxs(const float vecMaxs[3])
-	{
-		SetEntPropVector(this.GetEntIndex(), Prop_Data, "m_vecMaxs", vecMaxs);
-	}
-	public bool SetParent(CBaseEntity pEntity)
-	{
-		return this.AcceptInputStr("SetParent", "!activator", pEntity, this);
-	}
-	public bool ClearParent()
-	{
-		return this.AcceptInputStr("ClearParent");
 	}
 	public CBaseEntity GetOwner()
 	{
@@ -548,10 +530,6 @@ methodmap CBlackMesaPlayer < CBaseCombatCharacter
 		
 		return false;
 	}
-	//public void PickupObject(CBaseEntity pEntity, const bool bLimitMassAndSize)
-	//{
-	//	SetPlayerPickup(this.GetEntIndex(), pEntity.GetEntIndex(), bLimitMassAndSize);
-	//}
 	public int GetOldButtons()
 	{
 		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_nOldButtons");

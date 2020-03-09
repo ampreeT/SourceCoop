@@ -2,6 +2,8 @@
 
 ConVar g_pConvarCoopEnabled;
 
+Handle g_pPickupObject;
+
 Handle hkFAllowFlashlight;
 Handle hkIRelationType;
 Handle hkProtoSniperSelectSchedule;
@@ -40,6 +42,14 @@ public void load_gamedata()
 	Handle pGameConfig = LoadGameConfigFile(szConfigName);
 	if (pGameConfig == null)
 		SetFailState("Couldn't load game config %s", szConfigName);
+	
+	StartPrepSDKCall(SDKCall_Player);
+	PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Virtual, "CBlackMesaPlayer::PickupObject");
+	PrepSDKCall_AddParameter(SDKType_CBaseEntity, SDKPass_Pointer);
+	PrepSDKCall_AddParameter(SDKType_Bool, SDKPass_Plain);
+	g_pPickupObject = EndPrepSDKCall();
+	if (g_pPickupObject == null)
+		SetFailState("Could not prep SDK call %s", "CBlackMesaPlayer::PickupObject");
 
 	load_dhook(pGameConfig, hkFAllowFlashlight, "CMultiplayRules::FAllowFlashlight");
 	load_dhook(pGameConfig, hkIRelationType, "CBaseCombatCharacter::IRelationType");
@@ -50,6 +60,11 @@ public void load_gamedata()
 	load_dhook(pGameConfig, hkAcceptInput, "CBaseEntity::AcceptInput");
 
 	CloseHandle(pGameConfig);
+}
+
+public void SetPlayerPickup(int iPlayer, int iObject, const bool bLimitMassAndSize)
+{
+	SDKCall(g_pPickupObject, iPlayer, iObject, bLimitMassAndSize);
 }
 
 #pragma dynamic 2097152 
@@ -74,6 +89,10 @@ public void OnMapStart()
 		AddWarmupTime(60 * 60 * 24 * 7);
 		g_SpawnSystem.ParseConfigFile(g_szMapName);
 		DHookGamerules(hkFAllowFlashlight, false, _, Hook_FAllowFlashlight);
+		
+		CBaseEntity pGameEquip = CreateByClassname("game_player_equip");	// will spawn players with nothing if it exists
+		if (pGameEquip.IsValid())
+			pGameEquip.Spawn();
 	}
 }
 
@@ -84,6 +103,12 @@ public void OnPluginStart()
 	g_pLevelLump.Initialize();
 	g_SpawnSystem.Initialize(Callback_Checkpoint);
 	HookEvent("player_spawn", Hook_PlayerSpawnPost, EventHookMode_Post);
+	
+	HookEntityOutput("prop_physics", "OnPlayerUse", Callback_OnUseObject);
+	HookEntityOutput("prop_flare", "OnPlayerUse", Callback_OnUseObject);
+	HookEntityOutput("func_physbox", "OnPlayerUse", Callback_OnUseObject);
+	HookEntityOutput("grenade_frag", "OnPlayerUse", Callback_OnUseObject);	// not sure if this works
+	HookEntityOutput("item_crate", "OnPlayerUse", Callback_OnUseObject);
 }
 
 public void OnPluginEnd()
@@ -95,32 +120,35 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 {
 	CBaseEntity pEntity = CBaseEntity(iEntIndex);
 
-	if (pEntity.IsClassScientist())
+	if (pEntity.IsValid())
 	{
-		DHookEntity(hkIRelationType, true, pEntity.GetEntIndex(), _, Hook_ScientistIRelationType);
-	}
-	//else if (strcmp(szClassname, "npc_sniper", false) == 0)
-	//{
-	//	DHookEntity(hkProtoSniperSelectSchedule, false, pEntity.GetEntIndex(), _, Hook_ProtoSniperSelectSchedule);
-	//	DHookEntity(hkProtoSniperSelectSchedule, true, pEntity.GetEntIndex(), _, Hook_ProtoSniperSelectSchedule);
-	//}
-	//else if (pEntity.IsClassScene())
-	//{
-	//	DHookEntity(hkFindNamedEntity, true, pEntity.GetEntIndex(), _, Hook_FindNamedEntity);
-	//	DHookEntity(hkFindNamedEntityClosest, true, pEntity.GetEntIndex(), _, Hook_FindNamedEntity);
-	//}
-	else if (pEntity.IsClassWeapon())
-	{
-		DHookEntity(hkSetModel, false, pEntity.GetEntIndex(), _, Hook_WeaponSetModel);
-	}
-	else if (strcmp(szClassname, "trigger_changelevel") == 0)
-	{
-		DHookEntity(hkAcceptInput, true, pEntity.GetEntIndex(), _, Hook_ChangelevelAcceptInput);
-		SDKHook(pEntity.GetEntIndex(), SDKHook_Touch, Hook_ChangelevelOnTouch);
-	}
-	else if (strcmp(szClassname, "camera_death") == 0)
-	{
-		SDKHook(pEntity.GetEntIndex(), SDKHook_SpawnPost, Hook_CameraDeathSpawn);
+		if (pEntity.IsClassScientist())
+		{
+			DHookEntity(hkIRelationType, true, pEntity.GetEntIndex(), _, Hook_ScientistIRelationType);
+		}
+		//else if (strcmp(szClassname, "npc_sniper", false) == 0)
+		//{
+		//	DHookEntity(hkProtoSniperSelectSchedule, false, pEntity.GetEntIndex(), _, Hook_ProtoSniperSelectSchedule);
+		//	DHookEntity(hkProtoSniperSelectSchedule, true, pEntity.GetEntIndex(), _, Hook_ProtoSniperSelectSchedule);
+		//}
+		//else if (pEntity.IsClassScene())
+		//{
+		//	DHookEntity(hkFindNamedEntity, true, pEntity.GetEntIndex(), _, Hook_FindNamedEntity);
+		//	DHookEntity(hkFindNamedEntityClosest, true, pEntity.GetEntIndex(), _, Hook_FindNamedEntity);
+		//}
+		else if (pEntity.IsClassWeapon())
+		{
+			DHookEntity(hkSetModel, false, pEntity.GetEntIndex(), _, Hook_WeaponSetModel);
+		}
+		else if (strcmp(szClassname, "trigger_changelevel") == 0)
+		{
+			DHookEntity(hkAcceptInput, true, pEntity.GetEntIndex(), _, Hook_ChangelevelAcceptInput);
+			SDKHook(pEntity.GetEntIndex(), SDKHook_Touch, Hook_ChangelevelOnTouch);
+		}
+		else if (strcmp(szClassname, "camera_death") == 0)
+		{
+			SDKHook(pEntity.GetEntIndex(), SDKHook_SpawnPost, Hook_CameraDeathSpawn);
+		}
 	}
 }
 
@@ -129,17 +157,20 @@ public void OnEntityDestroyed(int iEntIndex)
 	if (g_pConvarCoopEnabled.BoolValue && g_bIsCoopMap)
 	{
 		CBaseEntity pEntity = CBaseEntity(iEntIndex);
-		char szClassname[MAX_CLASSNAME];
-		if (pEntity.GetClassname(szClassname, sizeof(szClassname)))
+		if (pEntity.IsValid())
 		{
-			if (strcmp(szClassname, "camera_death") == 0)
+			char szClassname[MAX_CLASSNAME];
+			if (pEntity.GetClassname(szClassname, sizeof(szClassname)))
 			{
-				CBlackMesaPlayer pOwner = view_as<CBlackMesaPlayer>(pEntity.GetOwner());
-				if (pOwner.IsValid() && pOwner.IsClassPlayer())
+				if (strcmp(szClassname, "camera_death") == 0)
 				{
-					if (pOwner.GetViewEntity() == pEntity)
+					CBlackMesaPlayer pOwner = view_as<CBlackMesaPlayer>(pEntity.GetOwner());
+					if (pOwner.IsValid() && pOwner.IsClassPlayer())
 					{
-						pOwner.SetViewEntity(pOwner);
+						if (pOwner.GetViewEntity() == pEntity)
+						{
+							pOwner.SetViewEntity(pOwner);
+						}
 					}
 				}
 			}
@@ -331,13 +362,16 @@ public void Hook_CameraDeathSpawn(int iEntIndex)
 	if (g_pConvarCoopEnabled.BoolValue && g_bIsCoopMap)
 	{
 		CBaseEntity pEntity = CBaseEntity(iEntIndex);
-		CBlackMesaPlayer pOwner = view_as<CBlackMesaPlayer>(pEntity.GetOwner());
-		if (pOwner.IsValid() && pOwner.IsClassPlayer())
+		if (pEntity.IsValid())
 		{
-			CBaseEntity pViewEntity = pOwner.GetViewEntity();
-			if (!pViewEntity.IsValid() || pViewEntity == pOwner)
+			CBlackMesaPlayer pOwner = view_as<CBlackMesaPlayer>(pEntity.GetOwner());
+			if (pOwner.IsValid() && pOwner.IsClassPlayer())
 			{
-				pOwner.SetViewEntity(pEntity);
+				CBaseEntity pViewEntity = pOwner.GetViewEntity();
+				if (!pViewEntity.IsValid() || pViewEntity == pOwner)
+				{
+					pOwner.SetViewEntity(pEntity);
+				}
 			}
 		}
 	}
@@ -426,6 +460,28 @@ public void Callback_Checkpoint(const char[] szName, int iCaller, int iActivator
 	}
 }
 
+public void Callback_OnUseObject(const char[] szName, int iCaller, int iActivator, float flDelay)	// this output has been broken atleast since source 2006; activator is the caller
+{
+	if (g_pConvarCoopEnabled.BoolValue && g_bIsCoopMap)
+	{
+		CBaseEntity pCaller = CBaseEntity(iCaller);
+		if (pCaller.IsValid())
+		{
+			for (int i = 1; i < MaxClients + 1; i++)
+			{
+				CBlackMesaPlayer pPlayer = CBlackMesaPlayer(i);
+				if (pPlayer.IsValid() && pPlayer.IsAlive())
+				{
+					if (!pPlayer.WasPressingButton(IN_USE) && pPlayer.IsPressingButton(IN_USE))
+					{
+						SetPlayerPickup(pPlayer.GetEntIndex(), pCaller.GetEntIndex(), false);
+						break;
+					}
+				}
+			}
+		}
+	}
+}
 
 // todo read this later
 // http://cdn.akamai.steamstatic.com/steam/apps/362890/manuals/bms_workshop_guide.pdf?t=1431372141
