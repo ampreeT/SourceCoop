@@ -350,60 +350,7 @@ enum struct CGlobalLevelLump
 														char szModifyType[MAX_KEY];
 														if (kv.GetSectionName(szModifyType, sizeof(szModifyType)))
 														{
-															if (strcmp(szModifyType, "add", false) == 0)
-															{
-																if (kv.GotoFirstSubKey(false))
-																{
-																	do
-																	{
-																		CEntityKeyLump pAddKeyInfo;
-																		if (kv.GetSectionName(pAddKeyInfo.m_szKey, sizeof(pAddKeyInfo.m_szKey)) && kv.GetDataType(NULL_STRING) != KvData_None)
-																		{
-																			kv.GetString(NULL_STRING, pAddKeyInfo.m_szValue, sizeof(pAddKeyInfo.m_szValue));
-																			
-																			for (int i = 0; i < pTempEvaluatedList.Size(); i++)
-																			{
-																				CEntityInfoLump pAddEntityInfo = pTempEvaluatedList.GetCell(i);
-																				pAddEntityInfo.PushArray(pAddKeyInfo, sizeof(pAddKeyInfo));
-																			}
-																		}
-																	}
-																	while (kv.GotoNextKey(false));
-																	kv.GoBack();
-																}
-															}
-															else if (strcmp(szModifyType, "remove", false) == 0)
-															{
-																if (kv.GotoFirstSubKey(false))
-																{
-																	do
-																	{
-																		CEntityKeyLump pRemoveKeyInfo;
-																		if (kv.GetSectionName(pRemoveKeyInfo.m_szKey, sizeof(pRemoveKeyInfo.m_szKey)) && kv.GetDataType(NULL_STRING) != KvData_None)
-																		{
-																			kv.GetString(NULL_STRING, pRemoveKeyInfo.m_szValue, sizeof(pRemoveKeyInfo.m_szValue));
-																			for (int i = 0; i < pTempEvaluatedList.Size(); i++)
-																			{
-																				CEntityInfoLump pRemoveEntityInfo = pTempEvaluatedList.GetCell(i);
-																				for (int j = 0; j < pRemoveEntityInfo.Size(); j++)
-																				{
-																					CEntityKeyLump pThisKeyInfo;
-																					if (pRemoveEntityInfo.GetArray(j, pThisKeyInfo, sizeof(pThisKeyInfo)))
-																					{
-																						if (strcmp(pRemoveKeyInfo.m_szKey, pThisKeyInfo.m_szKey, false) == 0 && strcmp(pRemoveKeyInfo.m_szValue, pThisKeyInfo.m_szValue, false) == 0)
-																						{
-																							pRemoveEntityInfo.Remove(j);
-																							break;
-																						}
-																					}
-																				}
-																			}
-																		}
-																	}
-																	while (kv.GotoNextKey(false));
-																	kv.GoBack();
-																}
-															}
+															this.ParseModifyAction(kv, szModifyType, pTempEvaluatedList);
 														}
 													}
 													while (kv.GotoNextKey(true));
@@ -428,6 +375,57 @@ enum struct CGlobalLevelLump
 		}
 		delete kv;
 	}
+	
+	void ParseModifyAction(KeyValues kv, char szModifyType[MAX_KEY], CEntityListLump pTempEvaluatedList)
+	{
+		bool add = strcmp(szModifyType, "add", false) == 0;
+		bool remove = strcmp(szModifyType, "remove", false) == 0;
+		if(!add && !remove) {
+			return;
+		}
+		
+		if (kv.GotoFirstSubKey(false))
+		{
+			do
+			{
+				CEntityKeyLump pKeyInfo;
+				if (kv.GetSectionName(pKeyInfo.m_szKey, sizeof(pKeyInfo.m_szKey)) && kv.GetDataType(NULL_STRING) != KvData_None)
+				{
+					kv.GetString(NULL_STRING, pKeyInfo.m_szValue, sizeof(pKeyInfo.m_szValue));
+					
+					for (int i = 0; i < pTempEvaluatedList.Size(); i++)
+					{
+						CEntityInfoLump pEditedEntityInfo = pTempEvaluatedList.GetCell(i);
+						if(add)
+						{
+							pEditedEntityInfo.PushArray(pKeyInfo, sizeof(pKeyInfo));
+						}
+						else if (remove)
+						{
+							for (int j = 0; j < pEditedEntityInfo.Size(); j++)
+							{
+								CEntityKeyLump pThisKeyInfo;
+								if (pEditedEntityInfo.GetArray(j, pThisKeyInfo, sizeof(pThisKeyInfo)))
+								{
+									if (strcmp(pKeyInfo.m_szKey, pThisKeyInfo.m_szKey, false) == 0)
+									{
+										if(strcmp(pKeyInfo.m_szValue, pThisKeyInfo.m_szValue, false) == 0)
+										{
+											pEditedEntityInfo.Remove(j);
+											break;
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+			while (kv.GotoNextKey(false));
+			kv.GoBack();
+		}
+	}
+	
 }
 
 public int SplitNewline(const char[] szSource, const int nSize, char[] szBuffer)
