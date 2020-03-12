@@ -9,8 +9,12 @@
 	{
 		"delete"
 		{
-			"targetname"	"lift_block"
+			"classname"		"npc_human_scientist"
+		}
+		"delete"
+		{
 			"classname"		"func_block"
+			"targetname"	"lift_block"
 		}
 		"modify"
 		{

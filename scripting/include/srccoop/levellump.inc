@@ -272,8 +272,6 @@ enum struct CGlobalLevelLump
 												this.m_pEntityList.PushCell(pEntityInfo);
 											}
 										}
-										// removing the entity from the entrylist seems to break this
-										/*
 										else if (strcmp(szAction, "delete") == 0)
 										{
 											if (kv.GotoFirstSubKey(false))
@@ -292,24 +290,21 @@ enum struct CGlobalLevelLump
 													}
 												}
 												while (kv.GotoNextKey(false));
+												kv.GoBack();
 												
-												for (int i = 0; i < this.Size(); i++)
+												for (int i = 0; i < this.m_pEntityList.Size(); i++)
 												{
-													CEntityInfoLump pThisEntityInfo = this.GetCell(i);
+													CEntityInfoLump pThisEntityInfo = this.m_pEntityList.GetCell(i);
 													if (pEntityInfo.IsEqual(pThisEntityInfo))
 													{
-														PrintToServer("Removing entry %d", i);
 														pThisEntityInfo.Close();
-														this.Remove(i);
+														this.m_pEntityList.Remove(i);
 														i--;
 													}
 												}
-												
 												pEntityInfo.Close();
-												kv.GoBack();
 											}
 										}
-										*/
 										else if (strcmp(szAction, "modify", false) == 0)
 										{
 											if (kv.GotoFirstSubKey(false))
