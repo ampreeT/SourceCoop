@@ -3,6 +3,7 @@
 ConVar g_pConvarCoopEnabled;
 
 Handle g_pPickupObject;
+Handle g_pSendWeaponAnim;
 
 Handle hkFAllowFlashlight;
 Handle hkIRelationType;
@@ -50,6 +51,13 @@ public void load_gamedata()
 	g_pPickupObject = EndPrepSDKCall();
 	if (g_pPickupObject == null)
 		SetFailState("Could not prep SDK call %s", "CBlackMesaPlayer::PickupObject");
+	
+	StartPrepSDKCall(SDKCall_Entity);
+	PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Virtual, "CBaseCombatWeapon::SendWeaponAnim");
+	PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
+	g_pSendWeaponAnim = EndPrepSDKCall();
+	if (g_pSendWeaponAnim == null)
+		SetFailState("Could not prep SDK call %s", "CBaseCombatWeapon::SendWeaponAnim");
 
 	load_dhook(pGameConfig, hkFAllowFlashlight, "CMultiplayRules::FAllowFlashlight");
 	load_dhook(pGameConfig, hkIRelationType, "CBaseCombatCharacter::IRelationType");
@@ -65,6 +73,11 @@ public void load_gamedata()
 public void SetPlayerPickup(int iPlayer, int iObject, const bool bLimitMassAndSize)
 {
 	SDKCall(g_pPickupObject, iPlayer, iObject, bLimitMassAndSize);
+}
+
+public void SetWeaponAnimation(int iWeapon, const int iActivity)
+{
+	SDKCall(g_pSendWeaponAnim, iWeapon, iActivity);
 }
 
 #pragma dynamic 2097152 
@@ -122,6 +135,10 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 
 	if (pEntity.IsValid())
 	{
+		if (pEntity.IsClassPlayer())
+		{
+			SDKHook(pEntity.GetEntIndex(), SDKHook_PreThinkPost, Hook_PlayerPreThinkPost);
+		}
 		if (pEntity.IsClassScientist())
 		{
 			DHookEntity(hkIRelationType, true, pEntity.GetEntIndex(), _, Hook_ScientistIRelationType);
@@ -202,6 +219,33 @@ public Action Hook_PlayerSpawnPost(Event hEvent, const char[] szName, bool bDont
 			{
 				g_SpawnSystem.SpawnPlayer(pPlayer);
 			}
+		}
+	}
+}
+
+public void Hook_PlayerPreThinkPost(int iClient)	// sprinting stuff
+{
+	CBlackMesaPlayer pPlayer = CBlackMesaPlayer(iClient);
+	if (pPlayer.IsValid() && pPlayer.IsAlive())
+	{	
+		int iButtons = pPlayer.GetButtons();
+		int iOldButtons = pPlayer.GetOldButtons();
+		
+		bool bIsHoldingSpeed = view_as<bool>(iButtons & IN_SPEED);
+		bool bWasHoldingSpeed = view_as<bool>(iOldButtons & IN_SPEED);
+		bool bIsMoving = view_as<bool>((iButtons & IN_FORWARD) || (iButtons & IN_BACK) || (iButtons & IN_MOVELEFT) || (iButtons & IN_MOVERIGHT));
+		bool bWasMoving = view_as<bool>((iOldButtons & IN_FORWARD) || (iOldButtons & IN_BACK) || (iOldButtons & IN_MOVELEFT) || (iOldButtons & IN_MOVERIGHT));
+		
+		// should deactivate this if crouch is held
+		pPlayer.SetMaxSpeed((pPlayer.HasSuit() && bIsHoldingSpeed) ? 320.0 : 190.0);
+		
+		CBaseCombatWeapon pWeapon = view_as<CBaseCombatWeapon>(pPlayer.GetActiveWeapon());
+		if (pWeapon.IsValid())
+		{
+			if (bIsHoldingSpeed && bWasHoldingSpeed && bIsMoving && bWasMoving)
+				SetWeaponAnimation(pWeapon.GetEntIndex(), ACT_VM_SPRINT_IDLE);
+			else if ((!bIsHoldingSpeed && bWasHoldingSpeed && bIsMoving) || (bIsHoldingSpeed && !bIsMoving && bWasMoving))
+				SetWeaponAnimation(pWeapon.GetEntIndex(), ACT_VM_SPRINT_LEAVE);	
 		}
 	}
 }
