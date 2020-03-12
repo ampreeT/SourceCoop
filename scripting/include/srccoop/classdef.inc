@@ -224,6 +224,10 @@ methodmap CBaseEntity
 	{
 		return CBaseEntity(GetEntPropEnt(this.GetEntIndex(), Prop_Send, "m_hOwnerEntity"));
 	}
+	public MoveType GetMoveType()
+	{
+		return GetEntityMoveType(this.GetEntIndex());
+	}
 }
 
 public int FindEntityByHammerID(int iHammerID)

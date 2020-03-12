@@ -116,12 +116,6 @@ public void OnPluginStart()
 	g_pLevelLump.Initialize();
 	g_SpawnSystem.Initialize(Callback_Checkpoint);
 	HookEvent("player_spawn", Hook_PlayerSpawnPost, EventHookMode_Post);
-	
-	HookEntityOutput("prop_physics", "OnPlayerUse", Callback_OnUseObject);
-	HookEntityOutput("prop_flare", "OnPlayerUse", Callback_OnUseObject);
-	HookEntityOutput("func_physbox", "OnPlayerUse", Callback_OnUseObject);
-	HookEntityOutput("grenade_frag", "OnPlayerUse", Callback_OnUseObject);	// not sure if this works
-	HookEntityOutput("item_crate", "OnPlayerUse", Callback_OnUseObject);
 }
 
 public void OnPluginEnd()
@@ -166,6 +160,16 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 		{
 			SDKHook(pEntity.GetEntIndex(), SDKHook_SpawnPost, Hook_CameraDeathSpawn);
 		}
+		SDKHook(iEntIndex, SDKHook_SpawnPost, Hook_SpawnPost);
+	}
+}
+
+public void Hook_SpawnPost(int iEntIndex)
+{
+	CBaseEntity pEntity = CBaseEntity(iEntIndex);
+	if(pEntity.GetMoveType() == MOVETYPE_VPHYSICS)
+	{
+		SDKHook(iEntIndex, SDKHook_UsePost, Hook_Use);
 	}
 }
 
@@ -463,6 +467,18 @@ public void Hook_ChangelevelOnTouch(int _this, int iOther)
 	}
 }
 
+public void Hook_Use(int entity, int activator, int caller, UseType type, float value)
+{
+	if (g_pConvarCoopEnabled.BoolValue && g_bIsCoopMap)
+	{
+		CBlackMesaPlayer pPlayer = CBlackMesaPlayer(caller);
+		if (pPlayer.IsValid() && pPlayer.IsAlive())
+		{
+			SetPlayerPickup(pPlayer.GetEntIndex(), entity, false);
+		}
+	}
+}
+
 public Action Callback_CheckpointTimer(Handle hTimer, CBlackMesaPlayer pPlayerToFilter)
 {
 	for (int i = 1; i < (MaxClients + 1); i++)
@@ -501,29 +517,6 @@ public void Callback_Checkpoint(const char[] szName, int iCaller, int iActivator
 		g_SpawnSystem.EraseCheckpoints(iEntriesToKill + 1);
 		g_SpawnSystem.SetSpawnLocation(pEntry.m_vecPosition, pEntry.m_vecAngles, pEntry.m_pFollowEnt);
 		CreateTimer(pEntry.m_flDelay, Callback_CheckpointTimer, pPlayerToFilter);
-	}
-}
-
-public void Callback_OnUseObject(const char[] szName, int iCaller, int iActivator, float flDelay)	// this output has been broken atleast since source 2006; activator is the caller
-{
-	if (g_pConvarCoopEnabled.BoolValue && g_bIsCoopMap)
-	{
-		CBaseEntity pCaller = CBaseEntity(iCaller);
-		if (pCaller.IsValid())
-		{
-			for (int i = 1; i < MaxClients + 1; i++)
-			{
-				CBlackMesaPlayer pPlayer = CBlackMesaPlayer(i);
-				if (pPlayer.IsValid() && pPlayer.IsAlive())
-				{
-					if (!pPlayer.WasPressingButton(IN_USE) && pPlayer.IsPressingButton(IN_USE))
-					{
-						SetPlayerPickup(pPlayer.GetEntIndex(), pCaller.GetEntIndex(), false);
-						break;
-					}
-				}
-			}
-		}
 	}
 }
 
