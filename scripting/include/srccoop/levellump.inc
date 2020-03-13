@@ -4,6 +4,12 @@ enum struct CEntityKeyLump
 	char m_szValue[MAX_VALUE];
 }
 
+enum struct CEntityOutputHook
+{
+	CEntityListLump m_pEntityList;
+	char m_szOutputName[MAX_VALUE];
+}
+
 methodmap CEntityInfoLump < Array_t
 {
 	public CEntityInfoLump(Handle pHandle = null)
@@ -42,6 +48,42 @@ methodmap CEntityInfoLump < Array_t
 		
 		return true;
 	}
+	
+	public bool MatchesActualEntity(CBaseEntity pEntity)
+	{
+		for (int i = 0; i < this.Size(); i++)
+		{
+			CEntityKeyLump pThisKeyInfo;
+			if (this.GetArray(i, pThisKeyInfo, sizeof(pThisKeyInfo)))
+			{
+				// check these 3 properties for now, return false if any dont match
+				if(StrEqual(pThisKeyInfo.m_szKey, "hammerid"))
+				{
+					if(StringToInt(pThisKeyInfo.m_szValue) != pEntity.GetHammerID())
+					{
+						return false;
+					}
+				}
+				if(StrEqual(pThisKeyInfo.m_szKey, "classname"))
+				{
+					if(!pEntity.IsClassname(pThisKeyInfo.m_szValue))
+					{
+						return false;
+					}
+				}
+				if(StrEqual(pThisKeyInfo.m_szKey, "targetname"))
+				{
+					char szBuffer[MAX_CLASSNAME];
+					pEntity.GetTargetname(szBuffer, sizeof(szBuffer));
+					if(!StrEqual(pThisKeyInfo.m_szValue, szBuffer))
+					{
+						return false;
+					}
+				}
+			}
+		}
+		return true;
+	}
 }
 
 methodmap CEntityListLump < Array_t
@@ -60,6 +102,24 @@ methodmap CEntityListLump < Array_t
 			{
 				pEntityInfo.Close();
 			}
+		}
+		ClearArray(this.GetHandle());
+	}
+}
+
+methodmap COutputHookLump < Array_t
+{
+	public COutputHookLump(Handle pHandle = null)
+	{
+		return view_as<COutputHookLump>(pHandle);
+	}
+	
+	public void Clear()
+	{
+		for (int i = 0; i < this.Size(); i++)
+		{
+			CEntityOutputHook pOutputHook; this.GetArray(i, pOutputHook);
+			pOutputHook.m_pEntityList.Close();
 		}
 		ClearArray(this.GetHandle());
 	}
@@ -91,6 +151,7 @@ enum struct CGlobalLevelLump
 {
 	CEntityListLump m_pEntityList;
 	CNextMapLump m_pNextMapList;
+	COutputHookLump m_pOutputHookList;
 	
 	void Initialize()
 	{
@@ -101,6 +162,10 @@ enum struct CGlobalLevelLump
 		this.m_pNextMapList = CNextMapLump(CreateArray(MAX_MAPNAME));
 		if (!this.m_pNextMapList.IsValid())
 			ThrowError("Was unable to create Array_t for m_pNextMapList on initialization");
+			
+		this.m_pOutputHookList = COutputHookLump(CreateArray(sizeof(CEntityOutputHook)));
+		if (!this.m_pOutputHookList.IsValid())
+			ThrowError("Was unable to create CEntityOutputHook on initialization");
 	}
 	bool IsCoopMap(const char[] szMapName)
 	{
@@ -193,6 +258,7 @@ enum struct CGlobalLevelLump
 	void ParseConfigFile(const char[] szMapName)
 	{
 		this.m_pNextMapList.Clear();
+		this.m_pOutputHookList.Clear();
 		
 		char szMapPath[MAX_FORMAT];
 		if (!(BuildPath(Path_SM, szMapPath, sizeof(szMapPath), "data/srccoop/%s.edt", szMapName) && FileExists(szMapPath)))
@@ -375,7 +441,8 @@ enum struct CGlobalLevelLump
 	{
 		bool add = strcmp(szModifyType, "add", false) == 0;
 		bool remove = strcmp(szModifyType, "remove", false) == 0;
-		if(!add && !remove) {
+		bool functions = strcmp(szModifyType, "functions", false) == 0;
+		if(!add && !remove && !functions) {
 			return;
 		}
 		
@@ -383,31 +450,37 @@ enum struct CGlobalLevelLump
 		{
 			do
 			{
-				CEntityKeyLump pKeyInfo;
-				if (kv.GetSectionName(pKeyInfo.m_szKey, sizeof(pKeyInfo.m_szKey)) && kv.GetDataType(NULL_STRING) != KvData_None)
+				if(functions) {
+					this.ParseFunction(kv, pTempEvaluatedList);
+				}
+				else
 				{
-					kv.GetString(NULL_STRING, pKeyInfo.m_szValue, sizeof(pKeyInfo.m_szValue));
-					
-					for (int i = 0; i < pTempEvaluatedList.Size(); i++)
+					CEntityKeyLump pKeyInfo;
+					if (kv.GetSectionName(pKeyInfo.m_szKey, sizeof(pKeyInfo.m_szKey)) && kv.GetDataType(NULL_STRING) != KvData_None)
 					{
-						CEntityInfoLump pEditedEntityInfo = pTempEvaluatedList.GetCell(i);
-						if(add)
+						kv.GetString(NULL_STRING, pKeyInfo.m_szValue, sizeof(pKeyInfo.m_szValue));
+						
+						for (int i = 0; i < pTempEvaluatedList.Size(); i++)
 						{
-							pEditedEntityInfo.PushArray(pKeyInfo, sizeof(pKeyInfo));
-						}
-						else if (remove)
-						{
-							for (int j = 0; j < pEditedEntityInfo.Size(); j++)
+							CEntityInfoLump pEditedEntityInfo = pTempEvaluatedList.GetCell(i);
+							if(add)
 							{
-								CEntityKeyLump pThisKeyInfo;
-								if (pEditedEntityInfo.GetArray(j, pThisKeyInfo, sizeof(pThisKeyInfo)))
+								pEditedEntityInfo.PushArray(pKeyInfo, sizeof(pKeyInfo));
+							}
+							else if (remove)
+							{
+								for (int j = 0; j < pEditedEntityInfo.Size(); j++)
 								{
-									if (strcmp(pKeyInfo.m_szKey, pThisKeyInfo.m_szKey, false) == 0)
+									CEntityKeyLump pThisKeyInfo;
+									if (pEditedEntityInfo.GetArray(j, pThisKeyInfo, sizeof(pThisKeyInfo)))
 									{
-										if(strcmp(pKeyInfo.m_szValue, pThisKeyInfo.m_szValue, false) == 0)
+										if (strcmp(pKeyInfo.m_szKey, pThisKeyInfo.m_szKey, false) == 0)
 										{
-											pEditedEntityInfo.Remove(j);
-											break;
+											if(strcmp(pKeyInfo.m_szValue, pThisKeyInfo.m_szValue, false) == 0)
+											{
+												pEditedEntityInfo.Remove(j);
+												break;
+											}
 										}
 									}
 								}
@@ -421,6 +494,40 @@ enum struct CGlobalLevelLump
 		}
 	}
 	
+	void ParseFunction(KeyValues kv, CEntityListLump pTempEvaluatedList)
+	{
+		char szFunction[MAX_KEY], szValue[MAX_KEY];
+		if (kv.GetSectionName(szFunction, sizeof(szFunction)) && kv.GetDataType(NULL_STRING) != KvData_None)
+		{
+			kv.GetString(NULL_STRING, szValue, sizeof(szValue));
+			if(StrEqual(szFunction, "delay_output", false))
+			{
+				CEntityOutputHook pOutputHook;
+				pOutputHook.m_pEntityList = view_as<CEntityListLump>(CloneHandle(view_as<Handle>(pTempEvaluatedList)));
+				pOutputHook.m_szOutputName = szValue;
+				this.m_pOutputHookList.PushArray(pOutputHook);
+			}
+		}
+	}
+	
+	Array_t GetOutputHooksForEntity(CBaseEntity pEntity)
+	{
+		Array_t pResolvedOutputHookList = Array_t(CreateArray(sizeof(CEntityOutputHook)));
+		for (int i = 0; i < this.m_pOutputHookList.Size(); i++)
+		{
+			CEntityOutputHook pOutputHook; this.m_pOutputHookList.GetArray(i, pOutputHook);
+			CEntityListLump pEntityList = pOutputHook.m_pEntityList;
+			for (int j = 0; j < pEntityList.Size(); j++)
+			{
+				CEntityInfoLump pEditedEntityInfo = pEntityList.GetCell(j);
+				if(pEditedEntityInfo.MatchesActualEntity(pEntity))
+				{
+					pResolvedOutputHookList.PushArray(pOutputHook);
+				}
+			}
+		}
+		return pResolvedOutputHookList;
+	}
 }
 
 public int SplitNewline(const char[] szSource, const int nSize, char[] szBuffer)

@@ -7,6 +7,39 @@
 	}
 	"entity"
 	{
+		// REUSABLES
+		// ------------
+		// env_message - Show to all
+		"modify"
+		{
+			"classname"	"env_message"
+			"spawnflags" "0"
+			"add"
+			{
+				"spawnflags" "2"
+			}
+		}
+		"modify"
+		{
+			"classname"	"env_message"
+			"spawnflags" "1"
+			"add"
+			{
+				"spawnflags" "3"
+			}
+		}
+		
+		// MAP specific
+		// ------------
+		"modify"
+		{
+			"classname"	"logic_auto"
+			"hammerid" "176812"
+			"functions"
+			{
+				"delay_output" "OnMapSpawn"
+			}
+		}
 		"modify"
 		{
 			"globalname"	"train2"

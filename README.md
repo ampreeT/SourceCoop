@@ -34,10 +34,11 @@
 		- possibly inlined as it is a empty function in normal src mp games
 	- custom marine ai
 		- CBaseCombatCharacter::CalcWeaponProficiency(...) hook for accuracy
+- trigger_changelevel
+	- game code checks for g_pGameRules->IsDeathmatch(), overriding that to false gives a crashes on changelevel, but at least its something (could explore crash dump on linux)
+- add checkpoint 'portals' that teleports player to active checkopint when touched, used for example when a door closes that would lock player out. This is an alternative to suicide/forced teleports.
 
 ## map-issues
-- bm_c0a0a
-	- need soundtrack on join
-	- remove fade and teleport
-- bm_c0a0b
-	- sound rotation bug with tram
+- tram ride feels laggy
+- bm_c1a0a
+	- add tp portals to barney gate

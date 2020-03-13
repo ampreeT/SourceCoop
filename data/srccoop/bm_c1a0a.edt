@@ -7,15 +7,30 @@
 	}
 	"entity"
 	{
-		"delete"
+		// REUSABLES
+		// ------------
+		// env_message - Show to all
+		"modify"
 		{
-			"classname"		"npc_human_scientist"
+			"classname"	"env_message"
+			"spawnflags" "0"
+			"add"
+			{
+				"spawnflags" "2"
+			}
 		}
-		"delete"
+		"modify"
 		{
-			"classname"		"func_block"
-			"targetname"	"lift_block"
+			"classname"	"env_message"
+			"spawnflags" "1"
+			"add"
+			{
+				"spawnflags" "3"
+			}
 		}
+		
+		// MAP specific
+		// ------------
 		"modify"
 		{
 			"globalname"	"train_model"
@@ -31,6 +46,19 @@
 			{
 				"globalname"	"train_door"
 			}
+		}
+		"modify"
+		{
+			"targetname" "trigger_intro_scene"
+			"functions"
+			{
+				"delay_output" "OnTrigger"
+			}
+		}
+		"delete"
+		{
+			"targetname"	"lift_block"
+			"classname"		"func_block"
 		}
 	}
 	"checkpoint"

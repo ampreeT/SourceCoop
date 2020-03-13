@@ -15,6 +15,10 @@
 
 #define	SF_NORESPAWN ( 1 << 30 )	// if set, item wont respawn in MP
 
+#define SF_AUTO_FIREONCE 0x01
+
+#define SF_CHANGELEVEL_NOTOUCH 0x0002
+
 #define EF_NODRAW 32
 
 enum

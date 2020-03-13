@@ -44,6 +44,11 @@
 				"windows"	"56"
 				"linux"		"57"
 			}
+			"CMultiplayRules::IsDeathmatch"		// CMultiplayRules::IsDeathmatch()
+			{
+				"windows"	"58"
+				"linux"		"59"
+			}
 			"CBaseCombatCharacter::IRelationType"	// CBaseCombatCharacter::IRelationType(CBaseEntity*)
 			{
 				"windows"	"318"
@@ -80,6 +85,16 @@
 			"CMultiplayRules::FAllowFlashlight"
 			{
 				"offset"	"CMultiplayRules::FAllowFlashlight"
+				"hooktype"	"gamerules"
+				"return"	"bool"
+				"this"		"ignore"
+				"arguments"
+				{
+				}
+			}
+			"CMultiplayRules::IsDeathmatch"
+			{
+				"offset"	"CMultiplayRules::IsDeathmatch"
 				"hooktype"	"gamerules"
 				"return"	"bool"
 				"this"		"ignore"

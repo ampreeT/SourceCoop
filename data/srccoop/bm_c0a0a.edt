@@ -7,6 +7,47 @@
 	}
 	"entity"
 	{
+		// REUSABLES
+		// ------------
+		// env_message - Show to all
+		"modify"
+		{
+			"classname"	"env_message"
+			"spawnflags" "0"
+			"add"
+			{
+				"spawnflags" "2"
+			}
+		}
+		"modify"
+		{
+			"classname"	"env_message"
+			"spawnflags" "1"
+			"add"
+			{
+				"spawnflags" "3"
+			}
+		}
+		
+		// MAP specific
+		// ------------
+		"modify"
+		{
+			"classname"	"logic_auto"
+			"hammerid" "612340"
+			"functions"
+			{
+				"delay_output" "OnNewGame"
+			}
+		}
+		"delete"
+		{
+			"targetname" "intro_teleport"
+		}
+		"delete"
+		{
+			"targetname" "intro_fade"
+		}
 		"modify"
 		{
 			"globalname"	"train"
