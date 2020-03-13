@@ -507,9 +507,9 @@ public void Hook_Use(int entity, int activator, int caller, UseType type, float 
 	}
 }
 
-public MRESReturn Hook_SetSuitUpdate(int _this, Handle hParams)
+public MRESReturn Hook_SetSuitUpdate(int _this, Handle hReturn, Handle hParams)
 {
-	return MRES_Supercede;
+	return MRES_Ignored;
 }
 
 public Action Callback_CheckpointTimer(Handle hTimer, CBlackMesaPlayer pPlayerToFilter)
