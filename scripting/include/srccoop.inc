@@ -15,3 +15,5 @@
 #include <srccoop/classdef.inc>
 #include <srccoop/levellump.inc>
 #include <srccoop/checkpoint.inc>
+#include <srccoop/globals.inc>
+#include <srccoop/manager.inc>

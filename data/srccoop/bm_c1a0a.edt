@@ -7,11 +7,30 @@
 	}
 	"entity"
 	{
-		"delete"
+		// REUSABLES
+		// ------------
+		// env_message - Show to all
+		"modify"
 		{
-			"targetname"	"lift_block"
-			"classname"		"func_block"
+			"classname"	"env_message"
+			"spawnflags" "0"
+			"add"
+			{
+				"spawnflags" "2"
+			}
 		}
+		"modify"
+		{
+			"classname"	"env_message"
+			"spawnflags" "1"
+			"add"
+			{
+				"spawnflags" "3"
+			}
+		}
+		
+		// MAP specific
+		// ------------
 		"modify"
 		{
 			"globalname"	"train_model"
@@ -27,6 +46,19 @@
 			{
 				"globalname"	"train_door"
 			}
+		}
+		"modify"
+		{
+			"targetname" "trigger_intro_scene"
+			"functions"
+			{
+				"delay_output" "OnTrigger"
+			}
+		}
+		"delete"
+		{
+			"targetname"	"lift_block"
+			"classname"		"func_block"
 		}
 	}
 	"checkpoint"

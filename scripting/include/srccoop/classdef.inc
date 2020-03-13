@@ -94,6 +94,12 @@ methodmap CBaseEntity
 	{
 		return SetEntPropString(this.GetEntIndex(), Prop_Data, "m_iName", szTargetname); 
 	}
+	public bool IsClassname(const char[] szClassname)
+	{
+		char szBuffer[MAX_CLASSNAME];
+		this.GetClassname(szBuffer, sizeof(szBuffer));
+		return StrEqual(szClassname, szBuffer);
+	}
 	public bool IsClassPlayer()
 	{
 		return view_as<bool>((this.GetEntIndex() > 0) && (this.GetEntIndex() < (MaxClients + 1)));

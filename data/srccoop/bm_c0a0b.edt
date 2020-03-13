@@ -7,6 +7,55 @@
 	}
 	"entity"
 	{
+		// REUSABLES
+		// ------------
+		// env_message - Show to all
+		"modify"
+		{
+			"classname"	"env_message"
+			"spawnflags" "0"
+			"add"
+			{
+				"spawnflags" "2"
+			}
+		}
+		"modify"
+		{
+			"classname"	"env_message"
+			"spawnflags" "1"
+			"add"
+			{
+				"spawnflags" "3"
+			}
+		}
+		
+		// MAP specific
+		// ------------
+		"modify"
+		{
+			"classname" "logic_auto"
+			"hammerid" "428711"
+			"functions"
+			{
+				"delay_output" "OnMapSpawn"
+			}
+		}
+		"modify"
+		{
+			"targetname" "tram_track_52"
+			"add"
+			{
+				"speed" "0"
+			}
+		}
+		"modify"
+		{
+			"targetname" "train_elevator_rotate"
+			"add"
+			{
+				"loopmovesound" "0"
+			}
+		}
 		"modify"
 		{
 			"globalname"	"train"

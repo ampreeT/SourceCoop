@@ -1,23 +1,5 @@
 #include <srccoop>
 
-ConVar g_pConvarCoopEnabled;
-
-Handle g_pPickupObject;
-
-Handle hkFAllowFlashlight;
-Handle hkIRelationType;
-Handle hkProtoSniperSelectSchedule;
-Handle hkFindNamedEntity;
-Handle hkFindNamedEntityClosest;
-Handle hkSetModel;
-Handle hkAcceptInput;
-
-CGlobalLevelLump g_pLevelLump;
-CCoopSpawn g_SpawnSystem;
-
-char g_szMapName[MAX_MAPNAME];
-bool g_bIsCoopMap = false;
-
 public Plugin myinfo =
 {
 	name = "SourceCoop",
@@ -52,6 +34,7 @@ public void load_gamedata()
 		SetFailState("Could not prep SDK call %s", "CBlackMesaPlayer::PickupObject");
 
 	load_dhook(pGameConfig, hkFAllowFlashlight, "CMultiplayRules::FAllowFlashlight");
+	//load_dhook(pGameConfig, hkIsDeathmatch, "CMultiplayRules::IsDeathmatch");
 	load_dhook(pGameConfig, hkIRelationType, "CBaseCombatCharacter::IRelationType");
 	load_dhook(pGameConfig, hkProtoSniperSelectSchedule, "CProtoSniper::SelectSchedule");
 	load_dhook(pGameConfig, hkFindNamedEntity, "CSceneEntity::FindNamedEntity");
@@ -67,42 +50,36 @@ public void SetPlayerPickup(int iPlayer, int iObject, const bool bLimitMassAndSi
 	SDKCall(g_pPickupObject, iPlayer, iObject, bLimitMassAndSize);
 }
 
-#pragma dynamic 2097152 
-public Action OnLevelInit(const char[] szMapName, char szMapEntities[2097152])		// you probably need to incease SlowScriptTimeout in core.cfg
-{
-	strcopy(g_szMapName, sizeof(g_szMapName), szMapName);
-	g_bIsCoopMap = g_pLevelLump.IsCoopMap(szMapName);
-	if (g_pConvarCoopEnabled.BoolValue && g_bIsCoopMap)
-	{
-		g_pLevelLump.ParseMapEntities(szMapEntities);
-		g_pLevelLump.ParseConfigFile(szMapName);
-		g_pLevelLump.ToString(szMapEntities);
-	}
-	
-	return Plugin_Changed;
-}
-
-public void OnMapStart()
-{
-	if (g_pConvarCoopEnabled.BoolValue && g_bIsCoopMap)
-	{
-		AddWarmupTime(60 * 60 * 24 * 7);
-		g_SpawnSystem.ParseConfigFile(g_szMapName);
-		DHookGamerules(hkFAllowFlashlight, false, _, Hook_FAllowFlashlight);
-		
-		CBaseEntity pGameEquip = CreateByClassname("game_player_equip");	// will spawn players with nothing if it exists
-		if (pGameEquip.IsValid())
-			pGameEquip.Spawn();
-	}
-}
-
 public void OnPluginStart()
 {
 	load_gamedata();
 	g_pConvarCoopEnabled = CreateConVar("sm_coop_enabled", "1", "Sets if coop is enabled on campaign maps");
+	g_pConvarWaitPeriod = CreateConVar("sm_coop_wait_period", "15.0", "The max number of seconds to wait since first player spawned in to start the map");
 	g_pLevelLump.Initialize();
 	g_SpawnSystem.Initialize(Callback_Checkpoint);
+	g_pCoopManager.Initialize();
 	HookEvent("player_spawn", Hook_PlayerSpawnPost, EventHookMode_Post);
+}
+
+public void OnMapStart()
+{
+	g_pCoopManager.OnMapStart();
+	if (g_pCoopManager.IsFeaturePatchingEnabled())
+	{
+		DHookGamerules(hkFAllowFlashlight, false, _, Hook_FAllowFlashlight);
+		//DHookGamerules(hkIsDeathmatch, false, _, Hook_IsDeathmatch);
+	}
+	if (g_pCoopManager.IsCoopModeEnabled())
+	{
+		CBaseEntity pGameEquip = CreateByClassname("game_player_equip");	// will spawn players with nothing if it exists
+		if (pGameEquip.IsValid())
+		pGameEquip.Spawn();
+	}
+}
+
+public void OnClientPutInServer(int client)
+{
+	g_pCoopManager.OnClientPutInServer(client);
 }
 
 public void OnPluginEnd()
@@ -135,9 +112,8 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 			DHookEntity(hkSetModel, false, pEntity.GetEntIndex(), _, Hook_WeaponSetModel);
 		}
 		else if (strcmp(szClassname, "trigger_changelevel") == 0)
-		{
-			DHookEntity(hkAcceptInput, true, pEntity.GetEntIndex(), _, Hook_ChangelevelAcceptInput);
-			SDKHook(pEntity.GetEntIndex(), SDKHook_Touch, Hook_ChangelevelOnTouch);
+		{			
+			SDKHook(pEntity.GetEntIndex(), SDKHook_SpawnPost, Hook_ChangelevelSpawn);
 		}
 		else if (strcmp(szClassname, "camera_death") == 0)
 		{
@@ -154,11 +130,32 @@ public void Hook_SpawnPost(int iEntIndex)
 	{
 		SDKHook(iEntIndex, SDKHook_UsePost, Hook_Use);
 	}
+	
+	if (g_pCoopManager.IsCoopModeEnabled())
+	{
+		Array_t pOutputHookList = g_pLevelLump.GetOutputHooksForEntity(pEntity);
+		if(pOutputHookList.Size() > 0)
+		{
+			if(pEntity.IsClassname("logic_auto"))
+			{
+				// do not let it get killed, so the output can fire later
+				int iSpawnFlags = pEntity.GetSpawnFlags();
+				if(iSpawnFlags & SF_AUTO_FIREONCE)
+					pEntity.SetSpawnFlags(iSpawnFlags &~ SF_AUTO_FIREONCE);
+			}
+		}
+		for (int i = 0; i < pOutputHookList.Size(); i++)
+		{
+			CEntityOutputHook pOutputHook; pOutputHookList.GetArray(i, pOutputHook);
+			HookSingleEntityOutput(iEntIndex, pOutputHook.m_szOutputName, OutputCallbackForDelay);
+		}
+		pOutputHookList.Close();
+	}
 }
 
 public void OnEntityDestroyed(int iEntIndex)
 {
-	if (g_pConvarCoopEnabled.BoolValue && g_bIsCoopMap)
+	if (g_pCoopManager.IsFeaturePatchingEnabled())
 	{
 		CBaseEntity pEntity = CBaseEntity(iEntIndex);
 		if (pEntity.IsValid())
@@ -182,31 +179,28 @@ public void OnEntityDestroyed(int iEntIndex)
 	}
 }
 
-public bool AddWarmupTime(const int iSeconds)
+public Action OutputCallbackForDelay(const char[] output, int caller, int activator, float delay)
 {
-	CBaseEntity pEntity = CreateByClassname("mp_round_time");
-	if (pEntity.IsValid() && pEntity.Spawn())
+	if(g_pCoopManager.m_bStarted)
 	{
-		pEntity.AcceptInputInt("AddWarmupTime", iSeconds);
-		pEntity.Kill();
-		return true;
+		return Plugin_Continue;
 	}
-	return false;
+	FireOutputData pFireOutputData;
+	strcopy(pFireOutputData.m_szName, sizeof(pFireOutputData.m_szName), output);
+	pFireOutputData.m_pCaller = CBaseEntity(caller);
+	pFireOutputData.m_pActivator = CBaseEntity(activator);
+	pFireOutputData.m_flDelay = delay;
+	g_pCoopManager.AddDelayedOutput(pFireOutputData);
+	return Plugin_Stop;
 }
 
 public Action Hook_PlayerSpawnPost(Event hEvent, const char[] szName, bool bDontBroadcast)
 {
-	if (g_pConvarCoopEnabled.BoolValue && g_bIsCoopMap)
+	int iClientID = GetEventInt(hEvent, "userid");
+	CBlackMesaPlayer pPlayer = CBlackMesaPlayer(GetClientOfUserId(iClientID));
+	if (pPlayer.IsValid())
 	{
-		if (hEvent != null)
-		{
-			int iClientID = GetEventInt(hEvent, "userid");
-			CBlackMesaPlayer pPlayer = CBlackMesaPlayer(GetClientOfUserId(iClientID));
-			if (pPlayer.IsValid())
-			{
-				g_SpawnSystem.SpawnPlayer(pPlayer);
-			}
-		}
+		g_pCoopManager.OnPlayerSpawned(pPlayer);
 	}
 }
 
@@ -221,6 +215,12 @@ public MRESReturn Hook_FAllowFlashlight(Handle hReturn, Handle hParams)		// enab
 	DHookSetReturn(hReturn, true);
 	return MRES_Supercede;
 }
+
+//public MRESReturn Hook_IsDeathmatch(Handle hReturn, Handle hParams)
+//{
+//	DHookSetReturn(hReturn, false);
+//	return MRES_Supercede;
+//}
 
 public MRESReturn Hook_ProtoSniperSelectSchedule(int _this, Handle hReturn, Handle hParams)	// https://github.com/ValveSoftware/source-sdk-2013/blob/0d8dceea4310fde5706b3ce1c70609d72a38efdf/mp/src/game/server/hl2/proto_sniper.cpp#L1385
 {
@@ -363,7 +363,7 @@ public MRESReturn Hook_WeaponSetModel(int _this, Handle hParams)	// use sp weapo
 
 public void Hook_CameraDeathSpawn(int iEntIndex)
 {
-	if (g_pConvarCoopEnabled.BoolValue && g_bIsCoopMap)
+	if (g_pCoopManager.IsFeaturePatchingEnabled())
 	{
 		CBaseEntity pEntity = CBaseEntity(iEntIndex);
 		if (pEntity.IsValid())
@@ -390,10 +390,21 @@ public bool ChangeLevelToNextMap(CChangelevel pChangelevel)
 	}
 }
 
+public void Hook_ChangelevelSpawn(int iEntIndex)
+{
+	CBaseEntity pEntity = CBaseEntity(iEntIndex);
+	DHookEntity(hkAcceptInput, true, pEntity.GetEntIndex(), _, Hook_ChangelevelAcceptInput);
+	
+	if(!pEntity.HasSpawnFlag(SF_CHANGELEVEL_NOTOUCH))
+	{
+		SDKHook(pEntity.GetEntIndex(), SDKHook_Touch, Hook_ChangelevelOnTouch);
+	}
+}
+
 public MRESReturn Hook_ChangelevelAcceptInput(int _this, Handle hReturn, Handle hParams)
 {
 	CChangelevel pChangelevel = CChangelevel(_this);
-	if (g_pConvarCoopEnabled.BoolValue && g_bIsCoopMap)
+	if (g_pCoopManager.IsBugPatchingEnabled())
 	{
 		if (!DHookIsNullParam(hParams, 1))
 		{
@@ -411,7 +422,7 @@ public MRESReturn Hook_ChangelevelAcceptInput(int _this, Handle hReturn, Handle 
 
 public void Hook_ChangelevelOnTouch(int _this, int iOther)
 {
-	if (g_pConvarCoopEnabled.BoolValue && g_bIsCoopMap)
+	if (g_pCoopManager.IsBugPatchingEnabled())
 	{
 		CChangelevel pChangelevel = CChangelevel(_this);
 		CBlackMesaPlayer pPlayer = CBlackMesaPlayer(iOther);
@@ -425,7 +436,7 @@ public void Hook_ChangelevelOnTouch(int _this, int iOther)
 
 public void Hook_Use(int entity, int activator, int caller, UseType type, float value)
 {
-	if (g_pConvarCoopEnabled.BoolValue && g_bIsCoopMap)
+	if (g_pCoopManager.IsFeaturePatchingEnabled())
 	{
 		CBlackMesaPlayer pPlayer = CBlackMesaPlayer(caller);
 		if (pPlayer.IsValid() && pPlayer.IsAlive())
