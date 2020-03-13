@@ -239,29 +239,39 @@ public Action Hook_PlayerSpawnPost(Event hEvent, const char[] szName, bool bDont
 	}
 }
 
-public void Hook_PlayerPreThinkPost(int iClient)	// sprinting stuff
+public void Hook_PlayerPreThinkPost(int iClient)
 {
 	CBlackMesaPlayer pPlayer = CBlackMesaPlayer(iClient);
-	if (pPlayer.IsValid() && pPlayer.IsAlive())
-	{	
+	if (pPlayer.IsValid())
+	{
 		int iButtons = pPlayer.GetButtons();
 		int iOldButtons = pPlayer.GetOldButtons();
 		
-		bool bIsHoldingSpeed = view_as<bool>(iButtons & IN_SPEED);
-		bool bWasHoldingSpeed = view_as<bool>(iOldButtons & IN_SPEED);
-		bool bIsMoving = view_as<bool>((iButtons & IN_FORWARD) || (iButtons & IN_BACK) || (iButtons & IN_MOVELEFT) || (iButtons & IN_MOVERIGHT));
-		bool bWasMoving = view_as<bool>((iOldButtons & IN_FORWARD) || (iOldButtons & IN_BACK) || (iOldButtons & IN_MOVELEFT) || (iOldButtons & IN_MOVERIGHT));
-		
-		// should deactivate this if crouch is held
-		pPlayer.SetMaxSpeed((pPlayer.HasSuit() && bIsHoldingSpeed) ? 320.0 : 190.0);
-		
-		CBaseCombatWeapon pWeapon = view_as<CBaseCombatWeapon>(pPlayer.GetActiveWeapon());
-		if (pWeapon.IsValid())
+		if(pPlayer.IsAlive())	// sprinting stuff
 		{
-			if (bIsHoldingSpeed && bWasHoldingSpeed && bIsMoving && bWasMoving)
-				SetWeaponAnimation(pWeapon.GetEntIndex(), ACT_VM_SPRINT_IDLE);
-			else if ((!bIsHoldingSpeed && bWasHoldingSpeed && bIsMoving) || (bIsHoldingSpeed && !bIsMoving && bWasMoving))
-				SetWeaponAnimation(pWeapon.GetEntIndex(), ACT_VM_SPRINT_LEAVE);	
+			bool bIsHoldingSpeed = view_as<bool>(iButtons & IN_SPEED);
+			bool bWasHoldingSpeed = view_as<bool>(iOldButtons & IN_SPEED);
+			bool bIsMoving = view_as<bool>((iButtons & IN_FORWARD) || (iButtons & IN_BACK) || (iButtons & IN_MOVELEFT) || (iButtons & IN_MOVERIGHT));
+			bool bWasMoving = view_as<bool>((iOldButtons & IN_FORWARD) || (iOldButtons & IN_BACK) || (iOldButtons & IN_MOVELEFT) || (iOldButtons & IN_MOVERIGHT));
+			
+			// should deactivate this if crouch is held
+			pPlayer.SetMaxSpeed((pPlayer.HasSuit() && bIsHoldingSpeed) ? 320.0 : 190.0);
+			
+			CBaseCombatWeapon pWeapon = view_as<CBaseCombatWeapon>(pPlayer.GetActiveWeapon());
+			if (pWeapon.IsValid())
+			{
+				if (bIsHoldingSpeed && bWasHoldingSpeed && bIsMoving && bWasMoving)
+					SetWeaponAnimation(pWeapon.GetEntIndex(), ACT_VM_SPRINT_IDLE);
+				else if ((!bIsHoldingSpeed && bWasHoldingSpeed && bIsMoving) || (bIsHoldingSpeed && !bIsMoving && bWasMoving))
+					SetWeaponAnimation(pWeapon.GetEntIndex(), ACT_VM_SPRINT_LEAVE);	
+			}
+		}
+		else	// instant respawns; could be extended by checking m_flDeathTime
+		{
+			if(iButtons & IN_ATTACK && !(iOldButtons & IN_ATTACK))
+			{
+				DispatchSpawn(iClient);
+			}
 		}
 	}
 }
