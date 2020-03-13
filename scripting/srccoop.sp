@@ -12,6 +12,7 @@ Handle hkFindNamedEntity;
 Handle hkFindNamedEntityClosest;
 Handle hkSetModel;
 Handle hkAcceptInput;
+Handle hkSetSuitUpdate;
 
 CGlobalLevelLump g_pLevelLump;
 CCoopSpawn g_SpawnSystem;
@@ -28,7 +29,18 @@ public Plugin myinfo =
 	url = ""
 };
 
-public void load_dhook(const Handle pGameConfig, Handle& pHandle, const char[] szFuncName)
+public void load_dhook_detour(const Handle pGameConfig, Handle& pHandle, const char[] szFuncName, bool bPost, DHookCallback pCallback)
+{
+	pHandle = DHookCreateFromConf(pGameConfig, szFuncName);
+	if (pHandle == null)
+		SetFailState("Couldn't create hook %s", szFuncName);
+	if (!DHookSetFromConf(pHandle, pGameConfig, SDKConf_Signature, szFuncName))
+		SetFailState("Couldn't set hook %s", szFuncName);
+	if (!DHookEnableDetour(pHandle, bPost, pCallback))
+		SetFailState("Couldn't enable detour hook %s", szFuncName);
+}
+
+public void load_dhook_virtual(const Handle pGameConfig, Handle& pHandle, const char[] szFuncName)
 {
 	pHandle = DHookCreateFromConf(pGameConfig, szFuncName);
 	if (pHandle == null)
@@ -44,28 +56,34 @@ public void load_gamedata()
 	if (pGameConfig == null)
 		SetFailState("Couldn't load game config %s", szConfigName);
 	
+	char szPickupObject[] = "CBlackMesaPlayer::PickupObject";
 	StartPrepSDKCall(SDKCall_Player);
-	PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Virtual, "CBlackMesaPlayer::PickupObject");
+	if (!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Virtual, szPickupObject))
+		SetFailState("Could not obtain gamedata offset %s", szPickupObject);
 	PrepSDKCall_AddParameter(SDKType_CBaseEntity, SDKPass_Pointer);
 	PrepSDKCall_AddParameter(SDKType_Bool, SDKPass_Plain);
 	g_pPickupObject = EndPrepSDKCall();
 	if (g_pPickupObject == null)
-		SetFailState("Could not prep SDK call %s", "CBlackMesaPlayer::PickupObject");
+		SetFailState("Could not prep SDK call %s", szPickupObject);
 	
+	char szSendWeaponAnim[] = "CBaseCombatWeapon::SendWeaponAnim";
 	StartPrepSDKCall(SDKCall_Entity);
-	PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Virtual, "CBaseCombatWeapon::SendWeaponAnim");
+	if (!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Virtual, szSendWeaponAnim))
+		SetFailState("Could not obtain gamedata offset %s", szSendWeaponAnim);
 	PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
 	g_pSendWeaponAnim = EndPrepSDKCall();
 	if (g_pSendWeaponAnim == null)
-		SetFailState("Could not prep SDK call %s", "CBaseCombatWeapon::SendWeaponAnim");
+		SetFailState("Could not prep SDK call %s", szSendWeaponAnim);
 
-	load_dhook(pGameConfig, hkFAllowFlashlight, "CMultiplayRules::FAllowFlashlight");
-	load_dhook(pGameConfig, hkIRelationType, "CBaseCombatCharacter::IRelationType");
-	load_dhook(pGameConfig, hkProtoSniperSelectSchedule, "CProtoSniper::SelectSchedule");
-	load_dhook(pGameConfig, hkFindNamedEntity, "CSceneEntity::FindNamedEntity");
-	load_dhook(pGameConfig, hkFindNamedEntityClosest, "CSceneEntity::FindNamedEntityClosest");
-	load_dhook(pGameConfig, hkSetModel, "CBaseEntity::SetModel");
-	load_dhook(pGameConfig, hkAcceptInput, "CBaseEntity::AcceptInput");
+	load_dhook_virtual(pGameConfig, hkFAllowFlashlight, "CMultiplayRules::FAllowFlashlight");
+	load_dhook_virtual(pGameConfig, hkIRelationType, "CBaseCombatCharacter::IRelationType");
+	load_dhook_virtual(pGameConfig, hkProtoSniperSelectSchedule, "CProtoSniper::SelectSchedule");
+	load_dhook_virtual(pGameConfig, hkFindNamedEntity, "CSceneEntity::FindNamedEntity");
+	load_dhook_virtual(pGameConfig, hkFindNamedEntityClosest, "CSceneEntity::FindNamedEntityClosest");
+	load_dhook_virtual(pGameConfig, hkSetModel, "CBaseEntity::SetModel");
+	load_dhook_virtual(pGameConfig, hkAcceptInput, "CBaseEntity::AcceptInput");
+	
+	load_dhook_detour(pGameConfig, hkSetSuitUpdate, "CBasePlayer::SetSuitUpdate", true, Hook_SetSuitUpdate);
 
 	CloseHandle(pGameConfig);
 }
@@ -142,11 +160,13 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 		//	DHookEntity(hkProtoSniperSelectSchedule, false, pEntity.GetEntIndex(), _, Hook_ProtoSniperSelectSchedule);
 		//	DHookEntity(hkProtoSniperSelectSchedule, true, pEntity.GetEntIndex(), _, Hook_ProtoSniperSelectSchedule);
 		//}
-		//else if (pEntity.IsClassScene())
-		//{
-		//	DHookEntity(hkFindNamedEntity, true, pEntity.GetEntIndex(), _, Hook_FindNamedEntity);
-		//	DHookEntity(hkFindNamedEntityClosest, true, pEntity.GetEntIndex(), _, Hook_FindNamedEntity);
-		//}
+		else if ((strcmp(szClassname, "instanced_scripted_scene", false) == 0) ||
+				(strcmp(szClassname, "logic_choreographed_scene", false) == 0) ||
+				(strcmp(szClassname, "scripted_scene", false) == 0))
+		{
+			DHookEntity(hkFindNamedEntity, true, pEntity.GetEntIndex(), _, Hook_FindNamedEntity);
+			DHookEntity(hkFindNamedEntityClosest, true, pEntity.GetEntIndex(), _, Hook_FindNamedEntity);
+		}
 		else if (pEntity.IsClassWeapon())
 		{
 			DHookEntity(hkSetModel, false, pEntity.GetEntIndex(), _, Hook_WeaponSetModel);
@@ -318,14 +338,13 @@ public MRESReturn Hook_ProtoSniperSelectSchedule(int _this, Handle hReturn, Hand
 
 public MRESReturn Hook_FindNamedEntity(int _this, Handle hReturn, Handle hParams)	// fix findnamedentity returning sp player ( nullptr )
 {
-	if (!DHookIsNullParam(hParams, 1))
+	if (!DHookIsNullParam(hParams, 1) && !DHookIsNullParam(hParams, 2))
 	{
 		char szName[MAX_CLASSNAME];
 		DHookGetParamString(hParams, 1, szName, sizeof(szName));
 		if ((strcmp(szName, "Player", false) == 0) || (strcmp(szName, "!player", false) == 0))
 		{
-			CSceneEntity pSceneEntity = CSceneEntity(_this);
-			CBaseEntity pActor = pSceneEntity.GetActor();
+			CBaseEntity pActor = CBaseEntity(DHookGetParam(hParams, 2));
 			if (pActor.IsValid())
 			{
 				float vecActorPosition[3];
@@ -333,7 +352,7 @@ public MRESReturn Hook_FindNamedEntity(int _this, Handle hReturn, Handle hParams
 				
 				CBlackMesaPlayer pBestPlayer = CBlackMesaPlayer();
 				float flBestDistance = FLT_MAX;
-				for (int i = 0; i < (MaxClients + 1); i++)
+				for (int i = 1; i < (MaxClients + 1); i++)
 				{
 					CBlackMesaPlayer pPlayer = CBlackMesaPlayer(i);
 					if (pPlayer.IsValid() && pPlayer.IsAlive())
@@ -477,6 +496,12 @@ public void Hook_Use(int entity, int activator, int caller, UseType type, float 
 			SetPlayerPickup(pPlayer.GetEntIndex(), entity, false);
 		}
 	}
+}
+
+public MRESReturn Hook_SetSuitUpdate(int _this, Handle hReturn, Handle hParams)
+{
+	PrintToServer("supre aweosme");
+	return MRES_Ignored;
 }
 
 public Action Callback_CheckpointTimer(Handle hTimer, CBlackMesaPlayer pPlayerToFilter)

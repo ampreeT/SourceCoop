@@ -325,11 +325,6 @@ methodmap CSceneEntity < CBaseEntity
 	{
 		return view_as<CSceneEntity>(InternalGetBaseEntity(iEntIndex));
 	}
-
-	public CBaseEntity GetActor()
-	{
-		return CBaseEntity(GetEntProp(this.GetEntIndex(), Prop_Data, "m_hActor"));
-	}
 }
 
 methodmap CBaseCombatCharacter < CBaseAnimating

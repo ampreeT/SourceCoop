@@ -2,6 +2,29 @@
 {
 	"bms"
 	{
+		"Keys"
+		{
+			"IEngineClient"
+			{
+				"windows"	"VEngineClient015"
+				"linux"		"VEngineClient015"
+			}
+		}
+		"Signatures"
+		{
+			"CBasePlayer::SetSuitUpdate"	// CBasePlayer::SetSuitUpdate(CBasePlayer*, const char*, int, int)
+			{
+				"library"		"server"
+				"windows"		"\x55\x8B\xEC\x56\x8B\xF1\x57\x83\xCF\xFF"
+				"linux"			"\x55\x89\xE5\x57\x53\x83\xEC\x2A\x8B\x5D\x2A\x80\xBB\x2A\x2A\x2A\x2A\x2A"	// probably could use the symbol for this
+			}
+			"CreateInterface"
+			{
+				"library"		"server"
+				"windows"		"@CreateInterface"
+				"linux"			"@CreateInterface"
+			}
+		}
 		"Offsets"
 		{
 			"CBlackMesaPlayer::PickupObject"			// CBlackMesaPlayer::PickupObject(CBaseEntity*, bool)
@@ -185,6 +208,28 @@
 						"flags"	"byval odtor octor oassignop"
 					}
 					"outputID"
+					{
+						"type"	"int"
+					}
+				}
+			}
+			"CBasePlayer::SetSuitUpdate"
+			{
+				"signature"	"CBasePlayer::SetSuitUpdate"
+				"callconv"	"thiscall"	// cdecl on linux, but has thisptr
+				"return"	"void"
+				"this"		"entity"
+				"arguments"
+				{
+					"name"
+					{
+						"type"	"charptr"
+					}
+					"fgroup"
+					{
+						"type"	"int"
+					}
+					"iNoRepeat"
 					{
 						"type"	"int"
 					}

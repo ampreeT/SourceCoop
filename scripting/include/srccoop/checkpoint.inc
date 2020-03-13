@@ -291,15 +291,32 @@ enum struct CCoopSpawn
 										kv.GetString(NULL_STRING, szValue, sizeof(szValue));
 										if (strcmp(szKey, "suit", false) == 0)
 										{
-											this.m_pDefaultEquipment.m_bHasSuit = view_as<bool>(StringToInt(szValue));
+											int iValue = 0;
+											bool bIsTrue = strcmp(szValue, "true", false) == 0;
+											bool bIsFalse = strcmp(szValue, "false", false) == 0;
+											
+											if (bIsTrue || bIsFalse)
+											{
+												this.m_pDefaultEquipment.m_bHasSuit = bIsTrue;
+											}
+											else if (StringToIntEx(szValue, iValue))
+											{
+												this.m_pDefaultEquipment.m_bHasSuit = view_as<bool>(iValue);
+											}
+											else
+											{
+												ThrowError("Suit parameter is not a string or integer");
+											}
 										}
 										else if (strcmp(szKey, "health", false) == 0)
 										{
-											this.m_pDefaultEquipment.m_iHealth = StringToInt(szValue);
+											if (!StringToIntEx(szValue, this.m_pDefaultEquipment.m_iHealth))
+												ThrowError("Health parameter is not a integer");
 										}
 										else if (strcmp(szKey, "armor", false) == 0)
 										{
-											this.m_pDefaultEquipment.m_iArmor = StringToInt(szValue);
+											if (!StringToIntEx(szValue, this.m_pDefaultEquipment.m_iArmor))
+												ThrowError("Armor parameter is not a integer");
 										}
 										else if (strcmp(szKey, "item", false) == 0)
 										{
@@ -330,51 +347,63 @@ enum struct CCoopSpawn
 
 														if (strcmp(szAmmoKey, "9mm", false) == 0)
 														{
-															this.m_pDefaultEquipment.m_iAmmoCount[AMMO_9MM] = StringToInt(szAmmoValue);
+															if (!StringToIntEx(szValue, this.m_pDefaultEquipment.m_iAmmoCount[AMMO_9MM]))
+																ThrowError("Ammo parameter %s is not a integer", szAmmoKey);
 														}
 														else if (strcmp(szAmmoKey, "357", false) == 0)
 														{
-															this.m_pDefaultEquipment.m_iAmmoCount[AMMO_357] = StringToInt(szAmmoValue);
+															if (!StringToIntEx(szValue, this.m_pDefaultEquipment.m_iAmmoCount[AMMO_357]))
+																ThrowError("Ammo parameter %s is not a integer", szAmmoKey);
 														}
 														else if (strcmp(szAmmoKey, "bolts", false) == 0)
 														{
-															this.m_pDefaultEquipment.m_iAmmoCount[AMMO_BOLTS] = StringToInt(szAmmoValue);
+															if (!StringToIntEx(szValue, this.m_pDefaultEquipment.m_iAmmoCount[AMMO_BOLTS]))
+																ThrowError("Ammo parameter %s is not a integer", szAmmoKey);
 														}
 														else if (strcmp(szAmmoKey, "shells", false) == 0)
 														{
-															this.m_pDefaultEquipment.m_iAmmoCount[AMMO_SHELLS] = StringToInt(szAmmoValue);
+															if (!StringToIntEx(szValue, this.m_pDefaultEquipment.m_iAmmoCount[AMMO_SHELLS]))
+																ThrowError("Ammo parameter %s is not a integer", szAmmoKey);
 														}
 														else if (strcmp(szAmmoKey, "energy", false) == 0)
 														{
-															this.m_pDefaultEquipment.m_iAmmoCount[AMMO_ENERGY] = StringToInt(szAmmoValue);
+															if (!StringToIntEx(szValue, this.m_pDefaultEquipment.m_iAmmoCount[AMMO_ENERGY]))
+																ThrowError("Ammo parameter %s is not a integer", szAmmoKey);
 														}
 														else if (strcmp(szAmmoKey, "mp5nade", false) == 0)
 														{
-															this.m_pDefaultEquipment.m_iAmmoCount[AMMO_MP5NADE] = StringToInt(szAmmoValue);
+															if (!StringToIntEx(szValue, this.m_pDefaultEquipment.m_iAmmoCount[AMMO_MP5NADE]))
+																ThrowError("Ammo parameter %s is not a integer", szAmmoKey);
 														}
 														else if (strcmp(szAmmoKey, "rockets", false) == 0)
 														{
-															this.m_pDefaultEquipment.m_iAmmoCount[AMMO_ROCKETS] = StringToInt(szAmmoValue);
+															if (!StringToIntEx(szValue, this.m_pDefaultEquipment.m_iAmmoCount[AMMO_ROCKETS]))
+																ThrowError("Ammo parameter %s is not a integer", szAmmoKey);
 														}
 														else if (strcmp(szAmmoKey, "nades", false) == 0)
 														{
-															this.m_pDefaultEquipment.m_iAmmoCount[AMMO_NADES] = StringToInt(szAmmoValue);
+															if (!StringToIntEx(szValue, this.m_pDefaultEquipment.m_iAmmoCount[AMMO_NADES]))
+																ThrowError("Ammo parameter %s is not a integer", szAmmoKey);
 														}
 														else if (strcmp(szAmmoKey, "satchels", false) == 0)
 														{
-															this.m_pDefaultEquipment.m_iAmmoCount[AMMO_SATCHELS] = StringToInt(szAmmoValue);
+															if (!StringToIntEx(szValue, this.m_pDefaultEquipment.m_iAmmoCount[AMMO_SATCHELS]))
+																ThrowError("Ammo parameter %s is not a integer", szAmmoKey);
 														}
 														else if (strcmp(szAmmoKey, "tripmines", false) == 0)
 														{
-															this.m_pDefaultEquipment.m_iAmmoCount[AMMO_TRIPMINES] = StringToInt(szAmmoValue);
+															if (!StringToIntEx(szValue, this.m_pDefaultEquipment.m_iAmmoCount[AMMO_TRIPMINES]))
+																ThrowError("Ammo parameter %s is not a integer", szAmmoKey);
 														}
 														else if (strcmp(szAmmoKey, "hivegun", false) == 0)
 														{
-															this.m_pDefaultEquipment.m_iAmmoCount[AMMO_HIVEGUN] = StringToInt(szAmmoValue);
+															if (!StringToIntEx(szValue, this.m_pDefaultEquipment.m_iAmmoCount[AMMO_HIVEGUN]))
+																ThrowError("Ammo parameter %s is not a integer", szAmmoKey);
 														}
 														else if (strcmp(szAmmoKey, "snarks", false) == 0)
 														{
-															this.m_pDefaultEquipment.m_iAmmoCount[AMMO_SNARKS] = StringToInt(szAmmoValue);
+															if (!StringToIntEx(szValue, this.m_pDefaultEquipment.m_iAmmoCount[AMMO_SNARKS]))
+																ThrowError("Ammo parameter %s is not a integer", szAmmoKey);
 														}
 														else
 														{
