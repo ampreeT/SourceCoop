@@ -12,6 +12,7 @@ Handle hkFindNamedEntity;
 Handle hkFindNamedEntityClosest;
 Handle hkSetModel;
 Handle hkAcceptInput;
+Handle hkSetSuitUpdate;
 
 CGlobalLevelLump g_pLevelLump;
 CCoopSpawn g_SpawnSystem;

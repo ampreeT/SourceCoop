@@ -4,10 +4,10 @@
 	{
 		"Keys"
 		{
-			"IEngineClient"
+			"IVEngineServer"
 			{
-				"windows"	"VEngineClient015"
-				"linux"		"VEngineClient015"
+				"windows"	"VEngineServer022"
+				"linux"		"VEngineServer022"
 			}
 		}
 		"Signatures"

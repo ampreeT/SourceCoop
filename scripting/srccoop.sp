@@ -91,7 +91,7 @@ public void OnMapStart()
 	{
 		CBaseEntity pGameEquip = CreateByClassname("game_player_equip");	// will spawn players with nothing if it exists
 		if (pGameEquip.IsValid())
-		pGameEquip.Spawn();
+			pGameEquip.Spawn();
 	}
 }
 
@@ -507,10 +507,9 @@ public void Hook_Use(int entity, int activator, int caller, UseType type, float 
 	}
 }
 
-public MRESReturn Hook_SetSuitUpdate(int _this, Handle hReturn, Handle hParams)
+public MRESReturn Hook_SetSuitUpdate(int _this, Handle hParams)
 {
-	PrintToServer("supre aweosme");
-	return MRES_Ignored;
+	return MRES_Supercede;
 }
 
 public Action Callback_CheckpointTimer(Handle hTimer, CBlackMesaPlayer pPlayerToFilter)
