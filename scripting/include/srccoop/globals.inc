@@ -2,6 +2,7 @@ ConVar g_pConvarCoopEnabled;
 ConVar g_pConvarWaitPeriod;
 
 Handle g_pPickupObject;
+Handle g_pSendWeaponAnim;
 
 Handle hkFAllowFlashlight;
 //Handle hkIsDeathmatch;
