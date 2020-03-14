@@ -37,10 +37,8 @@
 - trigger_changelevel
 	- game code checks for g_pGameRules->IsDeathmatch(), overriding that to false gives a crashes on changelevel, but at least its something (could explore crash dump on linux)
 - add checkpoint 'portals' that teleports player to active checkopint when touched, used for example when a door closes that would lock player out. This is an alternative to suicide/forced teleports.
-- console convars from edt should probably reset to their original value on map end
+- add regex parsing?
 
 ## map-issues
-- tram ride feels laggy
-	- sv_client_predict 0 seems to fix it but then player movement is not predicted aswell
 - bm_c1a0a
 	- add tp portals to barney gate

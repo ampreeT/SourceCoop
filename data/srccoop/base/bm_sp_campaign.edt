@@ -1,0 +1,31 @@
+#base "all_maps.edt"
+
+"config"
+{	
+	"console"
+	{
+	}
+	"entity_base_bm_sp_campaign"
+	{
+		// env_message - Show to all
+		"modify"
+		{
+			"classname"	"env_message"
+			"spawnflags" "0"
+			"add"
+			{
+				"spawnflags" "2"
+			}
+		}
+		"modify"
+		{
+			"classname"	"env_message"
+			"spawnflags" "1"
+			"add"
+			{
+				"spawnflags" "3"
+			}
+		}
+		
+	}
+}
