@@ -6,11 +6,19 @@ enum struct FireOutputData
 	float m_flDelay;
 }
 
+enum GameState
+{
+	STATE_WARMUP = 0,
+	STATE_INTERMISSION,
+	STATE_ROUND
+}
+
 enum struct CoopManager
 {
 	bool m_bIsCoopMap;
 	bool m_bStarted;
 	bool m_bPlayerSpawned;
+	int m_iSecondsToStart;
 	Handle m_pStartTimer;
 	Array_t m_pDelayedOutputs;
 	
@@ -27,7 +35,8 @@ enum struct CoopManager
 		
 		if (this.IsCoopModeEnabled())
 		{
-			AddWarmupTime(60 * 60 * 24 * 7);
+			SetStateEndTime(STATE_WARMUP, GetGameTime() + 60 * 60 * 24 * 7);
+			SetStateNextState(STATE_WARMUP, STATE_WARMUP);
 			g_SpawnSystem.ParseConfigFile(g_szMapName);
 		}
 	}
@@ -64,7 +73,8 @@ enum struct CoopManager
 			}
 			else if(!this.IsInCountDownPeriod())
 			{
-				this.m_pStartTimer = CreateTimer(g_pConvarWaitPeriod.FloatValue, StartTimerCallback, _, TIMER_FLAG_NO_MAPCHANGE);
+				this.m_iSecondsToStart = g_pConvarWaitPeriod.IntValue;
+				this.m_pStartTimer = CreateTimer(1.0, StartTimerCallback, _, TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT);
 			}
 		}
 	}
@@ -85,7 +95,13 @@ enum struct CoopManager
 		if(!GetRealClientCount(true)) {
 			return;
 		}
+		SetStateEndTime(STATE_WARMUP, GetGameTime() + 60 * 60 * 24 * 7);
+		SetCurrentState(STATE_ROUND); // doesnt do actual transition
 		
+		//todo: try SetStateEndTime(STATE_ROUND) with mp_timelimit
+		//ConVar pTimeLimit = FindConVar("mp_timelimit");
+		//int iTimeLimit = pTimeLimit.IntValue;
+	
 		this.m_bStarted = true;
 		PrintToServer("Co-op map %s has begun", g_szMapName);
 		
@@ -102,15 +118,19 @@ enum struct CoopManager
 		this.m_pDelayedOutputs.PushArray(pFireOutputData);
 	}
 	
-	// BugPatching = crashfixes or enhancements that don't affect MP gameplay
-	// Will currently return true regardless of map or mode
+	/**
+	* BugPatching = crashfixes or enhancements that don't affect MP gameplay
+	* Will currently return true regardless of map or mode
+	*/
 	bool IsBugPatchingEnabled()
 	{
 		return true;
 	}
 	
-	// Features = changes that reenable SP functionality which affects MP gameplay
-	// Will currently return false on non-coop maps
+	/**
+	* Features = changes that reenable SP functionality which affects MP gameplay
+	* Will currently return false on non-coop maps 
+	*/
 	bool IsFeaturePatchingEnabled()
 	{
 		return this.IsCoopModeEnabled();
@@ -145,9 +165,15 @@ public Action OnLevelInit(const char[] szMapName, char szMapEntities[2097152])		
 	return Plugin_Changed;
 }
 
-public Action StartTimerCallback(Handle timer)
+public Action StartTimerCallback(Handle pTimer)
 {
-	g_pCoopManager.Start();
+	SetStateEndTime(STATE_WARMUP, GetGameTime() + g_pCoopManager.m_iSecondsToStart + 1);
+	if(!g_pCoopManager.m_iSecondsToStart--)
+	{
+		g_pCoopManager.Start();
+		return Plugin_Stop;
+	}
+	return Plugin_Continue;
 }
 
 stock int GetRealClientCount(bool bInGameOnly, bool alive = false)
@@ -162,14 +188,25 @@ stock int GetRealClientCount(bool bInGameOnly, bool alive = false)
 	return clients;
 }
 
-stock bool AddWarmupTime(const int iSeconds)
+stock void SetCurrentState(const GameState iState)
 {
-	CBaseEntity pEntity = CreateByClassname("mp_round_time");
-	if (pEntity.IsValid() && pEntity.Spawn())
-	{
-		pEntity.AcceptInputInt("AddWarmupTime", iSeconds);
-		pEntity.Kill();
-		return true;
-	}
-	return false;
+	GameRules_SetProp("m_nCurrentStateId", iState);
+}
+
+//todo fix
+stock void SetStateNextState(const GameState iState, const GameState iNextState)
+{
+	GameRules_SetProp("m_nNextState", iNextState, _, view_as<int>(iState));
+}
+
+//todo fix
+stock void SetStateEndTime(const GameState iState, const float flEndTime)
+{
+	GameRules_SetPropFloat("m_flStateDoneTime", flEndTime, view_as<int>(iState));
+}
+
+//todo fix
+stock void SetStateIsInIntermission(const GameState iState, const bool bInIntermission)
+{
+	GameRules_SetProp("m_bIsInIntermission", bInIntermission, _, 0);
 }

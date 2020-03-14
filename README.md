@@ -1,5 +1,7 @@
 ## features & fixes (not everything)
 - checkpoint system
+- map & entity config system
+- delayed map start system
 - scripted scenes now filter for all players
 - re-enables flashlight and object pickup functionality in multiplayer
 - fixes sniper's crashing upon its first tick of running
@@ -10,7 +12,6 @@
 ## todo
 - should ignore spawnflag for physboxs and physics objects that disables player-pickup
 	- spawnflag is different per entity class
-- find alternative to current warmup time method
 - xen portal checkpoint effect
 - sniper HasCondition(...) offset should go in gamedata
 - first-person camera death code needs to set original viewentity on callback OnMapEnd()
