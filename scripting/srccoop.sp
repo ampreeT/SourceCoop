@@ -124,6 +124,8 @@ public void OnMapStart()
 		if (pGameEquip.IsValid())
 			pGameEquip.Spawn();
 	}
+	
+	PrecacheScriptSound("HL2Player.SprintStart");
 }
 
 public void OnPluginStart()
@@ -291,7 +293,19 @@ public void Hook_PlayerPreThinkPost(int iClient)
 			bool bWasMoving = view_as<bool>((iOldButtons & IN_FORWARD) || (iOldButtons & IN_BACK) || (iOldButtons & IN_MOVELEFT) || (iOldButtons & IN_MOVERIGHT));
 			
 			// should deactivate this if crouch is held
-			pPlayer.SetMaxSpeed((pPlayer.HasSuit() && bIsHoldingSpeed) ? 320.0 : 190.0);
+			if(pPlayer.HasSuit() && bIsHoldingSpeed) 
+			{
+				pPlayer.SetMaxSpeed(320.0);
+				if(!bWasHoldingSpeed)
+				{
+					//EmitGameSoundToClient(iClient, "HL2Player.SprintStart");
+					ClientCommand(iClient, "playgamesound HL2Player.SprintStart");
+				}
+			}
+			else
+			{
+				pPlayer.SetMaxSpeed(190.0);
+			}
 			
 			CBaseCombatWeapon pWeapon = view_as<CBaseCombatWeapon>(pPlayer.GetActiveWeapon());
 			if (pWeapon.IsValid())
