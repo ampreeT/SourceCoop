@@ -142,6 +142,11 @@ public void OnClientPutInServer(int client)
 	g_pCoopManager.OnClientPutInServer(client);
 }
 
+public void OnMapEnd()
+{
+	g_pLevelLump.RevertConvars();	
+}
+
 public void OnPluginEnd()
 {
 	

@@ -173,7 +173,7 @@ enum struct CCoopSpawn
 			ThrowError("Couldn't create KeyValues for %s", szMapName);
 		
 		char szRoot[MAX_MAPNAME];
-		if (!(kv.ImportFromFile(szMapPath) && kv.GetSectionName(szRoot, sizeof(szRoot)) && strcmp(szRoot, szMapName) == 0))
+		if (!(kv.ImportFromFile(szMapPath) && kv.GetSectionName(szRoot, sizeof(szRoot)) && strcmp(szRoot, "config") == 0))
 			ThrowError("Couldn't import %s into KeyValues", szMapName);
 		
 		if (kv.GotoFirstSubKey(true))

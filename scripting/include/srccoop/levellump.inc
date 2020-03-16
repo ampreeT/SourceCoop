@@ -151,6 +151,7 @@ enum struct CGlobalLevelLump
 {
 	CEntityListLump m_pEntityList;
 	CNextMapLump m_pNextMapList;
+	Array_t m_pModifiedCvarList;
 	COutputHookLump m_pOutputHookList;
 	
 	void Initialize()
@@ -162,6 +163,10 @@ enum struct CGlobalLevelLump
 		this.m_pNextMapList = CNextMapLump(CreateArray(MAX_MAPNAME));
 		if (!this.m_pNextMapList.IsValid())
 			ThrowError("Was unable to create Array_t for m_pNextMapList on initialization");
+			
+		this.m_pModifiedCvarList = Array_t(CreateArray());
+		if (!this.m_pModifiedCvarList.IsValid())
+			ThrowError("Was unable to create Array_t for m_pModifiedCvarList on initialization");
 			
 		this.m_pOutputHookList = COutputHookLump(CreateArray(sizeof(CEntityOutputHook)));
 		if (!this.m_pOutputHookList.IsValid())
@@ -269,7 +274,7 @@ enum struct CGlobalLevelLump
 			ThrowError("Couldn't create KeyValues for %s", szMapName);
 		
 		char szRoot[MAX_MAPNAME];
-		if (!(kv.ImportFromFile(szMapPath) && kv.GetSectionName(szRoot, sizeof(szRoot)) && strcmp(szRoot, szMapName) == 0))
+		if (!(kv.ImportFromFile(szMapPath) && kv.GetSectionName(szRoot, sizeof(szRoot)) && strcmp(szRoot, "config") == 0))
 			ThrowError("Couldn't import %s into KeyValues", szMapName);
 		
 		if (kv.GotoFirstSubKey(false))
@@ -290,7 +295,7 @@ enum struct CGlobalLevelLump
 					}
 					else
 					{
-						if (strcmp(szType, "console", false) == 0)	// is this needed? this is kinda risky
+						if (strcmp(szType, "console", false) == 0)
 						{
 							if (kv.GotoFirstSubKey(false))
 							{
@@ -301,6 +306,11 @@ enum struct CGlobalLevelLump
 									{
 										char szValue[MAX_VALUE];
 										kv.GetString(NULL_STRING, szValue, sizeof(szValue));
+										ConVar pConvar = FindConVar(szKey);
+										if(pConvar != null)
+										{
+											this.m_pModifiedCvarList.PushCell(pConvar);
+										}
 										ServerCommand("%s %s", szKey, szValue);
 									}
 								}
@@ -308,7 +318,7 @@ enum struct CGlobalLevelLump
 								kv.GoBack();
 							}
 						}
-						else if (strcmp(szType, "entity") == 0)
+						else if (strcmp(szType, "entity") == 0 || StrContains(szType, "entity_base") == 0)
 						{
 							if (kv.GotoFirstSubKey(true))
 							{
@@ -459,7 +469,6 @@ enum struct CGlobalLevelLump
 					if (kv.GetSectionName(pKeyInfo.m_szKey, sizeof(pKeyInfo.m_szKey)) && kv.GetDataType(NULL_STRING) != KvData_None)
 					{
 						kv.GetString(NULL_STRING, pKeyInfo.m_szValue, sizeof(pKeyInfo.m_szValue));
-						
 						for (int i = 0; i < pTempEvaluatedList.Size(); i++)
 						{
 							CEntityInfoLump pEditedEntityInfo = pTempEvaluatedList.GetCell(i);
@@ -527,6 +536,17 @@ enum struct CGlobalLevelLump
 			}
 		}
 		return pResolvedOutputHookList;
+	}
+	
+	void RevertConvars()
+	{
+		for (int i = 0; i < this.m_pModifiedCvarList.Size(); i++)
+		{
+			ConVar pConvar = this.m_pModifiedCvarList.GetCell(i);
+			pConvar.RestoreDefault();
+			delete pConvar;
+		}
+		this.m_pModifiedCvarList.Clear();
 	}
 }
 

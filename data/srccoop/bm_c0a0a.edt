@@ -1,36 +1,18 @@
-"bm_c0a0a"
+#base "base\bm_sp_campaign.edt"
+
+"config"
 {
 	"nextmap" "bm_c0a0b"
 	"equipment"
 	{
 		"suit"	"0"
 	}
+	"console"
+	{
+		"sv_client_predict" "0"
+	}
 	"entity"
 	{
-		// REUSABLES
-		// ------------
-		// env_message - Show to all
-		"modify"
-		{
-			"classname"	"env_message"
-			"spawnflags" "0"
-			"add"
-			{
-				"spawnflags" "2"
-			}
-		}
-		"modify"
-		{
-			"classname"	"env_message"
-			"spawnflags" "1"
-			"add"
-			{
-				"spawnflags" "3"
-			}
-		}
-		
-		// MAP specific
-		// ------------
 		"modify"
 		{
 			"classname"	"logic_auto"

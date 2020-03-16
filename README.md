@@ -1,5 +1,7 @@
 ## features & fixes (not everything)
 - checkpoint system
+- map & entity config system
+- delayed map start system
 - scripted scenes now filter for all players
 - re-enables flashlight and object pickup functionality in multiplayer
 - fixes sniper's crashing upon its first tick of running
@@ -10,7 +12,6 @@
 ## todo
 - should ignore spawnflag for physboxs and physics objects that disables player-pickup
 	- spawnflag is different per entity class
-- find alternative to current warmup time method
 - xen portal checkpoint effect
 - sniper HasCondition(...) offset should go in gamedata
 - first-person camera death code needs to set original viewentity on callback OnMapEnd()
@@ -37,10 +38,8 @@
 - trigger_changelevel
 	- game code checks for g_pGameRules->IsDeathmatch(), overriding that to false gives a crashes on changelevel, but at least its something (could explore crash dump on linux)
 - add checkpoint 'portals' that teleports player to active checkopint when touched, used for example when a door closes that would lock player out. This is an alternative to suicide/forced teleports.
-- console convars from edt should probably reset to their original value on map end
+- add regex parsing?
 
 ## map-issues
-- tram ride feels laggy
-	- sv_client_predict 0 seems to fix it but then player movement is not predicted aswell
 - bm_c1a0a
 	- add tp portals to barney gate
