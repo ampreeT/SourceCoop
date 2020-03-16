@@ -28,7 +28,7 @@ enum struct CCoopEquipment
 	
 	void Initialize()
 	{
-		this.m_pWeaponList = Array_t(CreateArray(sizeof(CCoopSpawnEntry)));
+		this.m_pWeaponList = new Array_t(CreateArray(sizeof(CCoopSpawnEntry)));
 	}
 	bool IsValid()
 	{
@@ -78,7 +78,7 @@ enum struct CCoopSpawn
 	void Initialize(const EntityOutput fnCheckpointCallback)
 	{
 		this.m_fnCheckpointCallback = fnCheckpointCallback;
-		this.m_pCheckpointList = Array_t(CreateArray(sizeof(CCoopSpawnEntry)));
+		this.m_pCheckpointList = new Array_t(CreateArray(sizeof(CCoopSpawnEntry)));
 		if (!this.m_pCheckpointList.IsValid())
 			ThrowError("Was unable to create CCoopSpawnEntry on initialization");
 		
@@ -94,7 +94,7 @@ enum struct CCoopSpawn
 		{
 			pPlayer.SetAmmoFromIndex(i, this.m_pDefaultEquipment.m_iAmmoCount[i]);
 		}
-		for (int i = 0; i < this.m_pDefaultEquipment.m_pWeaponList.Size(); i++)
+		for (int i = 0; i < this.m_pDefaultEquipment.m_pWeaponList.Length; i++)
 		{
 			CCoopWeaponEntry pWeaponEntry;
 			if (this.m_pDefaultEquipment.m_pWeaponList.GetArray(i, pWeaponEntry, sizeof(pWeaponEntry)))
@@ -154,9 +154,9 @@ enum struct CCoopSpawn
 	}
 	void EraseCheckpoints(int iCount)
 	{
-		while (iCount > 0 && this.m_pCheckpointList.Size())
+		while (iCount > 0 && this.m_pCheckpointList.Length)
 		{
-			this.m_pCheckpointList.Remove(0);
+			this.m_pCheckpointList.Erase(0);
 			iCount--;
 		}
 	}

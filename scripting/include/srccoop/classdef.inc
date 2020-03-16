@@ -1,6 +1,6 @@
-methodmap Array_t
+methodmap Array_t < ArrayList
 {
-	public Array_t(Handle pHandle = null)
+	public Array_t(ArrayList pHandle = null)
 	{
 		return view_as<Array_t>(pHandle);
 	}
@@ -13,48 +13,12 @@ methodmap Array_t
 	{
 		return view_as<bool>(this.GetHandle() != null);
 	}
-	public void PushArray(const any[] pValues, const int iSize = -1)
-	{
-		PushArrayArray(this.GetHandle(), pValues, iSize);
-	}
-	public int GetArray(const int iIndex, any[] pBuffer, const int iSize = -1)
-	{
-		return GetArrayArray(this.GetHandle(), iIndex, pBuffer, iSize);
-	}
-	public int PushCell(const any pValue)
-	{
-		PushArrayCell(this.GetHandle(), pValue);
-	}
-	public any GetCell(const int iIndex)
-	{
-		return GetArrayCell(this.GetHandle(), iIndex);
-	}
-	public int PushString(const char[] szValue)
-	{
-		return PushArrayString(this.GetHandle(), szValue);
-	}
-	public int GetString(const int iIndex, char[] szBuffer, const int iMaxLength)
-	{
-		return GetArrayString(this.GetHandle(), iIndex, szBuffer, iMaxLength);
-	}
-	public void Clear()
-	{
-		ClearArray(this.GetHandle());
-	}
-	public void Remove(const int iIndex)
-	{
-		RemoveFromArray(this.GetHandle(), iIndex);
-	}
 	public void Close()
 	{
 		if (this.IsValid())
 		{
 			CloseHandle(this.GetHandle());
 		}
-	}
-	public int Size()
-	{
-		return GetArraySize(this.GetHandle());
 	}
 }
 

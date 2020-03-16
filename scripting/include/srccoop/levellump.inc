@@ -1,7 +1,59 @@
+#define OUTPUT_SEPARATOR "\27"
+
 enum struct CEntityKeyLump
 {
 	char m_szKey[MAX_KEY];
 	char m_szValue[MAX_VALUE];
+}
+
+enum struct CEntityOutputLump
+{
+	char m_szTargetEntity[MAX_VALUE];
+	char m_szInputName[MAX_VALUE];
+	char m_szParameter[MAX_VALUE];
+	float m_flDelay;
+	int m_iTimesToFire;
+	
+	bool LoadFromEntityKeyLump(CEntityKeyLump pEntityKeyLump)
+	{
+		char buffers[5][MAX_VALUE];
+		if(ExplodeString(pEntityKeyLump.m_szValue, OUTPUT_SEPARATOR, buffers, sizeof(buffers), sizeof(buffers[])) != sizeof(buffers))
+		{
+			return false;
+		}
+		if(!StringToFloatEx(buffers[3], this.m_flDelay))
+		{
+			return false;
+		}
+		if(!StringToIntEx(buffers[4], this.m_iTimesToFire))
+		{
+			return false;
+		}
+		this.m_szTargetEntity = buffers[0];
+		this.m_szInputName = buffers[1];
+		this.m_szParameter = buffers[2];
+		return true;
+	}
+	
+	void SaveToEntityKeyLump(CEntityKeyLump pEntityKeyLump)
+	{
+		FormatEx(pEntityKeyLump.m_szValue, sizeof(pEntityKeyLump.m_szValue), "%s%s%s%s%s%s%.2f%s%d",
+		this.m_szTargetEntity, OUTPUT_SEPARATOR, this.m_szInputName, OUTPUT_SEPARATOR, this.m_szParameter, OUTPUT_SEPARATOR, this.m_flDelay, OUTPUT_SEPARATOR, this.m_iTimesToFire);
+	}
+	
+	// Note: pOther is passed as array to work around a bug in compiler
+	bool IsEqual(CEntityOutputLump[1] pOther, bool bMatchTarget, bool bMatchInput, bool bMatchParameter, bool bMatchDelay, bool bMatchTTF)
+	{
+		if(bMatchTarget && !StrEqual(this.m_szTargetEntity, pOther[0].m_szTargetEntity, false)
+			|| bMatchInput && !StrEqual(this.m_szInputName, pOther[0].m_szInputName, false)
+			|| bMatchParameter && !StrEqual(this.m_szParameter, pOther[0].m_szParameter, false)
+			|| bMatchDelay && this.m_flDelay != pOther[0].m_flDelay
+			|| bMatchTTF && this.m_iTimesToFire != pOther[0].m_iTimesToFire)
+		{
+			return false;
+		}
+		return true;
+	}
 }
 
 enum struct CEntityOutputHook
@@ -19,14 +71,14 @@ methodmap CEntityInfoLump < Array_t
 	
 	public bool IsEqual(CEntityInfoLump rhs)
 	{
-		for (int i = 0; i < this.Size(); i++)
+		for (int i = 0; i < this.Length; i++)
 		{
 			bool bGotEntry = false;
 			
 			CEntityKeyLump pThisKeyInfo;
 			if (this.GetArray(i, pThisKeyInfo, sizeof(pThisKeyInfo)))
 			{
-				for (int j = 0; j < rhs.Size(); j++)
+				for (int j = 0; j < rhs.Length; j++)
 				{
 					CEntityKeyLump rhsKeyInfo;
 					if (rhs.GetArray(j, rhsKeyInfo, sizeof(rhsKeyInfo)))
@@ -51,7 +103,7 @@ methodmap CEntityInfoLump < Array_t
 	
 	public bool MatchesActualEntity(CBaseEntity pEntity)
 	{
-		for (int i = 0; i < this.Size(); i++)
+		for (int i = 0; i < this.Length; i++)
 		{
 			CEntityKeyLump pThisKeyInfo;
 			if (this.GetArray(i, pThisKeyInfo, sizeof(pThisKeyInfo)))
@@ -95,9 +147,9 @@ methodmap CEntityListLump < Array_t
 	
 	public void Clear()
 	{
-		for (int i = 0; i < this.Size(); i++)
+		for (int i = 0; i < this.Length; i++)
 		{
-			CEntityInfoLump pEntityInfo = this.GetCell(i);
+			CEntityInfoLump pEntityInfo = this.Get(i);
 			if (pEntityInfo.IsValid())
 			{
 				pEntityInfo.Close();
@@ -116,7 +168,7 @@ methodmap COutputHookLump < Array_t
 	
 	public void Clear()
 	{
-		for (int i = 0; i < this.Size(); i++)
+		for (int i = 0; i < this.Length; i++)
 		{
 			CEntityOutputHook pOutputHook; this.GetArray(i, pOutputHook);
 			pOutputHook.m_pEntityList.Close();
@@ -134,7 +186,7 @@ methodmap CNextMapLump < Array_t
 	
 	public bool IsInMapList(const char[] szMapName)
 	{
-		for (int i = 0; i < this.Size(); i++)
+		for (int i = 0; i < this.Length; i++)
 		{
 			char szNextMap[MAX_MAPNAME];
 			if (this.GetString(i, szNextMap, sizeof(szNextMap)) && strcmp(szNextMap, szMapName) == 0)
@@ -156,19 +208,19 @@ enum struct CGlobalLevelLump
 	
 	void Initialize()
 	{
-		this.m_pEntityList = CEntityListLump(CreateArray(sizeof(CEntityInfoLump)));
+		this.m_pEntityList = new CEntityListLump(CreateArray(sizeof(CEntityInfoLump)));
 		if (!this.m_pEntityList.IsValid())
 			ThrowError("Was unable to create CEntityListLump on initialization");
 		
-		this.m_pNextMapList = CNextMapLump(CreateArray(MAX_MAPNAME));
+		this.m_pNextMapList = new CNextMapLump(CreateArray(MAX_MAPNAME));
 		if (!this.m_pNextMapList.IsValid())
 			ThrowError("Was unable to create Array_t for m_pNextMapList on initialization");
 			
-		this.m_pModifiedCvarList = Array_t(CreateArray());
+		this.m_pModifiedCvarList = new Array_t(CreateArray());
 		if (!this.m_pModifiedCvarList.IsValid())
 			ThrowError("Was unable to create Array_t for m_pModifiedCvarList on initialization");
 			
-		this.m_pOutputHookList = COutputHookLump(CreateArray(sizeof(CEntityOutputHook)));
+		this.m_pOutputHookList = new COutputHookLump(CreateArray(sizeof(CEntityOutputHook)));
 		if (!this.m_pOutputHookList.IsValid())
 			ThrowError("Was unable to create CEntityOutputHook on initialization");
 	}
@@ -184,7 +236,7 @@ enum struct CGlobalLevelLump
 		if (pRegex == null)
 			ThrowError("pRegex is null when attempting to create pattern");
 		
-		CEntityInfoLump pEntityInfo = CEntityInfoLump();
+		CEntityInfoLump pEntityInfo = new CEntityInfoLump();
 		int iMapEntitiesLength = strlen(szMapEntities);
 		
 		for (int i = 0; i < iMapEntitiesLength; i++)
@@ -198,15 +250,15 @@ enum struct CGlobalLevelLump
 				if (pEntityInfo.IsValid())
 					ThrowError("Found '{' when expecting '}'");
 				
-				pEntityInfo = CEntityInfoLump(CreateArray(sizeof(CEntityKeyLump)));
+				pEntityInfo = new CEntityInfoLump(CreateArray(sizeof(CEntityKeyLump)));
 			}
 			else if (szMapEntities[i] == '}')
 			{
 				if (!pEntityInfo.IsValid())
 					ThrowError("Did not have valid CEntityInfoLump when finding '}'");
 				
-				this.m_pEntityList.PushCell(pEntityInfo);
-				pEntityInfo = CEntityInfoLump();
+				this.m_pEntityList.Push(pEntityInfo);
+				pEntityInfo = new CEntityInfoLump();
 			}
 			else
 			{
@@ -229,19 +281,19 @@ enum struct CGlobalLevelLump
 	int ToString(char szBuffer[2097152])	// absolutely do not care for bounds checking, this 2 mb buffer is big enough for everything
 	{
 		int n = 0;
-		for (int i = 0; i < this.m_pEntityList.Size(); i++)
+		for (int i = 0; i < this.m_pEntityList.Length; i++)
 		{
-			CEntityInfoLump pEntityInfo = this.m_pEntityList.GetCell(i);
+			CEntityInfoLump pEntityInfo = this.m_pEntityList.Get(i);
 			if (!pEntityInfo.IsValid())		// should be never invalid
 				return -1;
-			if (pEntityInfo.Size() <= 0)	// never write if it has nothing in it to begin with
+			if (pEntityInfo.Length <= 0)	// never write if it has nothing in it to begin with
 				continue;
 			
 			szBuffer[n] = '{';
 			szBuffer[n + 1] = '\n';
 			n += 2;
 			
-			for (int j = 0; j < pEntityInfo.Size(); j++)
+			for (int j = 0; j < pEntityInfo.Length; j++)
 			{
 				CEntityKeyLump pEntityInfoKey;
 				if (pEntityInfo.GetArray(j, pEntityInfoKey, sizeof(pEntityInfoKey)))
@@ -254,7 +306,7 @@ enum struct CGlobalLevelLump
 			}
 			
 			szBuffer[n] = '}';
-			szBuffer[n + 1] = (i == (this.m_pEntityList.Size() - 1)) ? '\0' : '\n';	// if this doesn't end with a null terminator, the token will search for '{' and crash the server
+			szBuffer[n + 1] = (i == (this.m_pEntityList.Length - 1)) ? '\0' : '\n';	// if this doesn't end with a null terminator, the token will search for '{' and crash the server
 			n += 2;
 		}
 		
@@ -309,7 +361,7 @@ enum struct CGlobalLevelLump
 										ConVar pConvar = FindConVar(szKey);
 										if(pConvar != null)
 										{
-											this.m_pModifiedCvarList.PushCell(pConvar);
+											this.m_pModifiedCvarList.Push(pConvar);
 										}
 										ServerCommand("%s %s", szKey, szValue);
 									}
@@ -331,7 +383,7 @@ enum struct CGlobalLevelLump
 										{
 											if (kv.GotoFirstSubKey(false))
 											{
-												CEntityInfoLump pEntityInfo = CEntityInfoLump(CreateArray(sizeof(CEntityKeyLump)));
+												CEntityInfoLump pEntityInfo = new CEntityInfoLump(CreateArray(sizeof(CEntityKeyLump)));
 												if (!pEntityInfo.IsValid())
 													ThrowError("Was unable to create CEntityInfoLump for entity creation");
 												do
@@ -345,14 +397,14 @@ enum struct CGlobalLevelLump
 												}
 												while (kv.GotoNextKey(false));
 												kv.GoBack();
-												this.m_pEntityList.PushCell(pEntityInfo);
+												this.m_pEntityList.Push(pEntityInfo);
 											}
 										}
 										else if (strcmp(szAction, "delete") == 0)
 										{
 											if (kv.GotoFirstSubKey(false))
 											{
-												CEntityInfoLump pEntityInfo = CEntityInfoLump(CreateArray(sizeof(CEntityKeyLump)));
+												CEntityInfoLump pEntityInfo = new CEntityInfoLump(CreateArray(sizeof(CEntityKeyLump)));
 												if (!pEntityInfo.IsValid())
 													ThrowError("Was unable to create CEntityInfoLump for entity deletion");
 												
@@ -368,13 +420,13 @@ enum struct CGlobalLevelLump
 												while (kv.GotoNextKey(false));
 												kv.GoBack();
 												
-												for (int i = 0; i < this.m_pEntityList.Size(); i++)
+												for (int i = 0; i < this.m_pEntityList.Length; i++)
 												{
-													CEntityInfoLump pThisEntityInfo = this.m_pEntityList.GetCell(i);
+													CEntityInfoLump pThisEntityInfo = this.m_pEntityList.Get(i);
 													if (pEntityInfo.IsEqual(pThisEntityInfo))
 													{
 														pThisEntityInfo.Close();
-														this.m_pEntityList.Remove(i);
+														this.m_pEntityList.Erase(i);
 														i--;
 													}
 												}
@@ -385,7 +437,7 @@ enum struct CGlobalLevelLump
 										{
 											if (kv.GotoFirstSubKey(false))
 											{
-												CEntityInfoLump pEvaulationEntity = CEntityInfoLump(CreateArray(sizeof(CEntityKeyLump)));
+												CEntityInfoLump pEvaulationEntity = new CEntityInfoLump(CreateArray(sizeof(CEntityKeyLump)));
 												if (!pEvaulationEntity.IsValid())
 													ThrowError("Was unable to create CEntityInfoLump for entity modify evaulation");
 												
@@ -401,16 +453,16 @@ enum struct CGlobalLevelLump
 												while (kv.GotoNextKey(false));
 												kv.GoBack();
 												
-												CEntityListLump pTempEvaluatedList = CEntityListLump(CreateArray(sizeof(CEntityInfoLump)));
+												CEntityListLump pTempEvaluatedList = new CEntityListLump(CreateArray(sizeof(CEntityInfoLump)));
 												if (!pTempEvaluatedList.IsValid())
 													ThrowError("Was unable to create CEntityListLump for entity modify temp list");
 												
-												for (int i = 0; i < this.m_pEntityList.Size(); i++)
+												for (int i = 0; i < this.m_pEntityList.Length; i++)
 												{
-													CEntityInfoLump pThisEntityInfo = this.m_pEntityList.GetCell(i);
+													CEntityInfoLump pThisEntityInfo = this.m_pEntityList.Get(i);
 													if (pEvaulationEntity.IsEqual(pThisEntityInfo))
 													{
-														pTempEvaluatedList.PushCell(pThisEntityInfo);
+														pTempEvaluatedList.Push(pThisEntityInfo);
 													}
 												}
 												
@@ -452,7 +504,8 @@ enum struct CGlobalLevelLump
 		bool add = strcmp(szModifyType, "add", false) == 0;
 		bool remove = strcmp(szModifyType, "remove", false) == 0;
 		bool functions = strcmp(szModifyType, "functions", false) == 0;
-		if(!add && !remove && !functions) {
+		bool outputs = strcmp(szModifyType, "outputs", false) == 0;
+		if(!add && !remove && !functions && !outputs) {
 			return;
 		}
 		
@@ -460,8 +513,13 @@ enum struct CGlobalLevelLump
 		{
 			do
 			{
-				if(functions) {
+				if(functions)
+				{
 					this.ParseFunction(kv, pTempEvaluatedList);
+				}
+				else if(outputs)
+				{
+					this.ParseOutputs(kv, pTempEvaluatedList);
 				}
 				else
 				{
@@ -469,16 +527,16 @@ enum struct CGlobalLevelLump
 					if (kv.GetSectionName(pKeyInfo.m_szKey, sizeof(pKeyInfo.m_szKey)) && kv.GetDataType(NULL_STRING) != KvData_None)
 					{
 						kv.GetString(NULL_STRING, pKeyInfo.m_szValue, sizeof(pKeyInfo.m_szValue));
-						for (int i = 0; i < pTempEvaluatedList.Size(); i++)
+						for (int i = 0; i < pTempEvaluatedList.Length; i++)
 						{
-							CEntityInfoLump pEditedEntityInfo = pTempEvaluatedList.GetCell(i);
+							CEntityInfoLump pEditedEntityInfo = pTempEvaluatedList.Get(i);
 							if(add)
 							{
 								pEditedEntityInfo.PushArray(pKeyInfo, sizeof(pKeyInfo));
 							}
 							else if (remove)
 							{
-								for (int j = 0; j < pEditedEntityInfo.Size(); j++)
+								for (int j = 0; j < pEditedEntityInfo.Length; j++)
 								{
 									CEntityKeyLump pThisKeyInfo;
 									if (pEditedEntityInfo.GetArray(j, pThisKeyInfo, sizeof(pThisKeyInfo)))
@@ -487,7 +545,7 @@ enum struct CGlobalLevelLump
 										{
 											if(strcmp(pKeyInfo.m_szValue, pThisKeyInfo.m_szValue, false) == 0)
 											{
-												pEditedEntityInfo.Remove(j);
+												pEditedEntityInfo.Erase(j);
 												break;
 											}
 										}
@@ -519,17 +577,106 @@ enum struct CGlobalLevelLump
 		}
 	}
 	
+	void ParseOutputs(KeyValues kv, CEntityListLump pTempEvaluatedList)
+	{
+		char szAction[MAX_KEY], szKey[MAX_KEY], szOutputName[MAX_KEY];
+		if (kv.GetSectionName(szAction, sizeof(szAction)))
+		{
+			if(StrEqual(szAction, "modify", true))
+			{
+				CEntityOutputLump pMatchOutputLump;
+				bool bMatchOutput, bMatchTarget, bMatchInput, bMatchParameter, bMatchDelay, bMatchTTF;
+				this.ParseOutputKeys(kv, pMatchOutputLump, szOutputName, sizeof(szOutputName), bMatchOutput, bMatchTarget, bMatchInput, bMatchParameter, bMatchDelay, bMatchTTF);
+				if (kv.GotoFirstSubKey(true))
+				{
+					do
+					{
+						if (kv.GetSectionName(szKey, sizeof(szKey)))
+						{
+							bool replace = strcmp(szKey, "replace", false) == 0;
+							if(!replace) continue;
+							
+							for (int i = 0; i < pTempEvaluatedList.Length; i++)
+							{
+								CEntityInfoLump pEditedEntityInfo = pTempEvaluatedList.Get(i);
+								for (int j = 0; j < pEditedEntityInfo.Length; j++)
+								{
+									CEntityKeyLump pEditedKeyInfo; pEditedEntityInfo.GetArray(j, pEditedKeyInfo, sizeof(pEditedKeyInfo));
+									if(bMatchOutput && !StrEqual(pEditedKeyInfo.m_szKey, szOutputName, false))
+									{
+										continue; // avoid parsing output from value unless necessary
+									}
+									
+									CEntityOutputLump pEditedOutputLump;
+									if(pEditedOutputLump.LoadFromEntityKeyLump(pEditedKeyInfo))
+									{
+										CEntityOutputLump _pEditedOutputLump[1];
+										_pEditedOutputLump[0] = pEditedOutputLump;
+										if(pMatchOutputLump.IsEqual(_pEditedOutputLump, bMatchTarget, bMatchInput, bMatchParameter, bMatchDelay, bMatchTTF))
+										{
+											this.ParseOutputKeys(kv, pEditedOutputLump, pEditedKeyInfo.m_szKey, sizeof(pEditedKeyInfo.m_szKey));
+											pEditedOutputLump.SaveToEntityKeyLump(pEditedKeyInfo);
+											pEditedEntityInfo.SetArray(j, pEditedKeyInfo);
+										}
+									}
+								}
+							}
+						}
+					}
+					while (kv.GotoNextKey(true));
+					kv.GoBack();
+				}
+			}
+		}
+	}
+	
+	void ParseOutputKeys(KeyValues kv, CEntityOutputLump pOutputLump, char[] szOutputName, int szOutputNameLength,
+		bool& bFoundOutput = false, bool& bFoundTarget = false, bool& bFoundInput = false, bool& bFoundParameter = false, bool& bFoundDelay = false, bool& bFoundTTF = false)
+	{
+		if(kv.GetDataType("output") != KvData_None)
+		{
+			bFoundOutput = true;
+			kv.GetString("output", szOutputName, szOutputNameLength);
+		}
+		if(kv.GetDataType("target") != KvData_None)
+		{
+			bFoundTarget = true;
+			kv.GetString("target", pOutputLump.m_szTargetEntity, sizeof(pOutputLump.m_szTargetEntity));
+		}
+		if(kv.GetDataType("input") != KvData_None)
+		{
+			bFoundInput = true;
+			kv.GetString("input", pOutputLump.m_szInputName, sizeof(pOutputLump.m_szInputName));
+		}
+		if(kv.GetDataType("parameter") != KvData_None)
+		{
+			bFoundParameter = true;
+			kv.GetString("parameter", pOutputLump.m_szParameter, sizeof(pOutputLump.m_szParameter));
+		}
+		if(kv.GetDataType("delay") != KvData_None)
+		{
+			bFoundDelay = true;
+			pOutputLump.m_flDelay = kv.GetFloat("delay");
+		}
+		if(kv.GetDataType("timestofire") != KvData_None)
+		{
+			bFoundTTF = true;
+			pOutputLump.m_iTimesToFire = kv.GetNum("timestofire");
+		}
+	}
+
+	
 	Array_t GetOutputHooksForEntity(CBaseEntity pEntity)
 	{
-		Array_t pResolvedOutputHookList = Array_t(CreateArray(sizeof(CEntityOutputHook)));
-		for (int i = 0; i < this.m_pOutputHookList.Size(); i++)
+		Array_t pResolvedOutputHookList = new Array_t(CreateArray(sizeof(CEntityOutputHook)));
+		for (int i = 0; i < this.m_pOutputHookList.Length; i++)
 		{
 			CEntityOutputHook pOutputHook; this.m_pOutputHookList.GetArray(i, pOutputHook);
 			CEntityListLump pEntityList = pOutputHook.m_pEntityList;
-			for (int j = 0; j < pEntityList.Size(); j++)
+			for (int j = 0; j < pEntityList.Length; j++)
 			{
-				CEntityInfoLump pEditedEntityInfo = pEntityList.GetCell(j);
-				if(pEditedEntityInfo.MatchesActualEntity(pEntity))
+				CEntityInfoLump pHookedEntityInfo = pEntityList.Get(j);
+				if(pHookedEntityInfo.MatchesActualEntity(pEntity))
 				{
 					pResolvedOutputHookList.PushArray(pOutputHook);
 				}
@@ -540,9 +687,9 @@ enum struct CGlobalLevelLump
 	
 	void RevertConvars()
 	{
-		for (int i = 0; i < this.m_pModifiedCvarList.Size(); i++)
+		for (int i = 0; i < this.m_pModifiedCvarList.Length; i++)
 		{
-			ConVar pConvar = this.m_pModifiedCvarList.GetCell(i);
+			ConVar pConvar = this.m_pModifiedCvarList.Get(i);
 			pConvar.RestoreDefault();
 			delete pConvar;
 		}

@@ -24,7 +24,7 @@ enum struct CoopManager
 	
 	void Initialize()
 	{
-		this.m_pDelayedOutputs = Array_t(CreateArray(sizeof(FireOutputData)));
+		this.m_pDelayedOutputs = new Array_t(CreateArray(sizeof(FireOutputData)));
 	}
 	
 	void OnMapStart()
@@ -106,7 +106,7 @@ enum struct CoopManager
 		PrintToServer("Co-op map %s has begun", g_szMapName);
 		
 		// Fire delayed outputs
-		for (int i = 0; i < this.m_pDelayedOutputs.Size(); i++)
+		for (int i = 0; i < this.m_pDelayedOutputs.Length; i++)
 		{
 			FireOutputData pFireOutputData; this.m_pDelayedOutputs.GetArray(i, pFireOutputData);
 			FireEntityOutput(pFireOutputData.m_pCaller.GetEntIndex(), pFireOutputData.m_szName, pFireOutputData.m_pActivator.GetEntIndex(), pFireOutputData.m_flDelay);

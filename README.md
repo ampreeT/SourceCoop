@@ -38,8 +38,11 @@
 - trigger_changelevel
 	- game code checks for g_pGameRules->IsDeathmatch(), overriding that to false gives a crashes on changelevel, but at least its something (could explore crash dump on linux)
 - add checkpoint 'portals' that teleports player to active checkopint when touched, used for example when a door closes that would lock player out. This is an alternative to suicide/forced teleports.
+- make start timer repeatable with hud messages (just numbers) and tick sounds - add map introtype > blackscreen, freeze, none - if map has this and there are no delayed outputs, dont wait
 - add regex parsing?
 
 ## map-issues
 - bm_c1a0a
 	- add tp portals to barney gate
+- bm_c1a0b
+	- stepping into the reactor core gives a crash

@@ -174,7 +174,7 @@ public void Hook_SpawnPost(int iEntIndex)
 	if (g_pCoopManager.IsCoopModeEnabled())
 	{
 		Array_t pOutputHookList = g_pLevelLump.GetOutputHooksForEntity(pEntity);
-		if(pOutputHookList.Size() > 0)
+		if(pOutputHookList.Length > 0)
 		{
 			if(pEntity.IsClassname("logic_auto"))
 			{
@@ -183,11 +183,11 @@ public void Hook_SpawnPost(int iEntIndex)
 				if(iSpawnFlags & SF_AUTO_FIREONCE)
 					pEntity.SetSpawnFlags(iSpawnFlags &~ SF_AUTO_FIREONCE);
 			}
-		}
-		for (int i = 0; i < pOutputHookList.Size(); i++)
-		{
-			CEntityOutputHook pOutputHook; pOutputHookList.GetArray(i, pOutputHook);
-			HookSingleEntityOutput(iEntIndex, pOutputHook.m_szOutputName, OutputCallbackForDelay);
+			for (int i = 0; i < pOutputHookList.Length; i++)
+			{
+				CEntityOutputHook pOutputHook; pOutputHookList.GetArray(i, pOutputHook);
+				HookSingleEntityOutput(iEntIndex, pOutputHook.m_szOutputName, OutputCallbackForDelay);
+			}
 		}
 		pOutputHookList.Close();
 	}
@@ -545,7 +545,7 @@ public void Callback_Checkpoint(const char[] szName, int iCaller, int iActivator
 	
 	CCoopSpawnEntry pEntry;
 	int iEntriesToKill = -1;
-	for (int i = 0; i < g_SpawnSystem.m_pCheckpointList.Size(); i++)
+	for (int i = 0; i < g_SpawnSystem.m_pCheckpointList.Length; i++)
 	{
 		if (g_SpawnSystem.m_pCheckpointList.GetArray(i, pEntry, sizeof(pEntry)))
 		{
