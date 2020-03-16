@@ -6,8 +6,8 @@
 		{
 			"IVEngineServer"
 			{
-				"windows"	"VEngineServer022"
-				"linux"		"VEngineServer022"
+				"windows"	"VEngineServer023"
+				"linux"		"VEngineServer023"
 			}
 		}
 		"Signatures"
@@ -20,7 +20,7 @@
 			}
 			"CreateInterface"
 			{
-				"library"		"server"
+				"library"		"engine"	// this depends on what dll the interface you want is from; we should just iteriate through the interface table manually to avoid this issue if there are other interfaces we need
 				"windows"		"@CreateInterface"
 				"linux"			"@CreateInterface"
 			}

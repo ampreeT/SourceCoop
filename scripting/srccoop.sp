@@ -1,5 +1,17 @@
 #include <srccoop>
 
+// move me to classdef as member functions
+public void SetPlayerPickup(int iPlayer, int iObject, const bool bLimitMassAndSize)
+{
+	SDKCall(g_pPickupObject, iPlayer, iObject, bLimitMassAndSize);
+}
+
+public void SetWeaponAnimation(int iWeapon, const int iActivity)
+{
+	SDKCall(g_pSendWeaponAnim, iWeapon, iActivity);
+}
+// classdef end
+
 public Plugin myinfo =
 {
 	name = "SourceCoop",
@@ -36,6 +48,28 @@ public void load_gamedata()
 	if (pGameConfig == null)
 		SetFailState("Couldn't load game config %s", szConfigName);
 	
+	char szCreateInterface[] = "CreateInterface";
+	StartPrepSDKCall(SDKCall_Static);
+	if (!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Signature, szCreateInterface))
+		SetFailState("Could not obtain game offset %s", szCreateInterface);
+	PrepSDKCall_AddParameter(SDKType_String, SDKPass_Pointer);
+	PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Pointer, VDECODE_FLAG_ALLOWNULL);
+	PrepSDKCall_SetReturnInfo(SDKType_PlainOldData, SDKPass_Plain);
+	g_pCreateInterface = EndPrepSDKCall();
+	if (g_pCreateInterface == null)
+		SetFailState("Could not prep SDK call %s", szCreateInterface);
+	
+	/*
+	char szInterfaceEngine[64];
+	char szInterfaceNameEngine[] = "IVEngineServer";
+	if (!GameConfGetKeyValue(pGameConfig, szInterfaceNameEngine, szInterfaceEngine, sizeof(szInterfaceEngine)))
+		SetFailState("Could not get interface verison for %s", szInterfaceNameEngine);
+	
+	g_VEngineServer = GetInterface(szInterfaceEngine);
+	if (!g_VEngineServer)
+		SetFailState("Could not get interface for %s", "g_VEngineServer");
+	*/
+	
 	char szPickupObject[] = "CBlackMesaPlayer::PickupObject";
 	StartPrepSDKCall(SDKCall_Player);
 	if (!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Virtual, szPickupObject))
@@ -64,20 +98,17 @@ public void load_gamedata()
 	load_dhook_virtual(pGameConfig, hkSetModel, "CBaseEntity::SetModel");
 	load_dhook_virtual(pGameConfig, hkAcceptInput, "CBaseEntity::AcceptInput");
 	
-	load_dhook_detour(pGameConfig, hkSetSuitUpdate, "CBasePlayer::SetSuitUpdate", true, Hook_SetSuitUpdate);
+	load_dhook_detour(pGameConfig, hkSetSuitUpdate, "CBasePlayer::SetSuitUpdate", false, Hook_SetSuitUpdate);
 
 	CloseHandle(pGameConfig);
 }
 
-public void SetPlayerPickup(int iPlayer, int iObject, const bool bLimitMassAndSize)
+/*
+public Address GetInterface(const char[] szInterface)
 {
-	SDKCall(g_pPickupObject, iPlayer, iObject, bLimitMassAndSize);
+	return view_as<Address>(SDKCall(g_pCreateInterface, szInterface, 0));
 }
-
-public void SetWeaponAnimation(int iWeapon, const int iActivity)
-{
-	SDKCall(g_pSendWeaponAnim, iWeapon, iActivity);
-}
+*/
 
 public void OnMapStart()
 {
@@ -517,8 +548,19 @@ public void Hook_Use(int entity, int activator, int caller, UseType type, float 
 	}
 }
 
-public MRESReturn Hook_SetSuitUpdate(int _this, Handle hReturn, Handle hParams)
+public MRESReturn Hook_SetSuitUpdate(int _this, Handle hParams)		// suit sounds; should be implemented like the game's code
 {
+	if (g_pCoopManager.IsFeaturePatchingEnabled())
+	{
+		if (!DHookIsNullParam(hParams, 1))
+		{
+			char szName[MAX_FORMAT];
+			DHookGetParamString(hParams, 1, szName, sizeof(szName));
+			ClientCommand(_this, "speak %s", szName);	// probably too loud but i can't tell
+			PrintToServer("Hook_SetSuitUpdate(...) called %s", szName);
+		}
+	}
+	
 	return MRES_Ignored;
 }
 
