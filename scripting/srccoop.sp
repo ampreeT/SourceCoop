@@ -137,6 +137,7 @@ public void OnPluginStart()
 	g_SpawnSystem.Initialize(Callback_Checkpoint);
 	g_pCoopManager.Initialize();
 	HookEvent("player_spawn", Hook_PlayerSpawnPost, EventHookMode_Post);
+	HookEvent("broadcast_teamsound", Hook_BroadcastTeamsound, EventHookMode_Pre);
 }
 
 public void OnClientPutInServer(int client)
@@ -277,8 +278,22 @@ public Action Hook_PlayerSpawnPost(Event hEvent, const char[] szName, bool bDont
 	}
 }
 
+public Action Hook_BroadcastTeamsound(Event hEvent, const char[] szName, bool bDontBroadcast)
+{
+	if(g_pCoopManager.IsFeaturePatchingEnabled())
+	{
+		// block multiplayer announcer
+		hEvent.BroadcastDisabled = true;
+		return Plugin_Changed;
+	}
+	return Plugin_Continue;
+}
+
 public void Hook_PlayerPreThinkPost(int iClient)
 {
+	if(!g_pCoopManager.IsFeaturePatchingEnabled())
+		return;
+	
 	CBlackMesaPlayer pPlayer = CBlackMesaPlayer(iClient);
 	if (pPlayer.IsValid())
 	{
