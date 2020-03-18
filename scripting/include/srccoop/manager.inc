@@ -86,7 +86,7 @@ enum struct CoopManager
 	
 	bool IsAllowedToStart()
 	{
-		return (GetRealClientCount(false) - GetRealClientCount(true)) == 0;
+		return this.m_pDelayedOutputs.Length == 0 || (GetRealClientCount(false) - GetRealClientCount(true)) == 0;
 	}
 	
 	void Start()

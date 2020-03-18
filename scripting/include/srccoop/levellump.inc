@@ -582,49 +582,74 @@ enum struct CGlobalLevelLump
 		char szAction[MAX_KEY], szKey[MAX_KEY], szOutputName[MAX_KEY];
 		if (kv.GetSectionName(szAction, sizeof(szAction)))
 		{
-			if(StrEqual(szAction, "modify", true))
+			bool bFoundOutput, bFoundTarget, bFoundInput, bFoundParameter, bFoundDelay, bFoundTTF;
+			if(strcmp(szAction, "add", false) == 0)
 			{
-				CEntityOutputLump pMatchOutputLump;
-				bool bMatchOutput, bMatchTarget, bMatchInput, bMatchParameter, bMatchDelay, bMatchTTF;
-				this.ParseOutputKeys(kv, pMatchOutputLump, szOutputName, sizeof(szOutputName), bMatchOutput, bMatchTarget, bMatchInput, bMatchParameter, bMatchDelay, bMatchTTF);
-				if (kv.GotoFirstSubKey(true))
+				for (int i = 0; i < pTempEvaluatedList.Length; i++)
 				{
-					do
+					CEntityInfoLump pEditedEntityInfo = pTempEvaluatedList.Get(i);
+					CEntityOutputLump pNewOutputLump; CEntityKeyLump pNewKeyInfo;
+					
+					this.ParseOutputKeys(kv, pNewOutputLump, pNewKeyInfo.m_szKey, sizeof(pNewKeyInfo.m_szKey), bFoundOutput, bFoundTarget, bFoundInput, bFoundParameter, bFoundDelay, bFoundTTF);
+					if(!bFoundOutput) SetFailState("Cannot add output - missing entry for \"output\"");
+					if(!bFoundTarget) SetFailState("Cannot add output - missing entry for \"target\"");
+					if(!bFoundInput) SetFailState("Cannot add output - missing entry for \"input\"");
+					if(!bFoundTTF) pNewOutputLump.m_iTimesToFire = 1;
+					
+					pNewOutputLump.SaveToEntityKeyLump(pNewKeyInfo);
+					pEditedEntityInfo.PushArray(pNewKeyInfo);
+				}
+				return;
+			}
+			
+			bool modify = strcmp(szAction, "modify", false) == 0;
+			bool remove = strcmp(szAction, "remove", false) == 0;
+			if(!modify && !remove) return;
+			
+			CEntityOutputLump pMatchOutputLump;
+			this.ParseOutputKeys(kv, pMatchOutputLump, szOutputName, sizeof(szOutputName), bFoundOutput, bFoundTarget, bFoundInput, bFoundParameter, bFoundDelay, bFoundTTF);
+			
+			for (int i = 0; i < pTempEvaluatedList.Length; i++)
+			{
+				CEntityInfoLump pEditedEntityInfo = pTempEvaluatedList.Get(i);
+				for (int j = 0; j < pEditedEntityInfo.Length; j++)
+				{
+					CEntityKeyLump pEditedKeyInfo; pEditedEntityInfo.GetArray(j, pEditedKeyInfo, sizeof(pEditedKeyInfo));
+					if(bFoundOutput && !StrEqual(pEditedKeyInfo.m_szKey, szOutputName, false))
 					{
-						if (kv.GetSectionName(szKey, sizeof(szKey)))
+						continue; // avoid parsing output from value unless necessary
+					}
+					
+					CEntityOutputLump pEntityOutputLump;
+					if(pEntityOutputLump.LoadFromEntityKeyLump(pEditedKeyInfo))
+					{
+						CEntityOutputLump _pEntityOutputLump[1];
+						_pEntityOutputLump[0] = pEntityOutputLump;
+						if(pMatchOutputLump.IsEqual(_pEntityOutputLump, bFoundTarget, bFoundInput, bFoundParameter, bFoundDelay, bFoundTTF))
 						{
-							bool replace = strcmp(szKey, "replace", false) == 0;
-							if(!replace) continue;
-							
-							for (int i = 0; i < pTempEvaluatedList.Length; i++)
+							if(modify)
 							{
-								CEntityInfoLump pEditedEntityInfo = pTempEvaluatedList.Get(i);
-								for (int j = 0; j < pEditedEntityInfo.Length; j++)
+								if (kv.GotoFirstSubKey(true))
 								{
-									CEntityKeyLump pEditedKeyInfo; pEditedEntityInfo.GetArray(j, pEditedKeyInfo, sizeof(pEditedKeyInfo));
-									if(bMatchOutput && !StrEqual(pEditedKeyInfo.m_szKey, szOutputName, false))
+									do
 									{
-										continue; // avoid parsing output from value unless necessary
-									}
-									
-									CEntityOutputLump pEditedOutputLump;
-									if(pEditedOutputLump.LoadFromEntityKeyLump(pEditedKeyInfo))
-									{
-										CEntityOutputLump _pEditedOutputLump[1];
-										_pEditedOutputLump[0] = pEditedOutputLump;
-										if(pMatchOutputLump.IsEqual(_pEditedOutputLump, bMatchTarget, bMatchInput, bMatchParameter, bMatchDelay, bMatchTTF))
+										if (kv.GetSectionName(szKey, sizeof(szKey)) && strcmp(szKey, "replace", false) == 0)
 										{
-											this.ParseOutputKeys(kv, pEditedOutputLump, pEditedKeyInfo.m_szKey, sizeof(pEditedKeyInfo.m_szKey));
-											pEditedOutputLump.SaveToEntityKeyLump(pEditedKeyInfo);
+											this.ParseOutputKeys(kv, pEntityOutputLump, pEditedKeyInfo.m_szKey, sizeof(pEditedKeyInfo.m_szKey));
+											pEntityOutputLump.SaveToEntityKeyLump(pEditedKeyInfo);
 											pEditedEntityInfo.SetArray(j, pEditedKeyInfo);
 										}
 									}
+									while (kv.GotoNextKey(true));
+									kv.GoBack();
 								}
+							}
+							else if (remove)
+							{
+								pEditedEntityInfo.Erase(j--);
 							}
 						}
 					}
-					while (kv.GotoNextKey(true));
-					kv.GoBack();
 				}
 			}
 		}
@@ -633,34 +658,34 @@ enum struct CGlobalLevelLump
 	void ParseOutputKeys(KeyValues kv, CEntityOutputLump pOutputLump, char[] szOutputName, int szOutputNameLength,
 		bool& bFoundOutput = false, bool& bFoundTarget = false, bool& bFoundInput = false, bool& bFoundParameter = false, bool& bFoundDelay = false, bool& bFoundTTF = false)
 	{
-		if(kv.GetDataType("output") != KvData_None)
+		bFoundOutput = kv.GetDataType("output") != KvData_None;
+		if(bFoundOutput)
 		{
-			bFoundOutput = true;
 			kv.GetString("output", szOutputName, szOutputNameLength);
 		}
-		if(kv.GetDataType("target") != KvData_None)
+		bFoundTarget = kv.GetDataType("target") != KvData_None;
+		if(bFoundTarget)
 		{
-			bFoundTarget = true;
 			kv.GetString("target", pOutputLump.m_szTargetEntity, sizeof(pOutputLump.m_szTargetEntity));
 		}
-		if(kv.GetDataType("input") != KvData_None)
+		bFoundInput = kv.GetDataType("input") != KvData_None;
+		if(bFoundInput)
 		{
-			bFoundInput = true;
 			kv.GetString("input", pOutputLump.m_szInputName, sizeof(pOutputLump.m_szInputName));
 		}
-		if(kv.GetDataType("parameter") != KvData_None)
+		bFoundParameter = kv.GetDataType("parameter") != KvData_None;
+		if(bFoundParameter)
 		{
-			bFoundParameter = true;
 			kv.GetString("parameter", pOutputLump.m_szParameter, sizeof(pOutputLump.m_szParameter));
 		}
-		if(kv.GetDataType("delay") != KvData_None)
+		bFoundDelay = kv.GetDataType("delay") != KvData_None;
+		if(bFoundDelay)
 		{
-			bFoundDelay = true;
 			pOutputLump.m_flDelay = kv.GetFloat("delay");
 		}
-		if(kv.GetDataType("timestofire") != KvData_None)
+		bFoundTTF = kv.GetDataType("timestofire") != KvData_None;
+		if(bFoundTTF)
 		{
-			bFoundTTF = true;
 			pOutputLump.m_iTimesToFire = kv.GetNum("timestofire");
 		}
 	}
