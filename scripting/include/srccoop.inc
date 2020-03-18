@@ -17,3 +17,4 @@
 #include <srccoop/checkpoint.inc>
 #include <srccoop/globals.inc>
 #include <srccoop/manager.inc>
+#include <srccoop/entitypatch.inc>

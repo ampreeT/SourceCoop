@@ -507,6 +507,14 @@ methodmap CBlackMesaPlayer < CBaseCombatCharacter
 	{
 		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_nButtons");
 	}
+	public int GetPressedButtons()
+	{
+		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_afButtonPressed");
+	}
+	public int GetReleasedButtons()
+	{
+		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_afButtonReleased");
+	}
 	public bool WasPressingButton(const int iButton)
 	{
 		return view_as<bool>(this.GetOldButtons() & iButton);
@@ -554,6 +562,14 @@ methodmap CBlackMesaPlayer < CBaseCombatCharacter
 		SetEntPropEnt(this.GetEntIndex(), Prop_Data, "m_hViewEntity", bIsThisEntity ? -1 : pEntity.GetEntIndex());
 		SetEntPropEnt(this.GetEntIndex(), Prop_Send, "m_hViewEntity", bIsThisEntity ? -1 : pEntity.GetEntIndex());
 		SetClientViewEntity(this.GetEntIndex(), pEntity.GetEntIndex());
+	}
+	public float GetDeathTime()
+	{
+		return GetEntPropFloat(this.GetEntIndex(), Prop_Send, "m_flDeathTime");
+	}
+	public void SetDeathTime(float flDeathTime)
+	{
+		SetEntPropFloat(this.GetEntIndex(), Prop_Send, "m_flDeathTime", flDeathTime);
 	}
 }
 

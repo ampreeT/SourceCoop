@@ -40,6 +40,9 @@
 - add checkpoint 'portals' that teleports player to active checkopint when touched, used for example when a door closes that would lock player out. This is an alternative to suicide/forced teleports.
 - add regex parsing?
 - implement player walking animations when not holding any weapon
+- hook these entities and recreate to work correctly with multiple players
+	- point_teleport with target of !player
+	- point_viewcontrol
 
 ## map-issues
 - bm_c1a0a

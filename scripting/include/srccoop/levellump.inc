@@ -506,7 +506,7 @@ enum struct CGlobalLevelLump
 		bool functions = strcmp(szModifyType, "functions", false) == 0;
 		bool outputs = strcmp(szModifyType, "outputs", false) == 0;
 		if(!add && !remove && !functions && !outputs) {
-			return;
+			SetFailState("Modify block contains unknown action \"%s\", expected one of add | remove | functions | outputs", szModifyType);
 		}
 		
 		if (kv.GotoFirstSubKey(false))
@@ -543,7 +543,7 @@ enum struct CGlobalLevelLump
 									{
 										if (strcmp(pKeyInfo.m_szKey, pThisKeyInfo.m_szKey, false) == 0)
 										{
-											if(strcmp(pKeyInfo.m_szValue, pThisKeyInfo.m_szValue, false) == 0)
+											//if(strcmp(pKeyInfo.m_szValue, pThisKeyInfo.m_szValue, false) == 0)
 											{
 												pEditedEntityInfo.Erase(j);
 												break;
@@ -604,7 +604,10 @@ enum struct CGlobalLevelLump
 			
 			bool modify = strcmp(szAction, "modify", false) == 0;
 			bool remove = strcmp(szAction, "remove", false) == 0;
-			if(!modify && !remove) return;
+			if(!modify && !remove)
+			{
+				SetFailState("Outputs block contains unknown action \"%s\", expected one of add | remove | modify", szAction);
+			}
 			
 			CEntityOutputLump pMatchOutputLump;
 			this.ParseOutputKeys(kv, pMatchOutputLump, szOutputName, sizeof(szOutputName), bFoundOutput, bFoundTarget, bFoundInput, bFoundParameter, bFoundDelay, bFoundTTF);
@@ -690,7 +693,6 @@ enum struct CGlobalLevelLump
 		}
 	}
 
-	
 	Array_t GetOutputHooksForEntity(CBaseEntity pEntity)
 	{
 		Array_t pResolvedOutputHookList = new Array_t(CreateArray(sizeof(CEntityOutputHook)));
