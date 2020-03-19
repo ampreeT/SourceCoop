@@ -42,6 +42,10 @@ methodmap CBaseEntity
 	{
 		return IsValidEntity(this.GetEntIndex());
 	}
+	public bool IsValidIndex()
+	{
+		return this.GetEntIndex() != -1;
+	}
 	public Address GetAddress()
 	{
 		return GetEntityAddress(this.GetEntIndex());
@@ -57,6 +61,14 @@ methodmap CBaseEntity
 	public int SetTargetname(const char[] szTargetname)
 	{
 		return SetEntPropString(this.GetEntIndex(), Prop_Data, "m_iName", szTargetname); 
+	}
+	public bool GetTarget(char[] szBuffer, const int iMaxLength)
+	{
+		return view_as<bool>(GetEntPropString(this.GetEntIndex(), Prop_Data, "m_target", szBuffer, iMaxLength));
+	}
+	public int SetTarget(const char[] szTarget)
+	{
+		return SetEntPropString(this.GetEntIndex(), Prop_Data, "m_target", szTarget); 
 	}
 	public bool IsClassname(const char[] szClassname)
 	{

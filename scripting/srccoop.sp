@@ -1,3 +1,6 @@
+//Uncomment to disable debugging
+//#define NO_DEBUG
+
 #include <srccoop>
 
 // move me to classdef as member functions
@@ -131,6 +134,7 @@ public void OnMapStart()
 public void OnPluginStart()
 {
 	load_gamedata();
+	InitDebugLog("sm_coop_debug", "SRCCOOP", ADMFLAG_ROOT);
 	g_pConvarCoopEnabled = CreateConVar("sm_coop_enabled", "1", "Sets if coop is enabled on campaign maps");
 	g_pConvarWaitPeriod = CreateConVar("sm_coop_wait_period", "15.0", "The max number of seconds to wait since first player spawned in to start the map");
 	g_pLevelLump.Initialize();
@@ -159,7 +163,7 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 {
 	CBaseEntity pEntity = CBaseEntity(iEntIndex);
 
-	if (pEntity.IsValid())
+	if (!g_bTempDontHookEnts && pEntity.IsValid())
 	{
 		if (pEntity.IsClassPlayer())
 		{
@@ -192,6 +196,14 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 		else if (strcmp(szClassname, "camera_death") == 0)
 		{
 			SDKHook(pEntity.GetEntIndex(), SDKHook_SpawnPost, Hook_CameraDeathSpawn);
+		}
+		else if (strcmp(szClassname, "point_teleport") == 0)
+		{
+			DHookEntity(hkAcceptInput, false, pEntity.GetEntIndex(), _, Hook_PointTeleportAcceptInput);
+		}
+		else if (strcmp(szClassname, "point_viewcontrol") == 0)
+		{
+			DHookEntity(hkAcceptInput, false, pEntity.GetEntIndex(), _, Hook_PointViewcontrolAcceptInput);
 		}
 		SDKHook(iEntIndex, SDKHook_SpawnPost, Hook_SpawnPost);
 	}

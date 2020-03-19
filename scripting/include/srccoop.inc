@@ -9,6 +9,8 @@
 #include <regex>
 #include <dhooks>
 
+#include <logdebug>
+
 #pragma newdecls required
 #pragma semicolon 1
 #include <srccoop/typedef.inc>

@@ -22,3 +22,4 @@ CGlobalLevelLump g_pLevelLump;
 CCoopSpawn g_SpawnSystem;
 
 char g_szMapName[MAX_MAPNAME];
+bool g_bTempDontHookEnts;

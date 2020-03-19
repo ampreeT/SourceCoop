@@ -28,6 +28,7 @@
 - crossbow sp bolts
 - bigfish crash
 - crash caused by zombies/vortigaunts attacking a player-held object
+- crash when security guard that is following player shoots at npc (bm_c1a1b)
 - custom difficulty based on player count
 	- weapon_headcrab latching
 		- need textures for this (they are on fpsbanana)
@@ -40,9 +41,7 @@
 - add checkpoint 'portals' that teleports player to active checkopint when touched, used for example when a door closes that would lock player out. This is an alternative to suicide/forced teleports.
 - add regex parsing?
 - implement player walking animations when not holding any weapon
-- hook these entities and recreate to work correctly with multiple players
-	- point_teleport with target of !player
-	- point_viewcontrol
+- find out if the 'admire hands' animation can be reenabled when picking up suit
 
 ## map-issues
 - bm_c1a0a
