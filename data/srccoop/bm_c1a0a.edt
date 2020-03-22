@@ -9,22 +9,7 @@
 	}
 	"entity"
 	{
-		"modify"
-		{
-			"globalname"	"train_model"
-			"remove"
-			{
-				"globalname"	"train_model"
-			}
-		}
-		"modify"
-		{
-			"globalname"	"train_door"
-			"remove"
-			{
-				"globalname"	"train_door"
-			}
-		}
+		// delay map start
 		"modify"
 		{
 			"targetname" "trigger_intro_scene"
@@ -33,10 +18,31 @@
 				"delay_output" "OnTrigger"
 			}
 		}
+		// suit pickup scene - increase respawn time, modify outputs to fire once
+		"modify"
+		{
+			"classname" "item_suit"
+			"targetname" "HEV"
+			"add"
+			{
+				"respawntime" "1"
+			}
+			"outputs"
+			{
+				"modify"
+				{
+					"output" "OnPlayerPickup"
+					"replace"
+					{
+						"timestofire" "1"
+					}
+				}
+			}
+		}
+		// remove end lift blocker brush
 		"delete"
 		{
 			"targetname"	"lift_block"
-			"classname"		"func_block"
 		}
 	}
 	"checkpoint"
@@ -47,13 +53,23 @@
 			"angles"	"0 90 0"
 			"followid"	"train_model"
 		}
-		"door_closing"
+		"door1"
 		{
-			"origin"	"271.696381 28.334362 515.031250"
+			"origin"	"272 28 520"
 			"angles"	"0.0 90.0 0.0"
 			"delay"		"1.5"
 			"triggerid"	"LCS_AM_Airlock_trigger"
 			"output"	"OnTrigger"
+			"portal"	"280 -208 549"
+		}
+		"door2"
+		{
+			"origin"	"272 416 520"
+			"angles"	"0.0 90.0 0.0"
+			"delay"		"0"
+			"triggerid"	"door_02_btm"
+			"output"	"OnFullyClosed"
+			"portal"	"272 272 549"
 		}
 	}
 }

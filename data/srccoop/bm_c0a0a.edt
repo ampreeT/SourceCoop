@@ -2,17 +2,19 @@
 
 "config"
 {
-	"nextmap" "bm_c0a0b"
+	"nextmap"	"bm_c0a0b"
 	"equipment"
 	{
 		"suit"	"0"
 	}
 	"console"
 	{
+		// somewhat fix train prediction lagging
 		"sv_client_predict" "0"
 	}
 	"entity"
 	{
+		// delay map start
 		"modify"
 		{
 			"classname"	"logic_auto"
@@ -22,29 +24,15 @@
 				"delay_output" "OnNewGame"
 			}
 		}
+		// teleport is handled by plugin
 		"delete"
 		{
 			"targetname" "intro_teleport"
 		}
+		// fade is unnecessary
 		"delete"
 		{
 			"targetname" "intro_fade"
-		}
-		"modify"
-		{
-			"globalname"	"train"
-			"remove"
-			{
-				"globalname"	"train"
-			}
-		}
-		"modify"
-		{
-			"globalname"	"train_model"
-			"remove"
-			{
-				"globalname"	"train_model"
-			}
 		}
 	}
 	"checkpoint"

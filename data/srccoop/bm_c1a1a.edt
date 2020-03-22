@@ -1,0 +1,63 @@
+#base "base\bm_sp_campaign.edt"
+
+"config"
+{
+	"nextmap"	"bm_c1a1b"
+	"equipment"
+	{
+		"suit"	"1"
+		"health" "70"
+	}
+	"entity"
+	{
+		// remove map spawned suit
+		"delete"
+		{
+			"targetname" "global_newgame_entmaker"
+		}
+		"delete"
+		{
+			"targetname" "global_newgame_template"
+		}
+		"delete"
+		{
+			"targetname" "global_newgame_spawner_suit"
+		}
+		// delay map start
+		"modify"
+		{
+			"classname"	"logic_auto"
+			"hammerid" "794799"
+			"functions"
+			{
+				"delay_output" "OnMapSpawn"
+			}
+		}
+	}
+	"checkpoint"
+	{
+		"spawn"
+		{
+			"origin"	"1326 671 -536"
+			"angles"	"0 270 0"
+		}
+		"door"
+		{
+			"origin"	"588 512 -475"
+			"angles"	"0 90 0"
+			"triggerid"	"td_1"
+			"output"	"OnFullyClosed"
+			"delay"		"0"
+			"portal"	"592 440 -475"
+		}
+		"watchroom"
+		{
+			"origin"	"1104 1008 -251"
+			"angles"	"0 0 0"
+			"triggerid"	"lab2_door5"
+			"output"	"OnFullyClosed"
+			"delay"		"0"
+			"portal"	"1048 1008 -251"
+		}
+	}
+}

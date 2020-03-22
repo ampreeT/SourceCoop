@@ -8,6 +8,8 @@ enum struct CCoopSpawnEntry
 	float m_flDelay;
 	CBaseEntity m_pTriggerEnt;
 	CBaseEntity m_pFollowEnt;
+	bool m_bHasPortal;
+	float m_vecPortalPosition[3];
 }
 
 enum struct CCoopWeaponEntry
@@ -108,7 +110,7 @@ enum struct CCoopSpawn
 			CreateTimer(0.0, Callback_RemovePlayerSuit, pPlayer);
 		}
 	}
-	void SpawnPlayer(CBlackMesaPlayer pPlayer)
+	void SpawnPlayer(CBlackMesaPlayer pPlayer, bool bSpawnEquipment = true)
 	{
 		float vecPosition[3];
 		float vecAngles[3];
@@ -138,7 +140,8 @@ enum struct CCoopSpawn
 		}
 		
 		pPlayer.Teleport(vecPosition, vecAngles);
-		this.SpawnPlayerEquipment(pPlayer);
+		if(bSpawnEquipment)
+			this.SpawnPlayerEquipment(pPlayer);
 	}
 	void SetSpawnLocation(const float vecPosition[3], const float vecAngles[3], CBaseEntity pEntity = view_as<CBaseEntity>(-1))
 	{
@@ -151,6 +154,27 @@ enum struct CCoopSpawn
 		this.m_vecAngles[2] = vecAngles[2];
 		
 		this.m_pFollowEnt = pEntity;
+	}
+	void CreatePortal(const float vecPosition[3])
+	{
+		CBaseEntity pParticle = CBaseEntity(CreateEntityByName("info_particle_system"));
+		if(pParticle.IsValidIndex())
+		{
+			pParticle.SetKeyValueStr("effect_name", "teleport_lambda_entrance");
+			pParticle.SetKeyValueStr("start_active", "1");
+			#define PORTAL_TOUCH_SIZE 16.0
+			float mins[3] = {-PORTAL_TOUCH_SIZE, -PORTAL_TOUCH_SIZE, -PORTAL_TOUCH_SIZE};
+			float maxs[3] = {PORTAL_TOUCH_SIZE, PORTAL_TOUCH_SIZE, PORTAL_TOUCH_SIZE};
+			pParticle.SetMins(mins);
+			pParticle.SetMaxs(maxs);
+			pParticle.Teleport(vecPosition);
+			pParticle.Spawn();
+			pParticle.Activate();
+			pParticle.SetSolidType(SOLID_BBOX);
+			pParticle.SetSolidFlags(FSOLID_TRIGGER);
+			pParticle.SetCollisionGroup(COLLISION_GROUP_DEBRIS_TRIGGER);
+			SDKHook(pParticle.GetEntIndex(), SDKHook_StartTouchPost, Hook_TouchPortal);
+		}
 	}
 	void EraseCheckpoints(int iCount)
 	{
@@ -250,6 +274,16 @@ enum struct CCoopSpawn
 													pEntry.m_pTriggerEnt = CBaseEntity(FindEntityByTargetname(-1, szValue));
 												if (!pEntry.m_pTriggerEnt.IsValid())
 													ThrowError("Couldn't find triggerid entity %s", szValue);
+											}
+											else if (strcmp(szKey, "portal", false) == 0 && ExplodeString(szValue, " ", szVector, 3, MAX_FORMAT, false) == 3)
+											{
+												pEntry.m_bHasPortal = true;
+												if (!StringToFloatEx(szVector[0], pEntry.m_vecPortalPosition[0]))
+													ThrowError("Portal x parameter is not a float");
+												if (!StringToFloatEx(szVector[1], pEntry.m_vecPortalPosition[1]))
+													ThrowError("Portal y parameter is not a float");
+												if (!StringToFloatEx(szVector[2], pEntry.m_vecPortalPosition[2]))
+													ThrowError("Portal z parameter is not a float");
 											}
 											else
 											{
@@ -436,10 +470,22 @@ enum struct CCoopSpawn
 	}
 }
 
+CCoopSpawn g_SpawnSystem;
+
 public Action Callback_RemovePlayerSuit(Handle hTimer, CBlackMesaPlayer pPlayer)
 {
 	if (pPlayer.IsValid())
 	{
 		pPlayer.SetSuit(false);
+	}
+}
+
+public void Hook_TouchPortal(int entity, int other)
+{
+	CBlackMesaPlayer pPlayer = CBlackMesaPlayer(other);
+	if(pPlayer.IsClassPlayer())
+	{
+		g_SpawnSystem.SpawnPlayer(pPlayer, false);
+		ClientCommand(other, "playgamesound %s", "xen.energy_hit");
 	}
 }

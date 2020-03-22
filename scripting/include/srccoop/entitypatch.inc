@@ -4,10 +4,10 @@
 // crash fix on getting scared
 //------------------------------------------------------
 
-public MRESReturn Hook_ScientistIRelationType(int _this, Handle hReturn, Handle hParams)	
+public MRESReturn Hook_ScientistIRelationType(int _this, Handle hReturn, Handle hParams)
 {
 	DHookSetReturn(hReturn, D_LI);
-	return MRES_Supercede; 
+	return MRES_Supercede;
 }
 
 //------------------------------------------------------
@@ -18,7 +18,7 @@ public MRESReturn Hook_ScientistIRelationType(int _this, Handle hReturn, Handle 
 public MRESReturn Hook_ProtoSniperSelectSchedule(int _this, Handle hReturn, Handle hParams)	// https://github.com/ValveSoftware/source-sdk-2013/blob/0d8dceea4310fde5706b3ce1c70609d72a38efdf/mp/src/game/server/hl2/proto_sniper.cpp#L1385
 {
 	CProtoSniper pSniper = CProtoSniper(_this);
-	
+
 	if (pSniper.HasCondition(view_as<int>(COND_ENEMY_DEAD)))
 	{
 		if (PrecacheSound("NPC_Sniper.TargetDestroyed", true))
@@ -26,21 +26,21 @@ public MRESReturn Hook_ProtoSniperSelectSchedule(int _this, Handle hReturn, Hand
 			EmitGameSoundToAll("NPC_Sniper.TargetDestroyed", pSniper.GetEntIndex());
 		}
 	}
-	
+
 	if (!pSniper.IsWeaponLoaded())
 	{
 		DHookSetReturn(hReturn, SCHED_RELOAD);
 		return MRES_Supercede;
 	}
-	
+
 	// Hear Danger
-	
+
 	if (!pSniper.IsEnabled())
 	{
 		DHookSetReturn(hReturn, 54);
 		return MRES_Supercede;
 	}
-	
+
 	CBaseEntity pEnemy = pSniper.GetEnemy();
 	if (!pEnemy.IsValid() || pSniper.HasCondition(view_as<int>(COND_ENEMY_DEAD)))
 	{
@@ -48,13 +48,13 @@ public MRESReturn Hook_ProtoSniperSelectSchedule(int _this, Handle hReturn, Hand
 		DHookSetReturn(hReturn, 89);
 		return MRES_Supercede;
 	}
-	
+
 	if (pSniper.HasCondition(view_as<int>(COND_LOST_ENEMY)))
 	{
 		DHookSetReturn(hReturn, 89);
 		return MRES_Supercede;
 	}
-	
+
 	if (pSniper.HasCondition(view_as<int>(COND_CAN_RANGE_ATTACK1)))
 	{
 		DHookSetReturn(hReturn, 43);
@@ -83,7 +83,7 @@ public MRESReturn Hook_FindNamedEntity(int _this, Handle hReturn, Handle hParams
 			{
 				float vecActorPosition[3];
 				pActor.GetAbsOrigin(vecActorPosition);
-				
+
 				CBlackMesaPlayer pBestPlayer = CBlackMesaPlayer();
 				float flBestDistance = FLT_MAX;
 				for (int i = 1; i < (MaxClients + 1); i++)
@@ -93,7 +93,7 @@ public MRESReturn Hook_FindNamedEntity(int _this, Handle hReturn, Handle hParams
 					{
 						float vecPlayerPosition[3];
 						pPlayer.GetAbsOrigin(vecPlayerPosition);
-	
+
 						float flDistance = GetVectorDistance(vecActorPosition, vecPlayerPosition, false);
 						if (flDistance < flBestDistance)
 						{
@@ -103,7 +103,7 @@ public MRESReturn Hook_FindNamedEntity(int _this, Handle hReturn, Handle hParams
 						}
 					}
 				}
-				
+
 				if (pBestPlayer.IsValid())
 				{
 					DHookSetReturn(hReturn, pBestPlayer.GetEntIndex());
@@ -112,7 +112,7 @@ public MRESReturn Hook_FindNamedEntity(int _this, Handle hReturn, Handle hParams
 			}
 		}
 	}
-	
+
 	return MRES_Ignored;
 }
 
@@ -133,7 +133,7 @@ public void Hook_ChangelevelSpawn(int iEntIndex)
 {
 	CBaseEntity pEntity = CBaseEntity(iEntIndex);
 	DHookEntity(hkAcceptInput, true, pEntity.GetEntIndex(), _, Hook_ChangelevelAcceptInput);
-	
+
 	if(!pEntity.HasSpawnFlag(SF_CHANGELEVEL_NOTOUCH))
 	{
 		SDKHook(pEntity.GetEntIndex(), SDKHook_Touch, Hook_ChangelevelOnTouch);
@@ -155,7 +155,7 @@ public MRESReturn Hook_ChangelevelAcceptInput(int _this, Handle hReturn, Handle 
 			}
 		}
 	}
-	
+
 	return MRES_Ignored;
 }
 
@@ -165,7 +165,7 @@ public void Hook_ChangelevelOnTouch(int _this, int iOther)
 	{
 		CChangelevel pChangelevel = CChangelevel(_this);
 		CBlackMesaPlayer pPlayer = CBlackMesaPlayer(iOther);
-		
+
 		if (pPlayer.IsValid() && pPlayer.IsClassPlayer())
 		{
 			ChangeLevelToNextMap(pChangelevel);
@@ -219,48 +219,72 @@ public MRESReturn Hook_PointTeleportAcceptInput(int _this, Handle hReturn, Handl
 
 public MRESReturn Hook_PointViewcontrolAcceptInput(int _this, Handle hReturn, Handle hParams)
 {
-	static bool bHookSkip = false;
+	static bool bHookSkipEnable = false;
 	LogDebug("Hook_PointViewcontrolAcceptInput ent=%d", _this);
-	if (!bHookSkip && g_pCoopManager.IsBugPatchingEnabled())
+	if (g_pCoopManager.IsBugPatchingEnabled())
 	{
 		if (!DHookIsNullParam(hParams, 1))
 		{
+			CBaseEntity pThis = CBaseEntity(_this);
 			char szInputType[MAX_FORMAT];
 			DHookGetParamString(hParams, 1, szInputType, sizeof(szInputType));
-			if (strcmp(szInputType, "Enable") == 0)
+			LogDebug("Hook_PointViewcontrolAcceptInput szInputType=%s", szInputType);
+
+			if (strcmp(szInputType, "Disable") == 0)
 			{
-				// if activator is not a player, refire this with a player
-				// spin up temporary repeater cameras for every other player
-				// this is the only way to make this work 100% without recreating the entity entirely
-				
-				int iActivator = -1;
-				bool bRefiredThisOutput;
+				int iFollowerEnt = -1;
+				while ((iFollowerEnt = FindEntityByOwner(iFollowerEnt, pThis, "point_viewcontrol")) != -1)
+				{
+					LogDebug("Hook_PointViewcontrolAcceptInput disabling follower %d", iFollowerEnt);
+					AcceptEntityInput(iFollowerEnt, "Disable");
+				}
+				// continue as normal //
+			}
+			else if (strcmp(szInputType, "Enable") == 0 && !bHookSkipEnable)
+			{
+				CBaseEntity pActivator;
 				if(!DHookIsNullParam(hParams, 2))
 				{
-					iActivator = DHookGetParam(hParams, 2);
-					LogDebug("Hook_PointViewcontrolAcceptInput iActivator=%d", iActivator);
-					if(!CBaseEntity(iActivator).IsClassPlayer())
-					{
-						iActivator = -1;
-					}
+					pActivator = CBaseEntity(DHookGetParam(hParams, 2));
 				}
+				if(pActivator.IsClassPlayer())
+				{
+					if(GetEntProp(_this, Prop_Data, "m_state") == USE_ON)
+					{
+						AcceptEntityInput(_this, "Disable");
+					}
+					// continue as normal //
+				}
+				else
+				{
+					LogDebug("Hook_PointViewcontrolAcceptInput MRES_Supercede -  activator not a player > EnableAll");
+					AcceptEntityInput(_this, "EnableAll");
+					DHookSetReturn(hReturn, true);
+					return MRES_Supercede;
+				}
+			}
+			else if (strcmp(szInputType, "EnableAll") == 0) // new input
+			{
+				// use this (primary) viewcontrol with first client
+				// spin up temporary repeater cameras for every other client
+				// this is the only way to make this work 100% without recreating the entity entirely
 				
-				bHookSkip = true;
+				bHookSkipEnable = true;
 				g_bTempDontHookEnts = true;
+				bool bUsedThis;
 				for(int i = 1; i <= MaxClients; i++)
 				{
 					if(IsClientInGame(i) && IsPlayerAlive(i))
 					{
-						if(iActivator == -1)
+						if(!bUsedThis)
 						{
-							iActivator = i;
-							LogDebug("Hook_PointViewcontrolAcceptInput new iActivator=%d, refiring", iActivator);
-							AcceptEntityInput(_this, "Enable", iActivator);
-							bRefiredThisOutput = true;
-							continue;
-						}
-						if(i == iActivator)
-						{
+							LogDebug("Hook_PointViewcontrolAcceptInput enabling primary camera");
+							if(GetEntProp(_this, Prop_Data, "m_state") == USE_ON)
+							{
+								AcceptEntityInput(_this, "Disable");
+							}
+							AcceptEntityInput(_this, "Enable", i);
+							bUsedThis = true;
 							continue;
 						}
 						
@@ -268,7 +292,7 @@ public MRESReturn Hook_PointViewcontrolAcceptInput(int _this, Handle hReturn, Ha
 						CBaseEntity pFollower = CBaseEntity(iFollower);
 						if(pFollower.IsValidIndex())
 						{
-							LogDebug("Hook_PointViewcontrolAcceptInput new follower %d", iFollower);
+							LogDebug("Hook_PointViewcontrolAcceptInput new follower camera %d", iFollower);
 							// copy all relevant properties
 							float vec[3];
 							char buffer[MAX_VALUE];
@@ -282,26 +306,24 @@ public MRESReturn Hook_PointViewcontrolAcceptInput(int _this, Handle hReturn, Ha
 							SetEntProp(iFollower, Prop_Data, "m_spawnflags", GetEntProp(_this, Prop_Data, "m_spawnflags"));
 							GetEntPropVector(_this, Prop_Data, "m_angAbsRotation", vec); SetEntPropVector(iFollower, Prop_Data, "m_angAbsRotation", vec);
 							GetEntPropVector(_this, Prop_Data, "m_vecAbsOrigin", vec); SetEntPropVector(iFollower, Prop_Data, "m_vecAbsOrigin", vec);
-							GetEntPropString(_this, Prop_Data, "m_iName", buffer, sizeof(buffer)); SetEntPropString(iFollower, Prop_Data, "m_iName", buffer); 
-							GetEntPropString(_this, Prop_Data, "m_sPath", buffer, sizeof(buffer)); SetEntPropString(iFollower, Prop_Data, "m_sPath", buffer); 
-							GetEntPropString(_this, Prop_Data, "m_iParent", buffer, sizeof(buffer)); SetEntPropString(iFollower, Prop_Data, "m_iParent", buffer); 
-							GetEntPropString(_this, Prop_Data, "m_target", buffer, sizeof(buffer)); SetEntPropString(iFollower, Prop_Data, "m_target", buffer); 
-							GetEntPropString(_this, Prop_Data, "m_iszTargetAttachment", buffer, sizeof(buffer)); SetEntPropString(iFollower, Prop_Data, "m_iszTargetAttachment", buffer); 
+							GetEntPropString(_this, Prop_Data, "m_iName", buffer, sizeof(buffer)); SetEntPropString(iFollower, Prop_Data, "m_iName", buffer);
+							GetEntPropString(_this, Prop_Data, "m_sPath", buffer, sizeof(buffer)); SetEntPropString(iFollower, Prop_Data, "m_sPath", buffer);
+							GetEntPropString(_this, Prop_Data, "m_iParent", buffer, sizeof(buffer)); SetEntPropString(iFollower, Prop_Data, "m_iParent", buffer);
+							GetEntPropString(_this, Prop_Data, "m_target", buffer, sizeof(buffer)); SetEntPropString(iFollower, Prop_Data, "m_target", buffer);
+							GetEntPropString(_this, Prop_Data, "m_iszTargetAttachment", buffer, sizeof(buffer)); SetEntPropString(iFollower, Prop_Data, "m_iszTargetAttachment", buffer);
 							pFollower.Spawn();
 							pFollower.AcceptInputStr("AddOutput", "OnEndFollow !self:kill::0:1");
 							pFollower.AcceptInputStr("Enable", _, CBlackMesaPlayer(i));
-							DHookEntity(hkAcceptInput, false, iFollower, _, Hook_PointViewcontrolBlockEnable);
+							pFollower.SetOwner(pThis);
+							DHookEntity(hkAcceptInput, false, iFollower, _, Hook_PointViewcontrolNeverEnable);
 						}
 					}
 				}
-				bHookSkip = false;
+				bHookSkipEnable = false;
 				g_bTempDontHookEnts = false;
-				if(bRefiredThisOutput)
-				{
-					DHookSetReturn(hReturn, true);
-					LogDebug("Hook_PointViewcontrolAcceptInput MRES_Supercede");
-					return MRES_Supercede;
-				}
+				DHookSetReturn(hReturn, true);
+				LogDebug("Hook_PointViewcontrolAcceptInput MRES_Supercede");
+				return MRES_Supercede;
 			}
 		}
 	}
@@ -309,7 +331,7 @@ public MRESReturn Hook_PointViewcontrolAcceptInput(int _this, Handle hReturn, Ha
 	return MRES_Ignored;
 }
 
-public MRESReturn Hook_PointViewcontrolBlockEnable(int _this, Handle hReturn, Handle hParams)
+public MRESReturn Hook_PointViewcontrolNeverEnable(int _this, Handle hReturn, Handle hParams)
 {
 	if (!DHookIsNullParam(hParams, 1))
 	{
@@ -317,9 +339,82 @@ public MRESReturn Hook_PointViewcontrolBlockEnable(int _this, Handle hReturn, Ha
 		DHookGetParamString(hParams, 1, szInputType, sizeof(szInputType));
 		if (strcmp(szInputType, "Enable") == 0)
 		{
-			LogDebug("Hook_PointViewcontrolBlockEnable ent=%d", _this);
+			LogDebug("Hook_PointViewcontrolNeverEnable ent=%d", _this);
 			DHookSetReturn(hReturn, true);
 			return MRES_Supercede;
+		}
+	}
+	return MRES_Ignored;
+}
+
+//------------------------------------------------------
+// CMovementSpeedMod - player_speedmod
+// multiplayer support
+//------------------------------------------------------
+
+public MRESReturn Hook_SpeedmodAcceptInput(int _this, Handle hReturn, Handle hParams)
+{
+	static bool bHookSkip = false;
+	if (!bHookSkip && g_pCoopManager.IsBugPatchingEnabled())
+	{
+		if (!DHookIsNullParam(hParams, 1))
+		{
+			char szInputType[MAX_FORMAT];
+			DHookGetParamString(hParams, 1, szInputType, sizeof(szInputType));
+			if (strcmp(szInputType, "ModifySpeedAll") == 0) // new input
+			{
+				char szParam[32];
+				DHookGetParamObjectPtrString(hParams, 4, 0, ObjectValueType_String, szParam, sizeof(szParam));
+				bHookSkip = true;
+				for(int i = 1; i <= MaxClients; i++)
+				{
+					if(IsClientInGame(i))
+					{
+						SetVariantString(szParam);
+						AcceptEntityInput(_this, "ModifySpeed", i);
+					}
+				}
+				bHookSkip = false;
+				DHookSetReturn(hReturn, true);
+				return MRES_Supercede;
+			}
+		}
+	}
+	return MRES_Ignored;
+}
+
+//------------------------------------------------------
+// point_clientcommand
+// multiplayer support
+//------------------------------------------------------
+
+public MRESReturn Hook_ClientCommandAcceptInput(int _this, Handle hReturn, Handle hParams)
+{
+	static bool bHookSkip = false;
+	if (!bHookSkip && g_pCoopManager.IsBugPatchingEnabled())
+	{
+		if (!DHookIsNullParam(hParams, 1))
+		{
+			char szInputType[MAX_FORMAT];
+			DHookGetParamString(hParams, 1, szInputType, sizeof(szInputType));
+			LogDebug("Hook_ClientCommandAcceptInput input=%s", szInputType);
+			if (strcmp(szInputType, "CommandAll") == 0) // new input
+			{
+				char szParam[MAX_FORMAT];
+				DHookGetParamObjectPtrString(hParams, 4, 0, ObjectValueType_String, szParam, sizeof(szParam));
+				bHookSkip = true;
+				for(int i = 1; i <= MaxClients; i++)
+				{
+					if(IsClientInGame(i))
+					{
+						SetVariantString(szParam);
+						AcceptEntityInput(_this, "Command", i);
+					}
+				}
+				bHookSkip = false;
+				DHookSetReturn(hReturn, true);
+				return MRES_Supercede;
+			}
 		}
 	}
 	return MRES_Ignored;

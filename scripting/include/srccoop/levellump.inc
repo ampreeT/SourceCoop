@@ -100,6 +100,30 @@ methodmap CEntityInfoLump < Array_t
 		
 		return true;
 	}
+		
+	public bool MatchesAsIOTarget(char[] szTarget, CEntityInfoLump pCallingEntity)
+	{
+		if(strcmp(szTarget, "!self") == 0)
+		{
+			return this.IsEqual(pCallingEntity);
+		}
+		for (int i = 0; i < this.Length; i++)
+		{
+			CEntityKeyLump pThisKeyInfo;
+			if (this.GetArray(i, pThisKeyInfo, sizeof(pThisKeyInfo)))
+			{
+				if(strcmp(pThisKeyInfo.m_szKey, "classname") == 0 && strcmp(pThisKeyInfo.m_szValue, szTarget) == 0)
+				{
+					return true;
+				}
+				if(strcmp(pThisKeyInfo.m_szKey, "targetname") == 0 && strcmp(pThisKeyInfo.m_szValue, szTarget) == 0)
+				{
+					return true;
+				}
+			}
+		}
+		return false;
+	}
 	
 	public bool MatchesActualEntity(CBaseEntity pEntity)
 	{
@@ -437,35 +461,7 @@ enum struct CGlobalLevelLump
 										{
 											if (kv.GotoFirstSubKey(false))
 											{
-												CEntityInfoLump pEvaulationEntity = new CEntityInfoLump(CreateArray(sizeof(CEntityKeyLump)));
-												if (!pEvaulationEntity.IsValid())
-													ThrowError("Was unable to create CEntityInfoLump for entity modify evaulation");
-												
-												do
-												{
-													CEntityKeyLump pEntityKeyInfo;
-													if (kv.GetSectionName(pEntityKeyInfo.m_szKey, sizeof(pEntityKeyInfo.m_szKey)) && kv.GetDataType(NULL_STRING) != KvData_None)
-													{
-														kv.GetString(NULL_STRING, pEntityKeyInfo.m_szValue, sizeof(pEntityKeyInfo.m_szValue));
-														pEvaulationEntity.PushArray(pEntityKeyInfo, sizeof(pEntityKeyInfo));
-													}
-												}
-												while (kv.GotoNextKey(false));
-												kv.GoBack();
-												
-												CEntityListLump pTempEvaluatedList = new CEntityListLump(CreateArray(sizeof(CEntityInfoLump)));
-												if (!pTempEvaluatedList.IsValid())
-													ThrowError("Was unable to create CEntityListLump for entity modify temp list");
-												
-												for (int i = 0; i < this.m_pEntityList.Length; i++)
-												{
-													CEntityInfoLump pThisEntityInfo = this.m_pEntityList.Get(i);
-													if (pEvaulationEntity.IsEqual(pThisEntityInfo))
-													{
-														pTempEvaluatedList.Push(pThisEntityInfo);
-													}
-												}
-												
+												CEntityListLump pTempEvaluatedList = this.EvaluateEntityList(kv);
 												if (kv.GotoFirstSubKey(true))
 												{
 													do
@@ -479,8 +475,6 @@ enum struct CGlobalLevelLump
 													while (kv.GotoNextKey(true));
 													kv.GoBack();
 												}
-												
-												pEvaulationEntity.Close();
 												pTempEvaluatedList.Close();
 											}
 										}
@@ -497,6 +491,39 @@ enum struct CGlobalLevelLump
 			kv.GoBack();
 		}
 		delete kv;
+	}
+	
+	CEntityListLump EvaluateEntityList(KeyValues kv)
+	{
+		CEntityInfoLump pEvaulationEntity = new CEntityInfoLump(CreateArray(sizeof(CEntityKeyLump)));
+		if (!pEvaulationEntity.IsValid())
+			ThrowError("Was unable to create CEntityInfoLump for entity modify evaulation");
+		CEntityListLump pTempEvaluatedList = new CEntityListLump(CreateArray(sizeof(CEntityInfoLump)));
+		if (!pTempEvaluatedList.IsValid())
+			ThrowError("Was unable to create CEntityListLump for entity modify temp list");
+		
+		do
+		{
+			CEntityKeyLump pEntityKeyInfo;
+			if (kv.GetSectionName(pEntityKeyInfo.m_szKey, sizeof(pEntityKeyInfo.m_szKey)) && kv.GetDataType(NULL_STRING) != KvData_None)
+			{
+				kv.GetString(NULL_STRING, pEntityKeyInfo.m_szValue, sizeof(pEntityKeyInfo.m_szValue));
+				pEvaulationEntity.PushArray(pEntityKeyInfo, sizeof(pEntityKeyInfo));
+			}
+		}
+		while (kv.GotoNextKey(false));
+		kv.GoBack();
+		
+		for (int i = 0; i < this.m_pEntityList.Length; i++)
+		{
+			CEntityInfoLump pThisEntityInfo = this.m_pEntityList.Get(i);
+			if (pEvaulationEntity.IsEqual(pThisEntityInfo))
+			{
+				pTempEvaluatedList.Push(pThisEntityInfo);
+			}
+		}
+		pEvaulationEntity.Close();
+		return pTempEvaluatedList;
 	}
 	
 	void ParseModifyAction(KeyValues kv, char szModifyType[MAX_KEY], CEntityListLump pTempEvaluatedList)
@@ -582,6 +609,8 @@ enum struct CGlobalLevelLump
 		char szAction[MAX_KEY], szKey[MAX_KEY], szOutputName[MAX_KEY];
 		if (kv.GetSectionName(szAction, sizeof(szAction)))
 		{
+			LogDebug("Performing output \"%s\" action for %d entities", szAction, pTempEvaluatedList.Length);
+			
 			bool bFoundOutput, bFoundTarget, bFoundInput, bFoundParameter, bFoundDelay, bFoundTTF;
 			if(strcmp(szAction, "add", false) == 0)
 			{
@@ -612,6 +641,17 @@ enum struct CGlobalLevelLump
 			CEntityOutputLump pMatchOutputLump;
 			this.ParseOutputKeys(kv, pMatchOutputLump, szOutputName, sizeof(szOutputName), bFoundOutput, bFoundTarget, bFoundInput, bFoundParameter, bFoundDelay, bFoundTTF);
 			
+			// evaluate entities matching target if specified
+			CEntityListLump pTargetEvaluatedList;
+			if(kv.GetDataType("target") == KvData_None && kv.JumpToKey("target", false))
+			{
+				if(kv.GotoFirstSubKey(false)) {
+					pTargetEvaluatedList = this.EvaluateEntityList(kv);
+					LogDebug("Found %d entities for output target matching", pTargetEvaluatedList.Length);
+				}
+				kv.GoBack();
+			}
+			
 			for (int i = 0; i < pTempEvaluatedList.Length; i++)
 			{
 				CEntityInfoLump pEditedEntityInfo = pTempEvaluatedList.Get(i);
@@ -630,6 +670,22 @@ enum struct CGlobalLevelLump
 						_pEntityOutputLump[0] = pEntityOutputLump;
 						if(pMatchOutputLump.IsEqual(_pEntityOutputLump, bFoundTarget, bFoundInput, bFoundParameter, bFoundDelay, bFoundTTF))
 						{
+							// skip any outputs that dont match the target entity
+							if(pTargetEvaluatedList.IsValid())
+							{
+								bool bFoundOne;
+								for (int k = 0; k < pTargetEvaluatedList.Length; k++)
+								{
+									CEntityInfoLump pTargetEntityInfo = pTargetEvaluatedList.Get(k);
+									if(pTargetEntityInfo.MatchesAsIOTarget(pEntityOutputLump.m_szTargetEntity, pEditedEntityInfo))
+									{
+										bFoundOne = true;
+										break;
+									}
+								}
+								if(!bFoundOne)
+									continue;
+							}
 							if(modify)
 							{
 								if (kv.GotoFirstSubKey(true))
@@ -638,8 +694,10 @@ enum struct CGlobalLevelLump
 									{
 										if (kv.GetSectionName(szKey, sizeof(szKey)) && strcmp(szKey, "replace", false) == 0)
 										{
+											LogDebug("Replacing output %s %s", pEditedKeyInfo.m_szKey, pEditedKeyInfo.m_szValue);
 											this.ParseOutputKeys(kv, pEntityOutputLump, pEditedKeyInfo.m_szKey, sizeof(pEditedKeyInfo.m_szKey));
 											pEntityOutputLump.SaveToEntityKeyLump(pEditedKeyInfo);
+											LogDebug(".....With output %s %s", pEditedKeyInfo.m_szKey, pEditedKeyInfo.m_szValue);
 											pEditedEntityInfo.SetArray(j, pEditedKeyInfo);
 										}
 									}
@@ -655,6 +713,7 @@ enum struct CGlobalLevelLump
 					}
 				}
 			}
+			pTargetEvaluatedList.Close();
 		}
 	}
 	
@@ -723,6 +782,8 @@ enum struct CGlobalLevelLump
 		this.m_pModifiedCvarList.Clear();
 	}
 }
+
+CGlobalLevelLump g_pLevelLump;
 
 public int SplitNewline(const char[] szSource, const int nSize, char[] szBuffer)
 {

@@ -9,10 +9,12 @@
 	}
 	"console"
 	{
+		// somewhat fix train prediction lagging
 		"sv_client_predict" "0"
 	}
 	"entity"
 	{
+		// delay map start
 		"modify"
 		{
 			"classname" "logic_auto"
@@ -22,6 +24,7 @@
 				"delay_output" "OnMapSpawn"
 			}
 		}
+		// delay map start
 		"modify"
 		{
 			"targetname" "tram_track_52"
@@ -30,36 +33,13 @@
 				"speed" "0"
 			}
 		}
+		// fix horrid noise at train rotating platform
 		"modify"
 		{
 			"targetname" "train_elevator_rotate"
 			"add"
 			{
 				"loopmovesound" "0"
-			}
-		}
-		"modify"
-		{
-			"globalname"	"train"
-			"remove"
-			{
-				"globalname"	"train"
-			}
-		}
-		"modify"
-		{
-			"globalname"	"train2"
-			"remove"
-			{
-				"globalname"	"train2"
-			}
-		}
-		"modify"
-		{
-			"globalname"	"train_model"
-			"remove"
-			{
-				"globalname"	"train_model"
 			}
 		}
 	}

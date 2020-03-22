@@ -28,7 +28,6 @@
 - crossbow sp bolts
 - bigfish crash
 - crash caused by zombies/vortigaunts attacking a player-held object
-- crash when security guard that is following player shoots at npc (bm_c1a1b)
 - custom difficulty based on player count
 	- weapon_headcrab latching
 		- need textures for this (they are on fpsbanana)
@@ -38,13 +37,14 @@
 		- CBaseCombatCharacter::CalcWeaponProficiency(...) hook for accuracy
 - trigger_changelevel
 	- game code checks for g_pGameRules->IsDeathmatch(), overriding that to false gives a crashes on changelevel, but at least its something (could explore crash dump on linux)
-- add checkpoint 'portals' that teleports player to active checkopint when touched, used for example when a door closes that would lock player out. This is an alternative to suicide/forced teleports.
 - add regex parsing?
 - implement player walking animations when not holding any weapon
 - find out if the 'admire hands' animation can be reenabled when picking up suit
+- hook UpdateEnemyMemory input on npcs, compare if !player or !pvsplayer > call manually (either closest player or all) (UpdateEnemyMemory( pEnemy, pEnemy->GetAbsOrigin(), this ))
+- ai_goal_follow (+possibly other ai_goals) with goal of !player - set closest - detour CBaseEntity* CAI_GoalEntity::GetGoalEntity
 
 ## map-issues
-- bm_c1a0a
-	- add tp portals to barney gate
-- bm_c1a0b
-	- stepping into the reactor core gives a crash
+- bm_c4a4a
+	-point_hurt (cyclone_hurt) has target !player (this picks first one)
+- xen maps
+	- healing pools have ambient_generic with !player as source entity

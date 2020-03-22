@@ -205,6 +205,19 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 		{
 			DHookEntity(hkAcceptInput, false, pEntity.GetEntIndex(), _, Hook_PointViewcontrolAcceptInput);
 		}
+		else if (strcmp(szClassname, "player_speedmod") == 0)
+		{
+			DHookEntity(hkAcceptInput, false, pEntity.GetEntIndex(), _, Hook_SpeedmodAcceptInput);
+		}
+		else if (strcmp(szClassname, "point_clientcommand") == 0)
+		{
+			DHookEntity(hkAcceptInput, false, pEntity.GetEntIndex(), _, Hook_ClientCommandAcceptInput);
+		}
+		// if some explosions turn out to be damaging all players except one, this is the fix
+		//else if (strcmp(szClassname, "env_explosion") == 0)
+		//{
+		//	SDKHook(pEntity.GetEntIndex(), SDKHook_SpawnPost, Hook_ExplosionSpawn);
+		//}
 		SDKHook(iEntIndex, SDKHook_SpawnPost, Hook_SpawnPost);
 	}
 }
@@ -459,18 +472,6 @@ public MRESReturn Hook_SetSuitUpdate(int _this, Handle hParams)		// suit sounds;
 	return MRES_Ignored;
 }
 
-public Action Callback_CheckpointTimer(Handle hTimer, CBlackMesaPlayer pPlayerToFilter)
-{
-	for (int i = 1; i < (MaxClients + 1); i++)
-	{
-		CBlackMesaPlayer pPlayer = CBlackMesaPlayer(i);
-		if (pPlayer.IsValid() && pPlayer.GetEntIndex() != pPlayerToFilter.GetEntIndex())
-		{
-			g_SpawnSystem.SpawnPlayer(pPlayer);
-		}
-	}
-}
-
 public void Callback_Checkpoint(const char[] szName, int iCaller, int iActivator, float flDelay)
 {
 	CBaseEntity pCaller = CBaseEntity(iCaller);
@@ -481,6 +482,10 @@ public void Callback_Checkpoint(const char[] szName, int iCaller, int iActivator
 	{
 		if (g_SpawnSystem.m_pCheckpointList.GetArray(i, pEntry, sizeof(pEntry)))
 		{
+			if(pEntry.m_bHasPortal)
+			{
+				g_SpawnSystem.CreatePortal(pEntry.m_vecPortalPosition);
+			}
 			if (pCaller == pEntry.m_pTriggerEnt)
 			{
 				iEntriesToKill = i;
@@ -491,12 +496,22 @@ public void Callback_Checkpoint(const char[] szName, int iCaller, int iActivator
 	
 	if (iEntriesToKill > -1)
 	{
-		CBaseEntity pActivator = CBlackMesaPlayer(iActivator);
-		CBlackMesaPlayer pPlayerToFilter = (pActivator.IsValid() && pActivator.IsClassPlayer()) ? view_as<CBlackMesaPlayer>(pActivator) : CBlackMesaPlayer();
-		
 		g_SpawnSystem.EraseCheckpoints(iEntriesToKill + 1);
 		g_SpawnSystem.SetSpawnLocation(pEntry.m_vecPosition, pEntry.m_vecAngles, pEntry.m_pFollowEnt);
-		CreateTimer(pEntry.m_flDelay, Callback_CheckpointTimer, pPlayerToFilter);
+	}
+}
+
+public void Hook_ExplosionSpawn(int iEntIndex)
+{
+	if (g_pCoopManager.IsBugPatchingEnabled())
+	{
+		char buffer[MAX_VALUE];
+		GetEntPropString(iEntIndex, Prop_Data, "m_strEntityNameToIgnore", buffer, sizeof(buffer)); // this is entity handle m_hEntityIgnore in other games
+		if(StrEqual(buffer, "!player"))
+		{
+			SetEntPropString(iEntIndex, Prop_Data, "m_strEntityNameToIgnore", "");
+			SetEntProp(iEntIndex, Prop_Data, "m_iClassIgnore", CLASS_PLAYER);
+		}
 	}
 }
 

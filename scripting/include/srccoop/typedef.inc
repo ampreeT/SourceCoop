@@ -48,6 +48,20 @@ enum
 	TEAM_SCIENTIST = 3,
 }
 
+enum
+{
+	USE_OFF,
+	USE_ON,
+	USE_SET,
+	USE_TOGGLE
+};
+
+// ToDo: Need to find all values for BMS
+enum Class_T
+{
+	CLASS_PLAYER = 3
+};
+
 enum Disposition_t 
 {
 	D_ER,		// Undefined - error
@@ -325,7 +339,7 @@ enum SolidType_t
 	SOLID_LAST,
 };
 
-enum SolidFlags_t
+enum //SolidFlags_t
 {
 	FSOLID_CUSTOMRAYTEST = 0x0001,	// Ignore solid type + always call into the entity for ray tests
 	FSOLID_CUSTOMBOXTEST = 0x0002,	// Ignore solid type + always call into the entity for swept box tests

@@ -9,10 +9,12 @@
 	}
 	"console"
 	{
+		// somewhat fix train prediction lagging
 		"sv_client_predict" "0"
 	}
 	"entity"
 	{
+		// delay map start
 		"modify"
 		{
 			"classname"	"logic_auto"
@@ -20,30 +22,6 @@
 			"functions"
 			{
 				"delay_output" "OnMapSpawn"
-			}
-		}
-		"modify"
-		{
-			"globalname"	"train2"
-			"remove"
-			{
-				"globalname"	"train2"
-			}
-		}
-		"modify"
-		{
-			"globalname"	"train_model"
-			"remove"
-			{
-				"globalname"	"train_model"
-			}
-		}
-		"modify"
-		{
-			"globalname"	"train_door"
-			"remove"
-			{
-				"globalname"	"train_door"
 			}
 		}
 	}

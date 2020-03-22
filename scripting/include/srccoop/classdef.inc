@@ -202,20 +202,60 @@ methodmap CBaseEntity
 	{
 		SetEntPropVector(this.GetEntIndex(), Prop_Data, "m_vecMins", vecMins);
 	}
+	public void GetMaxs(float vecBuffer[3])
+	{
+		GetEntPropVector(this.GetEntIndex(), Prop_Data, "m_vecMaxs", vecBuffer);
+	}
+	public void SetMaxs(const float vecMaxs[3])
+	{
+		SetEntPropVector(this.GetEntIndex(), Prop_Data, "m_vecMaxs", vecMaxs);
+	}
 	public CBaseEntity GetOwner()
 	{
-		return CBaseEntity(GetEntPropEnt(this.GetEntIndex(), Prop_Send, "m_hOwnerEntity"));
+		return CBaseEntity(GetEntPropEnt(this.GetEntIndex(), Prop_Data, "m_hOwnerEntity"));
+	}
+	public void SetOwner(CBaseEntity pOwnerEntity)
+	{
+		SetEntPropEnt(this.GetEntIndex(), Prop_Data, "m_hOwnerEntity", pOwnerEntity.GetEntIndex());
 	}
 	public MoveType GetMoveType()
 	{
 		return GetEntityMoveType(this.GetEntIndex());
 	}
+	public void SetMoveType(MoveType moveType)
+	{
+		SetEntityMoveType(this.GetEntIndex(), moveType);
+	}
+	public int GetCollisionGroup()
+	{
+		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_CollisionGroup");
+	}
+	public void SetCollisionGroup(int iCollisionGroup)
+	{
+		SetEntProp(this.GetEntIndex(), Prop_Data, "m_CollisionGroup", iCollisionGroup);
+	}
+	public int GetSolidType()
+	{
+		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_nSolidType");
+	}
+	public void SetSolidType(SolidType_t iSolidType)
+	{
+		SetEntProp(this.GetEntIndex(), Prop_Data, "m_nSolidType", iSolidType);
+	}
+	public int GetSolidFlags()
+	{
+		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_usSolidFlags");
+	}
+	public void SetSolidFlags(int iSolidFlags)
+	{
+		SetEntProp(this.GetEntIndex(), Prop_Data, "m_usSolidFlags", iSolidFlags);
+	}
 }
 
-public int FindEntityByHammerID(int iHammerID)
+int FindEntityByHammerID(int iHammerID, const char[] szClassname = "*")
 {
 	int startEnt = -1;
-	while ((startEnt = FindEntityByClassname(startEnt, "*")) != -1)
+	while ((startEnt = FindEntityByClassname(startEnt, szClassname)) != -1)
 	{
 		CBaseEntity pEntity = CBaseEntity(startEnt);
 		if (pEntity.GetHammerID() == iHammerID)
@@ -226,9 +266,9 @@ public int FindEntityByHammerID(int iHammerID)
 	return -1;
 }
 
-public int FindEntityByTargetname(int startEnt, const char[] targetname)
+int FindEntityByTargetname(int startEnt, const char[] targetname, const char[] szClassname = "*")
 {
-	while ((startEnt = FindEntityByClassname(startEnt, "*")) != -1)
+	while ((startEnt = FindEntityByClassname(startEnt, szClassname)) != -1)
 	{
 		CBaseEntity pEntity = CBaseEntity(startEnt);
 		char szTargetname[MAX_CLASSNAME];
@@ -240,7 +280,20 @@ public int FindEntityByTargetname(int startEnt, const char[] targetname)
 	return -1;
 }
 
-public CBaseEntity CreateByClassname(const char[] szClassname)
+int FindEntityByOwner(int startEnt, CBaseEntity pOwnerEntity, const char[] szClassname = "*")
+{
+	while ((startEnt = FindEntityByClassname(startEnt, szClassname)) != -1)
+	{
+		CBaseEntity pEntity = CBaseEntity(startEnt);
+		if(pEntity.GetOwner() == pOwnerEntity)
+		{
+			return startEnt;
+		}
+	}
+	return -1;
+}
+
+CBaseEntity CreateByClassname(const char[] szClassname)
 {
 	return CBaseEntity(CreateEntityByName(szClassname));
 }

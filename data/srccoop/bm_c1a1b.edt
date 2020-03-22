@@ -1,0 +1,23 @@
+#base "base\bm_sp_campaign.edt"
+
+"config"
+{
+	"nextmap"	"bm_c1a1c"
+	"equipment"
+	{
+		"suit"	"1"
+		"health" "95"
+	}
+	"entity"
+	{
+	
+	}
+	"checkpoint"
+	{
+		"spawn"
+		{
+			"origin"	"-1328 1921 -212"
+			"angles"	"0 270 0"
+		}
+	}
+}
