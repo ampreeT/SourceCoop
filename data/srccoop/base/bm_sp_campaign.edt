@@ -34,11 +34,11 @@
 				"spawnflags" "3"
 			}
 		}
-		// player_speedmod normally accepts the activator. In maps made for SP, we want all players to be affected. New input ModifySpeedAll has been added for that purpose. 
 		"modify"
 		{
 			"outputs"
 			{
+				// player_speedmod normally accepts the activator. In maps made for SP, we want all players to be affected. New input ModifySpeedAll has been added for that purpose.
 				"modify"
 				{
 					"input" "ModifySpeed"
@@ -47,13 +47,7 @@
 						"input" "ModifySpeedAll"
 					}
 				}
-			}
-		}
-		// point_viewcontrol normally accepts the activator. In maps made for SP, we want all players to be affected. New input EnableAll has been added for that purpose. 
-		"modify"
-		{
-			"outputs"
-			{
+				// point_viewcontrol normally accepts the activator. In maps made for SP, we want all players to be affected. New input EnableAll has been added for that purpose.
 				"modify"
 				{
 					"input" "Enable"
@@ -66,13 +60,7 @@
 						"input" "EnableAll"
 					}
 				}
-			}
-		}
-		// point_clientcommand normally accepts the activator. In maps made for SP, we want all players to be affected. New input CommandAll has been added for that purpose. 
-		"modify"
-		{
-			"outputs"
-			{
+				// point_clientcommand normally accepts the activator. In maps made for SP, we want all players to be affected. New input CommandAll has been added for that purpose.
 				"modify"
 				{
 					"input" "Command"

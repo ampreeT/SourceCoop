@@ -223,12 +223,19 @@ methodmap CNextMapLump < Array_t
 	}
 }
 
+enum IntroType
+{
+	INTRO_NONE = 0,
+	INTRO_FADE
+}
+
 enum struct CGlobalLevelLump
 {
 	CEntityListLump m_pEntityList;
 	CNextMapLump m_pNextMapList;
 	Array_t m_pModifiedCvarList;
 	COutputHookLump m_pOutputHookList;
+	IntroType m_iIntroType;
 	
 	void Initialize()
 	{
@@ -340,6 +347,7 @@ enum struct CGlobalLevelLump
 	{
 		this.m_pNextMapList.Clear();
 		this.m_pOutputHookList.Clear();
+		this.m_iIntroType = INTRO_NONE;
 		
 		char szMapPath[MAX_FORMAT];
 		if (!(BuildPath(Path_SM, szMapPath, sizeof(szMapPath), "data/srccoop/%s.edt", szMapName) && FileExists(szMapPath)))
@@ -367,6 +375,15 @@ enum struct CGlobalLevelLump
 							char szNextMapName[MAX_MAPNAME];
 							kv.GetString(NULL_STRING, szNextMapName, sizeof(szNextMapName));
 							this.m_pNextMapList.PushString(szNextMapName);
+						}
+						if (strcmp(szType, "intro_type", false) == 0)
+						{
+							char szIntroType[16];
+							kv.GetString(NULL_STRING, szIntroType, sizeof(szIntroType));
+							if(strcmp(szIntroType, "fade", false) == 0)
+							{
+								this.m_iIntroType = INTRO_FADE;
+							}
 						}
 					}
 					else

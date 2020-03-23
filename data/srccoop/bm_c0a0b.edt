@@ -24,7 +24,15 @@
 				"delay_output" "OnMapSpawn"
 			}
 		}
-		// delay map start
+		"modify"
+		{
+			"classname" "logic_auto"
+			"hammerid" "1292125"
+			"functions"
+			{
+				"delay_output" "OnMapSpawn"
+			}
+		}
 		"modify"
 		{
 			"targetname" "tram_track_52"

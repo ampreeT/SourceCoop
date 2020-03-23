@@ -2,7 +2,8 @@
 
 "config"
 {
-	"nextmap"	"bm_c0a0b"
+	"nextmap"		"bm_c0a0b"
+	"intro_type"	"fade"
 	"equipment"
 	{
 		"suit"	"0"
@@ -28,11 +29,6 @@
 		"delete"
 		{
 			"targetname" "intro_teleport"
-		}
-		// fade is unnecessary
-		"delete"
-		{
-			"targetname" "intro_fade"
 		}
 	}
 	"checkpoint"

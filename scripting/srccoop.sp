@@ -358,7 +358,7 @@ public void Hook_PlayerPreThinkPost(int iClient)
 		}
 		else
 		{
-			if(GetGameTime() - pPlayer.GetDeathTime() > 1.0)
+			if(pPlayer.GetTeam() != TEAM_SPECTATOR && GetGameTime() - pPlayer.GetDeathTime() > 1.0)
 			{
 				int iPressed = pPlayer.GetPressedButtons();
 				if(iPressed != 0 && iPressed != IN_SCORE)

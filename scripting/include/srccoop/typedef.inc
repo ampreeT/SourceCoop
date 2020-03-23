@@ -21,6 +21,12 @@
 
 #define EF_NODRAW 32
 
+#define FFADE_IN			0x0001		// Just here so we don't pass 0 into the function
+#define FFADE_OUT			0x0002		// Fade out (not in)
+#define FFADE_MODULATE		0x0004		// Modulate (don't blend)
+#define FFADE_STAYOUT		0x0008		// ignores the duration, stays faded out until new ScreenFade message received
+#define FFADE_PURGE			0x0010		// Purges all other fades, replacing them with this one
+
 enum
 {
 	AMMO_INVALID = 0,
@@ -47,6 +53,19 @@ enum
 	TEAM_MARINES = 2,
 	TEAM_SCIENTIST = 3,
 }
+
+enum Obs_Mode
+{
+	OBS_MODE_NONE = 0,	// not in spectator mode
+	OBS_MODE_DEATHCAM,	// special mode for death cam animation
+	OBS_MODE_FREEZECAM,	// zooms to a target, and freeze-frames on them
+	OBS_MODE_FIXED,		// view from a fixed camera position
+	OBS_MODE_IN_EYE,	// follow a player in first person view
+	OBS_MODE_CHASE,		// follow a player in third person view
+	OBS_MODE_ROAMING,	// free roaming
+
+	NUM_OBSERVER_MODES
+};
 
 enum
 {

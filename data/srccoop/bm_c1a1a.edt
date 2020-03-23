@@ -2,7 +2,8 @@
 
 "config"
 {
-	"nextmap"	"bm_c1a1b"
+	"nextmap"		"bm_c1a1b"
+	"intro_type"	"fade"
 	"equipment"
 	{
 		"suit"	"1"

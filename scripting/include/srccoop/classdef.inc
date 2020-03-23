@@ -174,6 +174,18 @@ methodmap CBaseEntity
 	{
 		SetEntProp(this.GetEntIndex(), Prop_Data, "m_spawnflags", iSpawnFlags);
 	}
+	public int GetFlags()
+	{
+		return GetEntityFlags(this.GetEntIndex());
+	}
+	public bool HasFlag(const int iFlag)
+	{
+		return (this.GetFlags() & iFlag) == iFlag;
+	}
+	public void SetFlags(const int iFlags)
+	{
+		SetEntityFlags(this.GetEntIndex(), iFlags);
+	}
 	public void Teleport(const float vecOrigin[3] = NULL_VECTOR, const float vecAngles[3] = NULL_VECTOR, const float vecVelocity[3] = NULL_VECTOR)
 	{
 		TeleportEntity(this.GetEntIndex(), vecOrigin, vecAngles, vecVelocity);
@@ -635,6 +647,14 @@ methodmap CBlackMesaPlayer < CBaseCombatCharacter
 	public void SetDeathTime(float flDeathTime)
 	{
 		SetEntPropFloat(this.GetEntIndex(), Prop_Send, "m_flDeathTime", flDeathTime);
+	}
+	public Obs_Mode GetObserverMode()
+	{
+		GetEntProp(this.GetEntIndex(), Prop_Data, "m_iObserverMode");
+	}
+	public int GetTeam()
+	{
+		return GetClientTeam(this.GetEntIndex());
 	}
 }
 

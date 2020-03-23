@@ -54,10 +54,19 @@ enum struct CoopManager
 		if(this.IsCoopModeEnabled())
 		{
 			g_SpawnSystem.SpawnPlayer(pPlayer);
+			
 			if(pPlayer.IsAlive())
 			{
 				this.m_bPlayerSpawned = true;
-				this.CheckStart();
+				if(!this.m_bStarted)
+				{
+					if(g_pLevelLump.m_iIntroType == INTRO_FADE)
+					{
+						Client_ScreenFade(pPlayer.GetEntIndex(), 0, FFADE_STAYOUT);
+						pPlayer.SetFlags(pPlayer.GetFlags() | FL_FROZEN);
+					}
+					this.CheckStart();
+				}
 			}
 		}
 	}
@@ -91,7 +100,6 @@ enum struct CoopManager
 	
 	void Start()
 	{
-		this.m_pStartTimer = null;
 		if(!GetRealClientCount(true)) {
 			return;
 		}
@@ -104,6 +112,18 @@ enum struct CoopManager
 	
 		this.m_bStarted = true;
 		PrintToServer("Co-op map %s has begun", g_szMapName);
+		
+		if(g_pLevelLump.m_iIntroType == INTRO_FADE)
+		{
+			for(int i = 1; i <= MaxClients; i++)
+			{
+				if(IsClientInGame(i))
+				{
+					CBlackMesaPlayer pClient = CBlackMesaPlayer(i);
+					pClient.SetFlags(pClient.GetFlags() & ~FL_FROZEN);
+				}
+			}
+		}
 		
 		// Fire delayed outputs
 		for (int i = 0; i < this.m_pDelayedOutputs.Length; i++)
@@ -170,6 +190,7 @@ public Action StartTimerCallback(Handle pTimer)
 	SetStateEndTime(STATE_WARMUP, GetGameTime() + g_pCoopManager.m_iSecondsToStart + 1);
 	if(!g_pCoopManager.m_iSecondsToStart--)
 	{
+		g_pCoopManager.m_pStartTimer = null;
 		g_pCoopManager.Start();
 		return Plugin_Stop;
 	}
@@ -209,4 +230,54 @@ stock void SetStateEndTime(const GameState iState, const float flEndTime)
 stock void SetStateIsInIntermission(const GameState iState, const bool bInIntermission)
 {
 	GameRules_SetProp("m_bIsInIntermission", bInIntermission, _, 0);
+}
+
+/**
+ * Fades a client's screen to a specified color
+ * Your adviced to read the FFADE_ Comments
+ *
+ * @param client		Player for which to fade the screen
+ * @param duration		duration in seconds the effect stays
+ * @param mode			fade mode, see FFADE_ defines
+ * @param holdtime		holdtime in seconds
+ * @param r				red amount
+ * @param g				green amount
+ * @param b				blue amount
+ * @param a				transparency
+ * @return				True on success, false otherwise
+ */
+stock bool Client_ScreenFade(int client, int duration, int mode, int holdtime=-1, int r=0, int g=0, int b=0, int a=255, bool reliable=true)
+{
+	Handle userMessage = StartMessageOne("Fade", client, (reliable?USERMSG_RELIABLE:0));
+
+	if (userMessage == INVALID_HANDLE) {
+		return false;
+	}
+
+	if (GetFeatureStatus(FeatureType_Native, "GetUserMessageType") == FeatureStatus_Available &&
+		GetUserMessageType() == UM_Protobuf) {
+
+		int color[4];
+		color[0] = r;
+		color[1] = g;
+		color[2] = b;
+		color[3] = a;
+
+		PbSetInt(userMessage,   "duration",   duration);
+		PbSetInt(userMessage,   "hold_time",  holdtime);
+		PbSetInt(userMessage,   "flags",      mode);
+		PbSetColor(userMessage, "clr",        color);
+	}
+	else {
+		BfWriteShort(userMessage,	duration);	// Fade duration
+		BfWriteShort(userMessage,	holdtime);	// Fade hold time
+		BfWriteShort(userMessage,	mode);		// What to do
+		BfWriteByte(userMessage,	r);			// Color R
+		BfWriteByte(userMessage,	g);			// Color G
+		BfWriteByte(userMessage,	b);			// Color B
+		BfWriteByte(userMessage,	a);			// Color Alpha
+	}
+	EndMessage();
+
+	return true;
 }
