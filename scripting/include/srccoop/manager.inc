@@ -35,8 +35,10 @@ enum struct CoopManager
 		
 		if (this.IsCoopModeEnabled())
 		{
-			SetStateEndTime(STATE_WARMUP, GetGameTime() + 60 * 60 * 24 * 7);
-			SetStateNextState(STATE_WARMUP, STATE_WARMUP);
+			SetCurrentState(STATE_WARMUP);
+			SetNextState(STATE_WARMUP);
+			SetStateEndTime(GetGameTime() + 60 * 60 * 24 * 7);
+			SetStateIsInIntermission(false); // false will let players spawn, true holds them waiting till the state changes (and also plays tick sounds last 3 seconds)
 			g_SpawnSystem.ParseConfigFile(g_szMapName);
 		}
 	}
@@ -103,13 +105,9 @@ enum struct CoopManager
 		if(!GetRealClientCount(true)) {
 			return;
 		}
-		SetStateEndTime(STATE_WARMUP, GetGameTime() + 60 * 60 * 24 * 7);
-		SetCurrentState(STATE_ROUND); // doesnt do actual transition
+		SetStateEndTime(GetGameTime() + 60 * 60 * 24 * 7);
+		SetCurrentState(STATE_ROUND);
 		
-		//todo: try SetStateEndTime(STATE_ROUND) with mp_timelimit
-		//ConVar pTimeLimit = FindConVar("mp_timelimit");
-		//int iTimeLimit = pTimeLimit.IntValue;
-	
 		this.m_bStarted = true;
 		PrintToServer("Co-op map %s has begun", g_szMapName);
 		
@@ -187,7 +185,7 @@ public Action OnLevelInit(const char[] szMapName, char szMapEntities[2097152])		
 
 public Action StartTimerCallback(Handle pTimer)
 {
-	SetStateEndTime(STATE_WARMUP, GetGameTime() + g_pCoopManager.m_iSecondsToStart + 1);
+	SetStateEndTime(GetGameTime() + g_pCoopManager.m_iSecondsToStart + 1);
 	if(!g_pCoopManager.m_iSecondsToStart--)
 	{
 		g_pCoopManager.m_pStartTimer = null;
@@ -214,22 +212,19 @@ stock void SetCurrentState(const GameState iState)
 	GameRules_SetProp("m_nCurrentStateId", iState);
 }
 
-//todo fix
-stock void SetStateNextState(const GameState iState, const GameState iNextState)
+stock void SetNextState(const GameState iNextState)
 {
-	GameRules_SetProp("m_nNextState", iNextState, _, view_as<int>(iState));
+	GameRules_SetProp("m_nNextState", iNextState);
 }
 
-//todo fix
-stock void SetStateEndTime(const GameState iState, const float flEndTime)
+stock void SetStateEndTime(const float flEndTime)
 {
-	GameRules_SetPropFloat("m_flStateDoneTime", flEndTime, view_as<int>(iState));
+	GameRules_SetPropFloat("m_flStateDoneTime", flEndTime);
 }
 
-//todo fix
-stock void SetStateIsInIntermission(const GameState iState, const bool bInIntermission)
+stock void SetStateIsInIntermission(const bool bInIntermission)
 {
-	GameRules_SetProp("m_bIsInIntermission", bInIntermission, _, 0);
+	GameRules_SetProp("m_bIsInIntermission", bInIntermission);
 }
 
 /**

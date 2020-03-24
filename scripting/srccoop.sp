@@ -113,7 +113,7 @@ public Address GetInterface(const char[] szInterface)
 }
 */
 
-public void OnMapStart()
+public void OnConfigsExecuted()
 {
 	g_pCoopManager.OnMapStart();
 	if (g_pCoopManager.IsFeaturePatchingEnabled())
@@ -124,8 +124,15 @@ public void OnMapStart()
 	if (g_pCoopManager.IsCoopModeEnabled())
 	{
 		CBaseEntity pGameEquip = CreateByClassname("game_player_equip");	// will spawn players with nothing if it exists
-		if (pGameEquip.IsValid())
+		if (pGameEquip.IsValidIndex())
 			pGameEquip.Spawn();
+		CBaseEntity pGameGamerules = CreateByClassname("game_mp_gamerules");
+		if (pGameGamerules.IsValidIndex())
+		{
+			pGameGamerules.Spawn();
+			pGameGamerules.AcceptInputStr("DisableCanisterDrops");
+			pGameGamerules.Kill();
+		}
 	}
 	
 	PrecacheScriptSound("HL2Player.SprintStart");

@@ -650,7 +650,7 @@ methodmap CBlackMesaPlayer < CBaseCombatCharacter
 	}
 	public Obs_Mode GetObserverMode()
 	{
-		GetEntProp(this.GetEntIndex(), Prop_Data, "m_iObserverMode");
+		return view_as<Obs_Mode>(GetEntProp(this.GetEntIndex(), Prop_Data, "m_iObserverMode"));
 	}
 	public int GetTeam()
 	{
