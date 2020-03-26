@@ -6,24 +6,10 @@
 	"intro_type"	"fade"
 	"equipment"
 	{
-		"suit"	"1"
 		"health" "70"
 	}
 	"entity"
 	{
-		// remove map spawned suit
-		"delete"
-		{
-			"targetname" "global_newgame_entmaker"
-		}
-		"delete"
-		{
-			"targetname" "global_newgame_template"
-		}
-		"delete"
-		{
-			"targetname" "global_newgame_spawner_suit"
-		}
 		// delay map start
 		"modify"
 		{

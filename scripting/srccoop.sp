@@ -113,9 +113,27 @@ public Address GetInterface(const char[] szInterface)
 }
 */
 
-public void OnConfigsExecuted()
+public void OnPluginStart()
+{
+	load_gamedata();
+	InitDebugLog("sm_coop_debug", "SRCCOOP", ADMFLAG_ROOT);
+	g_pConvarCoopEnabled = CreateConVar("sm_coop_enabled", "1", "Sets if coop is enabled on campaign maps");
+	g_pConvarWaitPeriod = CreateConVar("sm_coop_wait_period", "15.0", "The max number of seconds to wait since first player spawned in to start the map");
+	g_pLevelLump.Initialize();
+	g_SpawnSystem.Initialize();
+	g_pCoopManager.Initialize();
+	g_pInstancingManager.Initialize();
+	HookEvent("player_spawn", Hook_PlayerSpawnPost, EventHookMode_Post);
+	HookEvent("broadcast_teamsound", Hook_BroadcastTeamsound, EventHookMode_Pre);
+}
+
+public void OnMapStart()
 {
 	g_pCoopManager.OnMapStart();
+}
+
+public void OnConfigsExecuted()
+{
 	if (g_pCoopManager.IsFeaturePatchingEnabled())
 	{
 		DHookGamerules(hkFAllowFlashlight, false, _, Hook_FAllowFlashlight);
@@ -125,7 +143,10 @@ public void OnConfigsExecuted()
 	{
 		CBaseEntity pGameEquip = CreateByClassname("game_player_equip");	// will spawn players with nothing if it exists
 		if (pGameEquip.IsValidIndex())
+		{
+			pGameEquip.SetSpawnFlags(SF_PLAYER_EQUIP_STRIP_SUIT);
 			pGameEquip.Spawn();
+		}
 		CBaseEntity pGameGamerules = CreateByClassname("game_mp_gamerules");
 		if (pGameGamerules.IsValidIndex())
 		{
@@ -138,22 +159,15 @@ public void OnConfigsExecuted()
 	PrecacheScriptSound("HL2Player.SprintStart");
 }
 
-public void OnPluginStart()
-{
-	load_gamedata();
-	InitDebugLog("sm_coop_debug", "SRCCOOP", ADMFLAG_ROOT);
-	g_pConvarCoopEnabled = CreateConVar("sm_coop_enabled", "1", "Sets if coop is enabled on campaign maps");
-	g_pConvarWaitPeriod = CreateConVar("sm_coop_wait_period", "15.0", "The max number of seconds to wait since first player spawned in to start the map");
-	g_pLevelLump.Initialize();
-	g_SpawnSystem.Initialize(Callback_Checkpoint);
-	g_pCoopManager.Initialize();
-	HookEvent("player_spawn", Hook_PlayerSpawnPost, EventHookMode_Post);
-	HookEvent("broadcast_teamsound", Hook_BroadcastTeamsound, EventHookMode_Pre);
-}
-
 public void OnClientPutInServer(int client)
 {
 	g_pCoopManager.OnClientPutInServer(client);
+	g_pInstancingManager.OnClientPutInServer(client);
+}
+
+public void OnClientDisconnect(int client)
+{
+	g_pInstancingManager.OnClientDisconnect(client);
 }
 
 public void OnMapEnd()
@@ -169,7 +183,6 @@ public void OnPluginEnd()
 public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 {
 	CBaseEntity pEntity = CBaseEntity(iEntIndex);
-
 	if (!g_bTempDontHookEnts && pEntity.IsValid())
 	{
 		if (pEntity.IsClassPlayer())
@@ -191,6 +204,13 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 		{
 			DHookEntity(hkFindNamedEntity, true, pEntity.GetEntIndex(), _, Hook_FindNamedEntity);
 			DHookEntity(hkFindNamedEntityClosest, true, pEntity.GetEntIndex(), _, Hook_FindNamedEntity);
+		}
+		else if (strncmp(szClassname, "item_", 5) == 0)
+		{
+			if(g_SpawnSystem.m_bInstanceItems)
+			{
+				SDKHook(iEntIndex, SDKHook_SpawnPost, Hook_Instancing_ItemSpawn);
+			}
 		}
 		else if (pEntity.IsClassWeapon())
 		{
@@ -297,7 +317,24 @@ public Action OutputCallbackForDelay(const char[] output, int caller, int activa
 	pFireOutputData.m_pActivator = CBaseEntity(activator);
 	pFireOutputData.m_flDelay = delay;
 	g_pCoopManager.AddDelayedOutput(pFireOutputData);
+	
+	if(pFireOutputData.m_pCaller.IsValid())
+	{
+		// stop from deleting itself
+		if(pFireOutputData.m_pCaller.IsClassname("trigger_once"))
+		{
+			RequestFrame(RequestStopThink, pFireOutputData.m_pCaller);
+		}
+	}
 	return Plugin_Stop;
+}
+
+public void RequestStopThink(CBaseEntity pEntity)
+{
+	if(pEntity.IsValid())
+	{
+		pEntity.SetNextThinkTick(0);
+	}
 }
 
 public Action Hook_PlayerSpawnPost(Event hEvent, const char[] szName, bool bDontBroadcast)
@@ -307,6 +344,7 @@ public Action Hook_PlayerSpawnPost(Event hEvent, const char[] szName, bool bDont
 	if (pPlayer.IsValid())
 	{
 		g_pCoopManager.OnPlayerSpawned(pPlayer);
+		g_pInstancingManager.OnPlayerSpawned(pPlayer);
 	}
 }
 
@@ -477,35 +515,6 @@ public MRESReturn Hook_SetSuitUpdate(int _this, Handle hParams)		// suit sounds;
 	}
 	
 	return MRES_Ignored;
-}
-
-public void Callback_Checkpoint(const char[] szName, int iCaller, int iActivator, float flDelay)
-{
-	CBaseEntity pCaller = CBaseEntity(iCaller);
-	
-	CCoopSpawnEntry pEntry;
-	int iEntriesToKill = -1;
-	for (int i = 0; i < g_SpawnSystem.m_pCheckpointList.Length; i++)
-	{
-		if (g_SpawnSystem.m_pCheckpointList.GetArray(i, pEntry, sizeof(pEntry)))
-		{
-			if(pEntry.m_bHasPortal)
-			{
-				g_SpawnSystem.CreatePortal(pEntry.m_vecPortalPosition);
-			}
-			if (pCaller == pEntry.m_pTriggerEnt)
-			{
-				iEntriesToKill = i;
-				break;
-			}
-		}
-	}
-	
-	if (iEntriesToKill > -1)
-	{
-		g_SpawnSystem.EraseCheckpoints(iEntriesToKill + 1);
-		g_SpawnSystem.SetSpawnLocation(pEntry.m_vecPosition, pEntry.m_vecAngles, pEntry.m_pFollowEnt);
-	}
 }
 
 public void Hook_ExplosionSpawn(int iEntIndex)

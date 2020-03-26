@@ -5,12 +5,19 @@
 	"nextmap"	"bm_c1a1c"
 	"equipment"
 	{
-		"suit"	"1"
 		"health" "95"
 	}
 	"entity"
 	{
-	
+		//env hudhint - show to all
+		"modify"
+		{
+			"classname" "env_hudhint"
+			"add"
+			{
+				"spawnflags" "1"
+			}
+		}
 	}
 	"checkpoint"
 	{

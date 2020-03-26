@@ -3,10 +3,6 @@
 "config"
 {
 	"nextmap"	"bm_c1a0b"
-	"equipment"
-	{
-		"suit"	"0"
-	}
 	"entity"
 	{
 		// delay map start
@@ -18,15 +14,11 @@
 				"delay_output" "OnTrigger"
 			}
 		}
-		// suit pickup scene - increase respawn time, modify outputs to fire once
+		// suit pickup - fire outputs only once
 		"modify"
 		{
 			"classname" "item_suit"
 			"targetname" "HEV"
-			"add"
-			{
-				"respawntime" "1"
-			}
 			"outputs"
 			{
 				"modify"

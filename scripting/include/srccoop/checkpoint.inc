@@ -10,6 +10,38 @@ enum struct CCoopSpawnEntry
 	CBaseEntity m_pFollowEnt;
 	bool m_bHasPortal;
 	float m_vecPortalPosition[3];
+	
+	void Initialize()
+	{
+		this.m_pTriggerEnt = CBaseEntity(-1);
+		this.m_pFollowEnt = CBaseEntity(-1);
+	}
+	
+	void TeleportPlayer(CBlackMesaPlayer pPlayer)
+	{
+		float vecPosition[3];
+		float vecAngles[3];
+		
+		if (this.m_pFollowEnt.IsValid())
+		{
+			this.m_pFollowEnt.GetAbsOrigin(vecPosition);
+			this.m_pFollowEnt.GetAbsAngles(vecAngles);
+			
+			vecPosition[0] += this.m_vecPosition[0];
+			vecPosition[1] += this.m_vecPosition[1];
+			vecPosition[2] += this.m_vecPosition[2];
+			
+			vecAngles[0] += this.m_vecAngles[0];
+			vecAngles[1] += this.m_vecAngles[1];
+			vecAngles[2] += this.m_vecAngles[2];
+		}
+		else
+		{
+			vecPosition = this.m_vecPosition;
+			vecAngles = this.m_vecAngles;
+		}
+		pPlayer.Teleport(vecPosition, vecAngles, view_as<float>({0.0, 0.0, 0.0}));
+	}
 }
 
 enum struct CCoopWeaponEntry
@@ -30,7 +62,7 @@ enum struct CCoopEquipment
 	
 	void Initialize()
 	{
-		this.m_pWeaponList = new Array_t(CreateArray(sizeof(CCoopSpawnEntry)));
+		this.m_pWeaponList = new Array_t(CreateArray(sizeof(CCoopWeaponEntry)));
 	}
 	bool IsValid()
 	{
@@ -39,7 +71,7 @@ enum struct CCoopEquipment
 	void Clear()
 	{
 		this.m_pWeaponList.Clear();
-		this.m_bHasSuit = true;
+		this.m_bHasSuit = false;
 		this.m_iHealth = COOP_EQUIPMENT_DEFAULT_HEALTH;
 		this.m_iArmor = COOP_EQUIPMENT_DEFAULT_ARMOR;
 		
@@ -54,32 +86,26 @@ enum struct CCoopEquipment
 
 enum struct CCoopSpawn
 {
-	float m_vecPosition[3];
-	float m_vecAngles[3];
-	CBaseEntity m_pFollowEnt;
+	CCoopSpawnEntry pInitialSpawnEntry;
+	CCoopSpawnEntry pCurrentSpawnEntry;
 	Array_t m_pCheckpointList;
 	EntityOutput m_fnCheckpointCallback;
 	CCoopEquipment m_pDefaultEquipment;
+	bool m_bInstanceItems;
 	
 	void Clear()
 	{
-		this.m_vecPosition[0] = 0.0;
-		this.m_vecPosition[1] = 0.0;
-		this.m_vecPosition[2] = 0.0;
-		
-		this.m_vecAngles[0] = 0.0;
-		this.m_vecAngles[1] = 0.0;
-		this.m_vecAngles[2] = 0.0;
-		
-		this.m_pFollowEnt = CBaseEntity(-1);
-		
+		CCoopSpawnEntry pNewEntry;
+		pNewEntry.Initialize();
+		this.pInitialSpawnEntry = pNewEntry;
+		this.pCurrentSpawnEntry = pNewEntry;
 		this.m_pCheckpointList.Clear();
-		
 		this.m_pDefaultEquipment.Clear();
+		this.m_bInstanceItems = false;
 	}
-	void Initialize(const EntityOutput fnCheckpointCallback)
+	void Initialize()
 	{
-		this.m_fnCheckpointCallback = fnCheckpointCallback;
+		this.m_fnCheckpointCallback = Callback_Checkpoint;
 		this.m_pCheckpointList = new Array_t(CreateArray(sizeof(CCoopSpawnEntry)));
 		if (!this.m_pCheckpointList.IsValid())
 			ThrowError("Was unable to create CCoopSpawnEntry on initialization");
@@ -101,59 +127,48 @@ enum struct CCoopSpawn
 			CCoopWeaponEntry pWeaponEntry;
 			if (this.m_pDefaultEquipment.m_pWeaponList.GetArray(i, pWeaponEntry, sizeof(pWeaponEntry)))
 			{
-				pPlayer.GiveWeapon(pWeaponEntry.m_szClassname);
+				pPlayer.GiveItem(pWeaponEntry.m_szClassname);
 			}
 		}
 		
-		if (!this.m_pDefaultEquipment.m_bHasSuit)
+		if (this.m_pDefaultEquipment.m_bHasSuit)
 		{
-			CreateTimer(0.0, Callback_RemovePlayerSuit, pPlayer);
+			CreateTimer(0.0, Callback_GivePlayerSuit, pPlayer);
 		}
 	}
 	void SpawnPlayer(CBlackMesaPlayer pPlayer, bool bSpawnEquipment = true)
 	{
-		float vecPosition[3];
-		float vecAngles[3];
-		
-		if (this.m_pFollowEnt.IsValid())
+		if(this.m_bInstanceItems)
 		{
-			this.m_pFollowEnt.GetAbsOrigin(vecPosition);
-			this.m_pFollowEnt.GetAbsAngles(vecAngles);
-			
-			vecPosition[0] += this.m_vecPosition[0];
-			vecPosition[1] += this.m_vecPosition[1];
-			vecPosition[2] += this.m_vecPosition[2];
-			
-			vecAngles[0] += this.m_vecAngles[0];
-			vecAngles[1] += this.m_vecAngles[1];
-			vecAngles[2] += this.m_vecAngles[2];
+			// pickup possible spawn items
+			this.pInitialSpawnEntry.TeleportPlayer(pPlayer);
+			RequestFrame(RequestSpawnPlayer, pPlayer);
+		}
+		else 
+		{
+			this.pCurrentSpawnEntry.TeleportPlayer(pPlayer);
+		}
+		if(bSpawnEquipment) this.SpawnPlayerEquipment(pPlayer);
+	}
+	void AddSpawnEntry(CCoopSpawnEntry pSpawnEntry, const char[] szOutputType = "")
+	{
+		if (pSpawnEntry.m_pTriggerEnt.IsValid())
+		{
+			pSpawnEntry.m_pTriggerEnt.HookOutput(szOutputType, this.m_fnCheckpointCallback, true);
+			this.m_pCheckpointList.PushArray(pSpawnEntry, sizeof(pSpawnEntry));
 		}
 		else
 		{
-			vecPosition[0] = this.m_vecPosition[0];
-			vecPosition[1] = this.m_vecPosition[1];
-			vecPosition[2] = this.m_vecPosition[2];
-			
-			vecAngles[0] = this.m_vecAngles[0];
-			vecAngles[1] = this.m_vecAngles[1];
-			vecAngles[2] = this.m_vecAngles[2];
+			this.SetSpawnEntry(pSpawnEntry, true);
 		}
-		
-		pPlayer.Teleport(vecPosition, vecAngles);
-		if(bSpawnEquipment)
-			this.SpawnPlayerEquipment(pPlayer);
 	}
-	void SetSpawnLocation(const float vecPosition[3], const float vecAngles[3], CBaseEntity pEntity = view_as<CBaseEntity>(-1))
+	void SetSpawnEntry(CCoopSpawnEntry pSpawnEntry, bool bIsInitial = false)
 	{
-		this.m_vecPosition[0] = vecPosition[0];
-		this.m_vecPosition[1] = vecPosition[1];
-		this.m_vecPosition[2] = vecPosition[2];
-		
-		this.m_vecAngles[0] = vecAngles[0];
-		this.m_vecAngles[1] = vecAngles[1];
-		this.m_vecAngles[2] = vecAngles[2];
-		
-		this.m_pFollowEnt = pEntity;
+		this.pCurrentSpawnEntry = pSpawnEntry;
+		if(bIsInitial)
+		{
+			this.pInitialSpawnEntry = pSpawnEntry;
+		}
 	}
 	void CreatePortal(const float vecPosition[3])
 	{
@@ -200,23 +215,29 @@ enum struct CCoopSpawn
 		if (!(kv.ImportFromFile(szMapPath) && kv.GetSectionName(szRoot, sizeof(szRoot)) && strcmp(szRoot, "config") == 0))
 			ThrowError("Couldn't import %s into KeyValues", szMapName);
 		
-		if (kv.GotoFirstSubKey(true))
+		if (kv.GotoFirstSubKey(false))
 		{
 			do
 			{
 				char szType[MAX_KEY];
 				if (kv.GetSectionName(szType, sizeof(szType)))
 				{
-					if (strcmp(szType, "checkpoint", false) == 0)
+					if (kv.GetDataType(NULL_STRING) != KvData_None)
+					{
+						if (strcmp(szType, "instance_items", false) == 0)
+						{
+							this.m_bInstanceItems = view_as<bool>(KvGetNum(kv, NULL_STRING));
+						}
+					}
+					else if (strcmp(szType, "checkpoint", false) == 0)
 					{
 						if (kv.GotoFirstSubKey(true))
 						{
-							bool bGotFirstEntry = false;
-							
 							do	// ignore section name; reserved for naming purposes for front-end
 							{
 								char szOutputType[MAX_FORMAT];
 								CCoopSpawnEntry pEntry;
+								pEntry.Initialize();
 								
 								if (kv.GotoFirstSubKey(false))
 								{
@@ -294,17 +315,7 @@ enum struct CCoopSpawn
 									while (kv.GotoNextKey(false));
 									kv.GoBack();
 								}
-								
-								if (!bGotFirstEntry)
-								{
-									this.SetSpawnLocation(pEntry.m_vecPosition, pEntry.m_vecAngles, pEntry.m_pFollowEnt);
-									bGotFirstEntry = true;
-								}
-								else if (pEntry.m_pTriggerEnt.IsValid())
-								{
-									pEntry.m_pTriggerEnt.HookOutput(szOutputType, this.m_fnCheckpointCallback, true);
-									this.m_pCheckpointList.PushArray(pEntry, sizeof(pEntry));
-								}
+								this.AddSpawnEntry(pEntry, szOutputType);
 							}
 							while (kv.GotoNextKey(true));
 							kv.GoBack();
@@ -462,7 +473,7 @@ enum struct CCoopSpawn
 					}
 				}
 			}
-			while (kv.GotoNextKey(true));
+			while (kv.GotoNextKey(false));
 			kv.GoBack();
 		}
 		
@@ -472,11 +483,48 @@ enum struct CCoopSpawn
 
 CCoopSpawn g_SpawnSystem;
 
-public Action Callback_RemovePlayerSuit(Handle hTimer, CBlackMesaPlayer pPlayer)
+public Action Callback_GivePlayerSuit(Handle hTimer, CBlackMesaPlayer pPlayer)
 {
 	if (pPlayer.IsValid())
 	{
-		pPlayer.SetSuit(false);
+		pPlayer.GiveItem("item_suit");
+	}
+}
+
+public void RequestSpawnPlayer(CBlackMesaPlayer pPlayer)
+{
+	if(pPlayer.IsValid())
+	{
+		g_SpawnSystem.pCurrentSpawnEntry.TeleportPlayer(pPlayer);
+	}
+}
+
+public void Callback_Checkpoint(const char[] szName, int iCaller, int iActivator, float flDelay)
+{
+	CBaseEntity pCaller = CBaseEntity(iCaller);
+	
+	CCoopSpawnEntry pEntry;
+	int iEntriesToKill = -1;
+	for (int i = 0; i < g_SpawnSystem.m_pCheckpointList.Length; i++)
+	{
+		if (g_SpawnSystem.m_pCheckpointList.GetArray(i, pEntry, sizeof(pEntry)))
+		{
+			if(pEntry.m_bHasPortal)
+			{
+				g_SpawnSystem.CreatePortal(pEntry.m_vecPortalPosition);
+			}
+			if (pCaller == pEntry.m_pTriggerEnt)
+			{
+				iEntriesToKill = i;
+				break;
+			}
+		}
+	}
+	
+	if (iEntriesToKill > -1)
+	{
+		g_SpawnSystem.EraseCheckpoints(iEntriesToKill + 1);
+		g_SpawnSystem.SetSpawnEntry(pEntry);
 	}
 }
 

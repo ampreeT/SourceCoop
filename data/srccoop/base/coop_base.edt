@@ -1,0 +1,11 @@
+// This is the topmost base file
+
+"config"
+{
+	"console"
+	{
+	}
+	"entity_base_coop"
+	{
+	}
+}

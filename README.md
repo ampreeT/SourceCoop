@@ -42,6 +42,7 @@
 - find out if the 'admire hands' animation can be reenabled when picking up suit
 - hook UpdateEnemyMemory input on npcs, compare if !player or !pvsplayer > call manually (either closest player or all) (UpdateEnemyMemory( pEnemy, pEnemy->GetAbsOrigin(), this ))
 - ai_goal_follow (+possibly other ai_goals) with goal of !player - set closest - detour CBaseEntity* CAI_GoalEntity::GetGoalEntity
+- reenable chapter name hud messages if possible
 
 ## map-issues
 - bm_c4a4a

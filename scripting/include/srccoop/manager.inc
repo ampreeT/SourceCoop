@@ -6,13 +6,6 @@ enum struct FireOutputData
 	float m_flDelay;
 }
 
-enum GameState
-{
-	STATE_WARMUP = 0,
-	STATE_INTERMISSION,
-	STATE_ROUND
-}
-
 enum struct CoopManager
 {
 	bool m_bIsCoopMap;
@@ -33,13 +26,15 @@ enum struct CoopManager
 		this.m_bStarted = false;
 		this.m_bPlayerSpawned = false;
 		
-		if (this.IsCoopModeEnabled())
+		if (this.m_bIsCoopMap) // cvars are not configured yet
 		{
-			SetCurrentState(STATE_WARMUP);
-			SetNextState(STATE_WARMUP);
-			SetStateEndTime(GetGameTime() + 60 * 60 * 24 * 7);
-			SetStateIsInIntermission(false); // false will let players spawn, true holds them waiting till the state changes (and also plays tick sounds last 3 seconds)
+			CBM_MP_GameRules.SetStateIsInIntermission(STATE_WARMUP, false); // false will let players spawn, true holds them waiting till the state changes (and also plays tick sounds last 3 seconds)
+			CBM_MP_GameRules.SetStateEndTime(STATE_WARMUP, GetGameTime() + 60 * 60 * 24 * 7);
 			g_SpawnSystem.ParseConfigFile(g_szMapName);
+		}
+		else
+		{
+			g_SpawnSystem.Clear();
 		}
 	}
 	
@@ -85,6 +80,7 @@ enum struct CoopManager
 			else if(!this.IsInCountDownPeriod())
 			{
 				this.m_iSecondsToStart = g_pConvarWaitPeriod.IntValue;
+				CBM_MP_GameRules.SetStateEndTime(STATE_WARMUP, GetGameTime() + this.m_iSecondsToStart + 1);
 				this.m_pStartTimer = CreateTimer(1.0, StartTimerCallback, _, TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT);
 			}
 		}
@@ -102,11 +98,16 @@ enum struct CoopManager
 	
 	void Start()
 	{
+		CBM_MP_GameRules.SetStateEndTime(STATE_WARMUP, GetGameTime() + 60 * 60 * 24 * 7); // STATE_WARMUP is what the server still counts with!
+		
 		if(!GetRealClientCount(true)) {
 			return;
 		}
-		SetStateEndTime(GetGameTime() + 60 * 60 * 24 * 7);
-		SetCurrentState(STATE_ROUND);
+		
+		ConVar timelimit = FindConVar("mp_timelimit");
+		CBM_MP_GameRules.SetCurrentState(STATE_ROUND); // doesnt actually restart, just switches the client hud
+		CBM_MP_GameRules.SetStateEndTime(STATE_ROUND, GetGameTime() + timelimit.FloatValue); // this is what is displayed on client, nothing happens when it runs out, we may have to handle that
+		delete timelimit;
 		
 		this.m_bStarted = true;
 		PrintToServer("Co-op map %s has begun", g_szMapName);
@@ -127,7 +128,15 @@ enum struct CoopManager
 		for (int i = 0; i < this.m_pDelayedOutputs.Length; i++)
 		{
 			FireOutputData pFireOutputData; this.m_pDelayedOutputs.GetArray(i, pFireOutputData);
-			FireEntityOutput(pFireOutputData.m_pCaller.GetEntIndex(), pFireOutputData.m_szName, pFireOutputData.m_pActivator.GetEntIndex(), pFireOutputData.m_flDelay);
+			if(pFireOutputData.m_pCaller.IsValid())
+			{
+				FireEntityOutput(pFireOutputData.m_pCaller.GetEntIndex(), pFireOutputData.m_szName, pFireOutputData.m_pActivator.GetEntIndex(), pFireOutputData.m_flDelay);
+				
+				if(pFireOutputData.m_pCaller.IsClassname("trigger_once"))
+				{
+					pFireOutputData.m_pCaller.SetNextThinkTick(GetGameTickCount()+1); // allow to kill itself
+				}
+			}
 		}
 	}
 	
@@ -185,7 +194,6 @@ public Action OnLevelInit(const char[] szMapName, char szMapEntities[2097152])		
 
 public Action StartTimerCallback(Handle pTimer)
 {
-	SetStateEndTime(GetGameTime() + g_pCoopManager.m_iSecondsToStart + 1);
 	if(!g_pCoopManager.m_iSecondsToStart--)
 	{
 		g_pCoopManager.m_pStartTimer = null;
@@ -205,26 +213,6 @@ stock int GetRealClientCount(bool bInGameOnly, bool alive = false)
  		}
  	}
 	return clients;
-}
-
-stock void SetCurrentState(const GameState iState)
-{
-	GameRules_SetProp("m_nCurrentStateId", iState);
-}
-
-stock void SetNextState(const GameState iNextState)
-{
-	GameRules_SetProp("m_nNextState", iNextState);
-}
-
-stock void SetStateEndTime(const float flEndTime)
-{
-	GameRules_SetPropFloat("m_flStateDoneTime", flEndTime);
-}
-
-stock void SetStateIsInIntermission(const bool bInIntermission)
-{
-	GameRules_SetProp("m_bIsInIntermission", bInIntermission);
 }
 
 /**

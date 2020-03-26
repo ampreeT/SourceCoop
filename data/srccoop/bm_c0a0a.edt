@@ -4,10 +4,6 @@
 {
 	"nextmap"		"bm_c0a0b"
 	"intro_type"	"fade"
-	"equipment"
-	{
-		"suit"	"0"
-	}
 	"console"
 	{
 		// somewhat fix train prediction lagging

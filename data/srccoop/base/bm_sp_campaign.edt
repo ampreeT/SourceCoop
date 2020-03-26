@@ -1,4 +1,6 @@
-#base "all_maps.edt"
+// This file is inherited by each BM campaign map config
+
+#base "coop_base_sp_conversion.edt"
 
 "config"
 {
@@ -7,14 +9,6 @@
 	}
 	"entity_base_bm_sp_campaign"
 	{
-		// remove globalnames - prevents unspawned entities
-		"modify"
-		{
-			"remove"
-			{
-				"globalname" ""
-			}
-		}
 		// env_message - Show to all
 		"modify"
 		{
@@ -32,47 +26,6 @@
 			"add"
 			{
 				"spawnflags" "3"
-			}
-		}
-		"modify"
-		{
-			"outputs"
-			{
-				// player_speedmod normally accepts the activator. In maps made for SP, we want all players to be affected. New input ModifySpeedAll has been added for that purpose.
-				"modify"
-				{
-					"input" "ModifySpeed"
-					"replace"
-					{
-						"input" "ModifySpeedAll"
-					}
-				}
-				// point_viewcontrol normally accepts the activator. In maps made for SP, we want all players to be affected. New input EnableAll has been added for that purpose.
-				"modify"
-				{
-					"input" "Enable"
-					"target"
-					{
-						"classname" "point_viewcontrol"
-					}
-					"replace"
-					{
-						"input" "EnableAll"
-					}
-				}
-				// point_clientcommand normally accepts the activator. In maps made for SP, we want all players to be affected. New input CommandAll has been added for that purpose.
-				"modify"
-				{
-					"input" "Command"
-					"target"
-					{
-						"classname" "point_clientcommand"
-					}
-					"replace"
-					{
-						"input" "CommandAll"
-					}
-				}
 			}
 		}
 	}

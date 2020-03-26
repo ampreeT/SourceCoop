@@ -158,6 +158,10 @@ methodmap CBaseEntity
 	{
 		return DispatchKeyValue(this.GetEntIndex(), szKeyValue, szValue);
 	}
+	public bool SetKeyValueFl(const char[] szKeyValue, float fValue)
+	{
+		return DispatchKeyValueFloat(this.GetEntIndex(), szKeyValue, fValue);
+	}
 	public bool Kill()
 	{
 		return this.AcceptInputStr("Kill");
@@ -261,6 +265,10 @@ methodmap CBaseEntity
 	public void SetSolidFlags(int iSolidFlags)
 	{
 		SetEntProp(this.GetEntIndex(), Prop_Data, "m_usSolidFlags", iSolidFlags);
+	}
+	public void SetNextThinkTick(int iTick)
+	{
+		SetEntProp(view_as<int>(this), Prop_Data, "m_nNextThinkTick", iTick);
 	}
 }
 
@@ -490,7 +498,7 @@ methodmap CBlackMesaPlayer < CBaseCombatCharacter
 
 	public bool IsValid()
 	{
-		return view_as<bool>(this.IsClassPlayer() && IsClientConnected(this.GetEntIndex()) && IsClientInGame(this.GetEntIndex()) && IsValidEntity(this.GetEntIndex()));
+		return view_as<bool>(this.IsClassPlayer() && IsClientInGame(this.GetEntIndex()));
 	}
 	public bool GetName(char[] szBuffer, const int iMaxLength)
 	{
@@ -536,24 +544,9 @@ methodmap CBlackMesaPlayer < CBaseCombatCharacter
 	{
 		SetEntProp(this.GetEntIndex(), Prop_Send, "m_iAmmo", iAmmoCount, _, iIndex);
 	}
-	public CBaseCombatWeapon GiveWeapon(const char[] szWeaponName)
+	public CBaseAnimating GiveItem(const char[] szItemName)
 	{
-		CBaseCombatWeapon pWeapon = view_as<CBaseCombatWeapon>(CreateByClassname(szWeaponName));
-		if (pWeapon.IsValid())
-		{
-			pWeapon.SetSpawnFlags(SF_NORESPAWN);
-			pWeapon.Spawn();
-			pWeapon.Activate();
-			
-			float vecOrigin[3];
-			this.GetAbsOrigin(vecOrigin);
-			pWeapon.Teleport(vecOrigin);
-			//pWeapon.Touch(this);
-			
-			return pWeapon;
-		}
-		
-		return CBaseCombatWeapon();
+		return CBaseAnimating(GivePlayerItem(this.GetEntIndex(), szItemName));
 	}
 	public bool EquipWeapon(const char[] szWeaponName)	// change to CBaseEntity
 	{
@@ -661,4 +654,53 @@ methodmap CBlackMesaPlayer < CBaseCombatCharacter
 public bool Callback_GetAimTarget(int iEntity, int iMask, any pData)
 {
 	return !view_as<bool>(iEntity == pData);
+}
+
+#define STATE_WARMUP "m_StateWarmup"
+#define STATE_ROUND "m_StateRound"
+#define STATE_INTERMISSION "m_StateIntermission"
+
+enum
+{
+	STATE_WARMUP_INDEX = 0,
+	STATE_INTERMISSION_INDEX,
+	STATE_ROUND_INDEX
+}
+
+enum
+{
+	STATE_ELEMENT_DONE_TIME = 0,
+	STATE_ELEMENT_NEXT_STATE,
+	STATE_ELEMENT_IS_IN_INTERMISSION
+}
+
+methodmap CBM_MP_GameRules
+{
+	public static int GetStateIndex(const char[] szStateProp)
+	{
+		if(strcmp(szStateProp, STATE_WARMUP) == 0) return STATE_WARMUP_INDEX;
+		if(strcmp(szStateProp, STATE_ROUND) == 0) return STATE_ROUND_INDEX;
+		if(strcmp(szStateProp, STATE_INTERMISSION) == 0) return STATE_INTERMISSION_INDEX;
+		SetFailState("CBM_MP_GameRules.GetStateIndex %s", szStateProp); return -1;
+	}
+	
+	public static void SetStateEndTime(const char[] szStateProp, float flEndTime)
+	{
+		GameRules_SetPropFloat(szStateProp, flEndTime, STATE_ELEMENT_DONE_TIME);
+	}
+	
+	public static void SetCurrentState(const char[] szStateProp)
+	{
+		GameRules_SetProp("m_nCurrentStateId", CBM_MP_GameRules.GetStateIndex(szStateProp));
+	}
+	
+	public static void SetStateNextState(const char[] szStateProp, const char[] szNextStateProp)
+	{
+		GameRules_SetProp(szStateProp, CBM_MP_GameRules.GetStateIndex(szNextStateProp), _, STATE_ELEMENT_NEXT_STATE);
+	}
+	
+	public static void SetStateIsInIntermission(char[] szStateProp, bool bInIntermission)
+	{
+		GameRules_SetProp(szStateProp, bInIntermission, _, STATE_ELEMENT_IS_IN_INTERMISSION);
+	}
 }

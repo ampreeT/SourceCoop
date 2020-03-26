@@ -3,10 +3,6 @@
 "config"
 {
 	"nextmap"	"bm_c0a0c"
-	"equipment"
-	{
-		"suit"	"0"
-	}
 	"console"
 	{
 		// somewhat fix train prediction lagging

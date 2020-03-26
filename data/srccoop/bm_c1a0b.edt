@@ -3,10 +3,6 @@
 "config"
 {
 	"nextmap"	"bm_c1a1a"
-	"equipment"
-	{
-		"suit"	"1"
-	}
 	"entity"
 	{
 		// delay map start
@@ -18,15 +14,6 @@
 			{
 				"delay_output" "OnMapSpawn"
 			}
-		}
-		// remove map spawned suit
-		"delete"
-		{
-			"classname" "item_suit"
-		}
-		"delete"
-		{
-			"targetname" "new_game_spawn"
 		}
 		// remove trigger which calls spawn elevator up and closes doors
 		"delete"

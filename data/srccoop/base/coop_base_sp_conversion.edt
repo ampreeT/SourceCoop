@@ -1,0 +1,114 @@
+// This is the base config for all singleplayer map conversions
+
+#base "coop_base.edt"
+
+"config"
+{
+	"instance_items" "1"
+	"console"
+	{
+	}
+	"entity_base_sp_conversion"
+	{
+		// remove globalnames - prevents unspawned entities
+		"modify"
+		{
+			"remove"
+			{
+				"globalname" ""
+			}
+		}
+		// !player is generally only useful in singleplayer, as it returns first player by index
+		// !pvsplayer may search by visibility, activator, or use first index as fallback; although this depends on the entity
+		"modify"
+		{
+			"classname"	"aiscripted_schedule"
+			"goalent" "!player"
+			"add"
+			{
+				"goalent" "!pvsplayer"
+			}
+		}
+		"modify"
+		{
+			"classname"	"ai_goal_lead"
+			"WaitPointName" "!player"
+			"add"
+			{
+				"WaitPointName" ""
+			}
+		}
+		"modify"
+		{
+			"outputs"
+			{
+				"modify"
+				{
+					"target" "!player"
+					"replace"
+					{
+						"target" "player" // in the IO system, this will target all players (matched by their classname)
+					}
+				}
+				"modify"
+				{
+					"parameter" "!player"
+					"replace"
+					{
+						"parameter" "!pvsplayer"
+					}
+				}
+			}
+		}
+		"modify"
+		{
+			"classname" "env_mortar_launcher"
+			"target" "!player"
+			"add"
+			{
+				"target" "!pvsplayer" // todo: check if this works
+			}
+		}
+		"modify"
+		{
+			"outputs"
+			{
+				// player_speedmod normally accepts the activator. In maps made for SP, we want all players to be affected. New input ModifySpeedAll has been added for that purpose.
+				"modify"
+				{
+					"input" "ModifySpeed"
+					"replace"
+					{
+						"input" "ModifySpeedAll"
+					}
+				}
+				// point_viewcontrol normally accepts the activator. In maps made for SP, we want all players to be affected. New input EnableAll has been added for that purpose.
+				"modify"
+				{
+					"input" "Enable"
+					"target"
+					{
+						"classname" "point_viewcontrol"
+					}
+					"replace"
+					{
+						"input" "EnableAll"
+					}
+				}
+				// point_clientcommand normally accepts the activator. In maps made for SP, we want all players to be affected. New input CommandAll has been added for that purpose.
+				"modify"
+				{
+					"input" "Command"
+					"target"
+					{
+						"classname" "point_clientcommand"
+					}
+					"replace"
+					{
+						"input" "CommandAll"
+					}
+				}
+			}
+		}
+	}
+}
