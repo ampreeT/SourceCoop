@@ -236,6 +236,7 @@ enum struct CGlobalLevelLump
 	Array_t m_pModifiedCvarList;
 	COutputHookLump m_pOutputHookList;
 	IntroType m_iIntroType;
+	bool m_bInstanceItems;
 	
 	void Initialize()
 	{
@@ -343,12 +344,15 @@ enum struct CGlobalLevelLump
 		
 		return n;
 	}
-	void ParseConfigFile(const char[] szMapName)
+	void Clear()
 	{
 		this.m_pNextMapList.Clear();
 		this.m_pOutputHookList.Clear();
 		this.m_iIntroType = INTRO_NONE;
-		
+		this.m_bInstanceItems = false;
+	}
+	void ParseConfigFile(const char[] szMapName)
+	{
 		char szMapPath[MAX_FORMAT];
 		if (!(BuildPath(Path_SM, szMapPath, sizeof(szMapPath), "data/srccoop/%s.edt", szMapName) && FileExists(szMapPath)))
 			ThrowError("Couldn't find map file %s", szMapName);
@@ -376,7 +380,7 @@ enum struct CGlobalLevelLump
 							kv.GetString(NULL_STRING, szNextMapName, sizeof(szNextMapName));
 							this.m_pNextMapList.PushString(szNextMapName);
 						}
-						if (strcmp(szType, "intro_type", false) == 0)
+						else if (strcmp(szType, "intro_type", false) == 0)
 						{
 							char szIntroType[16];
 							kv.GetString(NULL_STRING, szIntroType, sizeof(szIntroType));
@@ -384,6 +388,14 @@ enum struct CGlobalLevelLump
 							{
 								this.m_iIntroType = INTRO_FADE;
 							}
+							else if(strcmp(szIntroType, "none", false) == 0)
+							{
+								this.m_iIntroType = INTRO_NONE;
+							}
+						}
+						else if (strcmp(szType, "instance_items", false) == 0)
+						{
+							this.m_bInstanceItems = view_as<bool>(KvGetNum(kv, NULL_STRING));
 						}
 					}
 					else
@@ -549,8 +561,9 @@ enum struct CGlobalLevelLump
 		bool remove = strcmp(szModifyType, "remove", false) == 0;
 		bool functions = strcmp(szModifyType, "functions", false) == 0;
 		bool outputs = strcmp(szModifyType, "outputs", false) == 0;
-		if(!add && !remove && !functions && !outputs) {
-			SetFailState("Modify block contains unknown action \"%s\", expected one of add | remove | functions | outputs", szModifyType);
+		bool flags = strcmp(szModifyType, "flags", false) == 0;
+		if(!add && !remove && !functions && !outputs && !flags) {
+			SetFailState("Modify block contains unknown action \"%s\", expected one of add | remove | functions | outputs | flags", szModifyType);
 		}
 		
 		if (kv.GotoFirstSubKey(false))
@@ -565,6 +578,10 @@ enum struct CGlobalLevelLump
 				{
 					this.ParseOutputs(kv, pTempEvaluatedList);
 				}
+				else if(flags)
+				{
+					this.ParseFlags(kv, pTempEvaluatedList);
+				}
 				else
 				{
 					CEntityKeyLump pKeyInfo;
@@ -574,27 +591,21 @@ enum struct CGlobalLevelLump
 						for (int i = 0; i < pTempEvaluatedList.Length; i++)
 						{
 							CEntityInfoLump pEditedEntityInfo = pTempEvaluatedList.Get(i);
+							for (int j = 0; j < pEditedEntityInfo.Length; j++)
+							{
+								CEntityKeyLump pThisKeyInfo;
+								if (pEditedEntityInfo.GetArray(j, pThisKeyInfo, sizeof(pThisKeyInfo)))
+								{
+									if (strcmp(pKeyInfo.m_szKey, pThisKeyInfo.m_szKey, false) == 0)
+									{
+										pEditedEntityInfo.Erase(j);
+										break;
+									}
+								}
+							}
 							if(add)
 							{
 								pEditedEntityInfo.PushArray(pKeyInfo, sizeof(pKeyInfo));
-							}
-							else if (remove)
-							{
-								for (int j = 0; j < pEditedEntityInfo.Length; j++)
-								{
-									CEntityKeyLump pThisKeyInfo;
-									if (pEditedEntityInfo.GetArray(j, pThisKeyInfo, sizeof(pThisKeyInfo)))
-									{
-										if (strcmp(pKeyInfo.m_szKey, pThisKeyInfo.m_szKey, false) == 0)
-										{
-											//if(strcmp(pKeyInfo.m_szValue, pThisKeyInfo.m_szValue, false) == 0)
-											{
-												pEditedEntityInfo.Erase(j);
-												break;
-											}
-										}
-									}
-								}
 							}
 						}
 					}
@@ -617,6 +628,68 @@ enum struct CGlobalLevelLump
 				pOutputHook.m_pEntityList = view_as<CEntityListLump>(CloneHandle(view_as<Handle>(pTempEvaluatedList)));
 				pOutputHook.m_szOutputName = szValue;
 				this.m_pOutputHookList.PushArray(pOutputHook);
+			}
+		}
+	}
+	
+	void ParseFlags(KeyValues kv, CEntityListLump pTempEvaluatedList)
+	{
+		char szFlagName[MAX_KEY], szAction[MAX_KEY];
+		if (kv.GetDataType(NULL_STRING) == KvData_None && kv.GetSectionName(szFlagName, sizeof(szFlagName)))
+		{
+			if (kv.GotoFirstSubKey(false))
+			{
+				do
+				{
+					if (kv.GetDataType(NULL_STRING) == KvData_Int && kv.GetSectionName(szAction, sizeof(szAction)))
+					{
+						bool add = strcmp(szAction, "add", false) == 0;
+						bool remove = strcmp(szAction, "remove", false) == 0;
+						if(!add && !remove)
+						{
+							SetFailState("Flags block \"%s\" contains unknown action \"%s\", expected one of add | remove", szFlagName, szAction);
+						}
+						
+						int iActionValue = kv.GetNum(NULL_STRING);
+						CEntityKeyLump pKeyInfo;
+						
+						for (int i = 0; i < pTempEvaluatedList.Length; i++)
+						{
+							CEntityInfoLump pEditedEntityInfo = pTempEvaluatedList.Get(i);
+							bool bFoundFlag;
+							for (int j = 0; j < pEditedEntityInfo.Length; j++)
+							{
+								if (pEditedEntityInfo.GetArray(j, pKeyInfo, sizeof(pKeyInfo)))
+								{
+									if (strcmp(pKeyInfo.m_szKey, szFlagName, false) == 0)
+									{
+										int iFlags = StringToInt(pKeyInfo.m_szValue);
+										if(add)
+										{
+											iFlags |= iActionValue;
+										}
+										else if(remove)
+										{
+											iFlags &= ~iActionValue;
+										}
+										IntToString(iFlags, pKeyInfo.m_szValue, sizeof(pKeyInfo.m_szValue));
+										pEditedEntityInfo.SetArray(j, pKeyInfo);
+										bFoundFlag = true;
+										break;
+									}
+								}
+							}
+							if(!bFoundFlag && add)
+							{
+								strcopy(pKeyInfo.m_szKey, sizeof(pKeyInfo.m_szKey), szFlagName);
+								IntToString(iActionValue, pKeyInfo.m_szValue, sizeof(pKeyInfo.m_szValue));
+								pEditedEntityInfo.PushArray(pKeyInfo);
+							}
+						}
+					}
+				}
+				while (kv.GotoNextKey(false));
+				kv.GoBack();
 			}
 		}
 	}

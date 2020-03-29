@@ -49,7 +49,7 @@ ItemInstancingManager g_pInstancingManager;
 
 public void Hook_Instancing_ItemSpawn(int iEntIndex)
 {
-	DispatchKeyValue(iEntIndex, "respawntime", "0");
+	DispatchKeyValue(iEntIndex, "respawntime", "1");
 	HookSingleEntityOutput(iEntIndex, "OnPlayerPickup", Hook_Instancing_OnPlayerPickup, false);
 	SDKHook(iEntIndex, SDKHook_Touch, Hook_Instancing_ItemTouch);
 	SDKHook(iEntIndex, SDKHook_SetTransmit, Hook_Instancing_ItemTransmit);

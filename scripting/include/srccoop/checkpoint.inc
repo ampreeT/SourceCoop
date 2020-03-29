@@ -91,7 +91,6 @@ enum struct CCoopSpawn
 	Array_t m_pCheckpointList;
 	EntityOutput m_fnCheckpointCallback;
 	CCoopEquipment m_pDefaultEquipment;
-	bool m_bInstanceItems;
 	
 	void Clear()
 	{
@@ -101,7 +100,6 @@ enum struct CCoopSpawn
 		this.pCurrentSpawnEntry = pNewEntry;
 		this.m_pCheckpointList.Clear();
 		this.m_pDefaultEquipment.Clear();
-		this.m_bInstanceItems = false;
 	}
 	void Initialize()
 	{
@@ -138,13 +136,13 @@ enum struct CCoopSpawn
 	}
 	void SpawnPlayer(CBlackMesaPlayer pPlayer, bool bSpawnEquipment = true)
 	{
-		if(this.m_bInstanceItems)
+		if(g_pLevelLump.m_bInstanceItems)
 		{
 			// pickup possible spawn items
 			this.pInitialSpawnEntry.TeleportPlayer(pPlayer);
 			RequestFrame(RequestSpawnPlayer, pPlayer);
 		}
-		else 
+		else
 		{
 			this.pCurrentSpawnEntry.TeleportPlayer(pPlayer);
 		}
@@ -224,10 +222,6 @@ enum struct CCoopSpawn
 				{
 					if (kv.GetDataType(NULL_STRING) != KvData_None)
 					{
-						if (strcmp(szType, "instance_items", false) == 0)
-						{
-							this.m_bInstanceItems = view_as<bool>(KvGetNum(kv, NULL_STRING));
-						}
 					}
 					else if (strcmp(szType, "checkpoint", false) == 0)
 					{
@@ -493,7 +487,7 @@ public Action Callback_GivePlayerSuit(Handle hTimer, CBlackMesaPlayer pPlayer)
 
 public void RequestSpawnPlayer(CBlackMesaPlayer pPlayer)
 {
-	if(pPlayer.IsValid())
+	if(pPlayer.IsValid() && pPlayer.IsAlive())
 	{
 		g_SpawnSystem.pCurrentSpawnEntry.TeleportPlayer(pPlayer);
 	}
@@ -534,6 +528,6 @@ public void Hook_TouchPortal(int entity, int other)
 	if(pPlayer.IsClassPlayer())
 	{
 		g_SpawnSystem.SpawnPlayer(pPlayer, false);
-		ClientCommand(other, "playgamesound %s", "xen.energy_hit");
+		pPlayer.PlayGameSound("xen.energy_hit");
 	}
 }

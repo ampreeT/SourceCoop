@@ -9,22 +9,45 @@
 	}
 	"entity"
 	{
-		//env hudhint - show to all
-		"modify"
+		// crowbar spawn
+		"create"
 		{
-			"classname" "env_hudhint"
-			"add"
-			{
-				"spawnflags" "1"
-			}
+			"classname" "item_weapon_crowbar"
+			"angles" "0 270 0"
+			"origin" "220 1392 456"
+			"respawntime" "1"
+		}
+		// door close trigger
+		"delete"
+		{
+			"hammerid" "4708993"
+		}
+		// entity killer + player blocker enabler trigger
+		"delete"
+		{
+			"hammerid" "3788238"
 		}
 	}
 	"checkpoint"
 	{
 		"spawn"
 		{
-			"origin"	"-1328 1921 -212"
+			"origin"	"-1330 1806 332"
 			"angles"	"0 270 0"
+		}
+		"hall"
+		{
+			"origin"	"447 2043 485"
+			"angles"	"0 270 0"
+			"triggerid"	"2390983"
+			"output"	"OnTrigger"
+		}
+		"lab"
+		{
+			"origin"	"220 1364 493"
+			"angles"	"0 90 0"
+			"triggerid"	"beam_wall_relay"
+			"output"	"OnTrigger"
 		}
 	}
 }

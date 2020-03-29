@@ -1,12 +1,24 @@
 
 //------------------------------------------------------
 // CNPC_Human_Scientist - npc_human_scientist
-// crash fix on getting scared
+// crash fix when getting scared
 //------------------------------------------------------
 
 public MRESReturn Hook_ScientistIRelationType(int _this, Handle hReturn, Handle hParams)
 {
 	DHookSetReturn(hReturn, D_LI);
+	return MRES_Supercede;
+}
+
+//------------------------------------------------------
+// CAI_BaseNPC/CNPC_Human_Scientist - npc_human_scientist
+// scientists should classify as allies (in MP, base function returns false when player is not passed in)
+// this allows npcs to pass filter in 'player ally only' triggers
+//------------------------------------------------------
+
+public MRESReturn Hook_IsPlayerAlly(int _this, Handle hReturn, Handle hParams)
+{
+	DHookSetReturn(hReturn, true);
 	return MRES_Supercede;
 }
 
@@ -125,7 +137,7 @@ public bool ChangeLevelToNextMap(CChangelevel pChangelevel)
 	char szMapName[MAX_MAPNAME];
 	if (pChangelevel.GetMapName(szMapName, sizeof(szMapName)) && g_pLevelLump.m_pNextMapList.IsInMapList(szMapName))
 	{
-		ServerCommand("changelevel %s", szMapName);
+		ForceChangeLevel(szMapName, SM_NORMAL_MAPCHANGE);
 	}
 }
 

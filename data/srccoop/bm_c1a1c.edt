@@ -1,0 +1,141 @@
+#base "base\bm_sp_campaign.edt"
+
+"config"
+{
+	"nextmap"	"bm_c1a1d"
+	"equipment"
+	{
+	}
+	"entity"
+	{
+		// entity killer relays
+		"delete"
+		{
+			"targetname" "c1a1c_kill_relay_2"
+		}
+		"delete"
+		{
+			"targetname" "c1a1c_kill_relay"
+		}
+		// door locker trigger (of c1a1c_puzzle_door2)
+		"delete"
+		{
+			"hammerid" "11638674"
+		}
+		// trigger stops particles when player out of range
+		"modify"
+		{
+			"outputs"
+			{
+				"remove"
+				{
+					"target" "fire_sprinkler"
+					"input" "Stop"
+				}
+				"remove"
+				{
+					"target" "cryo_floormist"
+					"input" "Stop"
+				}
+			}
+		}
+		// ELEVATOR
+		// --------
+		// add entrance player crusher
+		"create"
+		{
+			"classname" "point_hurt"
+			"targetname" "_coop_elevator_hurt"
+			"origin" "-920 -3096 -128"
+			"DamageType" "1"
+			"DamageRadius" "15"
+			"Damage" "9999"
+		}
+		"modify"
+		{
+			"hammerid" "8498057" // elevator fall trigger
+			"outputs"
+			{
+				// kill blocking player
+				"add"
+				{
+					"output" "OnTrigger"
+					"target" "_coop_elevator_hurt"
+					"input" "Hurt"
+					"delay" "9.20"
+				}
+				// delay blocker brush enable to same time as hurt
+				"modify"
+				{
+					"target" "lift_block2"
+					"input" "Enable"
+					"replace"
+					{
+						"delay" "9.20"
+					}
+				}
+				// disable door trigger_push
+				"add"
+				{
+					"output" "OnTrigger"
+					"target" "_coop_elevator_push"
+					"input" "Kill"
+					"delay" "9.20"
+				}
+			}
+		}
+		// hijack this trigger_once and use it to push players away from the doors until lift_block2 becomes active
+		"modify"
+		{
+			"hammerid" "11069892"
+			"add"
+			{
+				"classname" "trigger_push"
+				"speed" "250"
+				"pushdir" "0 0 0"
+				"targetname" "_coop_elevator_push"
+			}
+			"outputs"
+			{
+				"modify"
+				{
+					"output" "OnTrigger"
+					"replace"
+					{
+						"output" "OnStartTouch"
+					}
+				}
+			}
+		}
+	}
+	"checkpoint"
+	{
+		"spawn"
+		{
+			"origin"	"-592 -1804 -145"
+			"angles"	"0 270 0"
+		}
+		"elevatorfall"
+		{
+			"origin"	"-896 -3119 -1123"
+			"angles"	"0 180 0"
+			"triggerid"	"maint_light2_trigger"
+			"output"	"OnTrigger"
+			"portal"	"-864 -3098 -270"
+		}
+		"lobby"
+		{
+			"origin"	"-1856 -2240 -1108"
+			"angles"	"0 180 0"
+			"triggerid"	"houndeye_spawn2"
+			"output"	"OnTrigger"
+		}
+		"lobby2"
+		{
+			"origin"	"-2816 -2752 -1111"
+			"angles"	"0 90 0"
+			"triggerid"	"vort_door_trigger"
+			"output"	"OnTrigger"
+		}
+	}
+}

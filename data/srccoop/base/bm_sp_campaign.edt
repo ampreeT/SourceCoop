@@ -13,19 +13,24 @@
 		"modify"
 		{
 			"classname"	"env_message"
-			"spawnflags" "0"
-			"add"
+			"flags"
 			{
-				"spawnflags" "2"
+				"spawnflags"
+				{
+					"add" "2"
+				}
 			}
 		}
+		// env_hudhint - Show to all
 		"modify"
 		{
-			"classname"	"env_message"
-			"spawnflags" "1"
-			"add"
+			"classname" "env_hudhint"
+			"flags"
 			{
-				"spawnflags" "3"
+				"spawnflags"
+				{
+					"add" "1"
+				}
 			}
 		}
 	}

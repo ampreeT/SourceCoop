@@ -9,6 +9,11 @@
 				"windows"	"VEngineServer023"
 				"linux"		"VEngineServer023"
 			}
+			"IServerGameDLL"
+			{
+				"windows"	"ServerGameDLL010"
+				"linux"		"ServerGameDLL010"
+			}
 		}
 		"Signatures"
 		{
@@ -18,9 +23,15 @@
 				"windows"		"\x55\x8B\xEC\x56\x8B\xF1\x57\x83\xCF\xFF"
 				"linux"			"\x55\x89\xE5\x57\x53\x83\xEC\x2A\x8B\x5D\x2A\x80\xBB\x2A\x2A\x2A\x2A\x2A"	// probably could use the symbol for this
 			}
-			"CreateInterface"
+			"CreateEngineInterface"
 			{
-				"library"		"engine"	// this depends on what dll the interface you want is from; we should just iteriate through the interface table manually to avoid this issue if there are other interfaces we need
+				"library"		"engine"
+				"windows"		"@CreateInterface"
+				"linux"			"@CreateInterface"
+			}
+			"CreateServerInterface"
+			{
+				"library"		"server"
 				"windows"		"@CreateInterface"
 				"linux"			"@CreateInterface"
 			}
@@ -37,12 +48,22 @@
 				"windows"	"256"
 				"linux"		"257"
 			}
+			"CServerGameDLL::GameShutdown"		// CServerGameDLL::GameShutdown()
+			{
+				"windows"	"8"
+				"linux"		"8"
+			}
 			
 			// Hooks
 			"CMultiplayRules::FAllowFlashlight"		// CMultiplayRules::FAllowFlashlight()
 			{
 				"windows"	"56"
 				"linux"		"57"
+			}
+			"CMultiplayRules::IsMultiplayer"		// CMultiplayRules::IsMultiplayer()
+			{
+				"windows"	"34"
+				"linux"		"35"
 			}
 			"CMultiplayRules::IsDeathmatch"		// CMultiplayRules::IsDeathmatch()
 			{
@@ -53,6 +74,11 @@
 			{
 				"windows"	"318"
 				"linux"		"319"
+			}
+			"CAI_BaseNPC::IsPlayerAlly"		// CAI_BaseNPC::IsPlayerAlly(CBasePlayer*)
+			{
+				"windows"	"445"
+				"linux"		"446"
 			}
 			"CProtoSniper::SelectSchedule"			// CProtoSniper::SelectSchedule()
 			{
@@ -92,6 +118,16 @@
 				{
 				}
 			}
+			"CMultiplayRules::IsMultiplayer"
+			{
+				"offset"	"CMultiplayRules::IsMultiplayer"
+				"hooktype"	"gamerules"
+				"return"	"bool"
+				"this"		"ignore"
+				"arguments"
+				{
+				}
+			}
 			"CMultiplayRules::IsDeathmatch"
 			{
 				"offset"	"CMultiplayRules::IsDeathmatch"
@@ -111,6 +147,20 @@
 				"arguments"
 				{
 					"pTarget"
+					{
+						"type"	"cbaseentity"
+					}
+				}
+			}
+			"CAI_BaseNPC::IsPlayerAlly"
+			{
+				"offset"	"CAI_BaseNPC::IsPlayerAlly"
+				"hooktype"	"entity"
+				"return"	"bool"
+				"this"		"entity"
+				"arguments"
+				{
+					"pPlayer"
 					{
 						"type"	"cbaseentity"
 					}

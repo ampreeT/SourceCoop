@@ -145,6 +145,21 @@ enum struct CoopManager
 		this.m_pDelayedOutputs.PushArray(pFireOutputData);
 	}
 	
+	bool ShouldResetGlobalStates()
+	{
+		// Return false if map was changed naturally, true if externally
+		if(GetMapHistorySize() > 0)
+		{
+			char map[MAX_MAPNAME], reason[32]; int startTime;
+			GetMapHistory(0, map, sizeof(map), reason, sizeof(reason), startTime);
+			if(strcmp(reason, SM_NORMAL_MAPCHANGE) == 0)
+			{
+				return false;
+			}
+		}
+		return true;
+	}
+	
 	/**
 	* BugPatching = crashfixes or enhancements that don't affect MP gameplay
 	* Will currently return true regardless of map or mode
@@ -182,8 +197,12 @@ public Action OnLevelInit(const char[] szMapName, char szMapEntities[2097152])		
 	strcopy(g_szMapName, sizeof(g_szMapName), szMapName);
 	g_pCoopManager.m_bIsCoopMap = g_pLevelLump.IsCoopMap(szMapName);
 	g_pCoopManager.m_pDelayedOutputs.Clear();
+	g_pLevelLump.Clear();
 	if (g_pCoopManager.IsCoopModeEnabled())
 	{
+		if(g_pCoopManager.ShouldResetGlobalStates())
+			ResetGlobalStates();
+		
 		g_pLevelLump.ParseMapEntities(szMapEntities);
 		g_pLevelLump.ParseConfigFile(szMapName);
 		g_pLevelLump.ToString(szMapEntities);

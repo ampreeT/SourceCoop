@@ -10,8 +10,6 @@
 - fixed a crash caused by round restarts
 
 ## todo
-- should ignore spawnflag for physboxs and physics objects that disables player-pickup
-	- spawnflag is different per entity class
 - xen portal checkpoint effect
 - sniper HasCondition(...) offset should go in gamedata
 - first-person camera death code needs to set original viewentity on callback OnMapEnd()
@@ -36,13 +34,12 @@
 	- custom marine ai
 		- CBaseCombatCharacter::CalcWeaponProficiency(...) hook for accuracy
 - trigger_changelevel
-	- game code checks for g_pGameRules->IsDeathmatch(), overriding that to false gives a crashes on changelevel, but at least its something (could explore crash dump on linux)
+	- game code checks for g_pGameRules->IsDeathmatch(), overriding that to false crashes on changelevel, but at least its something (could explore crash dump on linux)
 - add regex parsing?
 - implement player walking animations when not holding any weapon
 - find out if the 'admire hands' animation can be reenabled when picking up suit
 - hook UpdateEnemyMemory input on npcs, compare if !player or !pvsplayer > call manually (either closest player or all) (UpdateEnemyMemory( pEnemy, pEnemy->GetAbsOrigin(), this ))
 - ai_goal_follow (+possibly other ai_goals) with goal of !player - set closest - detour CBaseEntity* CAI_GoalEntity::GetGoalEntity
-- reenable chapter name hud messages if possible
 
 ## map-issues
 - bm_c4a4a

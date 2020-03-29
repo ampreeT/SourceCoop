@@ -548,6 +548,10 @@ methodmap CBlackMesaPlayer < CBaseCombatCharacter
 	{
 		return CBaseAnimating(GivePlayerItem(this.GetEntIndex(), szItemName));
 	}
+	public CBaseCombatWeapon GiveWeapon(const char[] szWeaponName)
+	{
+		return view_as<CBaseCombatWeapon>(this.GiveItem(szWeaponName));
+	}
 	public bool EquipWeapon(const char[] szWeaponName)	// change to CBaseEntity
 	{
 		for (int i = 0; i < MAX_WEAPONS; i++)
@@ -648,6 +652,10 @@ methodmap CBlackMesaPlayer < CBaseCombatCharacter
 	public int GetTeam()
 	{
 		return GetClientTeam(this.GetEntIndex());
+	}
+	public void PlayGameSound(char[] szSound)
+	{
+		ClientCommand(this.GetEntIndex(), "playgamesound %s", szSound);
 	}
 }
 
