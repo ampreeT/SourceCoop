@@ -54,6 +54,10 @@ methodmap CBaseEntity
 	{
 		return GetEntityClassname(this.GetEntIndex(), szBuffer, iMaxLength);
 	}
+	public bool GetNetClassname(char[] szBuffer, const int iMaxLength)
+	{
+		return GetEntityNetClass(this.GetEntIndex(), szBuffer, iMaxLength);
+	}
 	public bool GetTargetname(char[] szBuffer, const int iMaxLength)
 	{
 		return view_as<bool>(GetEntPropString(this.GetEntIndex(), Prop_Data, "m_iName", szBuffer, iMaxLength));
@@ -78,7 +82,8 @@ methodmap CBaseEntity
 	}
 	public bool IsClassPlayer()
 	{
-		return view_as<bool>((this.GetEntIndex() > 0) && (this.GetEntIndex() < (MaxClients + 1)));
+		int index = this.GetEntIndex();
+		return view_as<bool>((index > 0) && (index < (MaxClients + 1)));
 	}
 	public bool IsClassWeapon()
 	{
@@ -86,6 +91,16 @@ methodmap CBaseEntity
 		char szClassname[sizeof(szTitle)];
 		if (this.GetClassname(szClassname, sizeof(szClassname)))
 			return view_as<bool>(strcmp(szClassname, szTitle, false) == 0);
+		return false;
+	}
+	public bool IsPickupItem()
+	{
+		char szNetClass[32];
+		if(this.GetNetClassname(szNetClass, sizeof(szNetClass))) {
+			//LogDebug(szNetClass);
+			if(strcmp(szNetClass, "CBasePickup") == 0 || strcmp(szNetClass, "CItem_Battery") == 0)
+				return true;
+		}
 		return false;
 	}
 	// needs better implementation

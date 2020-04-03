@@ -189,10 +189,15 @@ enum struct CCoopSpawn
 			SDKHook(pParticle.GetEntIndex(), SDKHook_StartTouchPost, Hook_TouchPortal);
 		}
 	}
-	void EraseCheckpoints(int iCount)
+	void EraseCheckpoints(int iCount, bool bSpawnPortals = false)
 	{
 		while (iCount > 0 && this.m_pCheckpointList.Length)
 		{
+			CCoopSpawnEntry pEntry;
+			if(bSpawnPortals && this.m_pCheckpointList.GetArray(0, pEntry, sizeof(pEntry)) && pEntry.m_bHasPortal)
+			{
+				this.CreatePortal(pEntry.m_vecPortalPosition);
+			}
 			this.m_pCheckpointList.Erase(0);
 			iCount--;
 		}
@@ -493,31 +498,44 @@ public void RequestSpawnPlayer(CBlackMesaPlayer pPlayer)
 	}
 }
 
-public void Callback_Checkpoint(const char[] szName, int iCaller, int iActivator, float flDelay)
+int FindSpawnEntry(const CBaseEntity pCaller, CCoopSpawnEntry pEntry)
 {
-	CBaseEntity pCaller = CBaseEntity(iCaller);
-	
-	CCoopSpawnEntry pEntry;
-	int iEntriesToKill = -1;
+	CCoopSpawnEntry _pEntry;
 	for (int i = 0; i < g_SpawnSystem.m_pCheckpointList.Length; i++)
 	{
-		if (g_SpawnSystem.m_pCheckpointList.GetArray(i, pEntry, sizeof(pEntry)))
+		if (g_SpawnSystem.m_pCheckpointList.GetArray(i, _pEntry, sizeof(_pEntry)))
 		{
-			if(pEntry.m_bHasPortal)
+			if (pCaller == _pEntry.m_pTriggerEnt)
 			{
-				g_SpawnSystem.CreatePortal(pEntry.m_vecPortalPosition);
-			}
-			if (pCaller == pEntry.m_pTriggerEnt)
-			{
-				iEntriesToKill = i;
-				break;
+				pEntry = _pEntry;
+				return i;
 			}
 		}
 	}
-	
-	if (iEntriesToKill > -1)
+	return -1;
+}
+
+public void Callback_Checkpoint(const char[] szName, int iCaller, int iActivator, float flDelay)
+{
+	CBaseEntity pCaller = CBaseEntity(iCaller);
+	CCoopSpawnEntry pEntry;
+	if(FindSpawnEntry(pCaller, pEntry) != -1)
 	{
-		g_SpawnSystem.EraseCheckpoints(iEntriesToKill + 1);
+		CreateTimer(pEntry.m_flDelay, Callback_CheckpointTimer, pCaller, TIMER_FLAG_NO_MAPCHANGE);
+	}
+}
+
+public Action Callback_CheckpointTimer(Handle timer, CBaseEntity pCaller)
+{
+	if(!pCaller.IsValid())
+	{
+		return;
+	}
+	CCoopSpawnEntry pEntry;
+	int iEntriesToKill;
+	if((iEntriesToKill = FindSpawnEntry(pCaller, pEntry)) != -1)
+	{
+		g_SpawnSystem.EraseCheckpoints(iEntriesToKill + 1, true);
 		g_SpawnSystem.SetSpawnEntry(pEntry);
 	}
 }

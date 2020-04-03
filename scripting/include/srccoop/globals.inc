@@ -22,6 +22,8 @@ Handle hkFindNamedEntityClosest;
 Handle hkSetModel;
 Handle hkAcceptInput;
 Handle hkSetSuitUpdate;
+Handle hkOnTryPickUp;
+Handle hkUTIL_GetLocalPlayer;
 
 // Adresses
 //Address g_VEngineServer;
@@ -31,3 +33,6 @@ Address g_ServerGameDLL;
 char g_szMapName[MAX_MAPNAME];
 bool g_bTempDontHookEnts;
 bool g_bIsMultiplayerOverride = true;
+bool g_bMapStarted;
+
+ArrayList g_pPostponedSpawns;

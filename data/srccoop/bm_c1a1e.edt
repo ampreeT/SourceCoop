@@ -8,14 +8,63 @@
 	}
 	"entity"
 	{
-		
+		// enable fall killtrig
+		"modify"
+		{
+			"classname" "trigger_hurt"
+			"origin" "-3808 -7936 -4384"
+			"add"
+			{
+				"StartDisabled" "0"
+			}
+		}
+		// dont lock elevator button
+		"modify"
+		{
+			"targetname" "lift_transition_trigger"
+			"outputs"
+			{
+				"remove"
+				{
+					"output" "OnEndTouch"
+				}
+			}
+		}
 	}
 	"checkpoint"
 	{
 		"spawn"
 		{
-			"origin"	"-1330 1806 332"
+			"origin"	"-2992 -5168 -3639"
+			"angles"	"0 0 0"
+		}
+		"across"
+		{
+			"origin"	"-3024 -6776 -3959"
 			"angles"	"0 270 0"
+			"triggerid"	"storage_door4"
+			"output"	"OnOpen"
+		}
+		"jumppuzzle"
+		{
+			"origin"	"-3240 -7420 -3639"
+			"angles"	"0 180 0"
+			"triggerid"	"storage_door7"
+			"output"	"OnOpen"
+		}
+		"jumppuzzle2"
+		{
+			"origin"	"-3769 -7659 -3388"
+			"angles"	"0 270 0"
+			"triggerid"	"3662944"
+			"output"	"OnTrigger"
+		}
+		"across-upper"
+		{
+			"origin"	"-2529 -7611 -3612"
+			"angles"	"0 0 0"
+			"triggerid"	"storage_door3"
+			"output"	"OnOpen"
 		}
 	}
 }

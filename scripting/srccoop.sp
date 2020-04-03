@@ -6,7 +6,7 @@
 // move me to classdef as member functions
 public void SetPlayerPickup(int iPlayer, int iObject, const bool bLimitMassAndSize)
 {
-	g_bIsMultiplayerOverride = false; // IsMultiplayer=false uses correct implementation for bLimitMassAndSize
+	g_bIsMultiplayerOverride = false; // IsMultiplayer = false uses correct implementation for bLimitMassAndSize
 	SDKCall(g_pPickupObject, iPlayer, iObject, bLimitMassAndSize);
 	g_bIsMultiplayerOverride = true;
 }
@@ -31,18 +31,20 @@ public Plugin myinfo =
 	url = ""
 };
 
-public void load_dhook_detour(const Handle pGameConfig, Handle& pHandle, const char[] szFuncName, bool bPost, DHookCallback pCallback)
+void load_dhook_detour(const Handle pGameConfig, Handle& pHandle, const char[] szFuncName, DHookCallback pCallbackPre = INVALID_FUNCTION, DHookCallback pCallbackPost = INVALID_FUNCTION)
 {
 	pHandle = DHookCreateFromConf(pGameConfig, szFuncName);
 	if (pHandle == null)
 		SetFailState("Couldn't create hook %s", szFuncName);
 	if (!DHookSetFromConf(pHandle, pGameConfig, SDKConf_Signature, szFuncName))
 		SetFailState("Couldn't set hook %s", szFuncName);
-	if (!DHookEnableDetour(pHandle, bPost, pCallback))
-		SetFailState("Couldn't enable detour hook %s", szFuncName);
+	if (pCallbackPre != INVALID_FUNCTION && !DHookEnableDetour(pHandle, false, pCallbackPre))
+		SetFailState("Couldn't enable pre detour hook %s", szFuncName);
+	if (pCallbackPost != INVALID_FUNCTION && !DHookEnableDetour(pHandle, true, pCallbackPost))
+		SetFailState("Couldn't enable post detour hook %s", szFuncName);
 }
 
-public void load_dhook_virtual(const Handle pGameConfig, Handle& pHandle, const char[] szFuncName)
+void load_dhook_virtual(const Handle pGameConfig, Handle& pHandle, const char[] szFuncName)
 {
 	pHandle = DHookCreateFromConf(pGameConfig, szFuncName);
 	if (pHandle == null)
@@ -51,7 +53,7 @@ public void load_dhook_virtual(const Handle pGameConfig, Handle& pHandle, const 
 		SetFailState("Couldn't set hook %s", szFuncName);
 }
 
-public void load_gamedata()
+void load_gamedata()
 {
 	char szConfigName[] = "srccoop.games";
 	Handle pGameConfig = LoadGameConfigFile(szConfigName);
@@ -113,7 +115,7 @@ public void load_gamedata()
 
 	load_dhook_virtual(pGameConfig, hkFAllowFlashlight, "CMultiplayRules::FAllowFlashlight");
 	load_dhook_virtual(pGameConfig, hkIsMultiplayer, "CMultiplayRules::IsMultiplayer");
-	//load_dhook_virtual(pGameConfig, hkIsDeathmatch, "CMultiplayRules::IsDeathmatch");
+//	load_dhook_virtual(pGameConfig, hkIsDeathmatch, "CMultiplayRules::IsDeathmatch");
 	load_dhook_virtual(pGameConfig, hkIRelationType, "CBaseCombatCharacter::IRelationType");
 	load_dhook_virtual(pGameConfig, hkIsPlayerAlly, "CAI_BaseNPC::IsPlayerAlly");
 	load_dhook_virtual(pGameConfig, hkProtoSniperSelectSchedule, "CProtoSniper::SelectSchedule");
@@ -121,17 +123,19 @@ public void load_gamedata()
 	load_dhook_virtual(pGameConfig, hkFindNamedEntityClosest, "CSceneEntity::FindNamedEntityClosest");
 	load_dhook_virtual(pGameConfig, hkSetModel, "CBaseEntity::SetModel");
 	load_dhook_virtual(pGameConfig, hkAcceptInput, "CBaseEntity::AcceptInput");
-	load_dhook_detour(pGameConfig, hkSetSuitUpdate, "CBasePlayer::SetSuitUpdate", false, Hook_SetSuitUpdate);
+	load_dhook_virtual(pGameConfig, hkOnTryPickUp, "CBasePickup::OnTryPickUp");
+	load_dhook_detour(pGameConfig, hkSetSuitUpdate, "CBasePlayer::SetSuitUpdate", Hook_SetSuitUpdate);
+	load_dhook_detour(pGameConfig, hkUTIL_GetLocalPlayer, "UTIL_GetLocalPlayer", Hook_UTIL_GetLocalPlayer);
 
 	CloseHandle(pGameConfig);
 }
 
-public Address GetServerInterface(const char[] szInterface)
+stock Address GetServerInterface(const char[] szInterface)
 {
 	return view_as<Address>(SDKCall(g_pCreateServerInterface, szInterface, 0));
 }
 
-public Address GetEngineInterface(const char[] szInterface)
+stock Address GetEngineInterface(const char[] szInterface)
 {
 	return view_as<Address>(SDKCall(g_pCreateEngineInterface, szInterface, 0));
 }
@@ -146,14 +150,39 @@ public void OnPluginStart()
 	g_SpawnSystem.Initialize();
 	g_pCoopManager.Initialize();
 	g_pInstancingManager.Initialize();
+	g_pPostponedSpawns = CreateArray();
+	
 	HookEvent("player_spawn", Hook_PlayerSpawnPost, EventHookMode_Post);
-	HookEvent("broadcast_teamsound", Hook_BroadcastTeamsound, EventHookMode_Pre);
+	
+	if(GetEngineVersion() == Engine_BlackMesa)
+	{
+		HookEvent("broadcast_teamsound", Hook_BroadcastTeamsound, EventHookMode_Pre);
+		UserMsg iIntroCredits = GetUserMessageId("IntroCredits");
+		if(iIntroCredits != INVALID_MESSAGE_ID)
+			HookUserMessage(iIntroCredits, Hook_IntroCreditsMsg, true);
+	}
+	
+	for(int i = 1; i <= MaxClients; i++)
+	{
+		if(IsClientInGame(i))
+		{
+			OnClientPutInServer(i);
+		}
+	}
 }
 
 public void OnMapStart()
 {
 	g_pCoopManager.OnMapStart();
 	DHookGamerules(hkIsMultiplayer, false, _, Hook_IsMultiplayer);
+	
+	for(int i = 0; i < g_pPostponedSpawns.Length; i++)
+	{
+		CBaseEntity pEnt = g_pPostponedSpawns.Get(i);
+		RequestFrame(SpawnPostponedItem, pEnt);
+	}
+	g_pPostponedSpawns.Clear();
+	g_bMapStarted = true;
 }
 
 public void OnConfigsExecuted()
@@ -187,6 +216,8 @@ public void OnClientPutInServer(int client)
 {
 	g_pCoopManager.OnClientPutInServer(client);
 	g_pInstancingManager.OnClientPutInServer(client);
+	
+	SDKHook(client, SDKHook_PreThinkPost, Hook_PlayerPreThinkPost);
 }
 
 public void OnClientDisconnect(int client)
@@ -197,6 +228,7 @@ public void OnClientDisconnect(int client)
 public void OnMapEnd()
 {
 	g_pLevelLump.RevertConvars();
+	g_bMapStarted = false;
 }
 
 public void OnPluginEnd()
@@ -209,11 +241,7 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 	CBaseEntity pEntity = CBaseEntity(iEntIndex);
 	if (!g_bTempDontHookEnts && pEntity.IsValid())
 	{
-		if (pEntity.IsClassPlayer())
-		{
-			SDKHook(iEntIndex, SDKHook_PreThinkPost, Hook_PlayerPreThinkPost);
-		}
-		else if (pEntity.IsClassScientist())
+		if (pEntity.IsClassScientist())
 		{
 			DHookEntity(hkIRelationType, true, iEntIndex, _, Hook_ScientistIRelationType);
 			DHookEntity(hkIsPlayerAlly, true, iEntIndex, _, Hook_IsPlayerAlly);
@@ -234,7 +262,10 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 		{
 			if(g_pLevelLump.m_bInstanceItems)
 			{
-				SDKHook(iEntIndex, SDKHook_Spawn, Hook_ItemSpawnDelay);
+				if(pEntity.IsPickupItem())
+				{
+					SDKHook(iEntIndex, SDKHook_Spawn, Hook_ItemSpawnDelay);
+				}
 			}
 		}
 		else if (pEntity.IsClassWeapon())
@@ -264,6 +295,10 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 		else if (strcmp(szClassname, "point_clientcommand") == 0)
 		{
 			DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_ClientCommandAcceptInput);
+		}
+		else if (strcmp(szClassname, "env_credits") == 0)
+		{
+			DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_EnvCreditsAcceptInput);
 		}
 		// if some explosions turn out to be damaging all players except one, this is the fix
 		//else if (strcmp(szClassname, "env_explosion") == 0)
@@ -309,15 +344,20 @@ public void Hook_SpawnPost(int iEntIndex)
 	}
 }
 
-// Delay items' Spawn() until Gamerules IsMultiplayer() gets hooked in OnMapStart()
+// Postpone items' Spawn() until Gamerules IsMultiplayer() gets hooked in OnMapStart()
 public Action Hook_ItemSpawnDelay(int iEntIndex)
 {
 	SDKUnhook(iEntIndex, SDKHook_Spawn, Hook_ItemSpawnDelay);
-	RequestFrame(Request_ItemSpawnDelay, CBaseEntity(iEntIndex));
+	
+	CBaseEntity pEnt = CBaseEntity(iEntIndex);
+	if(g_bMapStarted)
+		RequestFrame(SpawnPostponedItem, pEnt);
+	else
+		g_pPostponedSpawns.Push(pEnt);
 	return Plugin_Stop;
 }
 
-public void Request_ItemSpawnDelay(CBaseEntity pEntity)
+public void SpawnPostponedItem(CBaseEntity pEntity)
 {
 	if(pEntity.IsValid())
 	{
@@ -325,7 +365,6 @@ public void Request_ItemSpawnDelay(CBaseEntity pEntity)
 		g_bIsMultiplayerOverride = false; // IsMultiplayer=false will spawn items with physics
 		pEntity.Spawn();
 		g_bIsMultiplayerOverride = true;
-		
 	}
 }
 
@@ -400,7 +439,7 @@ public Action Hook_PlayerSpawnPost(Event hEvent, const char[] szName, bool bDont
 
 public Action Hook_BroadcastTeamsound(Event hEvent, const char[] szName, bool bDontBroadcast)
 {
-	if(g_pCoopManager.IsFeaturePatchingEnabled())
+	if(g_pCoopManager.IsCoopModeEnabled())
 	{
 		// block multiplayer announcer
 		hEvent.BroadcastDisabled = true;
@@ -476,47 +515,11 @@ public MRESReturn Hook_IsMultiplayer(Handle hReturn, Handle hParams)
 	return MRES_Supercede;
 }
 
-public MRESReturn Hook_WeaponSetModel(int _this, Handle hParams)	// use sp weapon models
-{
-	if (!DHookIsNullParam(hParams, 1))
-	{
-		CBaseCombatWeapon pWeapon = CBaseCombatWeapon(_this);
-		if (pWeapon.IsValid())
-		{
-			CBaseCombatCharacter pOwner = view_as<CBaseCombatCharacter>(pWeapon.GetOwner());
-			if (pOwner.IsValid() && !pOwner.IsClassPlayer())
-			{
-				static const char szWeaponModel[][][] =
-				{
-					{ "models/weapons/w_glock_mp.mdl", "models/weapons/w_glock.mdl", },
-					{ "models/weapons/w_357_mp.mdl", "models/weapons/w_357.mdl", },
-					{ "models/weapons/w_mp5_mp.mdl", "models/weapons/w_mp5.mdl", },
-					{ "models/weapons/w_shotgun_mp.mdl", "models/weapons/w_shotgun.mdl", },
-					{ "models/weapons/w_rpg_mp.mdl", "models/weapons/w_rpg.mdl" },
-				};
-				
-				char szModelName[MAX_CLASSNAME];
-				DHookGetParamString(hParams, 1, szModelName, sizeof(szModelName));
-				
-				for (int i = 0; i < sizeof(szWeaponModel); i++)
-				{
-					if (strcmp(szModelName, szWeaponModel[i][0], false) == 0)
-					{
-						if (PrecacheModel(szWeaponModel[i][1], false))
-						{
-							DHookSetParamString(hParams, 1, szWeaponModel[i][1]);
-							return MRES_ChangedHandled;
-						}
-
-						break;
-					}
-				}
-			}
-		}
-	}
-	
-	return MRES_Ignored;
-}
+//public MRESReturn Hook_IsDeathmatch(Handle hReturn, Handle hParams)
+//{
+//	DHookSetReturn(hReturn, false);
+//	return MRES_Supercede;
+//}
 
 public void Hook_CameraDeathSpawn(int iEntIndex)
 {
@@ -545,6 +548,14 @@ public void Hook_Use(int entity, int activator, int caller, UseType type, float 
 		CBlackMesaPlayer pPlayer = CBlackMesaPlayer(caller);
 		if (pPlayer.IsValid() && pPlayer.IsAlive())
 		{
+			CBaseEntity pEntity = CBaseEntity(entity);
+			if(g_pLevelLump.m_bInstanceItems && pEntity.IsPickupItem())
+			{
+				if(g_pInstancingManager.HasPickedUpItem(pPlayer, pEntity))
+				{
+					return;
+				}
+			}
 			SetPlayerPickup(pPlayer.GetEntIndex(), entity, true);
 		}
 	}
@@ -564,20 +575,6 @@ public MRESReturn Hook_SetSuitUpdate(int _this, Handle hParams)		// suit sounds;
 	}
 	
 	return MRES_Ignored;
-}
-
-public void Hook_ExplosionSpawn(int iEntIndex)
-{
-	if (g_pCoopManager.IsBugPatchingEnabled())
-	{
-		char buffer[MAX_VALUE];
-		GetEntPropString(iEntIndex, Prop_Data, "m_strEntityNameToIgnore", buffer, sizeof(buffer)); // this is entity handle m_hEntityIgnore in other games
-		if(StrEqual(buffer, "!player"))
-		{
-			SetEntPropString(iEntIndex, Prop_Data, "m_strEntityNameToIgnore", "");
-			SetEntProp(iEntIndex, Prop_Data, "m_iClassIgnore", CLASS_PLAYER);
-		}
-	}
 }
 
 // todo read this later

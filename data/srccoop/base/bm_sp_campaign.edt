@@ -4,6 +4,7 @@
 
 "config"
 {
+	"intro_type" "freeze"
 	"console"
 	{
 	}

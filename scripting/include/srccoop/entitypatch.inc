@@ -1,9 +1,27 @@
+//------------------------------------------------------
+// UTIL_GetLocalPlayer
+//------------------------------------------------------
+public MRESReturn Hook_UTIL_GetLocalPlayer(Handle hReturn)
+{
+	if (g_pCoopManager.IsBugPatchingEnabled())
+	{
+		for(int i = 1; i <= MaxClients; i++)
+		{
+			if(IsClientInGame(i))
+			{
+				LogDebug("WARN: Game called UTIL_GetLocalPlayer");
+				DHookSetReturn(hReturn, i);
+				return MRES_Supercede;
+			}
+		}
+	}
+	return MRES_Ignored;
+}
 
 //------------------------------------------------------
 // CNPC_Human_Scientist - npc_human_scientist
 // crash fix when getting scared
 //------------------------------------------------------
-
 public MRESReturn Hook_ScientistIRelationType(int _this, Handle hReturn, Handle hParams)
 {
 	DHookSetReturn(hReturn, D_LI);
@@ -15,7 +33,6 @@ public MRESReturn Hook_ScientistIRelationType(int _this, Handle hReturn, Handle 
 // scientists should classify as allies (in MP, base function returns false when player is not passed in)
 // this allows npcs to pass filter in 'player ally only' triggers
 //------------------------------------------------------
-
 public MRESReturn Hook_IsPlayerAlly(int _this, Handle hReturn, Handle hParams)
 {
 	DHookSetReturn(hReturn, true);
@@ -26,7 +43,6 @@ public MRESReturn Hook_IsPlayerAlly(int _this, Handle hReturn, Handle hParams)
 // CProtoSniper - npc_sniper
 // crash fix
 //------------------------------------------------------
-
 public MRESReturn Hook_ProtoSniperSelectSchedule(int _this, Handle hReturn, Handle hParams)	// https://github.com/ValveSoftware/source-sdk-2013/blob/0d8dceea4310fde5706b3ce1c70609d72a38efdf/mp/src/game/server/hl2/proto_sniper.cpp#L1385
 {
 	CProtoSniper pSniper = CProtoSniper(_this);
@@ -81,7 +97,6 @@ public MRESReturn Hook_ProtoSniperSelectSchedule(int _this, Handle hReturn, Hand
 // Scene entities
 // fix findnamedentity returning sp player ( nullptr )
 //------------------------------------------------------
-
 public MRESReturn Hook_FindNamedEntity(int _this, Handle hReturn, Handle hParams)
 {
 	if (!DHookIsNullParam(hParams, 1) && !DHookIsNullParam(hParams, 2))
@@ -131,7 +146,6 @@ public MRESReturn Hook_FindNamedEntity(int _this, Handle hReturn, Handle hParams
 //------------------------------------------------------
 // CChangelevel
 //------------------------------------------------------
-
 public bool ChangeLevelToNextMap(CChangelevel pChangelevel)
 {
 	char szMapName[MAX_MAPNAME];
@@ -189,7 +203,6 @@ public void Hook_ChangelevelOnTouch(int _this, int iOther)
 // CPointTeleport - point_teleport
 // multiplayer support
 //------------------------------------------------------
-
 public MRESReturn Hook_PointTeleportAcceptInput(int _this, Handle hReturn, Handle hParams)
 {
 	if (g_pCoopManager.IsBugPatchingEnabled())
@@ -228,7 +241,6 @@ public MRESReturn Hook_PointTeleportAcceptInput(int _this, Handle hReturn, Handl
 // CTriggerCamera - point_viewcontrol
 // multiplayer support
 //------------------------------------------------------
-
 public MRESReturn Hook_PointViewcontrolAcceptInput(int _this, Handle hReturn, Handle hParams)
 {
 	static bool bHookSkipEnable = false;
@@ -363,7 +375,6 @@ public MRESReturn Hook_PointViewcontrolNeverEnable(int _this, Handle hReturn, Ha
 // CMovementSpeedMod - player_speedmod
 // multiplayer support
 //------------------------------------------------------
-
 public MRESReturn Hook_SpeedmodAcceptInput(int _this, Handle hReturn, Handle hParams)
 {
 	static bool bHookSkip = false;
@@ -399,7 +410,6 @@ public MRESReturn Hook_SpeedmodAcceptInput(int _this, Handle hReturn, Handle hPa
 // point_clientcommand
 // multiplayer support
 //------------------------------------------------------
-
 public MRESReturn Hook_ClientCommandAcceptInput(int _this, Handle hReturn, Handle hParams)
 {
 	static bool bHookSkip = false;
@@ -426,6 +436,178 @@ public MRESReturn Hook_ClientCommandAcceptInput(int _this, Handle hReturn, Handl
 				bHookSkip = false;
 				DHookSetReturn(hReturn, true);
 				return MRES_Supercede;
+			}
+		}
+	}
+	return MRES_Ignored;
+}
+
+//------------------------------------------------------
+// env_credits
+// multiplayer support
+//------------------------------------------------------
+public MRESReturn Hook_EnvCreditsAcceptInput(int _this, Handle hReturn, Handle hParams)
+{
+	if (g_pCoopManager.IsBugPatchingEnabled())
+	{
+		if (!DHookIsNullParam(hParams, 1))
+		{
+			char szInputType[MAX_FORMAT];
+			DHookGetParamString(hParams, 1, szInputType, sizeof(szInputType));
+			if (strcmp(szInputType, "ShowLogo") == 0)
+			{
+				float flLogoLength = GetEntPropFloat(_this, Prop_Data, "m_flLogoLength");
+				if(flLogoLength)
+				{
+					Handle pMsg = StartMessageAll("LogoTimeMsg", USERMSG_RELIABLE);
+					if(pMsg != null) {
+						BfWriteFloat(pMsg, flLogoLength);
+						EndMessage();
+					}
+				}
+				else
+				{
+					Handle pMsg = StartMessageAll("CreditsMsg", USERMSG_RELIABLE);
+					if(pMsg != null) {
+						BfWriteByte(pMsg, 1);
+						EndMessage();
+					}
+				}
+				DHookSetReturn(hReturn, true);
+				return MRES_Supercede;
+			}
+			if(strcmp(szInputType, "RollCredits") == 0)
+			{
+				Handle pMsg = StartMessageAll("CreditsMsg", USERMSG_RELIABLE);
+				if(pMsg != null) {
+					BfWriteByte(pMsg, 2);
+					EndMessage();
+				}
+				DHookSetReturn(hReturn, true);
+				return MRES_Supercede;
+			}
+			if(strcmp(szInputType, "RollOutroCredits") == 0)
+			{
+				Handle pMsg = StartMessageAll("CreditsMsg", USERMSG_RELIABLE);
+				if(pMsg != null) {
+					BfWriteByte(pMsg, 3);
+					EndMessage();
+				}
+				DHookSetReturn(hReturn, true);
+				return MRES_Supercede;
+			}
+		}
+	}
+	return MRES_Ignored;
+}
+
+//------------------------------------------------------
+// env_introcredits
+// multiplayer support - repeat usermessages to all players
+//------------------------------------------------------
+public Action Hook_IntroCreditsMsg(UserMsg msg_id, BfRead msg, const int[] players, int playersNum, bool reliable, bool init)
+{
+	DataPack dp; CreateDataTimer(0.0, IntroCreditsMsgRepeater, dp, TIMER_FLAG_NO_MAPCHANGE);
+	int type = msg.ReadByte();
+	dp.WriteCell(type);
+	if(type)
+	{
+		dp.WriteFloat(msg.ReadFloat());
+		dp.WriteFloat(msg.ReadFloat());
+		dp.WriteFloat(msg.ReadFloat());
+	}
+	else
+	{
+		char buffer[128];
+		msg.ReadString(buffer, sizeof(buffer), true);
+		dp.WriteString(buffer);
+		msg.ReadString(buffer, sizeof(buffer), true);
+		dp.WriteString(buffer);
+	}
+	dp.Reset();
+	return Plugin_Handled;
+}
+
+public Action IntroCreditsMsgRepeater(Handle timer, DataPack dp)
+{
+	Handle pNewMsg = StartMessageAll("IntroCredits", USERMSG_RELIABLE|USERMSG_BLOCKHOOKS);
+	if(pNewMsg != null) {
+		int type = dp.ReadCell();
+		BfWriteByte(pNewMsg, type);
+		if(type)
+		{
+			BfWriteFloat(pNewMsg, dp.ReadFloat());
+			BfWriteFloat(pNewMsg, dp.ReadFloat());
+			BfWriteFloat(pNewMsg, dp.ReadFloat());
+		}
+		else
+		{
+			char buffer[128];
+			dp.ReadString(buffer, sizeof(buffer));
+			BfWriteString(pNewMsg, buffer);
+			dp.ReadString(buffer, sizeof(buffer));
+			BfWriteString(pNewMsg, buffer);
+		}
+		EndMessage();
+	}
+}
+
+//------------------------------------------------------
+// env_explosion
+// fix !player ignore entity
+//------------------------------------------------------
+public void Hook_ExplosionSpawn(int iEntIndex)
+{
+	if (g_pCoopManager.IsBugPatchingEnabled())
+	{
+		char buffer[MAX_VALUE];
+		GetEntPropString(iEntIndex, Prop_Data, "m_strEntityNameToIgnore", buffer, sizeof(buffer)); // this is entity handle m_hEntityIgnore in other games
+		if(StrEqual(buffer, "!player"))
+		{
+			SetEntPropString(iEntIndex, Prop_Data, "m_strEntityNameToIgnore", "");
+			SetEntProp(iEntIndex, Prop_Data, "m_iClassIgnore", CLASS_PLAYER);
+		}
+	}
+}
+
+//------------------------------------------------------
+// weapon models
+//------------------------------------------------------
+public MRESReturn Hook_WeaponSetModel(int _this, Handle hParams)	// use sp weapon models
+{
+	if (!DHookIsNullParam(hParams, 1))
+	{
+		CBaseCombatWeapon pWeapon = CBaseCombatWeapon(_this);
+		if (pWeapon.IsValid())
+		{
+			CBaseCombatCharacter pOwner = view_as<CBaseCombatCharacter>(pWeapon.GetOwner());
+			if (pOwner.IsValid() && !pOwner.IsClassPlayer())
+			{
+				static const char szWeaponModel[][][] =
+				{
+					{ "models/weapons/w_glock_mp.mdl", "models/weapons/w_glock.mdl", },
+					{ "models/weapons/w_357_mp.mdl", "models/weapons/w_357.mdl", },
+					{ "models/weapons/w_mp5_mp.mdl", "models/weapons/w_mp5.mdl", },
+					{ "models/weapons/w_shotgun_mp.mdl", "models/weapons/w_shotgun.mdl", },
+					{ "models/weapons/w_rpg_mp.mdl", "models/weapons/w_rpg.mdl" },
+				};
+				
+				char szModelName[MAX_CLASSNAME];
+				DHookGetParamString(hParams, 1, szModelName, sizeof(szModelName));
+				
+				for (int i = 0; i < sizeof(szWeaponModel); i++)
+				{
+					if (strcmp(szModelName, szWeaponModel[i][0], false) == 0)
+					{
+						if (PrecacheModel(szWeaponModel[i][1], false))
+						{
+							DHookSetParamString(hParams, 1, szWeaponModel[i][1]);
+							return MRES_ChangedHandled;
+						}
+
+						break;
+					}
+				}
 			}
 		}
 	}

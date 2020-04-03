@@ -60,7 +60,11 @@ enum struct CoopManager
 					if(g_pLevelLump.m_iIntroType == INTRO_FADE)
 					{
 						Client_ScreenFade(pPlayer.GetEntIndex(), 0, FFADE_STAYOUT);
-						pPlayer.SetFlags(pPlayer.GetFlags() | FL_FROZEN);
+						pPlayer.SetFlags(pPlayer.GetFlags() | FL_ATCONTROLS);
+					}
+					else if (g_pLevelLump.m_iIntroType == INTRO_FREEZE)
+					{
+						pPlayer.SetFlags(pPlayer.GetFlags() | FL_ATCONTROLS);
 					}
 					this.CheckStart();
 				}
@@ -112,14 +116,14 @@ enum struct CoopManager
 		this.m_bStarted = true;
 		PrintToServer("Co-op map %s has begun", g_szMapName);
 		
-		if(g_pLevelLump.m_iIntroType == INTRO_FADE)
+		if(g_pLevelLump.m_iIntroType == INTRO_FADE || g_pLevelLump.m_iIntroType == INTRO_FREEZE)
 		{
 			for(int i = 1; i <= MaxClients; i++)
 			{
 				if(IsClientInGame(i))
 				{
 					CBlackMesaPlayer pClient = CBlackMesaPlayer(i);
-					pClient.SetFlags(pClient.GetFlags() & ~FL_FROZEN);
+					pClient.SetFlags(pClient.GetFlags() & ~FL_ATCONTROLS);
 				}
 			}
 		}

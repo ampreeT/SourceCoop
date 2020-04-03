@@ -226,7 +226,8 @@ methodmap CNextMapLump < Array_t
 enum IntroType
 {
 	INTRO_NONE = 0,
-	INTRO_FADE
+	INTRO_FADE,
+	INTRO_FREEZE
 }
 
 enum struct CGlobalLevelLump
@@ -391,6 +392,10 @@ enum struct CGlobalLevelLump
 							else if(strcmp(szIntroType, "none", false) == 0)
 							{
 								this.m_iIntroType = INTRO_NONE;
+							}
+							else if(strcmp(szIntroType, "freeze", false) == 0)
+							{
+								this.m_iIntroType = INTRO_FREEZE;
 							}
 						}
 						else if (strcmp(szType, "instance_items", false) == 0)

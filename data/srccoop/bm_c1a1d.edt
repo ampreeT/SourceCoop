@@ -8,14 +8,58 @@
 	}
 	"entity"
 	{
-		
+		// turn prev. changelevel trig into invisible wall
+		"modify"
+		{
+			"classname" "trigger_multiple"
+			"hammerid" "8418458"
+			"add"
+			{
+				"classname" "func_brush"
+				"rendermode" "10" // dont render
+			}
+		}
+		// remove lift blocker
+		"delete"
+		{
+			"targetname" "c1a1c_lift_block"
+		}
+		// turn trigger_once autosave reloader into kill trig
+		"modify"
+		{
+			"targetname" "spk_loadsaved"
+			"add"
+			{
+				"classname" "trigger_hurt"
+				"damage" "9999"
+				"damagetype" "32"
+			}
+		}
 	}
 	"checkpoint"
 	{
 		"spawn"
 		{
-			"origin"	"-3940 -1823 -1075"
+			"origin"	"-3940 -1823 -1104"
 			"angles"	"0 180 0"
+		}
+		"spawn2"
+		{
+			"origin"	"-4640 -1572 -1103"
+			"angles"	"0 180 0"
+			"triggerid"	"c1a1d_bt_block_d2"
+			"output"	"OnFullyClosed"
+			"portal"	"-4568 -1572 -1076"
+		}
+		"lift"
+		{
+			"followid"	"c1a1c_lift_1"
+			"origin"	"0 0 64"
+			"angles"	"0 270 0"
+			"triggerid"	"c1a1c_lift_1"
+			"output"	"OnStart"
+			"portal"	"-5120 -1648 -1075"
+			"delay"		"5.0"
 		}
 	}
 }

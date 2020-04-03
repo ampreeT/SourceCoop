@@ -1,0 +1,20 @@
+#base "base\bm_sp_campaign.edt"
+
+"config"
+{
+	"nextmap"	"bm_c1a2c"
+	"equipment"
+	{
+	}
+	"entity"
+	{
+	}
+	"checkpoint"
+	{
+		"spawn"
+		{
+			"origin"	"160 -112 16"
+			"angles"	"0 90 0"
+		}
+	}
+}

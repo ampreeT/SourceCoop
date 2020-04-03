@@ -1,0 +1,82 @@
+#base "base\bm_sp_campaign.edt"
+
+"config"
+{
+	"nextmap"	"bm_c1a2b"
+	"intro_type" "none"
+	"equipment"
+	{
+	}
+	"entity"
+	{
+		// delay map start
+		"modify"
+		{
+			"classname" "logic_auto"
+			"functions"
+			{
+				"delay_output" "OnMapSpawn"
+			}
+		}
+		// remove blockers
+		"delete"
+		{
+			"targetname" "oc_elev_block"
+		}
+		"delete"
+		{
+			"targetname" "storage_vent_clip"
+		}
+		// dont close elevator doors
+		"modify"
+		{
+			"outputs"
+			{
+				"remove"
+				{
+					"target" "elevator_door_right"
+					"input" "Close"
+				}
+				"remove"
+				{
+					"target" "elevator_door_left"
+					"input" "Close"
+				}
+			}
+		}
+		// fix player killer laser for mp
+		"modify"
+		{
+			"targetname" "puzzle_death"
+			"add"
+			{
+				"classname" "trigger_hurt"
+				"damage" "9999"
+				"damagetype" "1024"
+			}
+			"outputs"
+			{
+				"remove"
+				{
+					"target" "player_killer"
+				}
+				"modify"
+				{
+					"output" "OnTrigger"
+					"replace"
+					{
+						"output" "OnStartTouch"
+					}
+				}
+			}
+		}
+	}
+	"checkpoint"
+	{
+		"spawn"
+		{
+			"origin"	"160 -112 16"
+			"angles"	"0 90 0"
+		}
+	}
+}

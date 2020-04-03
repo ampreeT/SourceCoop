@@ -49,37 +49,50 @@ ItemInstancingManager g_pInstancingManager;
 
 public void Hook_Instancing_ItemSpawn(int iEntIndex)
 {
-	DispatchKeyValue(iEntIndex, "respawntime", "1");
-	HookSingleEntityOutput(iEntIndex, "OnPlayerPickup", Hook_Instancing_OnPlayerPickup, false);
-	SDKHook(iEntIndex, SDKHook_Touch, Hook_Instancing_ItemTouch);
-	SDKHook(iEntIndex, SDKHook_SetTransmit, Hook_Instancing_ItemTransmit);
+	CBaseEntity pItem = CBaseEntity(iEntIndex);
+	DHookEntity(hkOnTryPickUp, false, iEntIndex, _, Hook_Instancing_OnTryPickUpPre);
+	DHookEntity(hkOnTryPickUp, true, iEntIndex, _, Hook_Instancing_OnTryPickUpPost);
 	DHookAddEntityListener(ListenType_Deleted, Hook_Instancing_ItemDeleted);
+	if(pItem.IsClassname("item_healthkit")) // this spawns second entity item_healthkit_ragdoll_clone
+		SDKHook(iEntIndex, SDKHook_SetTransmit, Hook_Instancing_NeverTransmit);
+	else
+		SDKHook(iEntIndex, SDKHook_SetTransmit, Hook_Instancing_ItemTransmit);
+	DispatchKeyValue(iEntIndex, "respawntime", "0");
 }
 
-public Action Hook_Instancing_OnPlayerPickup(const char[] output, int caller, int activator, float delay)
+// Do not allow to to touch-pickup consumed items
+public MRESReturn Hook_Instancing_OnTryPickUpPre(int _this, Handle hReturn, Handle hParams)
 {
-	CBlackMesaPlayer pPlayer = CBlackMesaPlayer(activator);
+	CBlackMesaPlayer pPlayer = CBlackMesaPlayer(DHookGetParam(hParams, 1));
 	if(pPlayer.IsClassPlayer())
 	{
-		CBaseEntity pItem = CBaseEntity(caller);
-		g_pInstancingManager.AddPickedUpItem(pPlayer, pItem);
-	}
-}
-
-public Action Hook_Instancing_ItemTouch(int entity, int other)
-{
-	CBlackMesaPlayer pPlayer = CBlackMesaPlayer(other);
-	if(pPlayer.IsClassPlayer())
-	{
-		CBaseEntity pItem = CBaseEntity(entity);
+		CBaseEntity pItem = CBaseEntity(_this);
 		if(g_pInstancingManager.HasPickedUpItem(pPlayer, pItem))
 		{
-			return Plugin_Stop;
+			DHookSetReturn(hReturn, false);
+			return MRES_Supercede;
 		}
 	}
-	return Plugin_Continue;
+	return MRES_Ignored;
 }
 
+// Store this newly consumed item
+public MRESReturn Hook_Instancing_OnTryPickUpPost(int _this, Handle hReturn, Handle hParams)
+{
+	bool bPickedUp = DHookGetReturn(hReturn);
+	if(bPickedUp)
+	{
+		CBlackMesaPlayer pPlayer = CBlackMesaPlayer(DHookGetParam(hParams, 1));
+		if(pPlayer.IsClassPlayer())
+		{
+			CBaseEntity pItem = CBaseEntity(_this);
+			g_pInstancingManager.AddPickedUpItem(pPlayer, pItem);
+		}
+	}
+	return MRES_Ignored;
+}
+
+// Do not transmit picked up items. This is not optimal - better option would be to show some effect/as translucent
 public Action Hook_Instancing_ItemTransmit(int entity, int client)
 {
 	if(g_pInstancingManager.HasPickedUpItem(CBlackMesaPlayer(client), CBaseEntity(entity)))
@@ -87,6 +100,11 @@ public Action Hook_Instancing_ItemTransmit(int entity, int client)
 		return Plugin_Stop;
 	}
 	return Plugin_Continue;
+}
+
+public Action Hook_Instancing_NeverTransmit(int entity, int client)
+{
+	return Plugin_Stop;
 }
 
 public void Hook_Instancing_ItemDeleted(int entity)

@@ -9,6 +9,16 @@
 	}
 	"entity"
 	{
+		// delay map start
+		"modify"
+		{
+			"classname" "logic_auto"
+			"functions"
+			{
+				"delay_output" "OnMapSpawn"
+				"delay_output" "OnNewGame"
+			}
+		}
 		// crowbar spawn
 		"create"
 		{

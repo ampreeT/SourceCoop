@@ -21,8 +21,19 @@
 			{
 				"library"		"server"
 				"windows"		"\x55\x8B\xEC\x56\x8B\xF1\x57\x83\xCF\xFF"
-				"linux"			"\x55\x89\xE5\x57\x53\x83\xEC\x2A\x8B\x5D\x2A\x80\xBB\x2A\x2A\x2A\x2A\x2A"	// probably could use the symbol for this
+				"linux"			"@_ZN11CBasePlayer13SetSuitUpdateEPKcii"
 			}
+			"UTIL_GetLocalPlayer"
+			{
+				"windows"	"\xA1\x2A\x2A\x2A\x2A\x8B\x40\x14\x83\xF8\x01\x7E\x2A\xA1\x2A\x2A\x2A\x2A"
+				"linux" 	"@_Z19UTIL_GetLocalPlayerv"
+			}
+			//"CBlackMesaPlayerAnimState::TranslateActivity" // CBlackMesaPlayerAnimState::TranslateActivity(Activity)
+			//{
+			//	"library"		"server"
+			//	"windows"		"\x55\x8B\xEC\x56\x8B\xF1\x8B\x4E\x1C\xE8\x2A\x2A\x2A\x2A"
+			//	"linux"			"@_ZN25CBlackMesaPlayerAnimState17TranslateActivityE8Activity"	
+			//}
 			"CreateEngineInterface"
 			{
 				"library"		"engine"
@@ -35,6 +46,7 @@
 				"windows"		"@CreateInterface"
 				"linux"			"@CreateInterface"
 			}
+			
 		}
 		"Offsets"
 		{
@@ -99,6 +111,11 @@
 			{
 				"windows"	"26"
 				"linux"		"27"
+			}
+			"CBasePickup::OnTryPickUp"				// CBasePickup::OnTryPickUp(CBaseEntity*)
+			{
+				"windows"	"236"
+				"linux"		"237"
 			}
 			"CBaseEntity::AcceptInput"				// CBaseEntity::AcceptInput(char const*, CBaseEntity*, CBaseEntity*, variant_t, int)
 			{
@@ -278,6 +295,22 @@
 					}
 				}
 			}
+			"CBasePickup::OnTryPickUp"
+			{
+				"offset"	"CBasePickup::OnTryPickUp"
+				"hooktype"	"entity"
+				"return"	"bool"
+				"this"		"entity"
+				"arguments"
+				{
+					"pOther"
+					{
+						"type"	"cbaseentity"
+					}
+				}
+			}
+			
+			//Detours
 			"CBasePlayer::SetSuitUpdate"
 			{
 				"signature"	"CBasePlayer::SetSuitUpdate"
@@ -300,6 +333,27 @@
 					}
 				}
 			}
+			"UTIL_GetLocalPlayer"
+			{
+				"signature"	"UTIL_GetLocalPlayer"
+				"callconv"	"thiscall"
+				"return"	"cbaseentity"
+				"this"		"ignore"
+			}
+//			"CBlackMesaPlayerAnimState::TranslateActivity"
+//			{
+//				"signature"	"CBlackMesaPlayerAnimState::TranslateActivity"
+//				"callconv"	"thiscall"
+//				"return"	"int"
+//				"this"		"ignore"
+//				"arguments"
+//				{
+//					"baseAct"
+//					{
+//						"type"	"int"
+//					}
+//				}
+//			}
 		}
 	}
 }
