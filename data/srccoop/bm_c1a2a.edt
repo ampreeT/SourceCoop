@@ -18,6 +18,18 @@
 				"delay_output" "OnMapSpawn"
 			}
 		}
+		// motion disable spawn items
+		"modify"
+		{
+			"targetname" "items_at_start"
+			"flags"
+			{
+				"spawnflags"
+				{
+					"add" "2"
+				}
+			}
+		}
 		// remove blockers
 		"delete"
 		{

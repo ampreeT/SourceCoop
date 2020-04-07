@@ -221,6 +221,10 @@ methodmap CBaseEntity
 	{
 		HookSingleEntityOutput(this.GetEntIndex(), szOutput, pCallback, bOnce);
 	}
+	public void FireOutput(const char[] output, int activator=-1, float delay=0.0)
+	{
+		FireEntityOutput(this.GetEntIndex(), output, activator, delay);
+	}
 	public int GetHammerID()
 	{
 		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_iHammerID");
@@ -285,52 +289,11 @@ methodmap CBaseEntity
 	{
 		SetEntProp(view_as<int>(this), Prop_Data, "m_nNextThinkTick", iTick);
 	}
-}
-
-int FindEntityByHammerID(int iHammerID, const char[] szClassname = "*")
-{
-	int startEnt = -1;
-	while ((startEnt = FindEntityByClassname(startEnt, szClassname)) != -1)
+	public void SetNextThink(float thinkTime)
 	{
-		CBaseEntity pEntity = CBaseEntity(startEnt);
-		if (pEntity.GetHammerID() == iHammerID)
-		{
-			return startEnt;
-		}
+		int thinkTick = (thinkTime == -1)? -1 : (TIME_TO_TICKS(thinkTime));
+		this.SetNextThinkTick(thinkTick);
 	}
-	return -1;
-}
-
-int FindEntityByTargetname(int startEnt, const char[] targetname, const char[] szClassname = "*")
-{
-	while ((startEnt = FindEntityByClassname(startEnt, szClassname)) != -1)
-	{
-		CBaseEntity pEntity = CBaseEntity(startEnt);
-		char szTargetname[MAX_CLASSNAME];
-		if (pEntity.GetTargetname(szTargetname, sizeof(szTargetname)) && strcmp(szTargetname, targetname) == 0)
-		{
-			return startEnt;
-		}
-	}
-	return -1;
-}
-
-int FindEntityByOwner(int startEnt, CBaseEntity pOwnerEntity, const char[] szClassname = "*")
-{
-	while ((startEnt = FindEntityByClassname(startEnt, szClassname)) != -1)
-	{
-		CBaseEntity pEntity = CBaseEntity(startEnt);
-		if(pEntity.GetOwner() == pOwnerEntity)
-		{
-			return startEnt;
-		}
-	}
-	return -1;
-}
-
-CBaseEntity CreateByClassname(const char[] szClassname)
-{
-	return CBaseEntity(CreateEntityByName(szClassname));
 }
 
 methodmap CTraceRay
@@ -543,6 +506,22 @@ methodmap CBlackMesaPlayer < CBaseCombatCharacter
 	{
 		SetEntProp(this.GetEntIndex(), Prop_Send, "m_bHasJumpModule", bShouldHaveJumpModule);
 	}
+	public bool IsSprinting()
+	{
+		return view_as<bool>(GetEntProp(this.GetEntIndex(), Prop_Send, "m_bIsSprinting"));
+	}
+	public void SetIsSprinting(const bool bIsSprinting)
+	{
+		SetEntProp(this.GetEntIndex(), Prop_Send, "m_bIsSprinting", bIsSprinting);
+	}
+	public bool IsSprintEnabled()
+	{
+		return view_as<bool>(GetEntProp(this.GetEntIndex(), Prop_Send, "m_bSprintEnabled"));
+	}
+	public void SetSprintEnabled(const bool bSprintEnabled)
+	{
+		SetEntProp(this.GetEntIndex(), Prop_Send, "m_bSprintEnabled", bSprintEnabled);
+	}
 	public bool IsAlive()
 	{
 		return IsPlayerAlive(this.GetEntIndex());
@@ -640,6 +619,10 @@ methodmap CBlackMesaPlayer < CBaseCombatCharacter
 	public void SetMaxSpeed(const float flMaxSpeed)
 	{
 		SetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flMaxspeed", flMaxSpeed);
+	}
+	public float GetMaxSpeed()
+	{
+		return GetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flMaxspeed");
 	}
 	public CBaseEntity GetViewEntity()
 	{

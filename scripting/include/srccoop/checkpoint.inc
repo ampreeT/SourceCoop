@@ -8,6 +8,7 @@ enum struct CCoopSpawnEntry
 	float m_flDelay;
 	CBaseEntity m_pTriggerEnt;
 	CBaseEntity m_pFollowEnt;
+	char m_szOutputName[MAX_FORMAT];
 	bool m_bHasPortal;
 	float m_vecPortalPosition[3];
 	
@@ -86,24 +87,18 @@ enum struct CCoopEquipment
 
 enum struct CCoopSpawn
 {
-	CCoopSpawnEntry pInitialSpawnEntry;
-	CCoopSpawnEntry pCurrentSpawnEntry;
 	Array_t m_pCheckpointList;
-	EntityOutput m_fnCheckpointCallback;
+	int m_iCurrentCheckpoint;
 	CCoopEquipment m_pDefaultEquipment;
 	
 	void Clear()
 	{
-		CCoopSpawnEntry pNewEntry;
-		pNewEntry.Initialize();
-		this.pInitialSpawnEntry = pNewEntry;
-		this.pCurrentSpawnEntry = pNewEntry;
+		this.m_iCurrentCheckpoint = 0;
 		this.m_pCheckpointList.Clear();
 		this.m_pDefaultEquipment.Clear();
 	}
 	void Initialize()
 	{
-		this.m_fnCheckpointCallback = Callback_Checkpoint;
 		this.m_pCheckpointList = new Array_t(CreateArray(sizeof(CCoopSpawnEntry)));
 		if (!this.m_pCheckpointList.IsValid())
 			ThrowError("Was unable to create CCoopSpawnEntry on initialization");
@@ -111,6 +106,62 @@ enum struct CCoopSpawn
 		this.m_pDefaultEquipment.Initialize();
 		if (!this.m_pDefaultEquipment.IsValid())
 			ThrowError("Was unable to create default equipment on initialization");
+	}
+	bool GetCheckpointByIndex(int iIndex, CCoopSpawnEntry pCheckpoint)
+	{
+		if(this.m_pCheckpointList.Length > iIndex)
+		{
+			this.m_pCheckpointList.GetArray(iIndex, pCheckpoint);
+			return true;
+		}
+		return false;
+	}
+	bool GetCurrentCheckpoint(CCoopSpawnEntry pCheckpoint)
+	{
+		return this.GetCheckpointByIndex(this.m_iCurrentCheckpoint, pCheckpoint);
+	}
+	int FindCheckpointByOutput(CBaseEntity pCaller, const char[] szOutput, CCoopSpawnEntry pCheckpoint)
+	{
+		CCoopSpawnEntry pEntry;
+		for (int i = this.m_iCurrentCheckpoint+1; i < this.m_pCheckpointList.Length; i++)
+		{
+			this.m_pCheckpointList.GetArray(i, pEntry);
+			if (pCaller == pEntry.m_pTriggerEnt && StrEqual(szOutput, pEntry.m_szOutputName))
+			{
+				pCheckpoint = pEntry;
+				return i;
+			}
+		}
+		return -1;
+	}
+	void AddCheckpoint(CCoopSpawnEntry pCheckpoint)
+	{
+		this.m_pCheckpointList.PushArray(pCheckpoint);
+		if (pCheckpoint.m_pTriggerEnt.IsValid())
+		{
+			pCheckpoint.m_pTriggerEnt.HookOutput(pCheckpoint.m_szOutputName, Callback_Checkpoint, true);
+		}
+	}
+	bool ActivateCheckpoint(int iIndex)
+	{
+		if(this.m_iCurrentCheckpoint < iIndex < this.m_pCheckpointList.Length)
+		{
+			for (int i = this.m_iCurrentCheckpoint+1; ; i++)
+			{
+				CCoopSpawnEntry pCheckpoint; this.m_pCheckpointList.GetArray(i, pCheckpoint);
+				
+				if(pCheckpoint.m_bHasPortal)
+				{
+					this.CreatePortal(pCheckpoint.m_vecPortalPosition);
+				}
+				if(i == iIndex)
+				{
+					this.m_iCurrentCheckpoint = i;
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 	void SpawnPlayerEquipment(CBlackMesaPlayer pPlayer)
 	{
@@ -136,37 +187,24 @@ enum struct CCoopSpawn
 	}
 	void SpawnPlayer(CBlackMesaPlayer pPlayer, bool bSpawnEquipment = true)
 	{
+		CCoopSpawnEntry pCheckpoint;
 		if(g_pLevelLump.m_bInstanceItems)
 		{
 			// pickup possible spawn items
-			this.pInitialSpawnEntry.TeleportPlayer(pPlayer);
-			RequestFrame(RequestSpawnPlayer, pPlayer);
+			if(this.GetCheckpointByIndex(0, pCheckpoint))
+			{
+				pCheckpoint.TeleportPlayer(pPlayer);
+				RequestFrame(RequestSpawnPlayer, pPlayer);
+			}
 		}
 		else
 		{
-			this.pCurrentSpawnEntry.TeleportPlayer(pPlayer);
+			if(this.GetCurrentCheckpoint(pCheckpoint))
+			{
+				pCheckpoint.TeleportPlayer(pPlayer);
+			}
 		}
 		if(bSpawnEquipment) this.SpawnPlayerEquipment(pPlayer);
-	}
-	void AddSpawnEntry(CCoopSpawnEntry pSpawnEntry, const char[] szOutputType = "")
-	{
-		if (pSpawnEntry.m_pTriggerEnt.IsValid())
-		{
-			pSpawnEntry.m_pTriggerEnt.HookOutput(szOutputType, this.m_fnCheckpointCallback, true);
-			this.m_pCheckpointList.PushArray(pSpawnEntry, sizeof(pSpawnEntry));
-		}
-		else
-		{
-			this.SetSpawnEntry(pSpawnEntry, true);
-		}
-	}
-	void SetSpawnEntry(CCoopSpawnEntry pSpawnEntry, bool bIsInitial = false)
-	{
-		this.pCurrentSpawnEntry = pSpawnEntry;
-		if(bIsInitial)
-		{
-			this.pInitialSpawnEntry = pSpawnEntry;
-		}
 	}
 	void CreatePortal(const float vecPosition[3])
 	{
@@ -187,19 +225,6 @@ enum struct CCoopSpawn
 			pParticle.SetSolidFlags(FSOLID_TRIGGER);
 			pParticle.SetCollisionGroup(COLLISION_GROUP_DEBRIS_TRIGGER);
 			SDKHook(pParticle.GetEntIndex(), SDKHook_StartTouchPost, Hook_TouchPortal);
-		}
-	}
-	void EraseCheckpoints(int iCount, bool bSpawnPortals = false)
-	{
-		while (iCount > 0 && this.m_pCheckpointList.Length)
-		{
-			CCoopSpawnEntry pEntry;
-			if(bSpawnPortals && this.m_pCheckpointList.GetArray(0, pEntry, sizeof(pEntry)) && pEntry.m_bHasPortal)
-			{
-				this.CreatePortal(pEntry.m_vecPortalPosition);
-			}
-			this.m_pCheckpointList.Erase(0);
-			iCount--;
 		}
 	}
 	void ParseConfigFile(const char[] szMapName)
@@ -234,7 +259,6 @@ enum struct CCoopSpawn
 						{
 							do	// ignore section name; reserved for naming purposes for front-end
 							{
-								char szOutputType[MAX_FORMAT];
 								CCoopSpawnEntry pEntry;
 								pEntry.Initialize();
 								
@@ -252,7 +276,7 @@ enum struct CCoopSpawn
 											
 											if (strcmp(szKey, "output", false) == 0)
 											{
-												strcopy(szOutputType, sizeof(szOutputType), szValue);
+												strcopy(pEntry.m_szOutputName, sizeof(pEntry.m_szOutputName), szValue);
 											}
 											else if (strcmp(szKey, "delay", false) == 0)
 											{
@@ -314,7 +338,7 @@ enum struct CCoopSpawn
 									while (kv.GotoNextKey(false));
 									kv.GoBack();
 								}
-								this.AddSpawnEntry(pEntry, szOutputType);
+								this.AddCheckpoint(pEntry);
 							}
 							while (kv.GotoNextKey(true));
 							kv.GoBack();
@@ -494,50 +518,26 @@ public void RequestSpawnPlayer(CBlackMesaPlayer pPlayer)
 {
 	if(pPlayer.IsValid() && pPlayer.IsAlive())
 	{
-		g_SpawnSystem.pCurrentSpawnEntry.TeleportPlayer(pPlayer);
-	}
-}
-
-int FindSpawnEntry(const CBaseEntity pCaller, CCoopSpawnEntry pEntry)
-{
-	CCoopSpawnEntry _pEntry;
-	for (int i = 0; i < g_SpawnSystem.m_pCheckpointList.Length; i++)
-	{
-		if (g_SpawnSystem.m_pCheckpointList.GetArray(i, _pEntry, sizeof(_pEntry)))
+		CCoopSpawnEntry pCheckpoint;
+		if(g_SpawnSystem.GetCurrentCheckpoint(pCheckpoint))
 		{
-			if (pCaller == _pEntry.m_pTriggerEnt)
-			{
-				pEntry = _pEntry;
-				return i;
-			}
+			pCheckpoint.TeleportPlayer(pPlayer);
 		}
 	}
-	return -1;
 }
 
 public void Callback_Checkpoint(const char[] szName, int iCaller, int iActivator, float flDelay)
 {
-	CBaseEntity pCaller = CBaseEntity(iCaller);
-	CCoopSpawnEntry pEntry;
-	if(FindSpawnEntry(pCaller, pEntry) != -1)
+	CCoopSpawnEntry pCheckpoint; int iIndex;
+	if((iIndex = g_SpawnSystem.FindCheckpointByOutput(CBaseEntity(iCaller), szName, pCheckpoint)) != -1)
 	{
-		CreateTimer(pEntry.m_flDelay, Callback_CheckpointTimer, pCaller, TIMER_FLAG_NO_MAPCHANGE);
+		CreateTimer(pCheckpoint.m_flDelay, Callback_CheckpointTimer, iIndex, TIMER_FLAG_NO_MAPCHANGE);
 	}
 }
 
-public Action Callback_CheckpointTimer(Handle timer, CBaseEntity pCaller)
+public Action Callback_CheckpointTimer(Handle timer, int iCheckpointIndex)
 {
-	if(!pCaller.IsValid())
-	{
-		return;
-	}
-	CCoopSpawnEntry pEntry;
-	int iEntriesToKill;
-	if((iEntriesToKill = FindSpawnEntry(pCaller, pEntry)) != -1)
-	{
-		g_SpawnSystem.EraseCheckpoints(iEntriesToKill + 1, true);
-		g_SpawnSystem.SetSpawnEntry(pEntry);
-	}
+	g_SpawnSystem.ActivateCheckpoint(iCheckpointIndex);
 }
 
 public void Hook_TouchPortal(int entity, int other)

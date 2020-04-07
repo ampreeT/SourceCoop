@@ -19,6 +19,25 @@ public MRESReturn Hook_UTIL_GetLocalPlayer(Handle hReturn)
 }
 
 //------------------------------------------------------
+// Player suit sounds
+//------------------------------------------------------
+public MRESReturn Hook_SetSuitUpdate(int _this, Handle hParams)		// suit sounds; should be implemented like the game's code
+{
+	if (g_pCoopManager.IsFeaturePatchingEnabled())
+	{
+		if (!DHookIsNullParam(hParams, 1))
+		{
+			char szName[MAX_FORMAT];
+			DHookGetParamString(hParams, 1, szName, sizeof(szName));
+			ClientCommand(_this, "speak %s", szName);	// probably too loud but i can't tell
+			LogDebug("Hook_SetSuitUpdate(...) called %s", szName);
+		}
+	}
+	
+	return MRES_Ignored;
+}
+
+//------------------------------------------------------
 // CNPC_Human_Scientist - npc_human_scientist
 // crash fix when getting scared
 //------------------------------------------------------
@@ -29,7 +48,7 @@ public MRESReturn Hook_ScientistIRelationType(int _this, Handle hReturn, Handle 
 }
 
 //------------------------------------------------------
-// CAI_BaseNPC/CNPC_Human_Scientist - npc_human_scientist
+// CAI_BaseNPC - npc_human_scientist, npc_human_security
 // scientists should classify as allies (in MP, base function returns false when player is not passed in)
 // this allows npcs to pass filter in 'player ally only' triggers
 //------------------------------------------------------
@@ -108,29 +127,7 @@ public MRESReturn Hook_FindNamedEntity(int _this, Handle hReturn, Handle hParams
 			CBaseEntity pActor = CBaseEntity(DHookGetParam(hParams, 2));
 			if (pActor.IsValid())
 			{
-				float vecActorPosition[3];
-				pActor.GetAbsOrigin(vecActorPosition);
-
-				CBlackMesaPlayer pBestPlayer = CBlackMesaPlayer();
-				float flBestDistance = FLT_MAX;
-				for (int i = 1; i < (MaxClients + 1); i++)
-				{
-					CBlackMesaPlayer pPlayer = CBlackMesaPlayer(i);
-					if (pPlayer.IsValid() && pPlayer.IsAlive())
-					{
-						float vecPlayerPosition[3];
-						pPlayer.GetAbsOrigin(vecPlayerPosition);
-
-						float flDistance = GetVectorDistance(vecActorPosition, vecPlayerPosition, false);
-						if (flDistance < flBestDistance)
-						{
-							pBestPlayer = pPlayer;
-							flBestDistance = flDistance;
-							continue;
-						}
-					}
-				}
-
+				CBlackMesaPlayer pBestPlayer = GetNearestPlayer(pActor);
 				if (pBestPlayer.IsValid())
 				{
 					DHookSetReturn(hReturn, pBestPlayer.GetEntIndex());
@@ -610,6 +607,79 @@ public MRESReturn Hook_WeaponSetModel(int _this, Handle hParams)	// use sp weapo
 				}
 			}
 		}
+	}
+	return MRES_Ignored;
+}
+
+//------------------------------------------------------
+// ai_script_conditions
+// completely broken in mp
+//------------------------------------------------------
+methodmap CAI_ScriptConditions < CBaseEntity
+{
+	public CAI_ScriptConditions(const int iEntIndex = -1)
+	{
+		return view_as<CAI_ScriptConditions>(InternalGetBaseEntity(iEntIndex));
+	}
+	
+	public bool IsDisabled()
+	{
+		return view_as<bool>(GetEntProp(this.GetEntIndex(), Prop_Data, "m_fDisabled"));
+	}
+	public void SetDisabled(bool disabled)
+	{
+		SetEntProp(this.GetEntIndex(), Prop_Data, "m_fDisabled", disabled);
+	}
+}
+
+public MRESReturn Hook_AIConditionsThink(int _this)
+{
+	LogDebug("Hook_AIConditionsThink");
+	CAI_ScriptConditions pThis = CAI_ScriptConditions(_this);
+	if(!pThis.IsDisabled())
+	{
+		// Just fire the output and disable. To even begin fixing this, one would need to read the CUtlVector< CAI_ScriptConditionsElement > m_ElementList.
+		pThis.FireOutput("OnConditionsSatisfied");
+		pThis.SetDisabled(true);
+		pThis.SetNextThink(-1.0);
+	}
+	return MRES_Supercede;
+}
+
+//------------------------------------------------------
+// CAI_GoalEntity - ai_goal_*
+// set goal entity to nearest player
+// this hook is cumbersomely separated in pre and post because dhooks crashes if entity is passed as [this] in post hook
+//------------------------------------------------------
+public MRESReturn Hook_ResolveNames(int _this)
+{
+	static int curThis = -1;
+	static int curTick = -1;
+	
+	if(_this) // pre hook
+	{
+		LogDebug("Hook_ResolveNames Pre %d", _this);
+		curThis = _this;
+		curTick = GetGameTickCount();
+	}
+	else // post hook
+	{
+		if(curThis != -1 && curTick == GetGameTickCount())
+		{
+			LogDebug("Hook_ResolveNames Post %d", curThis);
+			
+			char szGoal[MAX_TARGET_LENGTH];
+			GetEntPropString(curThis, Prop_Data, "m_iszGoal", szGoal, sizeof(szGoal));
+			
+			if(szGoal[0] == '\0' || strcmp(szGoal, "!player", false) == 0)
+			{
+				CBaseEntity pEnt = CBaseEntity(curThis);
+				CBlackMesaPlayer pPlayer = GetNearestPlayer(pEnt);
+				SetEntPropEnt(curThis, Prop_Data, "m_hGoalEntity", pPlayer.GetEntIndex());
+			}
+		}
+		curThis = -1;
+		curTick = -1;
 	}
 	return MRES_Ignored;
 }

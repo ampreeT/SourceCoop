@@ -1,3 +1,5 @@
+#define CHAT_TAG "\x07c75c1e[SRCCOOP]\x07e69c12 "
+
 #define CHAR_BIT 8
 
 // String which SM uses when mapchange is not triggered externally
@@ -15,6 +17,11 @@
 
 #define MAX_KEY 32
 #define MAX_VALUE 1024
+
+#define TICK_INTERVAL			(GetTickInterval())
+#define TIME_TO_TICKS(%1)		(RoundToFloor(0.5 + %1 / TICK_INTERVAL))
+#define TICKS_TO_TIME(%1)		( TICK_INTERVAL *( %1 ) )
+#define ROUND_TO_TICKS(%1)		( TICK_INTERVAL * TIME_TO_TICKS( %1 ) )
 
 #define SF_INFOPLAYERSTART_MASTER 1
 

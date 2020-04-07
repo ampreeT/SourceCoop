@@ -19,6 +19,18 @@
 				"delay_output" "OnNewGame"
 			}
 		}
+		// motion disable spawn items
+		"modify"
+		{
+			"targetname" "global_newgame_spawner_suit"
+			"flags"
+			{
+				"spawnflags"
+				{
+					"add" "2"
+				}
+			}
+		}
 		// crowbar spawn
 		"create"
 		{
@@ -26,6 +38,7 @@
 			"angles" "0 270 0"
 			"origin" "220 1392 456"
 			"respawntime" "1"
+			"spawnflags" "2"
 		}
 		// door close trigger
 		"delete"

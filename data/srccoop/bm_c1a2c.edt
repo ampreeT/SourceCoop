@@ -8,13 +8,51 @@
 	}
 	"entity"
 	{
+		// turn prev. changelevel trig into invisible wall
+		"modify"
+		{
+			"classname" "trigger_changelevel"
+			"map" "bm_c1a2b"
+			"add"
+			{
+				"classname" "func_brush"
+				"rendermode" "10" // dont render
+			}
+		}
+		// motion disable spawn items
+		"modify"
+		{
+			"targetname" "items_at_start"
+			"flags"
+			{
+				"spawnflags"
+				{
+					"add" "2"
+				}
+			}
+		}
 	}
 	"checkpoint"
 	{
 		"spawn"
 		{
-			"origin"	"160 -112 16"
+			"origin"	"2104 -280 -47"
 			"angles"	"0 90 0"
+		}
+		"freezer"
+		{
+			"origin"	"-1212 364 189"
+			"angles"	"0 180 0"
+			"triggerid"	"3216403"
+			"output"	"OnTrigger"
+			"portal"	"-1140 364 189"
+		}
+		"stairway2"
+		{
+			"origin"	"44 -104 224"
+			"angles"	"0 270 0"
+			"triggerid"	"zom_door"
+			"output"	"OnOpen"
 		}
 	}
 }

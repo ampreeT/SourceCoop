@@ -36,8 +36,6 @@ void load_dhook_detour(const Handle pGameConfig, Handle& pHandle, const char[] s
 	pHandle = DHookCreateFromConf(pGameConfig, szFuncName);
 	if (pHandle == null)
 		SetFailState("Couldn't create hook %s", szFuncName);
-	if (!DHookSetFromConf(pHandle, pGameConfig, SDKConf_Signature, szFuncName))
-		SetFailState("Couldn't set hook %s", szFuncName);
 	if (pCallbackPre != INVALID_FUNCTION && !DHookEnableDetour(pHandle, false, pCallbackPre))
 		SetFailState("Couldn't enable pre detour hook %s", szFuncName);
 	if (pCallbackPost != INVALID_FUNCTION && !DHookEnableDetour(pHandle, true, pCallbackPost))
@@ -49,8 +47,6 @@ void load_dhook_virtual(const Handle pGameConfig, Handle& pHandle, const char[] 
 	pHandle = DHookCreateFromConf(pGameConfig, szFuncName);
 	if (pHandle == null)
 		SetFailState("Couldn't create hook %s", szFuncName);
-	if (!DHookSetFromConf(pHandle, pGameConfig, SDKConf_Virtual, szFuncName))
-		SetFailState("Couldn't set hook %s", szFuncName);
 }
 
 void load_gamedata()
@@ -124,8 +120,11 @@ void load_gamedata()
 	load_dhook_virtual(pGameConfig, hkSetModel, "CBaseEntity::SetModel");
 	load_dhook_virtual(pGameConfig, hkAcceptInput, "CBaseEntity::AcceptInput");
 	load_dhook_virtual(pGameConfig, hkOnTryPickUp, "CBasePickup::OnTryPickUp");
+	load_dhook_virtual(pGameConfig, hkThink, "CBaseEntity::Think");
 	load_dhook_detour(pGameConfig, hkSetSuitUpdate, "CBasePlayer::SetSuitUpdate", Hook_SetSuitUpdate);
 	load_dhook_detour(pGameConfig, hkUTIL_GetLocalPlayer, "UTIL_GetLocalPlayer", Hook_UTIL_GetLocalPlayer);
+	load_dhook_detour(pGameConfig, hkResolveNames, "CAI_GoalEntity::ResolveNames", Hook_ResolveNames);
+	load_dhook_detour(pGameConfig, hkResolveNamesPost, "CAI_GoalEntity::ResolveNamesPost", _, Hook_ResolveNames);
 
 	CloseHandle(pGameConfig);
 }
@@ -152,7 +151,7 @@ public void OnPluginStart()
 	g_pInstancingManager.Initialize();
 	g_pPostponedSpawns = CreateArray();
 	
-	HookEvent("player_spawn", Hook_PlayerSpawnPost, EventHookMode_Post);
+	HookEvent("player_spawn", Event_PlayerSpawnPost, EventHookMode_Post);
 	
 	if(GetEngineVersion() == Engine_BlackMesa)
 	{
@@ -218,6 +217,8 @@ public void OnClientPutInServer(int client)
 	g_pInstancingManager.OnClientPutInServer(client);
 	
 	SDKHook(client, SDKHook_PreThinkPost, Hook_PlayerPreThinkPost);
+	SDKHook(client, SDKHook_PreThink, Hook_PlayerPreThink);
+	SDKHook(client, SDKHook_SpawnPost, Hook_PlayerSpawnPost);
 }
 
 public void OnClientDisconnect(int client)
@@ -241,9 +242,13 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 	CBaseEntity pEntity = CBaseEntity(iEntIndex);
 	if (!g_bTempDontHookEnts && pEntity.IsValid())
 	{
-		if (pEntity.IsClassScientist())
+		if (strncmp(szClassname, "npc_human_scientist", 19) == 0)
 		{
 			DHookEntity(hkIRelationType, true, iEntIndex, _, Hook_ScientistIRelationType);
+			DHookEntity(hkIsPlayerAlly, true, iEntIndex, _, Hook_IsPlayerAlly);
+		}
+		else if(strcmp(szClassname, "npc_human_security") == 0)
+		{
 			DHookEntity(hkIsPlayerAlly, true, iEntIndex, _, Hook_IsPlayerAlly);
 		}
 		//else if (strcmp(szClassname, "npc_sniper", false) == 0)
@@ -300,6 +305,10 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 		{
 			DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_EnvCreditsAcceptInput);
 		}
+		else if (strcmp(szClassname, "ai_script_conditions") == 0)
+		{
+			DHookEntity(hkThink, false, iEntIndex, _, Hook_AIConditionsThink);
+		}
 		// if some explosions turn out to be damaging all players except one, this is the fix
 		//else if (strcmp(szClassname, "env_explosion") == 0)
 		//{
@@ -312,7 +321,7 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 public void Hook_SpawnPost(int iEntIndex)
 {
 	CBaseEntity pEntity = CBaseEntity(iEntIndex);
-	if(pEntity.GetMoveType() == MOVETYPE_VPHYSICS)
+	/*if(pEntity.GetMoveType() == MOVETYPE_VPHYSICS)
 	{
 		char szClass[13]; pEntity.GetClassname(szClass, sizeof(szClass));
 		if(strcmp(szClass, "prop_physics") == 0) // prefix
@@ -320,7 +329,7 @@ public void Hook_SpawnPost(int iEntIndex)
 			pEntity.SetSpawnFlags(pEntity.GetSpawnFlags() | SF_PHYSPROP_ENABLE_PICKUP_OUTPUT);
 		}
 		SDKHook(iEntIndex, SDKHook_UsePost, Hook_Use);
-	}
+	}*/
 	
 	if (g_pCoopManager.IsCoopModeEnabled())
 	{
@@ -426,7 +435,7 @@ public void RequestStopThink(CBaseEntity pEntity)
 	}
 }
 
-public Action Hook_PlayerSpawnPost(Event hEvent, const char[] szName, bool bDontBroadcast)
+public Action Event_PlayerSpawnPost(Event hEvent, const char[] szName, bool bDontBroadcast)
 {
 	int iClientID = GetEventInt(hEvent, "userid");
 	CBlackMesaPlayer pPlayer = CBlackMesaPlayer(GetClientOfUserId(iClientID));
@@ -448,60 +457,107 @@ public Action Hook_BroadcastTeamsound(Event hEvent, const char[] szName, bool bD
 	return Plugin_Continue;
 }
 
+public void Hook_PlayerPreThink(int iClient)
+{
+	if(!g_pCoopManager.IsCoopModeEnabled())
+		return;
+		
+	if(IsPlayerAlive(iClient))
+		g_bIsMultiplayerOverride = false;
+}
+
 public void Hook_PlayerPreThinkPost(int iClient)
 {
-	if(!g_pCoopManager.IsFeaturePatchingEnabled())
+	g_bIsMultiplayerOverride = true;
+	if(!g_pCoopManager.IsCoopModeEnabled())
 		return;
 	
 	CBlackMesaPlayer pPlayer = CBlackMesaPlayer(iClient);
-	if (pPlayer.IsValid())
+	if(pPlayer.IsAlive())
 	{
-		int iButtons = pPlayer.GetButtons();
-		int iOldButtons = pPlayer.GetOldButtons();
-		
-		if(pPlayer.IsAlive())	// sprinting stuff
+		if(pPlayer.GetPressedButtons() & IN_SPEED && pPlayer.GetMaxSpeed() >= 320.0)
 		{
-			bool bIsHoldingSpeed = view_as<bool>(iButtons & IN_SPEED);
-			bool bWasHoldingSpeed = view_as<bool>(iOldButtons & IN_SPEED);
-			bool bIsMoving = view_as<bool>((iButtons & IN_FORWARD) || (iButtons & IN_BACK) || (iButtons & IN_MOVELEFT) || (iButtons & IN_MOVERIGHT));
-			bool bWasMoving = view_as<bool>((iOldButtons & IN_FORWARD) || (iOldButtons & IN_BACK) || (iOldButtons & IN_MOVELEFT) || (iOldButtons & IN_MOVERIGHT));
-			
-			// should deactivate this if crouch is held
-			if(pPlayer.HasSuit() && bIsHoldingSpeed) 
-			{
-				pPlayer.SetMaxSpeed(320.0);
-				if(!bWasHoldingSpeed)
-				{
-					pPlayer.PlayGameSound("HL2Player.SprintStart");
-				}
-			}
-			else
-			{
-				pPlayer.SetMaxSpeed(190.0);
-			}
-			
-			CBaseCombatWeapon pWeapon = view_as<CBaseCombatWeapon>(pPlayer.GetActiveWeapon());
-			if (pWeapon.IsValid())
-			{
-				if (bIsHoldingSpeed && bWasHoldingSpeed && bIsMoving && bWasMoving)
-					SetWeaponAnimation(pWeapon.GetEntIndex(), ACT_VM_SPRINT_IDLE);
-				else if ((!bIsHoldingSpeed && bWasHoldingSpeed && bIsMoving) || (bIsHoldingSpeed && !bIsMoving && bWasMoving))
-					SetWeaponAnimation(pWeapon.GetEntIndex(), ACT_VM_SPRINT_LEAVE);	
-			}
-		}
-		else
-		{
-			if(pPlayer.GetTeam() != TEAM_SPECTATOR && GetGameTime() - pPlayer.GetDeathTime() > 1.0)
-			{
-				int iPressed = pPlayer.GetPressedButtons();
-				if(iPressed != 0 && iPressed != IN_SCORE)
-				{
-					DispatchSpawn(iClient);
-				}
-			}
+			pPlayer.PlayGameSound("HL2Player.SprintStart");
 		}
 	}
+	else
+	{
+		if(pPlayer.GetTeam() != TEAM_SPECTATOR && GetGameTime() - pPlayer.GetDeathTime() > 1.0)
+		{
+			int iPressed = pPlayer.GetPressedButtons();
+			if(iPressed != 0 && iPressed != IN_SCORE)
+			{
+				DispatchSpawn(iClient);
+			}
+		}		
+	}
 }
+
+public void Hook_PlayerSpawnPost(int iClient)
+{
+	if(!g_pCoopManager.IsCoopModeEnabled())
+		return;
+	
+	CBlackMesaPlayer pPlayer = CBlackMesaPlayer(iClient);
+	pPlayer.SetSuit(false);
+	pPlayer.SetMaxSpeed(190.0);
+	pPlayer.SetIsSprinting(false);
+}
+
+//public void Hook_PlayerPreThinkPost(int iClient)
+//{
+//	if(!g_pCoopManager.IsFeaturePatchingEnabled())
+//		return;
+//	
+//	CBlackMesaPlayer pPlayer = CBlackMesaPlayer(iClient);
+//	if (pPlayer.IsValid())
+//	{
+//		int iButtons = pPlayer.GetButtons();
+//		int iOldButtons = pPlayer.GetOldButtons();
+//		
+//		if(pPlayer.IsAlive())	// sprinting stuff
+//		{
+//			bool bIsHoldingSpeed = view_as<bool>(iButtons & IN_SPEED);
+//			bool bWasHoldingSpeed = view_as<bool>(iOldButtons & IN_SPEED);
+//			bool bIsMoving = view_as<bool>((iButtons & IN_FORWARD) || (iButtons & IN_BACK) || (iButtons & IN_MOVELEFT) || (iButtons & IN_MOVERIGHT));
+//			bool bWasMoving = view_as<bool>((iOldButtons & IN_FORWARD) || (iOldButtons & IN_BACK) || (iOldButtons & IN_MOVELEFT) || (iOldButtons & IN_MOVERIGHT));
+//			
+//			// should deactivate this if crouch is held
+//			if(pPlayer.HasSuit() && bIsHoldingSpeed) 
+//			{
+//				pPlayer.SetMaxSpeed(320.0);
+//				if(!bWasHoldingSpeed)
+//				{
+//					pPlayer.PlayGameSound("HL2Player.SprintStart");
+//				}
+//			}
+//			else
+//			{
+//				pPlayer.SetMaxSpeed(190.0);
+//			}
+//			
+//			CBaseCombatWeapon pWeapon = view_as<CBaseCombatWeapon>(pPlayer.GetActiveWeapon());
+//			if (pWeapon.IsValid())
+//			{
+//				if (bIsHoldingSpeed && bWasHoldingSpeed && bIsMoving && bWasMoving)
+//					SetWeaponAnimation(pWeapon.GetEntIndex(), ACT_VM_SPRINT_IDLE);
+//				else if ((!bIsHoldingSpeed && bWasHoldingSpeed && bIsMoving) || (bIsHoldingSpeed && !bIsMoving && bWasMoving))
+//					SetWeaponAnimation(pWeapon.GetEntIndex(), ACT_VM_SPRINT_LEAVE);	
+//			}
+//		}
+//		else
+//		{
+//			if(pPlayer.GetTeam() != TEAM_SPECTATOR && GetGameTime() - pPlayer.GetDeathTime() > 1.0)
+//			{
+//				int iPressed = pPlayer.GetPressedButtons();
+//				if(iPressed != 0 && iPressed != IN_SCORE)
+//				{
+//					DispatchSpawn(iClient);
+//				}
+//			}
+//		}
+//	}
+//}
 
 public MRESReturn Hook_FAllowFlashlight(Handle hReturn, Handle hParams)		// enable sp flashlight
 {
@@ -559,22 +615,6 @@ public void Hook_Use(int entity, int activator, int caller, UseType type, float 
 			SetPlayerPickup(pPlayer.GetEntIndex(), entity, true);
 		}
 	}
-}
-
-public MRESReturn Hook_SetSuitUpdate(int _this, Handle hParams)		// suit sounds; should be implemented like the game's code
-{
-	if (g_pCoopManager.IsFeaturePatchingEnabled())
-	{
-		if (!DHookIsNullParam(hParams, 1))
-		{
-			char szName[MAX_FORMAT];
-			DHookGetParamString(hParams, 1, szName, sizeof(szName));
-			ClientCommand(_this, "speak %s", szName);	// probably too loud but i can't tell
-			PrintToServer("Hook_SetSuitUpdate(...) called %s", szName);
-		}
-	}
-	
-	return MRES_Ignored;
 }
 
 // todo read this later

@@ -8,13 +8,45 @@
 	}
 	"entity"
 	{
+		// turn prev. changelevel trig into invisible wall
+		"modify"
+		{
+			"classname" "trigger_changelevel"
+			"map" "bm_c1a2a"
+			"add"
+			{
+				"classname" "func_brush"
+				"rendermode" "10" // dont render
+			}
+		}
+		// motion disable spawn items
+		"modify"
+		{
+			"targetname" "items_at_start"
+			"flags"
+			{
+				"spawnflags"
+				{
+					"add" "2"
+				}
+			}
+		}
+		// hc dont spawn immediately
+		"modify"
+		{
+			"targetname" "StairwayHeadcrabSpawn"
+			"add"
+			{
+				"StartDisabled" "1"
+			}
+		}
 	}
 	"checkpoint"
 	{
 		"spawn"
 		{
-			"origin"	"160 -112 16"
-			"angles"	"0 90 0"
+			"origin"	"-2328 457 121"
+			"angles"	"0 267 0"
 		}
 	}
 }

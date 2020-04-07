@@ -23,7 +23,10 @@ Handle hkSetModel;
 Handle hkAcceptInput;
 Handle hkSetSuitUpdate;
 Handle hkOnTryPickUp;
+Handle hkThink;
 Handle hkUTIL_GetLocalPlayer;
+Handle hkResolveNames;
+Handle hkResolveNamesPost;
 
 // Adresses
 //Address g_VEngineServer;

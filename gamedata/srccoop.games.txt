@@ -28,12 +28,11 @@
 				"windows"	"\xA1\x2A\x2A\x2A\x2A\x8B\x40\x14\x83\xF8\x01\x7E\x2A\xA1\x2A\x2A\x2A\x2A"
 				"linux" 	"@_Z19UTIL_GetLocalPlayerv"
 			}
-			//"CBlackMesaPlayerAnimState::TranslateActivity" // CBlackMesaPlayerAnimState::TranslateActivity(Activity)
-			//{
-			//	"library"		"server"
-			//	"windows"		"\x55\x8B\xEC\x56\x8B\xF1\x8B\x4E\x1C\xE8\x2A\x2A\x2A\x2A"
-			//	"linux"			"@_ZN25CBlackMesaPlayerAnimState17TranslateActivityE8Activity"	
-			//}
+			"CAI_GoalEntity::ResolveNames"	// void CAI_GoalEntity::ResolveNames()
+			{
+				"windows"	"\x55\x8B\xEC\x83\xEC\x08\x53\x56\x57\x8D\xB9\x60\x03\x00\x00"
+				"linux" 	"@_ZN14CAI_GoalEntity12ResolveNamesEv"
+			}
 			"CreateEngineInterface"
 			{
 				"library"		"engine"
@@ -121,6 +120,11 @@
 			{
 				"windows"	"39"
 				"linux"		"40"
+			}
+			"CBaseEntity::Think"				// CBaseEntity::Think
+			{
+				"windows"	"50"
+				"linux"		"51"
 			}
 		}
 		"Functions"
@@ -309,6 +313,13 @@
 					}
 				}
 			}
+			"CBaseEntity::Think"
+			{
+				"offset"	"CBaseEntity::Think"
+				"hooktype"	"entity"
+				"return"	"void"
+				"this"		"entity"
+			}
 			
 			//Detours
 			"CBasePlayer::SetSuitUpdate"
@@ -340,20 +351,20 @@
 				"return"	"cbaseentity"
 				"this"		"ignore"
 			}
-//			"CBlackMesaPlayerAnimState::TranslateActivity"
-//			{
-//				"signature"	"CBlackMesaPlayerAnimState::TranslateActivity"
-//				"callconv"	"thiscall"
-//				"return"	"int"
-//				"this"		"ignore"
-//				"arguments"
-//				{
-//					"baseAct"
-//					{
-//						"type"	"int"
-//					}
-//				}
-//			}
+			"CAI_GoalEntity::ResolveNames"
+			{
+				"signature"	"CAI_GoalEntity::ResolveNames"
+				"callconv"	"thiscall"
+				"return"	"void"
+				"this"		"entity"
+			}
+			"CAI_GoalEntity::ResolveNamesPost"
+			{
+				"signature"	"CAI_GoalEntity::ResolveNames"
+				"callconv"	"thiscall"
+				"return"	"void"
+				"this"		"ignore"
+			}
 		}
 	}
 }

@@ -20,6 +20,18 @@
 				"delay_output" "OnMapSpawn"
 			}
 		}
+		// motion disable spawn items
+		"modify"
+		{
+			"targetname" "global_newgame_spawner_suit"
+			"flags"
+			{
+				"spawnflags"
+				{
+					"add" "2"
+				}
+			}
+		}
 	}
 	"checkpoint"
 	{

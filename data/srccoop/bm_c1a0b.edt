@@ -15,13 +15,25 @@
 				"delay_output" "OnMapSpawn"
 			}
 		}
+		// motion disable spawn items
+		"modify"
+		{
+			"targetname" "suit"
+			"flags"
+			{
+				"spawnflags"
+				{
+					"add" "2"
+				}
+			}
+		}
 		// remove trigger which calls spawn elevator up and closes doors
 		"delete"
 		{
 			"classname" "trigger_once"
 			"hammerid" "1687854"
 		}
-		// remove outputs which delete npcs
+		// remove npc killers
 		"modify"
 		{
 			"targetname" "trigger_delete_old"
@@ -29,6 +41,32 @@
 			{
 				"remove" {}
 			}
+		}
+		"modify"
+		{
+			"targetname" "chamber_airlockbot"
+			"outputs"
+			{
+				"remove"
+				{
+					"input" "Kill"
+				}
+			}
+		}
+		"modify"
+		{
+			"hammerid" "1784711"
+			"outputs"
+			{
+				"remove"
+				{
+					"input" "Kill"
+				}
+			}
+		}
+		"delete"
+		{
+			"targetname" "relay_foyeridles_kill"
 		}
 		// cart push timeout - restart map
 		"modify"
@@ -91,7 +129,7 @@
 			"angles"	"0 180 0"
 			"triggerid"	"trigger_delete_old"
 			"output"	"OnTrigger"
-			"delay"		"3.0"
+			"delay"		"1.0"
 			"portal"	"-3278 1340 -379"
 		}
 		"watchroom_after"
