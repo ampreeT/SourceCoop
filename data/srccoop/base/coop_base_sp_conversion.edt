@@ -7,6 +7,8 @@
 	"instance_items" "1"
 	"console"
 	{
+		"mp_falldamage" "1"
+		"sv_mp_spawneffect_item" "0"
 	}
 	"entity_base_sp_conversion"
 	{

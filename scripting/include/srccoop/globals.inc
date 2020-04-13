@@ -1,3 +1,8 @@
+#if defined _srccoop_globals_included
+ #endinput
+#endif
+#define _srccoop_globals_included
+
 // Convars
 ConVar g_pConvarCoopEnabled;
 ConVar g_pConvarWaitPeriod;

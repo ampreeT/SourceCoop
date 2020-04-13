@@ -11,18 +11,7 @@
 		// motion disable spawn items
 		"modify"
 		{
-			"targetname" "suit"
-			"flags"
-			{
-				"spawnflags"
-				{
-					"add" "2"
-				}
-			}
-		}
-		"modify"
-		{
-			"targetname" "weapons"
+			"targetname" "/suit|weapons/"
 			"flags"
 			{
 				"spawnflags"

@@ -1,3 +1,11 @@
+#if defined _srccoop_utils_included
+ #endinput
+#endif
+#define _srccoop_utils_included
+
+#include <srccoop/typedef.inc>
+#include <srccoop/classdef.inc>
+
 stock void Msg(int client, const char[] msg, any ...)
 {
 	int len = strlen(msg) + 255;
@@ -21,6 +29,19 @@ stock void MsgAll(const char[] msg, any ...)
 	VFormat(formatMsg, len, msg, 2);
 	PrintToServer(formatMsg);
  	PrintToChatAll("%s%s", CHAT_TAG, formatMsg);
+}
+
+stock bool StrEqualsRegex(const char[] pattern, const char[] str, bool caseSensitive = false)
+{
+	int patternLength = strlen(pattern);
+	if(patternLength > 1 && pattern[0] == '/' && pattern[patternLength - 1] == '/')
+	{
+		char[] patternStripped = new char[--patternLength];
+		strcopy(patternStripped, patternLength, pattern[1]);
+		int substrings = SimpleRegexMatch(str, patternStripped, caseSensitive? 0 : PCRE_CASELESS);
+		return (substrings > 0);
+	}
+	else return strcmp(pattern, str, caseSensitive) == 0;
 }
 
 stock void FormatTimeLength(int seconds, char[] out, int size)
@@ -148,14 +169,51 @@ stock int GetRealClientCount(bool bInGameOnly, bool alive = false)
 	return clients;
 }
 
+enum CanTeleportResult
+{
+	NO,
+	YES,
+	YES_MUSTDUCK		//🦆//
+}
+
+stock CanTeleportResult CanTeleportPlayer(CBlackMesaPlayer pPlayer, float vecOrigin[3])
+{
+	bool bDidHit;
+
+	TR_TraceHullFilter(vecOrigin, vecOrigin, view_as<float>(VEC_HULL_MIN), view_as<float>(VEC_HULL_MAX), MASK_PLAYERSOLID|CONTENTS_HITBOX, CanTeleportPlayer_TraceFilter);
+	bDidHit = TR_DidHit();
+	if(!bDidHit) return YES;
+	
+	TR_TraceHullFilter(vecOrigin, vecOrigin, view_as<float>(VEC_DUCK_HULL_MIN), view_as<float>(VEC_DUCK_HULL_MAX), MASK_PLAYERSOLID|CONTENTS_HITBOX, CanTeleportPlayer_TraceFilter);
+	bDidHit = TR_DidHit();
+	if(!bDidHit) return YES_MUSTDUCK;
+	
+	return NO;
+}
+
+public bool CanTeleportPlayer_TraceFilter(int entity, int mask, any data) {
+	CBaseEntity pEntity = CBaseEntity(entity);
+	if(pEntity.IsClassPlayer() || pEntity.IsPickupItem()) {
+		return false;
+	}
+	return true;
+}
+
+stock void ScaleVectors(const float vecA[3], const float vecB[3], float vecResult[3])
+{
+	vecResult[0] = vecA[0] * vecB[0];
+	vecResult[1] = vecA[1] * vecB[1];
+	vecResult[2] = vecA[2] * vecB[2];
+}
+
 /**
  * Fades a client's screen to a specified color
  * Your adviced to read the FFADE_ Comments
  *
  * @param client		Player for which to fade the screen
- * @param duration		duration in seconds the effect stays
+ * @param duration		duration in milliseconds the effect stays
  * @param mode			fade mode, see FFADE_ defines
- * @param holdtime		holdtime in seconds
+ * @param holdtime		holdtime in milliseconds
  * @param r				red amount
  * @param g				green amount
  * @param b				blue amount

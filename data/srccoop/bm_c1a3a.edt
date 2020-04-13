@@ -1,0 +1,186 @@
+#base "base\bm_sp_campaign.edt"
+
+"config"
+{
+	"nextmap"	"bm_c1a3b"
+	"nextmap"	"bm_c1a4a"
+	"intro_type" "none"
+	
+	"equipment"
+	{
+	}
+	"entity"
+	{
+		// delay map start
+		"modify"
+		{
+			"targetname" "transition_dooropen"
+			"functions"
+			{
+				"delay_output" "OnTrigger"
+			}
+		}
+		// motion disable spawn items
+		"modify"
+		{
+			"targetname" "/suit|weapons|ammo/"
+			"flags"
+			{
+				"spawnflags"
+				{
+					"add" "2"
+				}
+			}
+		}
+		// delete elevator door close trigger
+		"delete"
+		{
+			"hammerid" "51187"
+		}
+		// dont kill npcs
+		"modify"
+		{
+			"targetname" "bm_c1a3a_headcrab_killer"
+			"outputs"
+			{
+				"remove" {}
+			}
+		}
+		// turn changelevel trig into invisible wall
+		"modify"
+		{
+			"classname" "trigger_changelevel"
+			"map" "bm_c1a3c"
+			"add"
+			{
+				"classname" "func_brush"
+				"rendermode" "10" // dont render
+			}
+		}
+		// add items and weapons to equip when returning form c1a3c
+		"create"
+		{
+			"classname" "item_suit"
+			"origin"	"-2984 -877 32"
+			"spawnflags" "2"
+		}
+		"create"
+		{
+			"classname" "item_weapon_crowbar"
+			"origin"	"-2984 -877 32"
+			"spawnflags" "2"
+		}
+		"create"
+		{
+			"classname" "item_weapon_shotgun"
+			"origin"	"-2984 -877 32"
+			"spawnflags" "2"
+		}
+		"create"
+		{
+			"classname" "item_weapon_mp5"
+			"origin"	"-2984 -877 32"
+			"spawnflags" "2"
+		}
+		"create"
+		{
+			"classname" "item_weapon_mp5"
+			"origin"	"-2984 -877 32"
+			"spawnflags" "2"
+		}
+		"create"
+		{
+			"classname" "item_ammo_mp5"
+			"origin"	"-2984 -877 32"
+			"spawnflags" "2"
+		}
+		"create"
+		{
+			"classname" "item_grenade_mp5"
+			"origin"	"-2984 -877 32"
+			"spawnflags" "2"
+		}
+		"create"
+		{
+			"classname" "item_weapon_glock"
+			"origin"	"-2984 -877 32"
+			"spawnflags" "2"
+		}
+		"create"
+		{
+			"classname" "item_ammo_glock"
+			"origin"	"-2984 -877 32"
+			"spawnflags" "2"
+		}
+		"create"
+		{
+			"classname" "item_ammo_glock"
+			"origin"	"-2984 -877 32"
+			"spawnflags" "2"
+		}
+		"create"
+		{
+			"classname" "item_weapon_frag"
+			"origin"	"-2984 -877 32"
+			"spawnflags" "2"
+		}
+		// delete relay on map start, which the map deletes on player spawn, which is too late for us
+		"create"
+		{
+			"classname" "logic_auto"
+			"spawnflags" "1"
+			"globalstate" "c1a3c_c1a3a"
+			"OnMapSpawn" "transition_dooropenKill0-1"
+		}
+	}
+	"checkpoint"
+	{
+		"spawn"
+		{
+			"!globalstate" "c1a3c_c1a3a"
+			"origin"	"-519 990 -119"
+			"angles"	"0 0 0"
+		}
+		"gotlunch"
+		{
+			"!globalstate" "c1a3c_c1a3a"
+			"origin"	"-1536 -1178 -119"
+			"angles"	"0 90 0"
+			"triggerid" "bm_c1a3a_headcrab_killer"
+			"output"	"OnTrigger"
+		}
+		"militarycontrol"
+		{
+			"!globalstate" "c1a3c_c1a3a"
+			"origin"	"256 -1247 -312"
+			"angles"	"0 0 0"
+			"triggerid" "83365"
+			"output"	"OnTrigger"
+		}
+		"RescuedAtLast"
+		{
+			"!globalstate" "c1a3c_c1a3a"
+			"origin"	"1250 -1678 -39"
+			"angles"	"0 270 0"
+			"triggerid" "RescuedAtLast_trig03"
+			"output"	"OnTrigger"
+		}
+		
+		// return from bm_c1a3c
+		"spawn2"
+		{
+			"globalstate" "c1a3c_c1a3a"
+			"origin"	"-2984 -877 32"
+			"angles"	"0 90 0"
+		}
+		"controlroom"
+		{
+			"globalstate" "c1a3c_c1a3a"
+			"origin"	"-533 608 -119"
+			"angles"	"0 0 0"
+			"triggerid"	"sec_door_02"
+			"output"	"OnFullyClosed"
+			"portal"	"-608 608 -91"
+		}
+	}
+}

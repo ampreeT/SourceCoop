@@ -1,3 +1,10 @@
+#if defined _srccoop_classdef_included
+ #endinput
+#endif
+#define _srccoop_classdef_included
+
+#include <sdktools>
+
 methodmap Array_t < ArrayList
 {
 	public Array_t(ArrayList pHandle = null)
@@ -21,6 +28,8 @@ methodmap Array_t < ArrayList
 		}
 	}
 }
+
+Handle g_pSetCollisionBounds;
 
 public int InternalGetBaseEntity(const int iEntIndex)
 {
@@ -245,6 +254,10 @@ methodmap CBaseEntity
 	{
 		SetEntPropVector(this.GetEntIndex(), Prop_Data, "m_vecMaxs", vecMaxs);
 	}
+	public void SetCollisionBounds(const float vecMins[3], const float vecMaxs[3])
+	{
+		SDKCall(g_pSetCollisionBounds, this.GetEntIndex(), vecMins, vecMaxs);
+	}
 	public CBaseEntity GetOwner()
 	{
 		return CBaseEntity(GetEntPropEnt(this.GetEntIndex(), Prop_Data, "m_hOwnerEntity"));
@@ -294,6 +307,14 @@ methodmap CBaseEntity
 		int thinkTick = (thinkTime == -1)? -1 : (TIME_TO_TICKS(thinkTime));
 		this.SetNextThinkTick(thinkTick);
 	}
+	public void GetViewOffset(float vec[3])
+	{
+		GetEntPropVector(this.GetEntIndex(), Prop_Data, "m_vecViewOffset", vec);
+	}
+	public void SetViewOffset(const float vec[3])
+	{
+		SetEntPropVector(this.GetEntIndex(), Prop_Data, "m_vecViewOffset", vec);
+	}
 }
 
 methodmap CTraceRay
@@ -328,6 +349,14 @@ methodmap CBaseAnimating < CBaseEntity
 	public CBaseAnimating(const int iEntIndex = -1)
 	{
 		return view_as<CBaseAnimating>(InternalGetBaseEntity(iEntIndex));
+	}
+	public float GetModelScale()
+	{
+		return GetEntPropFloat(this.GetEntIndex(), Prop_Send, "m_flModelScale");
+	}
+	public void SetModelScale(float flModelScale)
+	{
+		SetEntPropFloat(this.GetEntIndex(), Prop_Send, "m_flModelScale", flModelScale);
 	}
 }
 
@@ -575,6 +604,10 @@ methodmap CBlackMesaPlayer < CBaseCombatCharacter
 	{
 		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_nButtons");
 	}
+	public void SetButtons(int iButtons)
+	{
+		SetEntProp(this.GetEntIndex(), Prop_Data, "m_nButtons", iButtons);
+	}
 	public int GetPressedButtons()
 	{
 		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_afButtonPressed");
@@ -590,6 +623,18 @@ methodmap CBlackMesaPlayer < CBaseCombatCharacter
 	public bool IsPressingButton(const int iButton)
 	{
 		return view_as<bool>(this.GetButtons() & iButton);
+	}
+	public void StartDucking() // (taken from point_teleport code)
+	{
+		this.SetButtons(this.GetButtons() | IN_DUCK);
+		this.SetFlags(this.GetFlags() | FL_DUCKING);
+		int iClient = this.GetEntIndex();
+		SetEntProp(iClient, Prop_Send, "m_bDucked", true);
+		SetEntProp(iClient, Prop_Send, "m_bDucking", true);
+		SetEntPropFloat(iClient, Prop_Send, "m_flDucktime", 0.0);
+		float vecViewOffset[3] = VEC_DUCK_VIEW; ScaleVector(vecViewOffset, this.GetModelScale());
+		this.SetViewOffset(vecViewOffset);
+		this.SetCollisionBounds(view_as<float>(VEC_DUCK_HULL_MIN), view_as<float>(VEC_DUCK_HULL_MAX));
 	}
 	public void GetEyePosition(float vecBuffer[3])
 	{
@@ -655,6 +700,10 @@ methodmap CBlackMesaPlayer < CBaseCombatCharacter
 	{
 		ClientCommand(this.GetEntIndex(), "playgamesound %s", szSound);
 	}
+	public void PlaySound(char[] szSound)
+	{
+		EmitSoundToClient(this.GetEntIndex(), szSound);
+	}
 }
 
 public bool Callback_GetAimTarget(int iEntity, int iMask, any pData)
@@ -708,5 +757,33 @@ methodmap CBM_MP_GameRules
 	public static void SetStateIsInIntermission(char[] szStateProp, bool bInIntermission)
 	{
 		GameRules_SetProp(szStateProp, bInIntermission, _, STATE_ELEMENT_IS_IN_INTERMISSION);
+	}
+}
+
+enum GLOBALESTATE
+{
+	GLOBAL_OFF = 0,
+	GLOBAL_ON = 1,
+	GLOBAL_DEAD = 2
+};
+
+Handle g_pGlobalEntityGetIndex;
+Handle g_pGlobalEntityGetState;
+
+methodmap CGlobalState
+{
+	public static int GetIndex(const char[] szGlobalname)
+	{
+		return SDKCall(g_pGlobalEntityGetIndex, g_pGlobalEntityGetIndex, szGlobalname);
+	}
+	
+	public static GLOBALESTATE GetStateByIndex(int globalIndex)
+	{
+		return SDKCall(g_pGlobalEntityGetState, g_pGlobalEntityGetState, globalIndex);
+	}
+	
+	public static GLOBALESTATE GetState(const char[] szGlobalname)
+	{
+		return CGlobalState.GetStateByIndex(CGlobalState.GetIndex(szGlobalname));
 	}
 }

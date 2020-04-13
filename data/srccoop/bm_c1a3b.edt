@@ -1,0 +1,68 @@
+#base "base\bm_sp_campaign.edt"
+
+"config"
+{
+	"nextmap"	"bm_c1a3c"
+	"equipment"
+	{
+	}
+	"entity"
+	{
+		// motion disable spawn items
+		"modify"
+		{
+			"targetname" "/suit|weapons|ammo/"
+			"flags"
+			{
+				"spawnflags"
+				{
+					"add" "2"
+				}
+			}
+		}
+		// delay map start
+		"modify"
+		{
+			"classname" "logic_auto"
+			"OnMapSpawn" "/^Scene01_DontShootStart/"
+			"functions"
+			{
+				"delay_output" "OnMapSpawn"
+			}
+		}
+		// cannot use this properly in mp
+		"delete"
+		{
+			"targetname" "conveyor_sounds"
+		}
+	}
+	"checkpoint"
+	{
+		"spawn"
+		{
+			"origin"	"1862 995 -119"
+			"angles"	"0 270 0"
+		}
+		"bridge"
+		{
+			"origin"	"425 -5 -84"
+			"angles"	"0 180 0"
+			"triggerid" "2639037"
+			"output"	"OnTrigger"
+		}
+		"warehouse"
+		{
+			"origin"	"-1088 -1856 -91"
+			"angles"	"0 0 0"
+			"triggerid" "sscape_hallway03"
+			"output"	"OnPlay"
+		}
+		"bridge2"
+		{
+			"origin"	"0 -448 172"
+			"angles"	"0 90 0"
+			"triggerid" "sscape_b_centralshaft02"
+			"output"	"OnPlay"
+		}
+	}
+}

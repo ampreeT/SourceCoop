@@ -13,9 +13,11 @@
 
 #pragma newdecls required
 #pragma semicolon 1
+
 #include <srccoop/typedef.inc>
 #include <srccoop/classdef.inc>
 #include <srccoop/utils.inc>
+
 #include <srccoop/levellump.inc>
 #include <srccoop/checkpoint.inc>
 #include <srccoop/globals.inc>

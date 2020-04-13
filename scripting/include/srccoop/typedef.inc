@@ -1,3 +1,8 @@
+#if defined _srccoop_typedef_included
+ #endinput
+#endif
+#define _srccoop_typedef_included
+
 #define CHAT_TAG "\x07c75c1e[SRCCOOP]\x07e69c12 "
 
 #define CHAR_BIT 8
@@ -19,9 +24,16 @@
 #define MAX_VALUE 1024
 
 #define TICK_INTERVAL			(GetTickInterval())
-#define TIME_TO_TICKS(%1)		(RoundToFloor(0.5 + %1 / TICK_INTERVAL))
-#define TICKS_TO_TIME(%1)		( TICK_INTERVAL *( %1 ) )
-#define ROUND_TO_TICKS(%1)		( TICK_INTERVAL * TIME_TO_TICKS( %1 ) )
+#define TIME_TO_TICKS(%1)		(RoundToFloor(0.5 + (%1) / TICK_INTERVAL))
+#define TICKS_TO_TIME(%1)		( TICK_INTERVAL *(%1) )
+#define ROUND_TO_TICKS(%1)		( TICK_INTERVAL * TIME_TO_TICKS(%1) )
+
+#define VEC_HULL_MIN {-16.0, -16.0, 0.0}
+#define VEC_HULL_MAX {16.0, 16.0, 72.0}
+#define VEC_VIEW {0.0, 0.0, 64.0}
+#define VEC_DUCK_HULL_MIN {-16.0, -16.0, 0.0}
+#define VEC_DUCK_HULL_MAX {16.0, 16.0, 36.0}
+#define VEC_DUCK_VIEW {0.0, 0.0, 28.0}
 
 #define SF_INFOPLAYERSTART_MASTER 1
 
@@ -430,13 +442,6 @@ enum //SolidFlags_t
 	FSOLID_ROOT_PARENT_ALIGNED = 0x0100,	// Collisions are defined in root parent's local coordinate space
 	FSOLID_TRIGGER_TOUCH_DEBRIS = 0x0200, // This trigger will touch debris objects
 };
-
-#define IN_FORWARD (1 << 3)
-#define IN_BACK	(1 << 4)
-#define IN_USE (1 << 5)
-#define IN_MOVELEFT (1 << 9)
-#define IN_MOVERIGHT (1 << 10)
-#define IN_SPEED (1 << 17)
 
 // BMS specific activity list
 enum

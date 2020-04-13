@@ -1,0 +1,32 @@
+#base "base\bm_sp_campaign.edt"
+
+"config"
+{
+	"nextmap"	"bm_c1a4b"
+	"equipment"
+	{
+	}
+	"entity"
+	{
+		// motion disable spawn items
+		"modify"
+		{
+			"targetname" "c1a4a_equipment"
+			"flags"
+			{
+				"spawnflags"
+				{
+					"add" "2"
+				}
+			}
+		}
+	}
+	"checkpoint"
+	{
+		"spawn"
+		{
+			"origin"	"-2400 3464 1688"
+			"angles"	"0 345 0"
+		}
+	}
+}

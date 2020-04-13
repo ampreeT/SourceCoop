@@ -1,3 +1,16 @@
+#if defined _srccoop_manager_included
+ #endinput
+#endif
+#define _srccoop_manager_included
+
+#define FROZEN_FADE_R 15
+#define FROZEN_FADE_G 15
+#define FROZEN_FADE_B 15
+#define FROZEN_FADE_A 245
+#define FROZEN_FADE_DUR_IN 700
+#define FROZEN_FADE_DUR_OUT 1500
+#define SND_TICK "bms_objects/clickbeep/click1.wav"
+
 enum struct FireOutputData
 {
 	char m_szName[MAX_KEY];
@@ -25,10 +38,11 @@ enum struct CoopManager
 		this.m_pStartTimer = null;
 		this.m_bStarted = false;
 		this.m_bPlayerSpawned = false;
+		PrecacheSound(SND_TICK);
 		
 		if (this.m_bIsCoopMap) // cvars are not configured yet
 		{
-			CBM_MP_GameRules.SetStateIsInIntermission(STATE_WARMUP, false); // false will let players spawn, true holds them waiting till the state changes (and also plays tick sounds last 3 seconds)
+			CBM_MP_GameRules.SetStateIsInIntermission(STATE_WARMUP, false);
 			CBM_MP_GameRules.SetStateEndTime(STATE_WARMUP, GetGameTime() + 60 * 60 * 24 * 7);
 			g_SpawnSystem.ParseConfigFile(g_szMapName);
 		}
@@ -65,6 +79,7 @@ enum struct CoopManager
 					else if (g_pLevelLump.m_iIntroType == INTRO_FREEZE)
 					{
 						pPlayer.SetFlags(pPlayer.GetFlags() | FL_ATCONTROLS);
+						Client_ScreenFade(pPlayer.GetEntIndex(), FROZEN_FADE_DUR_IN, FFADE_OUT|FFADE_STAYOUT, _, FROZEN_FADE_R, FROZEN_FADE_G, FROZEN_FADE_B, FROZEN_FADE_A);
 					}
 					this.CheckStart();
 				}
@@ -84,7 +99,7 @@ enum struct CoopManager
 			else if(!this.IsInCountDownPeriod())
 			{
 				this.m_iSecondsToStart = g_pConvarWaitPeriod.IntValue;
-				CBM_MP_GameRules.SetStateEndTime(STATE_WARMUP, GetGameTime() + this.m_iSecondsToStart + 1);
+				CBM_MP_GameRules.SetStateEndTime(STATE_WARMUP, GetGameTime() + this.m_iSecondsToStart + 1.05);
 				this.m_pStartTimer = CreateTimer(1.0, StartTimerCallback, _, TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT);
 			}
 		}
@@ -124,6 +139,10 @@ enum struct CoopManager
 				{
 					CBlackMesaPlayer pClient = CBlackMesaPlayer(i);
 					pClient.SetFlags(pClient.GetFlags() & ~FL_ATCONTROLS);
+					if(g_pLevelLump.m_iIntroType == INTRO_FREEZE)
+					{
+						Client_ScreenFade(pClient.GetEntIndex(), FROZEN_FADE_DUR_OUT, FFADE_PURGE|FFADE_IN, 1, FROZEN_FADE_R, FROZEN_FADE_G, FROZEN_FADE_B, FROZEN_FADE_A);
+					}
 				}
 			}
 		}
@@ -223,5 +242,6 @@ public Action StartTimerCallback(Handle pTimer)
 		g_pCoopManager.Start();
 		return Plugin_Stop;
 	}
+	EmitSoundToAll(SND_TICK);
 	return Plugin_Continue;
 }

@@ -1,0 +1,93 @@
+#base "base\bm_sp_campaign.edt"
+
+"config"
+{
+	"nextmap"	"bm_c1a3a"
+	"equipment"
+	{
+	}
+	"entity"
+	{
+		// motion disable spawn items
+		"modify"
+		{
+			"targetname" "/suit|weapons|ammo/"
+			"flags"
+			{
+				"spawnflags"
+				{
+					"add" "2"
+				}
+			}
+		}
+		// delay map start
+		"modify"
+		{
+			"classname" "trigger_multiple"
+			"OnStartTouch" "/^break_relayTrigger/"
+			"functions"
+			{
+				"delay_output" "OnStartTouch"
+			}
+			"outputs"
+			{
+				"modify"
+				{
+					"replace"
+					{
+						"timestofire" "1"
+					}
+				}
+			}
+		}
+		"modify"
+		{
+			"classname" "logic_auto"
+			"OnMapSpawn" "/^faf_songPlaySound/"
+			"functions"
+			{
+				"delay_output" "OnMapSpawn"
+			}
+		}
+		// global for return to c1a3a
+		"create"
+		{
+			"classname" "env_global"
+			"targetname" "c1a3c_c1a3a_global"
+			"globalstate" "c1a3c_c1a3a"
+		}
+		"modify"
+		{
+			"classname" "trigger_changelevel"
+			"map" "bm_c1a3a"
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnChangeLevel"
+					"target" "c1a3c_c1a3a_global"
+					"input" "TurnOn"
+					"delay" "-1"
+				}
+			}
+		}
+	}
+	"checkpoint"
+	{
+		"spawn"
+		{
+			"origin"	"416 1112 -1351"
+			"angles"	"0 150 0"
+		}
+		"bunkerairstrike"
+		{
+			"origin"	"-1943 832 -1712"
+			"angles"	"0 180 0"
+			"triggerid" "c1a3c_small_bunker_airstrike"
+			"output"	"OnTrigger"
+			"portal"	"-1922 972 -1319"
+			"delay"		"0.5"
+			"bringall"	"1"
+		}
+	}
+}

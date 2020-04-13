@@ -18,9 +18,6 @@
 ## ToDo
 ### must-fix
 - first-person camera death code needs to set original viewentity on callback OnMapEnd()
-- sprinting animations in a clean way
-	- old method consisted of forcing animations
-	- bug: throwing nades while sprinting bugs out
 - bigfish crash
 - hook UpdateEnemyMemory input on npcs, compare if !player or !pvsplayer > call manually (either closest player or all) (UpdateEnemyMemory( pEnemy, pEnemy->GetAbsOrigin(), this ))
 - restore hev suit lines with a detour hook on CBasePlayer::SetSuitUpdate(...)
@@ -30,7 +27,6 @@
 - custom difficulty based on player count
 
 ### non-critical
-- add collision check to teleports
 - sniper HasCondition(...) offset should go in gamedata
 - add back old friendly-fire protection for allies from old plugin
 	- need some way to reference a deleted entity
@@ -51,10 +47,11 @@
 	- tried 2 options, both failed
 		- cannot do serverside animations, client seems to ignore everything even when m_bClientSideAnimation is false
 		- unable to recompile player models due to too many animation files overflow in studiomdl
-- find out if the 'admire hands' animation can be reenabled when picking up suit
+- find out if the 'admire hands' animation can be reenabled when picking up suit - guessing this has to do with sp/mp viewmodels
 - detour CBeam::RandomTargetname -> compare for !player -> return closest
-- no breakmodel gibs appear
+- no breakmodel gibs appear (MP issue)
 - footsteps are not played while sprinting
+- checkpoint teleport should attempt to find free space if blocked
 
 ### feature
 - add a hardcore mode where map resets when everyone dies, disable respawning, put dead players on spectate

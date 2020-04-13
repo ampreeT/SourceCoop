@@ -1,3 +1,8 @@
+#if defined _srccoop_instancing_included
+ #endinput
+#endif
+#define _srccoop_instancing_included
+
 enum struct ItemInstancingManager
 {
 	StringMap m_pPickedUpItems[MAXPLAYERS+1];
@@ -53,10 +58,15 @@ public void Hook_Instancing_ItemSpawn(int iEntIndex)
 	DHookEntity(hkOnTryPickUp, false, iEntIndex, _, Hook_Instancing_OnTryPickUpPre);
 	DHookEntity(hkOnTryPickUp, true, iEntIndex, _, Hook_Instancing_OnTryPickUpPost);
 	DHookAddEntityListener(ListenType_Deleted, Hook_Instancing_ItemDeleted);
-	if(pItem.IsClassname("item_healthkit")) // this spawns second entity item_healthkit_ragdoll_clone
+	if(pItem.IsClassname("item_healthkit")) {
+		// this spawns second entity item_healthkit_ragdoll_clone
 		SDKHook(iEntIndex, SDKHook_SetTransmit, Hook_Instancing_NeverTransmit);
+	}
 	else
+	{
 		SDKHook(iEntIndex, SDKHook_SetTransmit, Hook_Instancing_ItemTransmit);
+		SDKHook(iEntIndex, SDKHook_Use, Hook_Instancing_Use);
+	}
 	DispatchKeyValue(iEntIndex, "respawntime", "0");
 }
 
@@ -98,6 +108,15 @@ public Action Hook_Instancing_ItemTransmit(int entity, int client)
 	if(g_pInstancingManager.HasPickedUpItem(CBlackMesaPlayer(client), CBaseEntity(entity)))
 	{
 		return Plugin_Stop;
+	}
+	return Plugin_Continue;
+}
+
+public Action Hook_Instancing_Use(int entity, int activator, int caller, UseType type, float value)
+{
+	if(g_pInstancingManager.HasPickedUpItem(CBlackMesaPlayer(caller), CBaseEntity(entity)))
+	{
+		return Plugin_Handled;
 	}
 	return Plugin_Continue;
 }

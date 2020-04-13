@@ -1,5 +1,12 @@
+#if defined _srccoop_checkpoint_included
+ #endinput
+#endif
+#define _srccoop_checkpoint_included
+
 #define COOP_EQUIPMENT_DEFAULT_HEALTH 100
 #define COOP_EQUIPMENT_DEFAULT_ARMOR 0
+#define SND_BRINGALL "bms_objects/clickbeep/beep3.wav"
+#define SND_PORTAL "xen.energy_hit"
 
 enum struct CCoopSpawnEntry
 {
@@ -11,6 +18,7 @@ enum struct CCoopSpawnEntry
 	char m_szOutputName[MAX_FORMAT];
 	bool m_bHasPortal;
 	float m_vecPortalPosition[3];
+	bool m_bBringAllPlayers;
 	
 	void Initialize()
 	{
@@ -18,7 +26,7 @@ enum struct CCoopSpawnEntry
 		this.m_pFollowEnt = CBaseEntity(-1);
 	}
 	
-	void TeleportPlayer(CBlackMesaPlayer pPlayer)
+	bool TeleportPlayer(CBlackMesaPlayer pPlayer, bool bForceTeleport = false)
 	{
 		float vecPosition[3];
 		float vecAngles[3];
@@ -41,7 +49,17 @@ enum struct CCoopSpawnEntry
 			vecPosition = this.m_vecPosition;
 			vecAngles = this.m_vecAngles;
 		}
-		pPlayer.Teleport(vecPosition, vecAngles, view_as<float>({0.0, 0.0, 0.0}));
+		CanTeleportResult res;
+		if((res = CanTeleportPlayer(pPlayer, vecPosition)) || bForceTeleport)
+		{
+			if(res == YES_MUSTDUCK)
+			{
+				pPlayer.StartDucking();
+			}
+			pPlayer.Teleport(vecPosition, vecAngles, view_as<float>({0.0, 0.0, 0.0}));
+			return true;
+		}
+		return false;
 	}
 }
 
@@ -99,6 +117,8 @@ enum struct CCoopSpawn
 	}
 	void Initialize()
 	{
+		PrecacheSound(SND_BRINGALL);
+		PrecacheScriptSound(SND_PORTAL);
 		this.m_pCheckpointList = new Array_t(CreateArray(sizeof(CCoopSpawnEntry)));
 		if (!this.m_pCheckpointList.IsValid())
 			ThrowError("Was unable to create CCoopSpawnEntry on initialization");
@@ -157,6 +177,17 @@ enum struct CCoopSpawn
 				if(i == iIndex)
 				{
 					this.m_iCurrentCheckpoint = i;
+					if(pCheckpoint.m_bBringAllPlayers)
+					{
+						for (int pp = 0; pp <= MaxClients; pp++) {
+							CBlackMesaPlayer pPlayer = CBlackMesaPlayer(pp);
+							if(pPlayer.IsValid() && pPlayer.IsAlive())
+							{
+								pCheckpoint.TeleportPlayer(pPlayer);
+								pPlayer.PlaySound(SND_BRINGALL);
+							}
+						}
+					}
 					return true;
 				}
 			}
@@ -188,20 +219,13 @@ enum struct CCoopSpawn
 	void SpawnPlayer(CBlackMesaPlayer pPlayer, bool bSpawnEquipment = true)
 	{
 		CCoopSpawnEntry pCheckpoint;
-		if(g_pLevelLump.m_bInstanceItems)
+		// pickup possible spawn items and make sure player spawned in if second teleport is blocked
+		if(this.GetCheckpointByIndex(0, pCheckpoint))
 		{
-			// pickup possible spawn items
-			if(this.GetCheckpointByIndex(0, pCheckpoint))
+			pCheckpoint.TeleportPlayer(pPlayer, true);
+			if(this.m_iCurrentCheckpoint > 0)
 			{
-				pCheckpoint.TeleportPlayer(pPlayer);
 				RequestFrame(RequestSpawnPlayer, pPlayer);
-			}
-		}
-		else
-		{
-			if(this.GetCurrentCheckpoint(pCheckpoint))
-			{
-				pCheckpoint.TeleportPlayer(pPlayer);
 			}
 		}
 		if(bSpawnEquipment) this.SpawnPlayerEquipment(pPlayer);
@@ -261,6 +285,7 @@ enum struct CCoopSpawn
 							{
 								CCoopSpawnEntry pEntry;
 								pEntry.Initialize();
+								bool bEntryValid = true;
 								
 								if (kv.GotoFirstSubKey(false))
 								{
@@ -329,16 +354,39 @@ enum struct CCoopSpawn
 												if (!StringToFloatEx(szVector[2], pEntry.m_vecPortalPosition[2]))
 													ThrowError("Portal z parameter is not a float");
 											}
+											else if (strcmp(szKey, "bringall", false) == 0)
+											{
+												pEntry.m_bBringAllPlayers = !!StringToInt(szValue);
+											}
+											else if (strcmp(szKey, "globalstate", false) == 0)
+											{
+												if(CGlobalState.GetState(szValue) != GLOBAL_ON)
+												{
+													bEntryValid = false;
+													break;
+												}
+											}
+											else if (strcmp(szKey, "!globalstate", false) == 0)
+											{
+												if(CGlobalState.GetState(szValue) == GLOBAL_ON)
+												{
+													bEntryValid = false;
+													break;
+												}
+											}
 											else
 											{
-												ThrowError("Could not find parameter type %s", szKey);
+												ThrowError("Unknown parameter type %s", szKey);
 											}
 										}
 									}
 									while (kv.GotoNextKey(false));
 									kv.GoBack();
 								}
-								this.AddCheckpoint(pEntry);
+								if(bEntryValid)
+								{
+									this.AddCheckpoint(pEntry);
+								}
 							}
 							while (kv.GotoNextKey(true));
 							kv.GoBack();
@@ -545,7 +593,10 @@ public void Hook_TouchPortal(int entity, int other)
 	CBlackMesaPlayer pPlayer = CBlackMesaPlayer(other);
 	if(pPlayer.IsClassPlayer())
 	{
-		g_SpawnSystem.SpawnPlayer(pPlayer, false);
-		pPlayer.PlayGameSound("xen.energy_hit");
+		CCoopSpawnEntry pCheckpoint;
+		if(g_SpawnSystem.GetCurrentCheckpoint(pCheckpoint) && pCheckpoint.TeleportPlayer(pPlayer))
+		{
+			pPlayer.PlayGameSound(SND_PORTAL);
+		}
 	}
 }

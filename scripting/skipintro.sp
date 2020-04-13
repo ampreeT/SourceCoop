@@ -1,12 +1,8 @@
 #include <sourcemod>
-#include <sdktools>
+#include <srccoop/utils.inc>
 
 #pragma newdecls required
 #pragma semicolon 1
-
-#include <srccoop/typedef.inc>
-#include <srccoop/classdef.inc>
-#include <srccoop/utils.inc>
 
 public Plugin myinfo =
 {
@@ -50,7 +46,6 @@ public Action VoteSkipIntro(int client, int args)
 		MsgReply(client, "Intro skip vote is not available for %s", sTime);
 		return Plugin_Handled;
 	}
-	
 	Menu menu = new Menu(VoteSkipHandler);
 	menu.SetTitle("Skip intro?");
 	menu.AddItem("0", "Yes");

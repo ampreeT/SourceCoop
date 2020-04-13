@@ -1,3 +1,8 @@
+#if defined _srccoop_levellump_included
+ #endinput
+#endif
+#define _srccoop_levellump_included
+
 #define OUTPUT_SEPARATOR "\27"
 
 enum struct CEntityKeyLump
@@ -69,7 +74,7 @@ methodmap CEntityInfoLump < Array_t
 		return view_as<CEntityInfoLump>(pHandle);
 	}
 	
-	public bool IsEqual(CEntityInfoLump rhs)
+	public bool Matches(CEntityInfoLump rhs)
 	{
 		for (int i = 0; i < this.Length; i++)
 		{
@@ -83,7 +88,7 @@ methodmap CEntityInfoLump < Array_t
 					CEntityKeyLump rhsKeyInfo;
 					if (rhs.GetArray(j, rhsKeyInfo, sizeof(rhsKeyInfo)))
 					{
-						if (strcmp(pThisKeyInfo.m_szKey, rhsKeyInfo.m_szKey, false) == 0 && strcmp(pThisKeyInfo.m_szValue, rhsKeyInfo.m_szValue, false) == 0)
+						if (StrEqualsRegex(pThisKeyInfo.m_szKey, rhsKeyInfo.m_szKey, false) && StrEqualsRegex(pThisKeyInfo.m_szValue, rhsKeyInfo.m_szValue, false))
 						{
 							bGotEntry = true;
 							break;
@@ -105,7 +110,7 @@ methodmap CEntityInfoLump < Array_t
 	{
 		if(strcmp(szTarget, "!self") == 0)
 		{
-			return this.IsEqual(pCallingEntity);
+			return this.Matches(pCallingEntity);
 		}
 		for (int i = 0; i < this.Length; i++)
 		{
@@ -213,7 +218,7 @@ methodmap CNextMapLump < Array_t
 		for (int i = 0; i < this.Length; i++)
 		{
 			char szNextMap[MAX_MAPNAME];
-			if (this.GetString(i, szNextMap, sizeof(szNextMap)) && strcmp(szNextMap, szMapName) == 0)
+			if (this.GetString(i, szNextMap, sizeof(szNextMap)) && strcmp(szNextMap, szMapName, false) == 0)
 			{
 				return true;
 			}
@@ -430,6 +435,7 @@ enum struct CGlobalLevelLump
 						}
 						else if (strcmp(szType, "entity") == 0 || StrContains(szType, "entity_base") == 0)
 						{
+							LogDebug("Processing \"%s\" block for entity lump modifications", szType);
 							if (kv.GotoFirstSubKey(true))
 							{
 								do
@@ -481,7 +487,7 @@ enum struct CGlobalLevelLump
 												for (int i = 0; i < this.m_pEntityList.Length; i++)
 												{
 													CEntityInfoLump pThisEntityInfo = this.m_pEntityList.Get(i);
-													if (pEntityInfo.IsEqual(pThisEntityInfo))
+													if (pEntityInfo.Matches(pThisEntityInfo))
 													{
 														pThisEntityInfo.Close();
 														this.m_pEntityList.Erase(i);
@@ -496,7 +502,7 @@ enum struct CGlobalLevelLump
 											if (kv.GotoFirstSubKey(false))
 											{
 												CEntityListLump pTempEvaluatedList = this.EvaluateEntityList(kv);
-												if (kv.GotoFirstSubKey(true))
+												if (pTempEvaluatedList.Length && kv.GotoFirstSubKey(true))
 												{
 													do
 													{
@@ -551,7 +557,7 @@ enum struct CGlobalLevelLump
 		for (int i = 0; i < this.m_pEntityList.Length; i++)
 		{
 			CEntityInfoLump pThisEntityInfo = this.m_pEntityList.Get(i);
-			if (pEvaulationEntity.IsEqual(pThisEntityInfo))
+			if (pEvaulationEntity.Matches(pThisEntityInfo))
 			{
 				pTempEvaluatedList.Push(pThisEntityInfo);
 			}
@@ -633,6 +639,7 @@ enum struct CGlobalLevelLump
 				pOutputHook.m_pEntityList = view_as<CEntityListLump>(CloneHandle(view_as<Handle>(pTempEvaluatedList)));
 				pOutputHook.m_szOutputName = szValue;
 				this.m_pOutputHookList.PushArray(pOutputHook);
+				LogDebug("Delaying output \"%s\" for %d entities", szValue, pTempEvaluatedList.Length);
 			}
 		}
 	}

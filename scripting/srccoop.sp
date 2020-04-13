@@ -49,6 +49,16 @@ void load_dhook_virtual(const Handle pGameConfig, Handle& pHandle, const char[] 
 		SetFailState("Couldn't create hook %s", szFuncName);
 }
 
+stock Address GetServerInterface(const char[] szInterface)
+{
+	return view_as<Address>(SDKCall(g_pCreateServerInterface, szInterface, 0));
+}
+
+stock Address GetEngineInterface(const char[] szInterface)
+{
+	return view_as<Address>(SDKCall(g_pCreateEngineInterface, szInterface, 0));
+}
+
 void load_gamedata()
 {
 	char szConfigName[] = "srccoop.games";
@@ -109,6 +119,30 @@ void load_gamedata()
 		SetFailState("Could not obtain gamedata offset %s", szGameShutdown);
 	if (!(g_pGameShutdown = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szGameShutdown);
 
+	char szGlobalEntity_GetIndex[] = "GlobalEntity_GetIndex";
+	StartPrepSDKCall(SDKCall_Raw);
+	if(!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Signature, szGlobalEntity_GetIndex))
+		SetFailState("Could not obtain gamedata signature %s", szGlobalEntity_GetIndex);
+	PrepSDKCall_AddParameter(SDKType_String, SDKPass_Pointer);
+	PrepSDKCall_SetReturnInfo(SDKType_PlainOldData, SDKPass_Plain);
+	if (!(g_pGlobalEntityGetIndex = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szGlobalEntity_GetIndex);
+
+	char szGlobalEntity_GetState[] = "GlobalEntity_GetState";
+	StartPrepSDKCall(SDKCall_Raw);
+	if(!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Signature, szGlobalEntity_GetState))
+		SetFailState("Could not obtain gamedata signature %s", szGlobalEntity_GetState);
+	PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
+	PrepSDKCall_SetReturnInfo(SDKType_PlainOldData, SDKPass_Plain);
+	if (!(g_pGlobalEntityGetState = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szGlobalEntity_GetState);
+
+	char szSetCollisionBounds[] = "CBaseEntity::SetCollisionBounds";
+	StartPrepSDKCall(SDKCall_Entity);
+	if(!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Signature, szSetCollisionBounds))
+		SetFailState("Could not obtain gamedata signature %s", szSetCollisionBounds);
+	PrepSDKCall_AddParameter(SDKType_Vector, SDKPass_ByRef);
+	PrepSDKCall_AddParameter(SDKType_Vector, SDKPass_ByRef);
+	if (!(g_pSetCollisionBounds = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szSetCollisionBounds);
+
 	load_dhook_virtual(pGameConfig, hkFAllowFlashlight, "CMultiplayRules::FAllowFlashlight");
 	load_dhook_virtual(pGameConfig, hkIsMultiplayer, "CMultiplayRules::IsMultiplayer");
 //	load_dhook_virtual(pGameConfig, hkIsDeathmatch, "CMultiplayRules::IsDeathmatch");
@@ -127,16 +161,6 @@ void load_gamedata()
 	load_dhook_detour(pGameConfig, hkResolveNamesPost, "CAI_GoalEntity::ResolveNamesPost", _, Hook_ResolveNames);
 
 	CloseHandle(pGameConfig);
-}
-
-stock Address GetServerInterface(const char[] szInterface)
-{
-	return view_as<Address>(SDKCall(g_pCreateServerInterface, szInterface, 0));
-}
-
-stock Address GetEngineInterface(const char[] szInterface)
-{
-	return view_as<Address>(SDKCall(g_pCreateEngineInterface, szInterface, 0));
 }
 
 public void OnPluginStart()

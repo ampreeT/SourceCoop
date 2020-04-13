@@ -1,3 +1,8 @@
+#if defined _srccoop_entitypatch_included
+ #endinput
+#endif
+#define _srccoop_entitypatch_included
+
 //------------------------------------------------------
 // UTIL_GetLocalPlayer
 //------------------------------------------------------
@@ -5,11 +10,11 @@ public MRESReturn Hook_UTIL_GetLocalPlayer(Handle hReturn)
 {
 	if (g_pCoopManager.IsBugPatchingEnabled())
 	{
+		LogDebug("WARN: Game called UTIL_GetLocalPlayer");
 		for(int i = 1; i <= MaxClients; i++)
 		{
 			if(IsClientInGame(i))
 			{
-				LogDebug("WARN: Game called UTIL_GetLocalPlayer");
 				DHookSetReturn(hReturn, i);
 				return MRES_Supercede;
 			}
@@ -148,6 +153,7 @@ public bool ChangeLevelToNextMap(CChangelevel pChangelevel)
 	char szMapName[MAX_MAPNAME];
 	if (pChangelevel.GetMapName(szMapName, sizeof(szMapName)) && g_pLevelLump.m_pNextMapList.IsInMapList(szMapName))
 	{
+		pChangelevel.FireOutput("OnChangeLevel");
 		ForceChangeLevel(szMapName, SM_NORMAL_MAPCHANGE);
 	}
 }
@@ -578,7 +584,7 @@ public MRESReturn Hook_WeaponSetModel(int _this, Handle hParams)	// use sp weapo
 		if (pWeapon.IsValid())
 		{
 			CBaseCombatCharacter pOwner = view_as<CBaseCombatCharacter>(pWeapon.GetOwner());
-			if (pOwner.IsValid() && !pOwner.IsClassPlayer())
+			//if (pOwner.IsValid() && !pOwner.IsClassPlayer())
 			{
 				static const char szWeaponModel[][][] =
 				{
