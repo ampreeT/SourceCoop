@@ -56,6 +56,10 @@ enum struct CCoopSpawnEntry
 			{
 				pPlayer.StartDucking();
 			}
+			else
+			{
+				pPlayer.StopDucking();
+			}
 			pPlayer.Teleport(vecPosition, vecAngles, view_as<float>({0.0, 0.0, 0.0}));
 			return true;
 		}

@@ -224,7 +224,7 @@ public Action OnLevelInit(const char[] szMapName, char szMapEntities[2097152])		
 	if (g_pCoopManager.IsCoopModeEnabled())
 	{
 		if(g_pCoopManager.ShouldResetGlobalStates())
-			ResetGlobalStates();
+			g_ServerGameDLL.GameShutdown();
 		
 		g_pLevelLump.ParseMapEntities(szMapEntities);
 		g_pLevelLump.ParseConfigFile(szMapName);

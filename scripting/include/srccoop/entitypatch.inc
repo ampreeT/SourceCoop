@@ -583,7 +583,7 @@ public MRESReturn Hook_WeaponSetModel(int _this, Handle hParams)	// use sp weapo
 		CBaseCombatWeapon pWeapon = CBaseCombatWeapon(_this);
 		if (pWeapon.IsValid())
 		{
-			CBaseCombatCharacter pOwner = view_as<CBaseCombatCharacter>(pWeapon.GetOwner());
+			//CBaseCombatCharacter pOwner = view_as<CBaseCombatCharacter>(pWeapon.GetOwner());
 			//if (pOwner.IsValid() && !pOwner.IsClassPlayer())
 			{
 				static const char szWeaponModel[][][] =

@@ -4,22 +4,17 @@
 #include <srccoop>
 
 // move me to classdef as member functions
-public void SetPlayerPickup(int iPlayer, int iObject, const bool bLimitMassAndSize)
-{
-	g_bIsMultiplayerOverride = false; // IsMultiplayer = false uses correct implementation for bLimitMassAndSize
-	SDKCall(g_pPickupObject, iPlayer, iObject, bLimitMassAndSize);
-	g_bIsMultiplayerOverride = true;
-}
+//public void SetPlayerPickup(int iPlayer, int iObject, const bool bLimitMassAndSize)
+//{
+//	g_bIsMultiplayerOverride = false; // IsMultiplayer = false uses correct implementation for bLimitMassAndSize
+//	SDKCall(g_pPickupObject, iPlayer, iObject, bLimitMassAndSize);
+//	g_bIsMultiplayerOverride = true;
+//}
 
-public void SetWeaponAnimation(int iWeapon, const int iActivity)
-{
-	SDKCall(g_pSendWeaponAnim, iWeapon, iActivity);
-}
-
-public void ResetGlobalStates()
-{
-	SDKCall(g_pGameShutdown, g_ServerGameDLL); // GameShutdown() just resets global states
-}
+//public void SetWeaponAnimation(int iWeapon, const int iActivity)
+//{
+//	SDKCall(g_pSendWeaponAnim, iWeapon, iActivity);
+//}
 // classdef end
 
 public Plugin myinfo =
@@ -89,29 +84,29 @@ void load_gamedata()
 	if (!GameConfGetKeyValue(pGameConfig, "IVEngineServer", szInterfaceEngine, sizeof(szInterfaceEngine)))
 		SetFailState("Could not get interface verison for %s", "IVEngineServer");
 	if (!(g_VEngineServer = GetEngineInterface(szInterfaceEngine)))
-		SetFailState("Could not get interface for %s", "g_ServerGameDLL");	
+		SetFailState("Could not get interface for %s", "g_ServerGameDLL");
 	*/
 	
 	char szInterfaceGame[64];
 	if (!GameConfGetKeyValue(pGameConfig, "IServerGameDLL", szInterfaceGame, sizeof(szInterfaceGame)))
 		SetFailState("Could not get interface verison for %s", "IServerGameDLL");
-	if (!(g_ServerGameDLL = GetServerInterface(szInterfaceGame)))
+	if (!(g_ServerGameDLL = IServerGameDLL(GetServerInterface(szInterfaceGame))))
 		SetFailState("Could not get interface for %s", "g_ServerGameDLL");
 	
-	char szPickupObject[] = "CBlackMesaPlayer::PickupObject";
-	StartPrepSDKCall(SDKCall_Player);
-	if (!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Virtual, szPickupObject))
-		SetFailState("Could not obtain gamedata offset %s", szPickupObject);
-	PrepSDKCall_AddParameter(SDKType_CBaseEntity, SDKPass_Pointer);
-	PrepSDKCall_AddParameter(SDKType_Bool, SDKPass_Plain);
-	if (!(g_pPickupObject = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szPickupObject);
+//	char szPickupObject[] = "CBlackMesaPlayer::PickupObject";
+//	StartPrepSDKCall(SDKCall_Player);
+//	if (!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Virtual, szPickupObject))
+//		SetFailState("Could not obtain gamedata offset %s", szPickupObject);
+//	PrepSDKCall_AddParameter(SDKType_CBaseEntity, SDKPass_Pointer);
+//	PrepSDKCall_AddParameter(SDKType_Bool, SDKPass_Plain);
+//	if (!(g_pPickupObject = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szPickupObject);
 	
-	char szSendWeaponAnim[] = "CBaseCombatWeapon::SendWeaponAnim";
-	StartPrepSDKCall(SDKCall_Entity);
-	if (!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Virtual, szSendWeaponAnim))
-		SetFailState("Could not obtain gamedata offset %s", szSendWeaponAnim);
-	PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
-	if (!(g_pSendWeaponAnim = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szSendWeaponAnim);
+//	char szSendWeaponAnim[] = "CBaseCombatWeapon::SendWeaponAnim";
+//	StartPrepSDKCall(SDKCall_Entity);
+//	if (!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Virtual, szSendWeaponAnim))
+//		SetFailState("Could not obtain gamedata offset %s", szSendWeaponAnim);
+//	PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
+//	if (!(g_pSendWeaponAnim = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szSendWeaponAnim);
 		
 	char szGameShutdown[] = "CServerGameDLL::GameShutdown";
 	StartPrepSDKCall(SDKCall_Raw);
@@ -120,7 +115,7 @@ void load_gamedata()
 	if (!(g_pGameShutdown = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szGameShutdown);
 
 	char szGlobalEntity_GetIndex[] = "GlobalEntity_GetIndex";
-	StartPrepSDKCall(SDKCall_Raw);
+	StartPrepSDKCall(SDKCall_Static);
 	if(!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Signature, szGlobalEntity_GetIndex))
 		SetFailState("Could not obtain gamedata signature %s", szGlobalEntity_GetIndex);
 	PrepSDKCall_AddParameter(SDKType_String, SDKPass_Pointer);
@@ -128,7 +123,7 @@ void load_gamedata()
 	if (!(g_pGlobalEntityGetIndex = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szGlobalEntity_GetIndex);
 
 	char szGlobalEntity_GetState[] = "GlobalEntity_GetState";
-	StartPrepSDKCall(SDKCall_Raw);
+	StartPrepSDKCall(SDKCall_Static);
 	if(!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Signature, szGlobalEntity_GetState))
 		SetFailState("Could not obtain gamedata signature %s", szGlobalEntity_GetState);
 	PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
@@ -621,25 +616,25 @@ public void Hook_CameraDeathSpawn(int iEntIndex)
 	}
 }
 
-public void Hook_Use(int entity, int activator, int caller, UseType type, float value)
-{
-	if (g_pCoopManager.IsFeaturePatchingEnabled())
-	{
-		CBlackMesaPlayer pPlayer = CBlackMesaPlayer(caller);
-		if (pPlayer.IsValid() && pPlayer.IsAlive())
-		{
-			CBaseEntity pEntity = CBaseEntity(entity);
-			if(g_pLevelLump.m_bInstanceItems && pEntity.IsPickupItem())
-			{
-				if(g_pInstancingManager.HasPickedUpItem(pPlayer, pEntity))
-				{
-					return;
-				}
-			}
-			SetPlayerPickup(pPlayer.GetEntIndex(), entity, true);
-		}
-	}
-}
+//public void Hook_Use(int entity, int activator, int caller, UseType type, float value)
+//{
+//	if (g_pCoopManager.IsFeaturePatchingEnabled())
+//	{
+//		CBlackMesaPlayer pPlayer = CBlackMesaPlayer(caller);
+//		if (pPlayer.IsValid() && pPlayer.IsAlive())
+//		{
+//			CBaseEntity pEntity = CBaseEntity(entity);
+//			if(g_pLevelLump.m_bInstanceItems && pEntity.IsPickupItem())
+//			{
+//				if(g_pInstancingManager.HasPickedUpItem(pPlayer, pEntity))
+//				{
+//					return;
+//				}
+//			}
+//			SetPlayerPickup(pPlayer.GetEntIndex(), entity, true);
+//		}
+//	}
+//}
 
 // todo read this later
 // http://cdn.akamai.steamstatic.com/steam/apps/362890/manuals/bms_workshop_guide.pdf?t=1431372141

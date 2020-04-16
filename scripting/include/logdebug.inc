@@ -12,7 +12,7 @@
 
 // define NO_DEBUG before including this file to completely disable all debugging
 #if defined NO_DEBUG
- stock void InitDebugLog(const char[] convarName, const char[] debugTag, int adminFlags = ADMFLAG_GENERIC, const char[] timeFormat = "") { }
+ stock void InitDebugLog(const char[] convarName, const char[] debugTag, int adminFlags = ADMFLAG_GENERIC, const char timeFormat[64] = "") { }
  stock bool LogDebug(const char[] format, any ...) { return false; }
  #endinput
 #endif

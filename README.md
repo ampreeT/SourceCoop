@@ -27,6 +27,7 @@
 - custom difficulty based on player count
 
 ### non-critical
+- scripted npcs can walk into player and turn invisible
 - sniper HasCondition(...) offset should go in gamedata
 - add back old friendly-fire protection for allies from old plugin
 	- need some way to reference a deleted entity

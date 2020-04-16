@@ -20,13 +20,90 @@
 				}
 			}
 		}
+		// dont kill stuff
+		"modify"
+		{
+			"targetname" "trigger_railway_postpipe_killstuff"
+			"outputs"
+			{
+				"remove" {}
+			}
+		}
+		"modify"
+		{
+			"targetname" "trigger_silowastesounds_off"
+			"outputs"
+			{
+				"remove" {}
+			}
+		}
+		// dont disable changelevel
+		"modify"
+		{
+			"targetname" "c1a4a_c1a4b_transition"
+			"add"
+			{
+				"StartDisabled" "0"
+			}
+			"remove"
+			{
+				"targetname" ""
+			}
+		}
 	}
 	"checkpoint"
 	{
 		"spawn"
 		{
-			"origin"	"-2400 3464 1688"
+			"origin"	"-2400 3464 1661"
 			"angles"	"0 345 0"
+		}
+		"railway"
+		{
+			"origin"	"-768 4288 -847"
+			"angles"	"0 90 0"
+			"triggerid" "trigger_audio_railway"
+			"output"	"OnTrigger"
+		}
+		"tram"
+		{
+			"origin"	"0 0 10"
+			"angles"	"0 0 0"
+			"followid"	"c1a4a_tram_base"
+			"triggerid" "c1a4a_tram_stop_05"
+			"output"	"OnPass"
+			"portal"	"-626 4856 -828"
+		}
+		"rail_end"
+		{
+			"origin"	"404 -4787 -788"
+			"angles"	"0 180 0"
+			"triggerid" "sscape_a_railwaytunnel1_end"
+			"output"	"OnPlay"
+		}
+		"postpipe"
+		{
+			"origin"	"-361 -3849 -792"
+			"angles"	"0 180 0"
+			"triggerid" "trigger_railway_postpipe_killstuff"
+			"output"	"OnTrigger"
+		}
+		"silo"
+		{
+			"origin"	"96 -3283 -742"
+			"angles"	"0 90 0"
+			"triggerid" "trigger_silowastesounds_on"
+			"output"	"OnTrigger"
+		}
+		"silo_elevator"
+		{
+			"origin"	"0 0 20"
+			"angles"	"0 0 0"
+			"delay"		"5"
+			"followid"	"c1a4a_elevatorprop"
+			"triggerid" "c1a4a_elevator_button_02"
+			"output"	"OnPressed"
+			"portal"	"32 -2239 -855"
 		}
 	}
 }

@@ -30,7 +30,7 @@
 				"delay_output" "OnMapSpawn"
 			}
 		}
-		// cannot use this properly in mp
+		// cannot use this as intended in mp
 		"delete"
 		{
 			"targetname" "conveyor_sounds"

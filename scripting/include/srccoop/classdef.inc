@@ -624,6 +624,14 @@ methodmap CBlackMesaPlayer < CBaseCombatCharacter
 	{
 		return view_as<bool>(this.GetButtons() & iButton);
 	}
+	public bool IsDucking()
+	{
+		return view_as<bool>(GetEntProp(this.GetEntIndex(), Prop_Send, "m_bDucking"));
+	}
+	public bool IsDucked()
+	{
+		return view_as<bool>(GetEntProp(this.GetEntIndex(), Prop_Send, "m_bDucked"));
+	}
 	public void StartDucking() // (taken from point_teleport code)
 	{
 		this.SetButtons(this.GetButtons() | IN_DUCK);
@@ -635,6 +643,17 @@ methodmap CBlackMesaPlayer < CBaseCombatCharacter
 		float vecViewOffset[3] = VEC_DUCK_VIEW; ScaleVector(vecViewOffset, this.GetModelScale());
 		this.SetViewOffset(vecViewOffset);
 		this.SetCollisionBounds(view_as<float>(VEC_DUCK_HULL_MIN), view_as<float>(VEC_DUCK_HULL_MAX));
+	}
+	public void StopDucking()
+	{
+		this.SetButtons(this.GetButtons() & ~IN_DUCK);
+		this.SetFlags(this.GetFlags() & ~FL_DUCKING);
+		int iClient = this.GetEntIndex();
+		SetEntProp(iClient, Prop_Send, "m_bDucked", false);
+		SetEntProp(iClient, Prop_Send, "m_bDucking", false);
+		float vecViewOffset[3] = VEC_VIEW; ScaleVector(vecViewOffset, this.GetModelScale());
+		this.SetViewOffset(vecViewOffset);
+		this.SetCollisionBounds(view_as<float>(VEC_HULL_MIN), view_as<float>(VEC_HULL_MAX));
 	}
 	public void GetEyePosition(float vecBuffer[3])
 	{
@@ -774,16 +793,31 @@ methodmap CGlobalState
 {
 	public static int GetIndex(const char[] szGlobalname)
 	{
-		return SDKCall(g_pGlobalEntityGetIndex, g_pGlobalEntityGetIndex, szGlobalname);
+		return SDKCall(g_pGlobalEntityGetIndex, szGlobalname);
 	}
 	
 	public static GLOBALESTATE GetStateByIndex(int globalIndex)
 	{
-		return SDKCall(g_pGlobalEntityGetState, g_pGlobalEntityGetState, globalIndex);
+		return SDKCall(g_pGlobalEntityGetState, globalIndex);
 	}
 	
 	public static GLOBALESTATE GetState(const char[] szGlobalname)
 	{
 		return CGlobalState.GetStateByIndex(CGlobalState.GetIndex(szGlobalname));
+	}
+}
+
+Handle g_pGameShutdown;
+
+methodmap IServerGameDLL
+{
+	public IServerGameDLL(Address pAddress)
+	{
+		return view_as<IServerGameDLL>(pAddress);
+	}
+	
+	public void GameShutdown()
+	{
+		SDKCall(g_pGameShutdown, this); // GameShutdown() just resets global states
 	}
 }
