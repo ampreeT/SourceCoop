@@ -11,20 +11,15 @@ methodmap Array_t < ArrayList
 	{
 		return view_as<Array_t>(pHandle);
 	}
-	
-	public Handle GetHandle()
-	{
-		return view_as<Handle>(this);
-	}
 	public bool IsValid()
 	{
-		return view_as<bool>(this.GetHandle() != null);
+		return this != null;
 	}
 	public void Close()
 	{
 		if (this.IsValid())
 		{
-			CloseHandle(this.GetHandle());
+			CloseHandle(this);
 		}
 	}
 }
@@ -728,6 +723,14 @@ methodmap CBlackMesaPlayer < CBaseCombatCharacter
 public bool Callback_GetAimTarget(int iEntity, int iMask, any pData)
 {
 	return !view_as<bool>(iEntity == pData);
+}
+
+enum struct FireOutputData
+{
+	char m_szName[MAX_KEY];
+	CBaseEntity m_pCaller;
+	CBaseEntity m_pActivator;
+	float m_flDelay;
 }
 
 #define STATE_WARMUP "m_StateWarmup"

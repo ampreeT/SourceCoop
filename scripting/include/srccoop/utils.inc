@@ -255,3 +255,33 @@ stock bool Client_ScreenFade(int client, int duration, int mode, int holdtime=-1
 
 	return true;
 }
+
+stock bool IsAddSynonym(const char[] str)
+{
+	return (strcmp(str, "add", false) == 0 || strcmp(str, "create", false) == 0);
+}
+
+stock bool IsRemoveSynonym(const char[] str)
+{
+	return (strcmp(str, "remove", false) == 0 || strcmp(str, "delete", false) == 0);
+}
+
+stock bool IsModifySynonym(const char[] str)
+{
+	return (strcmp(str, "modify", false) == 0 || strcmp(str, "edit", false) == 0);
+}
+
+stock bool IsReplaceSynonym(const char[] str)
+{
+	return (strcmp(str, "replace", false) == 0 || strcmp(str, "set", false) == 0);
+}
+
+stock bool IsEnableSynonym(const char[] str)
+{
+	return (strcmp(str, "enable", false) == 0 || strcmp(str, "turnon", false) == 0 || strcmp(str, "on", false) == 0);
+}
+
+stock bool IsDisableSynonym(const char[] str)
+{
+	return (strcmp(str, "disable", false) == 0 || strcmp(str, "turnoff", false) == 0 || strcmp(str, "off", false) == 0);
+}

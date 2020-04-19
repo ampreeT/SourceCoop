@@ -3,20 +3,6 @@
 
 #include <srccoop>
 
-// move me to classdef as member functions
-//public void SetPlayerPickup(int iPlayer, int iObject, const bool bLimitMassAndSize)
-//{
-//	g_bIsMultiplayerOverride = false; // IsMultiplayer = false uses correct implementation for bLimitMassAndSize
-//	SDKCall(g_pPickupObject, iPlayer, iObject, bLimitMassAndSize);
-//	g_bIsMultiplayerOverride = true;
-//}
-
-//public void SetWeaponAnimation(int iWeapon, const int iActivity)
-//{
-//	SDKCall(g_pSendWeaponAnim, iWeapon, iActivity);
-//}
-// classdef end
-
 public Plugin myinfo =
 {
 	name = "SourceCoop",
@@ -150,7 +136,7 @@ void load_gamedata()
 	load_dhook_virtual(pGameConfig, hkAcceptInput, "CBaseEntity::AcceptInput");
 	load_dhook_virtual(pGameConfig, hkOnTryPickUp, "CBasePickup::OnTryPickUp");
 	load_dhook_virtual(pGameConfig, hkThink, "CBaseEntity::Think");
-	load_dhook_detour(pGameConfig, hkSetSuitUpdate, "CBasePlayer::SetSuitUpdate", Hook_SetSuitUpdate);
+	load_dhook_detour(pGameConfig, hkSetSuitUpdate, "CBasePlayer::SetSuitUpdate", Hook_SetSuitUpdate, Hook_SetSuitUpdatePost);
 	load_dhook_detour(pGameConfig, hkUTIL_GetLocalPlayer, "UTIL_GetLocalPlayer", Hook_UTIL_GetLocalPlayer);
 	load_dhook_detour(pGameConfig, hkResolveNames, "CAI_GoalEntity::ResolveNames", Hook_ResolveNames);
 	load_dhook_detour(pGameConfig, hkResolveNamesPost, "CAI_GoalEntity::ResolveNamesPost", _, Hook_ResolveNames);
@@ -171,6 +157,7 @@ public void OnPluginStart()
 	g_pPostponedSpawns = CreateArray();
 	
 	HookEvent("player_spawn", Event_PlayerSpawnPost, EventHookMode_Post);
+	AddNormalSoundHook(PlayerSoundListener);
 	
 	if(GetEngineVersion() == Engine_BlackMesa)
 	{
@@ -238,6 +225,7 @@ public void OnClientPutInServer(int client)
 	SDKHook(client, SDKHook_PreThinkPost, Hook_PlayerPreThinkPost);
 	SDKHook(client, SDKHook_PreThink, Hook_PlayerPreThink);
 	SDKHook(client, SDKHook_SpawnPost, Hook_PlayerSpawnPost);
+	SDKHook(client, SDKHook_OnTakeDamage, Hook_PlayerTakeDamage);
 }
 
 public void OnClientDisconnect(int client)
@@ -352,23 +340,26 @@ public void Hook_SpawnPost(int iEntIndex)
 	
 	if (g_pCoopManager.IsCoopModeEnabled())
 	{
-		Array_t pOutputHookList = g_pLevelLump.GetOutputHooksForEntity(pEntity);
-		if(pOutputHookList.Length > 0)
+		if(!g_pCoopManager.m_bStarted)
 		{
-			if(pEntity.IsClassname("logic_auto"))
+			Array_t pOutputHookList = g_pLevelLump.GetOutputHooksForEntity(pEntity);
+			if(pOutputHookList.Length > 0)
 			{
-				// do not let it get killed, so the output can fire later
-				int iSpawnFlags = pEntity.GetSpawnFlags();
-				if(iSpawnFlags & SF_AUTO_FIREONCE)
-					pEntity.SetSpawnFlags(iSpawnFlags &~ SF_AUTO_FIREONCE);
+				if(pEntity.IsClassname("logic_auto"))
+				{
+					// do not let it get killed, so the output can fire later
+					int iSpawnFlags = pEntity.GetSpawnFlags();
+					if(iSpawnFlags & SF_AUTO_FIREONCE)
+						pEntity.SetSpawnFlags(iSpawnFlags &~ SF_AUTO_FIREONCE);
+				}
+				for (int i = 0; i < pOutputHookList.Length; i++)
+				{
+					CEntityOutputHook pOutputHook; pOutputHookList.GetArray(i, pOutputHook);
+					HookSingleEntityOutput(iEntIndex, pOutputHook.m_szOutputName, OutputCallbackForDelay);
+				}
 			}
-			for (int i = 0; i < pOutputHookList.Length; i++)
-			{
-				CEntityOutputHook pOutputHook; pOutputHookList.GetArray(i, pOutputHook);
-				HookSingleEntityOutput(iEntIndex, pOutputHook.m_szOutputName, OutputCallbackForDelay);
-			}
+			pOutputHookList.Close();
 		}
-		pOutputHookList.Close();
 	}
 }
 
@@ -476,108 +467,6 @@ public Action Hook_BroadcastTeamsound(Event hEvent, const char[] szName, bool bD
 	return Plugin_Continue;
 }
 
-public void Hook_PlayerPreThink(int iClient)
-{
-	if(!g_pCoopManager.IsCoopModeEnabled())
-		return;
-		
-	if(IsPlayerAlive(iClient))
-		g_bIsMultiplayerOverride = false;
-}
-
-public void Hook_PlayerPreThinkPost(int iClient)
-{
-	g_bIsMultiplayerOverride = true;
-	if(!g_pCoopManager.IsCoopModeEnabled())
-		return;
-	
-	CBlackMesaPlayer pPlayer = CBlackMesaPlayer(iClient);
-	if(pPlayer.IsAlive())
-	{
-		if(pPlayer.GetPressedButtons() & IN_SPEED && pPlayer.GetMaxSpeed() >= 320.0)
-		{
-			pPlayer.PlayGameSound("HL2Player.SprintStart");
-		}
-	}
-	else
-	{
-		if(pPlayer.GetTeam() != TEAM_SPECTATOR && GetGameTime() - pPlayer.GetDeathTime() > 1.0)
-		{
-			int iPressed = pPlayer.GetPressedButtons();
-			if(iPressed != 0 && iPressed != IN_SCORE)
-			{
-				DispatchSpawn(iClient);
-			}
-		}		
-	}
-}
-
-public void Hook_PlayerSpawnPost(int iClient)
-{
-	if(!g_pCoopManager.IsCoopModeEnabled())
-		return;
-	
-	CBlackMesaPlayer pPlayer = CBlackMesaPlayer(iClient);
-	pPlayer.SetSuit(false);
-	pPlayer.SetMaxSpeed(190.0);
-	pPlayer.SetIsSprinting(false);
-}
-
-//public void Hook_PlayerPreThinkPost(int iClient)
-//{
-//	if(!g_pCoopManager.IsFeaturePatchingEnabled())
-//		return;
-//	
-//	CBlackMesaPlayer pPlayer = CBlackMesaPlayer(iClient);
-//	if (pPlayer.IsValid())
-//	{
-//		int iButtons = pPlayer.GetButtons();
-//		int iOldButtons = pPlayer.GetOldButtons();
-//		
-//		if(pPlayer.IsAlive())	// sprinting stuff
-//		{
-//			bool bIsHoldingSpeed = view_as<bool>(iButtons & IN_SPEED);
-//			bool bWasHoldingSpeed = view_as<bool>(iOldButtons & IN_SPEED);
-//			bool bIsMoving = view_as<bool>((iButtons & IN_FORWARD) || (iButtons & IN_BACK) || (iButtons & IN_MOVELEFT) || (iButtons & IN_MOVERIGHT));
-//			bool bWasMoving = view_as<bool>((iOldButtons & IN_FORWARD) || (iOldButtons & IN_BACK) || (iOldButtons & IN_MOVELEFT) || (iOldButtons & IN_MOVERIGHT));
-//			
-//			// should deactivate this if crouch is held
-//			if(pPlayer.HasSuit() && bIsHoldingSpeed) 
-//			{
-//				pPlayer.SetMaxSpeed(320.0);
-//				if(!bWasHoldingSpeed)
-//				{
-//					pPlayer.PlayGameSound("HL2Player.SprintStart");
-//				}
-//			}
-//			else
-//			{
-//				pPlayer.SetMaxSpeed(190.0);
-//			}
-//			
-//			CBaseCombatWeapon pWeapon = view_as<CBaseCombatWeapon>(pPlayer.GetActiveWeapon());
-//			if (pWeapon.IsValid())
-//			{
-//				if (bIsHoldingSpeed && bWasHoldingSpeed && bIsMoving && bWasMoving)
-//					SetWeaponAnimation(pWeapon.GetEntIndex(), ACT_VM_SPRINT_IDLE);
-//				else if ((!bIsHoldingSpeed && bWasHoldingSpeed && bIsMoving) || (bIsHoldingSpeed && !bIsMoving && bWasMoving))
-//					SetWeaponAnimation(pWeapon.GetEntIndex(), ACT_VM_SPRINT_LEAVE);	
-//			}
-//		}
-//		else
-//		{
-//			if(pPlayer.GetTeam() != TEAM_SPECTATOR && GetGameTime() - pPlayer.GetDeathTime() > 1.0)
-//			{
-//				int iPressed = pPlayer.GetPressedButtons();
-//				if(iPressed != 0 && iPressed != IN_SCORE)
-//				{
-//					DispatchSpawn(iClient);
-//				}
-//			}
-//		}
-//	}
-//}
-
 public MRESReturn Hook_FAllowFlashlight(Handle hReturn, Handle hParams)		// enable sp flashlight
 {
 	DHookSetReturn(hReturn, true);
@@ -616,25 +505,18 @@ public void Hook_CameraDeathSpawn(int iEntIndex)
 	}
 }
 
-//public void Hook_Use(int entity, int activator, int caller, UseType type, float value)
-//{
-//	if (g_pCoopManager.IsFeaturePatchingEnabled())
-//	{
-//		CBlackMesaPlayer pPlayer = CBlackMesaPlayer(caller);
-//		if (pPlayer.IsValid() && pPlayer.IsAlive())
-//		{
-//			CBaseEntity pEntity = CBaseEntity(entity);
-//			if(g_pLevelLump.m_bInstanceItems && pEntity.IsPickupItem())
-//			{
-//				if(g_pInstancingManager.HasPickedUpItem(pPlayer, pEntity))
-//				{
-//					return;
-//				}
-//			}
-//			SetPlayerPickup(pPlayer.GetEntIndex(), entity, true);
-//		}
-//	}
-//}
+public Action Hook_PlayerTakeDamage(int victim, int &attacker, int &inflictor, float &damage, int &damagetype)
+{
+	if(g_pCoopManager.IsCoopModeEnabled())
+	{
+		CBlackMesaPlayer pAttacker = CBlackMesaPlayer(attacker);
+		if(pAttacker.IsClassPlayer())
+		{
+			return Plugin_Handled;
+		}
+	}
+	return Plugin_Continue;
+}
 
 // todo read this later
 // http://cdn.akamai.steamstatic.com/steam/apps/362890/manuals/bms_workshop_guide.pdf?t=1431372141

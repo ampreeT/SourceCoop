@@ -11,14 +11,6 @@
 #define FROZEN_FADE_DUR_OUT 1500
 #define SND_TICK "bms_objects/clickbeep/click1.wav"
 
-enum struct FireOutputData
-{
-	char m_szName[MAX_KEY];
-	CBaseEntity m_pCaller;
-	CBaseEntity m_pActivator;
-	float m_flDelay;
-}
-
 enum struct CoopManager
 {
 	bool m_bIsCoopMap;
@@ -33,11 +25,21 @@ enum struct CoopManager
 		this.m_pDelayedOutputs = new Array_t(CreateArray(sizeof(FireOutputData)));
 	}
 	
-	void OnMapStart()
+	void MapReset(bool bIsCoopMap)
 	{
+		this.m_pDelayedOutputs.Clear();
 		this.m_pStartTimer = null;
 		this.m_bStarted = false;
 		this.m_bPlayerSpawned = false;
+		this.m_bIsCoopMap = bIsCoopMap;
+		if(bIsCoopMap && this.ShouldResetGlobalStates())
+		{
+			g_ServerGameDLL.GameShutdown();
+		}
+	}
+	
+	void OnMapStart()
+	{
 		PrecacheSound(SND_TICK);
 		
 		if (this.m_bIsCoopMap) // cvars are not configured yet
@@ -218,14 +220,10 @@ CoopManager g_pCoopManager;
 public Action OnLevelInit(const char[] szMapName, char szMapEntities[2097152])		// you probably need to incease SlowScriptTimeout in core.cfg
 {
 	strcopy(g_szMapName, sizeof(g_szMapName), szMapName);
-	g_pCoopManager.m_bIsCoopMap = g_pLevelLump.IsCoopMap(szMapName);
-	g_pCoopManager.m_pDelayedOutputs.Clear();
+	g_pCoopManager.MapReset(g_pLevelLump.IsCoopMap(szMapName));
 	g_pLevelLump.Clear();
 	if (g_pCoopManager.IsCoopModeEnabled())
 	{
-		if(g_pCoopManager.ShouldResetGlobalStates())
-			g_ServerGameDLL.GameShutdown();
-		
 		g_pLevelLump.ParseMapEntities(szMapEntities);
 		g_pLevelLump.ParseConfigFile(szMapName);
 		g_pLevelLump.ToString(szMapEntities);

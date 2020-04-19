@@ -24,25 +24,6 @@ public MRESReturn Hook_UTIL_GetLocalPlayer(Handle hReturn)
 }
 
 //------------------------------------------------------
-// Player suit sounds
-//------------------------------------------------------
-public MRESReturn Hook_SetSuitUpdate(int _this, Handle hParams)		// suit sounds; should be implemented like the game's code
-{
-	if (g_pCoopManager.IsFeaturePatchingEnabled())
-	{
-		if (!DHookIsNullParam(hParams, 1))
-		{
-			char szName[MAX_FORMAT];
-			DHookGetParamString(hParams, 1, szName, sizeof(szName));
-			ClientCommand(_this, "speak %s", szName);	// probably too loud but i can't tell
-			LogDebug("Hook_SetSuitUpdate(...) called %s", szName);
-		}
-	}
-	
-	return MRES_Ignored;
-}
-
-//------------------------------------------------------
 // CNPC_Human_Scientist - npc_human_scientist
 // crash fix when getting scared
 //------------------------------------------------------
