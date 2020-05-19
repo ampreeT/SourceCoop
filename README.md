@@ -1,6 +1,6 @@
 # About
 This project aims to make Black Mesa campaign levels and other custom maps fully playable in multiplayer.  
-We do this by fixing and enabling features from the singleplayer version of the game. Maps are directly modified as they load on the server, so there's no need for players to redownload them.
+We do this by fixing and porting features from the singleplayer version of the game. Maps are directly modified as they load on the server, so there's no need for players to redownload them.
 Both linux and windows dedicated servers are supported.
 
 ## Features & fixes (not everything)
@@ -48,25 +48,27 @@ Both linux and windows dedicated servers are supported.
 	- need textures for this (they are on fpsbanana)
 - custom marine ai
 	- CBaseCombatCharacter::CalcWeaponProficiency(...) hook for accuracy
-- trigger_changelevel
-	- game code checks for g_pGameRules->IsDeathmatch(), overriding that to false crashes on changelevel, but at least its something (could explore crash dump on linux)
 - implement player thirdperson animations when not holding any weapon
 	- tried 2 options, both failed
 		- cannot do serverside animations, client seems to ignore everything even when m_bClientSideAnimation is false
 		- unable to recompile player models due to too many animation files overflow in studiomdl
 - find out if the 'admire hands' animation can be reenabled when picking up suit - guessing this has to do with sp/mp viewmodels
 - detour CBeam::RandomTargetname -> compare for !player -> return closest
-- no breakmodel gibs appear (MP issue)
+- no breakmodel gibs appear (BM MP issue)
 - checkpoint teleport should attempt to find free space if blocked
 - suit sound queue does not clear on death or spawn
+- barnacle grab range is larger than in sp?
+- add instancing for wall chargers
+- configurable spawn times
 
 ### feature
 - add a hardcore mode where map resets when everyone dies, disable respawning, put dead players on spectate
-- add some sort of agree-to-change voting / player counter / timer before switching to next map
 - xen portal checkpoint effect
 - allow configuring enabled features from edt configs
 
 ## Map issues
+-c1a1a
+	- lift wont go up again and kills players randomly
 - bm_c4a4a
 	- point_hurt (cyclone_hurt) has target !player (this picks first one)
 - xen maps

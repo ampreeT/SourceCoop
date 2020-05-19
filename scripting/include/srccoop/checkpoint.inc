@@ -3,9 +3,7 @@
 #endif
 #define _srccoop_checkpoint_included
 
-#define COOP_EQUIPMENT_DEFAULT_HEALTH 100
-#define COOP_EQUIPMENT_DEFAULT_ARMOR 0
-#define SND_BRINGALL "bms_objects/clickbeep/beep3.wav"
+#define SND_BRINGALL "xen.energy_hit"
 #define SND_PORTAL "xen.energy_hit"
 
 enum struct CCoopSpawnEntry
@@ -19,6 +17,7 @@ enum struct CCoopSpawnEntry
 	bool m_bHasPortal;
 	float m_vecPortalPosition[3];
 	bool m_bBringAllPlayers;
+	float m_fBringAllGraceRadius;
 	
 	void Initialize()
 	{
@@ -26,7 +25,7 @@ enum struct CCoopSpawnEntry
 		this.m_pFollowEnt = CBaseEntity(-1);
 	}
 	
-	bool TeleportPlayer(CBlackMesaPlayer pPlayer, bool bForceTeleport = false)
+	bool TeleportPlayer(CBlackMesaPlayer pPlayer, bool bForceTeleport = false, bool bCheckGraceRadius = false)
 	{
 		float vecPosition[3];
 		float vecAngles[3];
@@ -48,6 +47,14 @@ enum struct CCoopSpawnEntry
 		{
 			vecPosition = this.m_vecPosition;
 			vecAngles = this.m_vecAngles;
+		}
+		if(bCheckGraceRadius && this.m_fBringAllGraceRadius > 0)
+		{
+			float vecPlayerPos[3]; pPlayer.GetAbsOrigin(vecPlayerPos);
+			if(GetVectorDistance(vecPosition, vecPlayerPos) <= this.m_fBringAllGraceRadius)
+			{
+				return false;
+			}
 		}
 		CanTeleportResult res;
 		if((res = CanTeleportPlayer(pPlayer, vecPosition)) || bForceTeleport)
@@ -95,8 +102,8 @@ enum struct CCoopEquipment
 	{
 		this.m_pWeaponList.Clear();
 		this.m_bHasSuit = false;
-		this.m_iHealth = COOP_EQUIPMENT_DEFAULT_HEALTH;
-		this.m_iArmor = COOP_EQUIPMENT_DEFAULT_ARMOR;
+		this.m_iHealth = -1;
+		this.m_iArmor = -1;
 		
 		for (int i = 0; i < MAX_AMMO_TYPES; i++)
 		{
@@ -121,7 +128,7 @@ enum struct CCoopSpawn
 	}
 	void Initialize()
 	{
-		PrecacheSound(SND_BRINGALL);
+		PrecacheScriptSound(SND_BRINGALL);
 		PrecacheScriptSound(SND_PORTAL);
 		this.m_pCheckpointList = new Array_t(CreateArray(sizeof(CCoopSpawnEntry)));
 		if (!this.m_pCheckpointList.IsValid())
@@ -160,10 +167,14 @@ enum struct CCoopSpawn
 	}
 	void AddCheckpoint(CCoopSpawnEntry pCheckpoint)
 	{
-		this.m_pCheckpointList.PushArray(pCheckpoint);
+		int iIndex = this.m_pCheckpointList.PushArray(pCheckpoint);
 		if (pCheckpoint.m_pTriggerEnt.IsValid())
 		{
 			pCheckpoint.m_pTriggerEnt.HookOutput(pCheckpoint.m_szOutputName, Callback_Checkpoint, true);
+		}
+		else
+		{
+			this.ActivateCheckpoint(iIndex);
 		}
 	}
 	bool ActivateCheckpoint(int iIndex)
@@ -187,8 +198,8 @@ enum struct CCoopSpawn
 							CBlackMesaPlayer pPlayer = CBlackMesaPlayer(pp);
 							if(pPlayer.IsValid() && pPlayer.IsAlive())
 							{
-								pCheckpoint.TeleportPlayer(pPlayer);
-								pPlayer.PlaySound(SND_BRINGALL);
+								pCheckpoint.TeleportPlayer(pPlayer, _, true);
+								pPlayer.PlayGameSound(SND_BRINGALL);
 							}
 						}
 					}
@@ -200,8 +211,10 @@ enum struct CCoopSpawn
 	}
 	void SpawnPlayerEquipment(CBlackMesaPlayer pPlayer)
 	{
-		pPlayer.SetHealth(this.m_pDefaultEquipment.m_iHealth);
-		pPlayer.SetArmor(this.m_pDefaultEquipment.m_iArmor);
+		if(this.m_pDefaultEquipment.m_iHealth > 0)
+			pPlayer.SetHealth(this.m_pDefaultEquipment.m_iHealth);
+		if(this.m_pDefaultEquipment.m_iArmor > 0)
+			pPlayer.SetArmor(this.m_pDefaultEquipment.m_iArmor);
 		for (int i = 0; i < MAX_AMMO_TYPES; i++)
 		{
 			pPlayer.SetAmmoFromIndex(i, this.m_pDefaultEquipment.m_iAmmoCount[i]);
@@ -257,8 +270,6 @@ enum struct CCoopSpawn
 	}
 	void ParseConfigFile(const char[] szMapName)
 	{
-		this.Clear();
-		
 		char szMapPath[MAX_FORMAT];
 		if (!(BuildPath(Path_SM, szMapPath, sizeof(szMapPath), "data/srccoop/%s.edt", szMapName) && FileExists(szMapPath)))
 			ThrowError("Couldn't find map file %s", szMapName);
@@ -362,6 +373,10 @@ enum struct CCoopSpawn
 											{
 												pEntry.m_bBringAllPlayers = !!StringToInt(szValue);
 											}
+											else if (strcmp(szKey, "bringall_radius", false) == 0)
+											{
+												pEntry.m_fBringAllGraceRadius = StringToFloat(szValue);
+											}
 											else if (strcmp(szKey, "globalstate", false) == 0)
 											{
 												if(CGlobalState.GetState(szValue) != GLOBAL_ON)
@@ -378,9 +393,25 @@ enum struct CCoopSpawn
 													break;
 												}
 											}
+											else if (strcmp(szKey, "prevmap", false) == 0)
+											{
+												if(!StrEqualsRegex(szValue, g_szPrevMapName, false))
+												{
+													bEntryValid = false;
+													break;
+												}
+											}
+											else if (strcmp(szKey, "!prevmap", false) == 0)
+											{
+												if(StrEqualsRegex(szValue, g_szPrevMapName, false))
+												{
+													bEntryValid = false;
+													break;
+												}
+											}
 											else
 											{
-												ThrowError("Unknown parameter type %s", szKey);
+												ThrowError("Unknown checkpoint parameter type %s", szKey);
 											}
 										}
 									}

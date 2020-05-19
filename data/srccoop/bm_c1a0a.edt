@@ -37,6 +37,39 @@
 		{
 			"targetname"	"lift_block"
 		}
+		// prepare changelevel touch trigger
+		"modify"
+		{
+			"targetname" "bm_c1a0a_bm_c1a0b"
+			"add"
+			{
+				"StartDisabled" "1"
+				"spawnflags" "0"
+			}
+			"functions"
+			{
+				"copy_model"
+				{
+					"classname" "trigger_transition"
+					"targetname" "bm_c1a0a_bm_c1a0b_lm"
+				}
+			}
+		}
+		"modify"
+		{
+			"outputs"
+			{
+				"modify"
+				{
+					"target" "bm_c1a0a_bm_c1a0b"
+					"input" "ChangeLevel"
+					"replace"
+					{
+						"input" "Enable"
+					}
+				}
+			}
+		}
 	}
 	"checkpoint"
 	{
@@ -63,6 +96,14 @@
 			"triggerid"	"door_02_btm"
 			"output"	"OnFullyClosed"
 			"portal"	"272 272 549"
+		}
+		"elevatorroom"
+		{
+			"origin"	"-1329 2497 297"
+			"angles"	"0 270 0"
+			"triggerid"	"lab1_door1a"
+			"output"	"OnFullyClosed"
+			"portal"	"-1328 2908 357"
 		}
 	}
 }

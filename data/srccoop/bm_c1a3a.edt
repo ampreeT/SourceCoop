@@ -20,7 +20,7 @@
 				"delay_output" "OnTrigger"
 			}
 		}
-		// motion disable spawn items
+		// spawn items
 		"modify"
 		{
 			"targetname" "/suit|weapons|ammo/"
@@ -28,7 +28,8 @@
 			{
 				"spawnflags"
 				{
-					"add" "2"
+					"add" "2" // motion disabled
+					"add" "8" // silent pickup
 				}
 			}
 		}
@@ -46,6 +47,25 @@
 				"remove" {}
 			}
 		}
+		// stop the elevator at changelevel
+		"modify"
+		{
+			"classname" "path_track"
+			"targetname" "p2"
+			"add"
+			{
+				"origin" "768 -2400 246"
+			}
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnPass"
+					"target" "eb"
+					"input" "kill"
+				}
+			}
+		}
 		// turn changelevel trig into invisible wall
 		"modify"
 		{
@@ -57,7 +77,7 @@
 				"rendermode" "10" // dont render
 			}
 		}
-		// add items and weapons to equip when returning form c1a3c
+		// add items and weapons to equip when returning from c1a3c
 		"create"
 		{
 			"classname" "item_suit"
@@ -132,6 +152,15 @@
 			"globalstate" "c1a3c_c1a3a"
 			"OnMapSpawn" "transition_dooropenKill0-1"
 		}
+		// block going past changelevel area
+		"modify"
+		{
+			"targetname" "/^c1a4a_plank/"
+			"add"
+			{
+				"minhealthdmg" "999999"
+			}
+		}
 	}
 	"checkpoint"
 	{
@@ -164,6 +193,17 @@
 			"angles"	"0 270 0"
 			"triggerid" "RescuedAtLast_trig03"
 			"output"	"OnTrigger"
+		}
+		"endlift"
+		{
+			"!globalstate" "c1a3c_c1a3a"
+			"origin"	"0 0 20"
+			"angles"	"0 0 0"
+			"followid"	"AToBElev"
+			"portal"	"768 -2208 -284"
+			"triggerid" "eb"
+			"output"	"OnPressed"
+			"delay"		"3"
 		}
 		
 		// return from bm_c1a3c

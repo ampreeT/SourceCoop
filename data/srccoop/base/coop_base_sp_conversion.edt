@@ -8,6 +8,7 @@
 	"console"
 	{
 		"mp_falldamage" "1"
+		"bm_multiplayer_fall_protection" "1"
 		"sv_mp_spawneffect_item" "0"
 	}
 	"entity_base_sp_conversion"
@@ -60,21 +61,6 @@
 						"parameter" "!pvsplayer"
 					}
 				}
-			}
-		}
-		"modify"
-		{
-			"classname" "env_mortar_launcher"
-			"target" "!player"
-			"add"
-			{
-				"target" "!pvsplayer" // todo: check if this works
-			}
-		}
-		"modify"
-		{
-			"outputs"
-			{
 				// player_speedmod normally accepts the activator. In maps made for SP, we want all players to be affected. New input ModifySpeedAll has been added for that purpose.
 				"modify"
 				{
@@ -111,6 +97,21 @@
 					}
 				}
 			}
+		}
+		// todo: check if this works
+		"modify"
+		{
+			"classname" "env_mortar_launcher"
+			"target" "!player"
+			"add"
+			{
+				"target" "!pvsplayer" 
+			}
+		}
+		// Unwanted and bugs players
+		"remove"
+		{
+			"classname" "player_loadsaved"
 		}
 	}
 }

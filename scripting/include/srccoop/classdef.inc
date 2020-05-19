@@ -374,6 +374,14 @@ methodmap CChangelevel < CBaseTrigger
 	{
 		return view_as<bool>(GetEntPropString(this.GetEntIndex(), Prop_Data, "m_szMapName", szBuffer, iMaxLength));
 	}
+	
+	public void ChangeLevelNow()
+	{
+		char szMapName[MAX_MAPNAME];
+		this.GetMapName(szMapName, sizeof(szMapName));
+		this.FireOutput("OnChangeLevel");
+		ForceChangeLevel(szMapName, SM_NORMAL_MAPCHANGE);
+	}
 }
 
 methodmap CSceneEntity < CBaseEntity

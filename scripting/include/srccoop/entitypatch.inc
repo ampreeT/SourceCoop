@@ -129,13 +129,20 @@ public MRESReturn Hook_FindNamedEntity(int _this, Handle hReturn, Handle hParams
 //------------------------------------------------------
 // CChangelevel
 //------------------------------------------------------
-public bool ChangeLevelToNextMap(CChangelevel pChangelevel)
+bool ChangeLevelTriggered(CChangelevel pChangelevel, CBlackMesaPlayer pActivator)
 {
 	char szMapName[MAX_MAPNAME];
 	if (pChangelevel.GetMapName(szMapName, sizeof(szMapName)) && g_pLevelLump.m_pNextMapList.IsInMapList(szMapName))
 	{
-		pChangelevel.FireOutput("OnChangeLevel");
-		ForceChangeLevel(szMapName, SM_NORMAL_MAPCHANGE);
+		if(pActivator.IsClassPlayer())
+		{
+			g_pCoopManager.OnTouchChangeLevel(pChangelevel, pActivator);
+		}
+		else
+		{
+			SDKUnhook(pChangelevel.GetEntIndex(), SDKHook_Touch, Hook_ChangelevelOnTouch);
+			pChangelevel.ChangeLevelNow();
+		}
 	}
 }
 
@@ -152,7 +159,7 @@ public void Hook_ChangelevelSpawn(int iEntIndex)
 
 public MRESReturn Hook_ChangelevelAcceptInput(int _this, Handle hReturn, Handle hParams)
 {
-	if (g_pCoopManager.IsBugPatchingEnabled())
+	if (g_pCoopManager.IsCoopModeEnabled())
 	{
 		if (!DHookIsNullParam(hParams, 1))
 		{
@@ -161,7 +168,7 @@ public MRESReturn Hook_ChangelevelAcceptInput(int _this, Handle hReturn, Handle 
 			if (strcmp(szInputType, "ChangeLevel") == 0)
 			{
 				CChangelevel pChangelevel = CChangelevel(_this);
-				ChangeLevelToNextMap(pChangelevel);
+				ChangeLevelTriggered(pChangelevel, CBlackMesaPlayer(-1));
 			}
 		}
 	}
@@ -171,14 +178,14 @@ public MRESReturn Hook_ChangelevelAcceptInput(int _this, Handle hReturn, Handle 
 
 public void Hook_ChangelevelOnTouch(int _this, int iOther)
 {
-	if (g_pCoopManager.IsBugPatchingEnabled())
+	if (g_pCoopManager.IsCoopModeEnabled())
 	{
 		CChangelevel pChangelevel = CChangelevel(_this);
 		CBlackMesaPlayer pPlayer = CBlackMesaPlayer(iOther);
 
-		if (pPlayer.IsValid() && pPlayer.IsClassPlayer())
+		if (pPlayer.IsValid())
 		{
-			ChangeLevelToNextMap(pChangelevel);
+			ChangeLevelTriggered(pChangelevel, pPlayer);
 		}
 	}
 }
@@ -420,6 +427,34 @@ public MRESReturn Hook_ClientCommandAcceptInput(int _this, Handle hReturn, Handl
 				bHookSkip = false;
 				DHookSetReturn(hReturn, true);
 				return MRES_Supercede;
+			}
+		}
+	}
+	return MRES_Ignored;
+}
+
+//------------------------------------------------------
+// point_servercommand
+// treat changelevel command as natural mapchange
+//------------------------------------------------------
+public MRESReturn Hook_ServerCommandAcceptInput(int _this, Handle hReturn, Handle hParams)
+{
+	if (g_pCoopManager.IsCoopModeEnabled())
+	{
+		if (!DHookIsNullParam(hParams, 1))
+		{
+			char szInputType[MAX_FORMAT];
+			DHookGetParamString(hParams, 1, szInputType, sizeof(szInputType));
+			if (strcmp(szInputType, "Command", false) == 0)
+			{
+				char szParam[MAX_FORMAT];
+				DHookGetParamObjectPtrString(hParams, 4, 0, ObjectValueType_String, szParam, sizeof(szParam));
+				if(strncmp(szParam, "changelevel ", 12, false) == 0)
+				{
+					ForceChangeLevel(szParam[12], SM_NORMAL_MAPCHANGE);
+					DHookSetReturn(hReturn, true);
+					return MRES_Supercede;
+				}
 			}
 		}
 	}

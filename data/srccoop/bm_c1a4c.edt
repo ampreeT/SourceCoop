@@ -1,0 +1,133 @@
+#base "base\bm_sp_campaign.edt"
+
+"config"
+{
+	"nextmap"	"bm_c1a4b"
+	"equipment"
+	{
+	}
+	"entity"
+	{
+		// spawn items
+		"modify"
+		{
+			"targetname" "c1a4c_equipment"
+			"flags"
+			{
+				"spawnflags"
+				{
+					"add" "2" // motion disabled
+					"add" "8" // silent pickup
+				}
+			}
+		}
+		// backtracking blocker
+		"add"
+		{
+			"classname" "func_brush"
+			"rendermode" "10" // dont render
+			"targetname" "_coop_return_blocker"
+			"functions"
+			{
+				"copy_model"
+				{
+					"classname" "trigger_changelevel"
+					"map" "bm_c1a4b"
+				}
+			}
+		}
+		// backtracking changelevel - start disabled
+		"modify"
+		{
+			"classname" "trigger_changelevel"
+			"map" "bm_c1a4b"
+			"add"
+			{
+				"StartDisabled" "1"
+			}
+		}
+		// allow return to previous map when we done here
+		"modify"
+		{
+			"targetname" "c1a4d_fuelroom_corridor_door"
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnOpen"
+					"target" "trigger_changelevel"
+					"input" "enable"
+				}
+				"add"
+				{
+					"output" "OnOpen"
+					"target" "_coop_return_blocker"
+					"input" "kill"
+				}
+			}
+		}
+		// dont close those doors
+		"modify"
+		{
+			"targetname" "c1a4e_ventilation_entrance_door_button"
+			"outputs"
+			{
+				"remove"
+				{
+					"target" "c1a4e_ventilation_side_door"
+				}
+			}
+		}
+		// triggers closing c1a4e_ventilation_entrance_door
+		"delete"
+		{
+			"targetname" "trigger_ventilation_doors_CLOSE"
+		}
+		"delete"
+		{
+			"hammerid" "2765061"
+			"classname" "trigger_once"
+		}
+		// dont stop ambient sounds
+		"modify"
+		{
+			"targetname" "/relaybranch_snds_servicehallway|relaybranch_snds_sewer_s1a|relaybranch_snds_sewer_s1b|relaybranch_snds_sewer_s2/"
+			"outputs"
+			{
+				"remove"
+				{
+					"output" "OnFalse"
+				}
+			}
+		}
+	}
+	"checkpoint"
+	{
+		"spawn"
+		{
+			"origin"	"-2128 528 1356"
+			"angles"	"0 180 0"
+		}
+		"tunnel"
+		{
+			"origin"	"-3105 1342 -503"
+			"angles"	"0 180 0"
+			"triggerid"	"trigger_announcer_OFF"
+			"output"	"OnStartTouch"
+		}
+		"windtunnel"
+		{
+			"origin"	"-3220 -1305 -215"
+			"angles"	"0 90 0"
+			"triggerid"	"c1a4e_ventilation_entrance_door"
+			"output"	"OnFullyOpen"
+		}
+		"postvents"
+		{
+			"origin"	"-3779 -241 1260"
+			"angles"	"0 90 0"
+			"triggerid" "c1a4e_ventilation_grate"
+			"output"	"OnBreak"
+		}
+	}
+}

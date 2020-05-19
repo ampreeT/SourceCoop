@@ -8,7 +8,7 @@
 	}
 	"entity"
 	{
-		// motion disable spawn items
+		// spawn items
 		"modify"
 		{
 			"targetname" "/suit|weapons|ammo/"
@@ -16,7 +16,8 @@
 			{
 				"spawnflags"
 				{
-					"add" "2"
+					"add" "2" // motion disabled
+					"add" "8" // silent pickup
 				}
 			}
 		}
@@ -34,6 +35,60 @@
 		"delete"
 		{
 			"targetname" "conveyor_sounds"
+		}
+		// prepare changelevel for touch trigger
+		"modify"
+		{
+			"targetname" "c1a3b-c1a3c-elevator"
+			"add"
+			{
+				"lip" "-580"
+			}
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnOpen"
+					"target" "trigger_changelevel"
+					"input" "Enable"
+					"delay" "3"
+				}
+				"remove"
+				{
+					"output" "OnFullyOpen"
+					"target" "/c1a3b-c1a3c-elevator_doorleft|c1a3b-c1a3c-elevator_doorright/"
+				}
+			}
+		}
+		"modify"
+		{
+			"classname" "trigger_changelevel"
+			"map" "bm_c1a3c"
+			"add"
+			{
+				"StartDisabled" "1"
+			}
+			"functions"
+			{
+				"copy_model"
+				{
+					"classname" "trigger_transition"
+					"targetname" "bm_c1a3b-bm_c1a3c"
+				}
+			}
+		}
+		"modify"
+		{
+			"targetname" "top_button"
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnPressed"
+					"target" "!self"
+					"input" "lock"
+				}
+			}
 		}
 	}
 	"checkpoint"
@@ -63,6 +118,16 @@
 			"angles"	"0 90 0"
 			"triggerid" "sscape_b_centralshaft02"
 			"output"	"OnPlay"
+		}
+		"endelevator"
+		{
+			"origin"	"120 0 0"
+			"angles"	"0 0 0"
+			"followid"	"top_button"
+			"triggerid" "c1a3b-c1a3c-elevator"
+			"output"	"OnOpen"
+			"portal"	"424 1138 101"
+			"delay"		"2"
 		}
 	}
 }

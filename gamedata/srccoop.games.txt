@@ -140,6 +140,11 @@
 				"windows"	"50"
 				"linux"		"51"
 			}
+			"CBlackMesaPlayer::ChangeTeam"				// CBlackMesaPlayer::ChangeTeam(int, bool, bool)
+			{
+				"windows"	"444"
+				"linux"		"445"
+			}
 		}
 		"Functions"
 		{
@@ -324,6 +329,28 @@
 				"hooktype"	"entity"
 				"return"	"void"
 				"this"		"entity"
+			}
+			"CBlackMesaPlayer::ChangeTeam"
+			{
+				"offset"	"CBlackMesaPlayer::ChangeTeam"
+				"hooktype"	"entity"
+				"return"	"void"
+				"this"		"entity"
+				"arguments"
+				{
+					"iTeamNum"
+					{
+						"type"	"int"
+					}
+					"bAutoTeam"
+					{
+						"type"	"bool"
+					}
+					"bSilent"
+					{
+						"type"	"bool"
+					}
+				}
 			}
 			
 			//Detours

@@ -19,7 +19,7 @@
 				"rendermode" "10" // dont render
 			}
 		}
-		// motion disable spawn items
+		// spawn items
 		"modify"
 		{
 			"targetname" "items_at_start"
@@ -27,9 +27,49 @@
 			{
 				"spawnflags"
 				{
-					"add" "2"
+					"add" "2" // motion disabled
+					"add" "8" // silent pickup
 				}
 			}
+		}
+		// prepare changelevel for touch trigger
+		"modify"
+		{
+			"targetname" "change_c1a2b_c1a3a"
+			"add"
+			{
+				"spawnflags" "0"
+				"StartDisabled" "1"
+			}
+			"functions"
+			{
+				"copy_model"
+				{
+					"targetname" "trigger_c1a2c_c1a3a"
+				}
+			}
+		}
+		"modify"
+		{
+			"targetname" "trigger_c1a2c_c1a3a"
+			"outputs"
+			{
+				"modify"
+				{
+					"target" "change_c1a2b_c1a3a"
+					"input" "ChangeLevel"
+					"replace"
+					{
+						"input" "Enable"
+					}
+				}
+			}
+		}
+		// fucking barnacles man
+		"delete"
+		{
+			"classname" "npc_barnacle"
+			"hammerid" "3308578"
 		}
 	}
 	"checkpoint"

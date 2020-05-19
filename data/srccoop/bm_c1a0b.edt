@@ -16,7 +16,7 @@
 				"delay_output" "OnMapSpawn"
 			}
 		}
-		// motion disable spawn items
+		// spawn items
 		"modify"
 		{
 			"targetname" "suit"
@@ -24,7 +24,8 @@
 			{
 				"spawnflags"
 				{
-					"add" "2"
+					"add" "2" // motion disabled
+					"add" "8" // silent pickup
 				}
 			}
 		}
@@ -68,6 +69,19 @@
 		"delete"
 		{
 			"targetname" "relay_foyeridles_kill"
+		}
+		// force shut the airlock doors instead of using the blocker
+		"delete"
+		{
+			"targetname" "door_block"
+		}
+		"modify"
+		{
+			"targetname" "/chamber_airlocktop|chamber_airlockbot/"
+			"add"
+			{
+				"dmg" "50"
+			}
 		}
 		// cart push timeout - restart map
 		"modify"

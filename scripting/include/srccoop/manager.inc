@@ -11,49 +11,172 @@
 #define FROZEN_FADE_DUR_OUT 1500
 #define SND_TICK "bms_objects/clickbeep/click1.wav"
 
+
+enum struct ChangeLevelVoteLump
+{
+	CChangelevel m_pChangeLevel;
+	int votes;
+}
+
+methodmap ChangeLevelManager < Array_t
+{
+	public ChangeLevelManager()
+	{
+		return view_as<ChangeLevelManager>(CreateArray(sizeof(ChangeLevelVoteLump)));
+	}
+
+	public void UpdateVotes(int[] iClientVoteIndicies)
+	{
+		ChangeLevelVoteLump pChangeLvlLump;
+		for (int i = 0; i < this.Length; i++)
+		{
+			this.GetArray(i, pChangeLvlLump);
+			pChangeLvlLump.votes = 0;
+			for(int j = 1; j <= MaxClients; j++)
+			{
+				if(iClientVoteIndicies[j] == i) pChangeLvlLump.votes++;
+			}
+			this.SetArray(i, pChangeLvlLump);
+		}
+	}
+
+	public ChangeLevelManager Sorted()
+	{
+		ChangeLevelManager pClone = view_as<ChangeLevelManager>(this.Clone());
+		pClone.SortCustom(view_as<SortFuncADTArray>(ChangeLvlLumpSortFunc));
+		return pClone;
+	}
+
+	public void UpdateStatus(int iSecondsLeft)
+	{
+		char szMapName[MAX_MAPNAME], szDisplay[128];
+		Panel panel = new Panel();
+		
+		Format(szDisplay, sizeof(szDisplay), "Changing map.. (%d)", iSecondsLeft);
+		panel.SetTitle(szDisplay);
+
+		ChangeLevelManager pSorted = this.Sorted();
+		ChangeLevelVoteLump pChangeLvlLump;
+		
+		for (int i = 0; i < pSorted.Length; i++)
+		{
+			pSorted.GetArray(i, pChangeLvlLump);
+			if(pChangeLvlLump.m_pChangeLevel.IsValid())
+			{
+		 		pChangeLvlLump.m_pChangeLevel.GetMapName(szMapName, sizeof(szMapName));
+				Format(szDisplay, sizeof(szDisplay), "%s (%d players)", szMapName, pChangeLvlLump.votes);
+				panel.DrawItem(szDisplay);
+			}
+		}
+		
+		for(int i = 1; i <= MaxClients; i++)
+		{
+			if(IsClientInGame(i))
+				panel.Send(i, ChangeLevelStatusPanelCallback, 1);
+		}
+		
+		delete panel;
+		delete pSorted;
+	}
+
+	public bool SetPlayerVote(CChangelevel pChangelevel, CBlackMesaPlayer pPlayer, int[] iClientVoteIndicies)
+	{
+		int iPlayer = pPlayer.GetEntIndex();
+		ChangeLevelVoteLump pChangeLvlLump;
+		for (int i = 0; i < this.Length; i++)
+		{
+			if(this.GetArray(i, pChangeLvlLump) && pChangeLvlLump.m_pChangeLevel == pChangelevel)
+			{
+				if(iClientVoteIndicies[iPlayer] != i)
+				{
+					iClientVoteIndicies[iPlayer] = i;
+					this.UpdateVotes(iClientVoteIndicies);
+					return true;
+				}
+				return false;
+			}
+		}
+		pChangeLvlLump.m_pChangeLevel = pChangelevel;
+		iClientVoteIndicies[iPlayer] = this.PushArray(pChangeLvlLump);
+		this.UpdateVotes(iClientVoteIndicies);
+		return true;
+	}
+	
+	public void End()
+	{
+		ChangeLevelManager pSorted = this.Sorted();
+		ChangeLevelVoteLump pChangeLvlLump;
+		pSorted.GetArray(0, pChangeLvlLump);
+		pChangeLvlLump.m_pChangeLevel.ChangeLevelNow();
+		delete pSorted;
+	}
+}
+
+public int ChangeLvlLumpSortFunc(int index1, int index2, ArrayList array, Handle hndl)
+{
+	ChangeLevelVoteLump item1, item2; array.GetArray(index1, item1); array.GetArray(index2, item2);
+	if(item1.votes < item2.votes)
+		return 1;
+	if(item2.votes < item1.votes)
+		return -1;
+	return 0;
+}
+
+public int ChangeLevelStatusPanelCallback(Menu menu, MenuAction action, int param1, int param2) {}
+
 enum struct CoopManager
 {
 	bool m_bIsCoopMap;
 	bool m_bStarted;
 	bool m_bPlayerSpawned;
 	int m_iSecondsToStart;
+	bool m_bGetReadyTimer;
 	Handle m_pStartTimer;
 	Array_t m_pDelayedOutputs;
-	
+	ChangeLevelManager m_pChangeLevelMgr;
+	int m_iClientChangeLvlIndicies[MAXPLAYERS+1];
+	Handle m_pChangeLevelTimer;
+	int m_iTicksToEnd;
+
 	void Initialize()
 	{
 		this.m_pDelayedOutputs = new Array_t(CreateArray(sizeof(FireOutputData)));
+		this.m_pChangeLevelMgr = new ChangeLevelManager();
 	}
-	
+
 	void MapReset(bool bIsCoopMap)
 	{
 		this.m_pDelayedOutputs.Clear();
 		this.m_pStartTimer = null;
+		this.m_pChangeLevelTimer = null;
+		this.m_bGetReadyTimer = false;
 		this.m_bStarted = false;
 		this.m_bPlayerSpawned = false;
 		this.m_bIsCoopMap = bIsCoopMap;
+		this.m_pChangeLevelMgr.Clear();
+		for(int i = 0; i <= MaxClients; i++)
+		{
+			this.m_iClientChangeLvlIndicies[i] = -1;
+		}
 		if(bIsCoopMap && this.ShouldResetGlobalStates())
 		{
 			g_ServerGameDLL.GameShutdown();
 		}
 	}
-	
+
 	void OnMapStart()
 	{
 		PrecacheSound(SND_TICK);
-		
+
+		g_SpawnSystem.Clear();
 		if (this.m_bIsCoopMap) // cvars are not configured yet
 		{
 			CBM_MP_GameRules.SetStateIsInIntermission(STATE_WARMUP, false);
 			CBM_MP_GameRules.SetStateEndTime(STATE_WARMUP, GetGameTime() + 60 * 60 * 24 * 7);
 			g_SpawnSystem.ParseConfigFile(g_szMapName);
 		}
-		else
-		{
-			g_SpawnSystem.Clear();
-		}
 	}
-	
+
 	void OnClientPutInServer(int client)
 	{
 		if (this.IsCoopModeEnabled())
@@ -61,14 +184,15 @@ enum struct CoopManager
 			this.CheckStart();
 		}
 	}
-	
+
 	void OnPlayerSpawned(CBlackMesaPlayer pPlayer)
 	{
 		if(this.IsCoopModeEnabled())
 		{
-			g_SpawnSystem.SpawnPlayer(pPlayer);
-			
-			if(pPlayer.IsAlive())
+			bool bActuallySpawned = pPlayer.IsAlive();
+			g_SpawnSystem.SpawnPlayer(pPlayer, bActuallySpawned);
+
+			if(bActuallySpawned)
 			{
 				this.m_bPlayerSpawned = true;
 				if(!this.m_bStarted)
@@ -88,51 +212,67 @@ enum struct CoopManager
 			}
 		}
 	}
-	
+
 	void CheckStart()
 	{
 		if(!this.m_bStarted && this.m_bPlayerSpawned)
 		{
 			if(this.IsAllowedToStart())
 			{
-				delete this.m_pStartTimer;
-				this.Start();
+				if(this.IsInCountDownPeriod())
+				{
+					if(!this.m_bGetReadyTimer)
+					{
+						delete this.m_pStartTimer;
+						this.StartCountdown(true);
+					}
+				}
+				else
+				{
+					this.Start();
+				}
 			}
 			else if(!this.IsInCountDownPeriod())
 			{
-				this.m_iSecondsToStart = g_pConvarWaitPeriod.IntValue;
-				CBM_MP_GameRules.SetStateEndTime(STATE_WARMUP, GetGameTime() + this.m_iSecondsToStart + 1.05);
-				this.m_pStartTimer = CreateTimer(1.0, StartTimerCallback, _, TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT);
+				this.StartCountdown(false);
 			}
 		}
 	}
-	
+
+	void StartCountdown(bool bGetReadyTimer)
+	{
+		this.m_bGetReadyTimer = bGetReadyTimer;
+		this.m_iSecondsToStart = bGetReadyTimer? 3 : g_pConvarWaitPeriod.IntValue;
+		CBM_MP_GameRules.SetStateEndTime(STATE_WARMUP, GetGameTime() + this.m_iSecondsToStart + 1.1);
+		this.m_pStartTimer = CreateTimer(1.0, StartTimerCallback, _, TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT);
+	}
+
 	bool IsInCountDownPeriod()
 	{
 		return this.m_pStartTimer != null;
 	}
-	
+
 	bool IsAllowedToStart()
 	{
-		return this.m_pDelayedOutputs.Length == 0 || (GetRealClientCount(false) - GetRealClientCount(true)) == 0;
+		return (g_pLevelLump.m_iIntroType == INTRO_NONE && this.m_pDelayedOutputs.Length == 0) || (GetRealClientCount(false) - GetRealClientCount(true)) == 0;
 	}
-	
+
 	void Start()
 	{
 		CBM_MP_GameRules.SetStateEndTime(STATE_WARMUP, GetGameTime() + 60 * 60 * 24 * 7); // STATE_WARMUP is what the server still counts with!
-		
+
 		if(!GetRealClientCount(true)) {
 			return;
 		}
-		
+
 		ConVar timelimit = FindConVar("mp_timelimit");
 		CBM_MP_GameRules.SetCurrentState(STATE_ROUND); // doesnt actually restart, just switches the client hud
 		CBM_MP_GameRules.SetStateEndTime(STATE_ROUND, GetGameTime() + timelimit.FloatValue); // this is what is displayed on client, nothing happens when it runs out, we may have to handle that
 		delete timelimit;
-		
+
 		this.m_bStarted = true;
 		PrintToServer("Co-op map %s has begun", g_szMapName);
-		
+
 		if(g_pLevelLump.m_iIntroType == INTRO_FADE || g_pLevelLump.m_iIntroType == INTRO_FREEZE)
 		{
 			for(int i = 1; i <= MaxClients; i++)
@@ -148,7 +288,7 @@ enum struct CoopManager
 				}
 			}
 		}
-		
+
 		// Fire delayed outputs
 		for (int i = 0; i < this.m_pDelayedOutputs.Length; i++)
 		{
@@ -156,7 +296,7 @@ enum struct CoopManager
 			if(pFireOutputData.m_pCaller.IsValid())
 			{
 				FireEntityOutput(pFireOutputData.m_pCaller.GetEntIndex(), pFireOutputData.m_szName, pFireOutputData.m_pActivator.GetEntIndex(), pFireOutputData.m_flDelay);
-				
+
 				if(pFireOutputData.m_pCaller.IsClassname("trigger_once"))
 				{
 					pFireOutputData.m_pCaller.SetNextThinkTick(GetGameTickCount()+1); // allow to kill itself
@@ -164,12 +304,47 @@ enum struct CoopManager
 			}
 		}
 	}
+
+	void OnTouchChangeLevel(CChangelevel pChangelevel, CBlackMesaPlayer pActivator)
+	{
+		if(this.m_pChangeLevelTimer == null)
+		{
+			this.m_iTicksToEnd = g_pConvarEndWaitPeriod.IntValue;
+			this.m_pChangeLevelTimer = CreateTimer(this.GetChangeLevelTimerInterval(), ChangeLevelTimerCallback, _, TIMER_FLAG_NO_MAPCHANGE);
+		}
+		if(this.m_pChangeLevelMgr.SetPlayerVote(pChangelevel, pActivator, this.m_iClientChangeLvlIndicies))
+		{
+			this.m_pChangeLevelMgr.UpdateStatus(this.m_iTicksToEnd);
+		}
+	}
 	
+	float GetChangeLevelTimerInterval()
+	{
+		int votes = -1; // dont cut time off for first player that finished
+		for(int j = 1; j <= MaxClients; j++)
+		{
+			if(this.m_iClientChangeLvlIndicies[j] != -1) votes++;
+		}
+		
+		int iPlayerCount = GetRealClientCount(true) - 1; // take off the 1 that we did with votes
+		if(iPlayerCount < 1)
+		{
+			return 0.0;
+		}
+		if(votes < 1)
+		{
+			return 1.0;
+		}
+		
+		if(iPlayerCount < votes) iPlayerCount = votes;
+		return 1.0 - (1.0 / (iPlayerCount / float(votes))) * g_pConvarEndWaitFactor.FloatValue;
+	}
+
 	void AddDelayedOutput(FireOutputData pFireOutputData)
 	{
 		this.m_pDelayedOutputs.PushArray(pFireOutputData);
 	}
-	
+
 	bool ShouldResetGlobalStates()
 	{
 		// Return false if map was changed naturally, true if externally
@@ -184,7 +359,7 @@ enum struct CoopManager
 		}
 		return true;
 	}
-	
+
 	/**
 	* BugPatching = crashfixes or enhancements that don't affect MP gameplay
 	* Will currently return true regardless of map or mode
@@ -193,21 +368,21 @@ enum struct CoopManager
 	{
 		return true;
 	}
-	
+
 	/**
 	* Features = changes that reenable SP functionality which affects MP gameplay
-	* Will currently return false on non-coop maps 
+	* Will currently return false on non-coop maps
 	*/
 	bool IsFeaturePatchingEnabled()
 	{
 		return this.IsCoopModeEnabled();
 	}
-	
+
 	bool IsCoopModeEnabled()
 	{
 		return this.m_bIsCoopMap && this.IsPluginEnabled();
 	}
-	
+
 	bool IsPluginEnabled()
 	{
 		return g_pConvarCoopEnabled.BoolValue;
@@ -216,9 +391,10 @@ enum struct CoopManager
 
 CoopManager g_pCoopManager;
 
-#pragma dynamic 2097152 
+#pragma dynamic 2097152
 public Action OnLevelInit(const char[] szMapName, char szMapEntities[2097152])		// you probably need to incease SlowScriptTimeout in core.cfg
 {
+	strcopy(g_szPrevMapName, sizeof(g_szPrevMapName), g_szMapName);
 	strcopy(g_szMapName, sizeof(g_szMapName), szMapName);
 	g_pCoopManager.MapReset(g_pLevelLump.IsCoopMap(szMapName));
 	g_pLevelLump.Clear();
@@ -228,7 +404,7 @@ public Action OnLevelInit(const char[] szMapName, char szMapEntities[2097152])		
 		g_pLevelLump.ParseConfigFile(szMapName);
 		g_pLevelLump.ToString(szMapEntities);
 	}
-	
+
 	return Plugin_Changed;
 }
 
@@ -236,10 +412,30 @@ public Action StartTimerCallback(Handle pTimer)
 {
 	if(!g_pCoopManager.m_iSecondsToStart--)
 	{
-		g_pCoopManager.m_pStartTimer = null;
-		g_pCoopManager.Start();
+		if(g_pCoopManager.m_bGetReadyTimer)
+		{
+			g_pCoopManager.m_pStartTimer = null;
+			g_pCoopManager.Start();
+		}
+		else
+		{
+			g_pCoopManager.StartCountdown(true);
+		}
 		return Plugin_Stop;
 	}
 	EmitSoundToAll(SND_TICK);
 	return Plugin_Continue;
+}
+
+public Action ChangeLevelTimerCallback(Handle pTimer)
+{
+	if(!g_pCoopManager.m_iTicksToEnd--)
+	{
+		g_pCoopManager.m_pChangeLevelMgr.End();
+	}
+	else
+	{
+		g_pCoopManager.m_pChangeLevelMgr.UpdateStatus(g_pCoopManager.m_iTicksToEnd);
+		g_pCoopManager.m_pChangeLevelTimer = CreateTimer(g_pCoopManager.GetChangeLevelTimerInterval(), ChangeLevelTimerCallback, _, TIMER_FLAG_NO_MAPCHANGE);
+	}
 }

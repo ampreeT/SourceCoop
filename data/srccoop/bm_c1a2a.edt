@@ -18,7 +18,7 @@
 				"delay_output" "OnMapSpawn"
 			}
 		}
-		// motion disable spawn items
+		// spawn items
 		"modify"
 		{
 			"targetname" "items_at_start"
@@ -26,7 +26,8 @@
 			{
 				"spawnflags"
 				{
-					"add" "2"
+					"add" "2" // motion disabled
+					"add" "8" // silent pickup
 				}
 			}
 		}
@@ -79,6 +80,20 @@
 					{
 						"output" "OnStartTouch"
 					}
+				}
+			}
+		}
+		// block going past changelevel
+		"add"
+		{
+			"classname" "func_brush"
+			"rendermode" "10" // dont render
+			"functions"
+			{
+				"copy_model"
+				{
+					"classname" "trigger_changelevel"
+					"map" "bm_c1a2b"
 				}
 			}
 		}

@@ -46,6 +46,31 @@
 				"loopmovesound" "0"
 			}
 		}
+		// fix tram-stuck when there are no players for trigger
+		"modify"
+		{
+			"outputs"
+			{
+				"remove"
+				{
+					"target" "sec_lock_scene"
+					"input" "Start"
+				}
+			}
+		}
+		"modify"
+		{
+			"targetname" "tram_track_139"
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnPass"
+					"target" "sec_lock_scene"
+					"input" "Start"
+				}
+			}
+		}
 	}
 	"checkpoint"
 	{

@@ -19,7 +19,7 @@
 				"delay_output" "OnNewGame"
 			}
 		}
-		// motion disable spawn items
+		// spawn items
 		"modify"
 		{
 			"targetname" "global_newgame_spawner_suit"
@@ -27,7 +27,8 @@
 			{
 				"spawnflags"
 				{
-					"add" "2"
+					"add" "2" // motion disabled
+					"add" "8" // silent pickup
 				}
 			}
 		}
@@ -49,6 +50,23 @@
 		"delete"
 		{
 			"hammerid" "3788238"
+		}
+		// prepare changelevel touch trigger
+		"modify"
+		{
+			"classname" "trigger_changelevel"
+			"map" "bm_c1a1c"
+			"add"
+			{
+				"targetname" ""
+			}
+			"functions"
+			{
+				"copy_model"
+				{
+					"hammerid" "3389674"
+				}
+			}
 		}
 	}
 	"checkpoint"

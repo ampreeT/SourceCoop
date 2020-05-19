@@ -18,9 +18,9 @@
 #include <srccoop/classdef.inc>
 #include <srccoop/utils.inc>
 
+#include <srccoop/globals.inc>
 #include <srccoop/levellump.inc>
 #include <srccoop/checkpoint.inc>
-#include <srccoop/globals.inc>
 #include <srccoop/manager.inc>
 #include <srccoop/entitypatch.inc>
 #include <srccoop/playerpatch.inc>

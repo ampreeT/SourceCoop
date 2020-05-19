@@ -19,7 +19,7 @@
 				"rendermode" "10" // dont render
 			}
 		}
-		// motion disable spawn items
+		// spawn items
 		"modify"
 		{
 			"targetname" "/suit|weapons/"
@@ -27,7 +27,8 @@
 			{
 				"spawnflags"
 				{
-					"add" "2"
+					"add" "2" // motion disabled
+					"add" "8" // silent pickup
 				}
 			}
 		}
@@ -45,6 +46,31 @@
 				"classname" "trigger_hurt"
 				"damage" "9999"
 				"damagetype" "32"
+			}
+		}
+		// block going past changelevel
+		"add"
+		{
+			"classname" "func_brush"
+			"rendermode" "10" // dont render
+			"functions"
+			{
+				"copy_model"
+				{
+					"targetname" "c1a1d_c1a1e_trigger"
+				}
+			}
+		}
+		"add"
+		{
+			"classname" "func_brush"
+			"rendermode" "10" // dont render
+			"functions"
+			{
+				"copy_model"
+				{
+					"targetname" "c1a1d_c1a1e_trigger_vent"
+				}
 			}
 		}
 	}

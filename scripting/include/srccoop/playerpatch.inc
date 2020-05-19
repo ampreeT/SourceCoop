@@ -101,6 +101,61 @@ public void Hook_PlayerSpawnPost(int iClient)
 	pPlayer.SetIsSprinting(false);
 	// Stop HEV sounds
 	StopSound(iClient, SNDCHAN_STATIC, szLastSuitSound[iClient]);
-	// NoBlock
-	pPlayer.SetCollisionGroup(COLLISION_GROUP_PUSHAWAY);
+}
+
+//------------------------------------------------------
+// Disable FF
+//------------------------------------------------------
+public Action Hook_PlayerTraceAttack(int victim, int &attacker, int &inflictor, float &damage, int &damagetype, int &ammotype, int hitbox, int hitgroup)
+{
+	if(g_pCoopManager.IsCoopModeEnabled())
+	{
+		if(attacker != victim && CBlackMesaPlayer(attacker).IsClassPlayer())
+		{
+			return Plugin_Handled;
+		}
+	}
+	return Plugin_Continue;
+}
+
+//------------------------------------------------------
+// Force everyone to one team in TDM
+//------------------------------------------------------
+public MRESReturn Hook_PlayerChangeTeam(int _this, Handle hParams)
+{
+	int iTeamNum = DHookGetParam(hParams, 1);
+	if(iTeamNum == TEAM_SCIENTIST || iTeamNum == TEAM_MARINES)
+	{
+		char szTeam[16]; g_pConvarCoopTeam.GetString(szTeam, sizeof(szTeam));
+		if(StrEqual(szTeam, "scientist", false))
+		{
+			if(iTeamNum == TEAM_MARINES)
+			{
+				DHookSetParam(hParams, 1, TEAM_SCIENTIST);
+				return MRES_ChangedHandled;
+			}
+		}
+		else if(StrEqual(szTeam, "marines", false))
+		{
+			if(iTeamNum == TEAM_SCIENTIST)
+			{
+				DHookSetParam(hParams, 1, TEAM_MARINES);
+				return MRES_ChangedHandled;
+			}
+		}
+	}
+	return MRES_Ignored;
+}
+
+//------------------------------------------------------
+// NoBlock
+//------------------------------------------------------
+public bool Hook_PlayerShouldCollide(int entity, int collisiongroup, int contentsmask, bool originalResult)
+{
+	//LogDebug("PlayerShouldCollide ent=%d cg=%d mask=%d original=%d", entity, collisiongroup, contentsmask, originalResult);
+	if(collisiongroup == COLLISION_GROUP_PLAYER || collisiongroup == COLLISION_GROUP_PLAYER_MOVEMENT)
+	{
+		return false;
+	}
+	return true;
 }

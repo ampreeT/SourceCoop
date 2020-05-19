@@ -8,7 +8,7 @@
 	}
 	"entity"
 	{
-		// motion disable spawn items
+		// spawn items
 		"modify"
 		{
 			"targetname" "/suit|weapons/"
@@ -16,7 +16,8 @@
 			{
 				"spawnflags"
 				{
-					"add" "2"
+					"add" "2" // motion disabled
+					"add" "8" // silent pickup
 				}
 			}
 		}
@@ -39,6 +40,33 @@
 				"remove"
 				{
 					"output" "OnEndTouch"
+				}
+			}
+		}
+		// prepare changelevel for touch trigger
+		"modify"
+		{
+			"targetname" "lift_transition_button"
+			"outputs"
+			{
+				"remove"
+				{}
+			}
+		}
+		"modify"
+		{
+			"targetname" "c1a1d_c1a2a_trigger"
+			"add"
+			{
+				"spawnflags" "0"
+				"targetname" ""
+			}
+			"functions"
+			{
+				"copy_model"
+				{
+					"targetname" "c1a1d_c1a2a_lm"
+					"classname" "trigger_transition"
 				}
 			}
 		}

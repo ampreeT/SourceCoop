@@ -8,7 +8,7 @@
 	}
 	"entity"
 	{
-		// motion disable spawn items
+		// spawn items
 		"modify"
 		{
 			"targetname" "/suit|weapons|ammo/"
@@ -16,7 +16,8 @@
 			{
 				"spawnflags"
 				{
-					"add" "2"
+					"add" "2" // motion disabled
+					"add" "8" // silent pickup
 				}
 			}
 		}
@@ -68,6 +69,20 @@
 					"target" "c1a3c_c1a3a_global"
 					"input" "TurnOn"
 					"delay" "-1"
+				}
+			}
+		}
+		// block going past changelevel
+		"add"
+		{
+			"classname" "func_brush"
+			"rendermode" "10" // dont render
+			"functions"
+			{
+				"copy_model"
+				{
+					"classname" "trigger_changelevel"
+					"map" "bm_c1a3a"
 				}
 			}
 		}

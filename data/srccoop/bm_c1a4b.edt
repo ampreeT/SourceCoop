@@ -1,0 +1,410 @@
+#base "base\bm_sp_campaign.edt"
+
+"config"
+{
+	"nextmap"	"bm_c1a4c"
+	"nextmap"	"bm_c1a4d"
+	"nextmap"	"bm_c1a4e"
+	"equipment"
+	{
+	}
+	"entity"
+	{
+		// spawn items
+		"modify"
+		{
+			"targetname" "c1a4b_equipment"
+			"flags"
+			{
+				"spawnflags"
+				{
+					"add" "2" // motion disabled
+					"add" "8" // silent pickup
+				}
+			}
+			"add"
+			{
+				"parentname" "c1a4a_elevatorprop"
+			}
+		}
+		// delay map start
+		"modify"
+		{
+			"classname" "logic_auto"
+			"hammerid" "3926566"
+			"functions"
+			{
+				"delay_output" "OnNewGame"
+			}
+		}
+		// no going back
+		"delete"
+		{
+			"targetname" "c1a4c_entry_button"
+		}
+		// dont close controlroom door
+		"modify"
+		{
+			"targetname" "c1a4c_controlroom_exit_door_button"
+			"outputs"
+			{
+				"remove"
+				{
+					"target" "c1a4c_controlroom_entry_door"
+					"input" "Close"
+				}
+			}
+		}
+		// turn reload trigger into kill trig
+		"modify"
+		{
+			"classname" "trigger_once"
+			"OnTrigger" "/^c1a4c_loadsavedReload/"
+			"set"
+			{
+				"classname" "trigger_hurt"
+				"damage"	"9999"
+				"damagetype" "32"
+			}
+		}
+		// dont gag tentacles
+		"modify"
+		{
+			"classname" "trigger_multiple"
+			"hammerid" "3928644"
+			"outputs"
+			{
+				"remove"
+				{
+					"input" "GagEnable"
+				}
+			}
+		}
+		// dont stop ambient sounds
+		"modify"
+		{
+			"targetname" "/relaybranch_snds_b_cor1_misc|relaybranch_snds_cor1a|relaybranch_snds_ccor1_s1|relaybranch_snds_ccor1_entryway|relaybranch_snds_entry_p2/"
+			"outputs"
+			{
+				"remove"
+				{
+					"output" "OnFalse"
+				}
+			}
+		}
+		// fix c1a4d - power teleporter
+		"modify"
+		{
+			"targetname" "c1a4c_power_button_out"
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnIn"
+					"target" "c1a4b_power_button"
+					"input" "Press"
+					"timestofire" "-1"
+				}
+			}
+			"flags"
+			{
+				"spawnflags"
+				{
+					"add" "2048" // starts locked
+				}
+			}
+		}
+		"modify"
+		{
+			"targetname" "c1a4c_power_cycle_relay"
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnTrigger"
+					"target" "c1a4c_power_button_out"
+					"input" "Unlock"
+					"delay" "5"
+					"timestofire" "-1"
+				}
+			}
+		}
+		"modify"
+		{
+			"targetname" "c1a4b_power_button_out"
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnIn"
+					"target" "c1a4c_power_button"
+					"input" "Press"
+					"timestofire" "-1"
+				}
+			}
+		}
+		"modify"
+		{
+			"targetname" "c1a4b_power_cycle_relay"
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnTrigger"
+					"target" "c1a4b_power_button_out"
+					"input" "Unlock"
+					"delay" "5"
+					"timestofire" "-1"
+				}
+			}
+		}
+		// fix c1a4c - oxy/fuel teleporter
+		"modify"
+		{
+			"targetname" "c1a4c_fuel_button_out"
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnIn"
+					"target" "c1a4b_fuel_button"
+					"input" "Press"
+					"timestofire" "-1"
+				}
+			}
+			"flags"
+			{
+				"spawnflags"
+				{
+					"add" "2048" // starts locked
+				}
+			}
+		}
+		"modify"
+		{
+			"targetname" "c1a4c_fuel_cycle_relay"
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnTrigger"
+					"target" "c1a4c_fuel_button_out"
+					"input" "Unlock"
+					"delay" "5"
+					"timestofire" "-1"
+				}
+			}
+		}
+		"modify"
+		{
+			"targetname" "c1a4b_fuel_button_out"
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnIn"
+					"target" "c1a4c_fuel_button"
+					"input" "Press"
+					"timestofire" "-1"
+				}
+			}
+		}
+		"modify"
+		{
+			"targetname" "c1a4b_fuel_cycle_relay"
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnTrigger"
+					"target" "c1a4b_fuel_button_out"
+					"input" "Unlock"
+					"delay" "5"
+					"timestofire" "-1"
+				}
+			}
+		}
+		// name changelevels
+		"modify"
+		{
+			"classname" "trigger_changelevel"
+			"map" "bm_c1a4c"
+			"add"
+			{
+				"targetname" "changelevel_bm_c1a4c"
+			}
+		}
+		"modify"
+		{
+			"classname" "trigger_changelevel"
+			"map" "bm_c1a4d"
+			"add"
+			{
+				"targetname" "changelevel_bm_c1a4d"
+			}
+		}
+		// block going past changelevels
+		"add"
+		{
+			"classname" "func_brush"
+			"rendermode" "10" // dont render
+			"functions"
+			{
+				"copy_model"
+				{
+					"targetname" "changelevel_bm_c1a4c"
+				}
+			}
+		}
+		"add"
+		{
+			"classname" "func_brush"
+			"rendermode" "10" // dont render
+			"functions"
+			{
+				"copy_model"
+				{
+					"targetname" "changelevel_bm_c1a4d"
+				}
+			}
+		}
+		// oxy/fuel (c1a4c) finished
+		"if"
+		{
+			"globalstate" "c1a4_objective_fuel"
+			"globalstate" "c1a4_objective_oxy"
+			
+			"delete"
+			{
+				"targetname" "changelevel_bm_c1a4c"
+			}
+			"delete"
+			{
+				"targetname" "c1a4b_airlock_zombie_01"
+			}
+			"delete" // plank barricade
+			{
+				"hammerid" "/3926516|3925459|3925455|3925451|3925447|3925515/"
+				"classname" "prop_physics"
+			}
+		}
+		// power (c1a4d) finished
+		"if"
+		{
+			"globalstate" "c1a4_objective_power"
+			
+			"delete"
+			{
+				"targetname" "changelevel_bm_c1a4d"
+			}
+			"delete"
+			{
+				"hammerid" "3922808"
+				"classname" "npc_bullsquid"
+			}
+			"delete"
+			{
+				"hammerid" "3925011"
+				"classname" "npc_zombie_scientist"
+			}
+			"delete" // plank barricade
+			{
+				"hammerid" "/3925479|3925463|3925475|3925471|3925467|3926512/"
+				"classname" "prop_physics"
+			}
+		}
+		// At least one finished
+		"if"
+		{
+			"any"
+			{
+				"globalstate" "c1a4_objective_fuel"
+				"globalstate" "c1a4_objective_oxy"
+				"globalstate" "c1a4_objective_power"
+			}
+			
+			"delete" // Be quiet
+			{
+				"hammerid" "3927666"
+				"classname" "trigger_once"
+			}
+			"delete" // Guard running out and dying
+			{
+				"hammerid" "3927671"
+				"classname" "trigger_once"
+			}
+			"add"
+			{
+				"classname" "logic_auto"
+				"spawnflags" "1"
+				"outputs"
+				{
+					"add"
+					{
+						"output" "OnMapSpawn"
+						"target" "c1a4c_controlroom_entry_door_button"
+						"input" "Lock"
+					}
+					"add"
+					{
+						"output" "OnMapSpawn"
+						"target" "c1a4c_controlroom_entry_door_button_sprite_green"
+						"input" "HideSprite"
+					}
+					"add"
+					{
+						"output" "OnMapSpawn"
+						"target" "c1a4c_controlroom_entry_door_button_sprite_red"
+						"input" "ShowSprite"
+					}
+					"add"
+					{
+						"output" "OnMapSpawn"
+						"target" "c1a4c_breakscript_relay"
+						"input" "Trigger"
+					}
+				}
+			}
+		}
+	}
+	"checkpoint"
+	{
+		"spawn"
+		{
+			"origin"	"0 0 30"
+			"angles"	"0 180 0"
+			"followid"	"c1a4a_elevatorprop"
+		}
+		"oxyreturn"
+		{
+			"prevmap"	"bm_c1a4c"
+			"origin"	"-2129 120 1352"
+			"angles"	"0 270 0"
+		}
+		"powerreturn"
+		{
+			"prevmap"	"bm_c1a4d"
+			"origin"	"-24 2128 1164"
+			"angles"	"0 180 0"
+		}
+		
+		"silo_entry_tp"
+		{
+			"origin"	"-1536 -2048 1548"
+			"angles"	"0 270 0"
+			"triggerid" "c1a4b_entry_cycle_relay"
+			"output"	"OnTrigger"
+			"delay"		"2"
+			"portal" 	"623 0 1572"
+		}
+		"burn_scene"
+		{
+			"origin"	"-2564 -2048 1612"
+			"angles"	"0 0 0"
+			"triggerid" "c1a4c_controlroom_firebutton"
+			"output"	"OnPressed"
+			"bringall"	"1"
+			"bringall_radius" "200"
+		}
+	}
+}

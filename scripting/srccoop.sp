@@ -9,7 +9,7 @@ public Plugin myinfo =
 	author = "ampreeT",
 	description = "SourceCoop",
 	version = "1.0.0",
-	url = ""
+	url = "https://github.com/ampreeT/SourceCoop"
 };
 
 void load_dhook_detour(const Handle pGameConfig, Handle& pHandle, const char[] szFuncName, DHookCallback pCallbackPre = INVALID_FUNCTION, DHookCallback pCallbackPost = INVALID_FUNCTION)
@@ -136,7 +136,8 @@ void load_gamedata()
 	load_dhook_virtual(pGameConfig, hkAcceptInput, "CBaseEntity::AcceptInput");
 	load_dhook_virtual(pGameConfig, hkOnTryPickUp, "CBasePickup::OnTryPickUp");
 	load_dhook_virtual(pGameConfig, hkThink, "CBaseEntity::Think");
-	load_dhook_detour(pGameConfig, hkSetSuitUpdate, "CBasePlayer::SetSuitUpdate", Hook_SetSuitUpdate, Hook_SetSuitUpdatePost);
+	load_dhook_virtual(pGameConfig, hkChangeTeam, "CBlackMesaPlayer::ChangeTeam");
+//	load_dhook_detour(pGameConfig, hkSetSuitUpdate, "CBasePlayer::SetSuitUpdate", Hook_SetSuitUpdate, Hook_SetSuitUpdatePost);
 	load_dhook_detour(pGameConfig, hkUTIL_GetLocalPlayer, "UTIL_GetLocalPlayer", Hook_UTIL_GetLocalPlayer);
 	load_dhook_detour(pGameConfig, hkResolveNames, "CAI_GoalEntity::ResolveNames", Hook_ResolveNames);
 	load_dhook_detour(pGameConfig, hkResolveNamesPost, "CAI_GoalEntity::ResolveNamesPost", _, Hook_ResolveNames);
@@ -149,7 +150,10 @@ public void OnPluginStart()
 	load_gamedata();
 	InitDebugLog("sm_coop_debug", "SRCCOOP", ADMFLAG_ROOT);
 	g_pConvarCoopEnabled = CreateConVar("sm_coop_enabled", "1", "Sets if coop is enabled on campaign maps");
-	g_pConvarWaitPeriod = CreateConVar("sm_coop_wait_period", "15.0", "The max number of seconds to wait since first player spawned in to start the map");
+	g_pConvarCoopTeam = CreateConVar("sm_coop_team", "scientist", "Sets which team to use in TDM mode. Valid values are [marines] or [scientist]. Setting anything else will not manage teams.");
+	g_pConvarWaitPeriod = CreateConVar("sm_coop_wait_period", "15.0", "The max number of seconds to wait since first player spawned in to start the map. The timer is skipped when all players enter the game.");
+	g_pConvarEndWaitPeriod = CreateConVar("sm_coop_end_wait_period", "60.0", "The max number of seconds to wait since first player triggered a changelevel. The timer speed increases each time a new player finishes the level.");
+	g_pConvarEndWaitFactor = CreateConVar("sm_coop_end_wait_factor", "1.0", "Controls how much the number of finished players increases the changelevel timer speed. 1.0 means full, 0 means none (timer will run full length).", _, true, 0.0, true, 1.0);
 	g_pLevelLump.Initialize();
 	g_SpawnSystem.Initialize();
 	g_pCoopManager.Initialize();
@@ -225,7 +229,9 @@ public void OnClientPutInServer(int client)
 	SDKHook(client, SDKHook_PreThinkPost, Hook_PlayerPreThinkPost);
 	SDKHook(client, SDKHook_PreThink, Hook_PlayerPreThink);
 	SDKHook(client, SDKHook_SpawnPost, Hook_PlayerSpawnPost);
-	SDKHook(client, SDKHook_OnTakeDamage, Hook_PlayerTakeDamage);
+	SDKHook(client, SDKHook_TraceAttack, Hook_PlayerTraceAttack);
+	SDKHook(client, SDKHook_ShouldCollide, Hook_PlayerShouldCollide);
+	DHookEntity(hkChangeTeam, false, client, _, Hook_PlayerChangeTeam);
 }
 
 public void OnClientDisconnect(int client)
@@ -307,6 +313,10 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 		else if (strcmp(szClassname, "point_clientcommand") == 0)
 		{
 			DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_ClientCommandAcceptInput);
+		}
+		else if (strcmp(szClassname, "point_servercommand") == 0)
+		{
+			DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_ServerCommandAcceptInput);
 		}
 		else if (strcmp(szClassname, "env_credits") == 0)
 		{
@@ -447,8 +457,8 @@ public void RequestStopThink(CBaseEntity pEntity)
 
 public Action Event_PlayerSpawnPost(Event hEvent, const char[] szName, bool bDontBroadcast)
 {
-	int iClientID = GetEventInt(hEvent, "userid");
-	CBlackMesaPlayer pPlayer = CBlackMesaPlayer(GetClientOfUserId(iClientID));
+	int iUserId = GetEventInt(hEvent, "userid");
+	CBlackMesaPlayer pPlayer = CBlackMesaPlayer(GetClientOfUserId(iUserId));
 	if (pPlayer.IsValid())
 	{
 		g_pCoopManager.OnPlayerSpawned(pPlayer);
@@ -503,19 +513,6 @@ public void Hook_CameraDeathSpawn(int iEntIndex)
 			}
 		}
 	}
-}
-
-public Action Hook_PlayerTakeDamage(int victim, int &attacker, int &inflictor, float &damage, int &damagetype)
-{
-	if(g_pCoopManager.IsCoopModeEnabled())
-	{
-		CBlackMesaPlayer pAttacker = CBlackMesaPlayer(attacker);
-		if(pAttacker.IsClassPlayer())
-		{
-			return Plugin_Handled;
-		}
-	}
-	return Plugin_Continue;
 }
 
 // todo read this later

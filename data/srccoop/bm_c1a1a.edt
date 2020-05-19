@@ -20,7 +20,7 @@
 				"delay_output" "OnMapSpawn"
 			}
 		}
-		// motion disable spawn items
+		// spawn items
 		"modify"
 		{
 			"targetname" "global_newgame_spawner_suit"
@@ -28,8 +28,30 @@
 			{
 				"spawnflags"
 				{
-					"add" "2"
+					"add" "2" // motion disabled
+					"add" "8" // silent pickup
 				}
+			}
+		}
+		// prepare changelevel touch trigger
+		"modify"
+		{
+			"classname" "trigger_changelevel"
+			"map" "bm_c1a1b"
+			"functions"
+			{
+				"copy_model"
+				{
+					"targetname" "cc_trig_ab_base"
+				}
+			}
+		}
+		"modify"
+		{
+			"targetname" "lift_endblocker"
+			"remove"
+			{
+				"targetname" ""
 			}
 		}
 	}

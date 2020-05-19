@@ -159,6 +159,39 @@ methodmap CEntityInfoLump < Array_t
 		}
 		return true;
 	}
+	
+	public void RemoveOrReplace(CEntityKeyLump pKeyInfo, bool replace)
+	{
+		for (int i = 0; i < this.Length; i++)
+		{
+			CEntityKeyLump pThisKeyInfo;
+			if (this.GetArray(i, pThisKeyInfo, sizeof(pThisKeyInfo)))
+			{
+				if (StrEqualsRegex(pKeyInfo.m_szKey, pThisKeyInfo.m_szKey, false))
+				{
+					this.Erase(i);
+					break;
+				}
+			}
+		}
+		if(replace)
+		{
+			this.PushArray(pKeyInfo, sizeof(pKeyInfo));
+		}
+	}
+	
+	public bool GetKey(const char[] szKey, CEntityKeyLump pKeyInfo)
+	{
+		for (int i = 0; i < this.Length; i++)
+		{
+			this.GetArray(i, pKeyInfo);
+			if (strcmp(pKeyInfo.m_szKey, szKey, false) == 0)
+			{
+				return true;
+			}
+		}
+		return false;
+	}
 }
 
 methodmap CEntityListLump < Array_t
@@ -223,7 +256,6 @@ methodmap CNextMapLump < Array_t
 				return true;
 			}
 		}
-		
 		return false;
 	}
 }
@@ -423,113 +455,7 @@ enum struct CGlobalLevelLump
 						else if (strcmp(szType, "entity") == 0 || StrContains(szType, "entity_base") == 0)
 						{
 							LogDebug("Processing \"%s\" block for entity lump modifications", szType);
-							if (kv.GotoFirstSubKey(true))
-							{
-								do
-								{
-									char szAction[MAX_KEY];
-									if (kv.GetSectionName(szAction, sizeof(szAction)))
-									{
-										bool add = IsAddSynonym(szAction);
-										bool remove = IsRemoveSynonym(szAction);
-										bool modify = IsModifySynonym(szAction);
-										if(!add && !remove && !modify) {
-											ThrowError("Unknown entity action \"%s\", expected one of add | remove | modify", szAction);
-										}
-										
-										if (add)
-										{
-											if (kv.GotoFirstSubKey(false))
-											{
-												CEntityInfoLump pEntityInfo = new CEntityInfoLump(CreateArray(sizeof(CEntityKeyLump)));
-												do
-												{
-													CEntityKeyLump pEntityKeyInfo;
-													if (kv.GetSectionName(pEntityKeyInfo.m_szKey, sizeof(pEntityKeyInfo.m_szKey)) && kv.GetDataType(NULL_STRING) != KvData_None)
-													{
-														kv.GetString(NULL_STRING, pEntityKeyInfo.m_szValue, sizeof(pEntityKeyInfo.m_szValue));
-														pEntityInfo.PushArray(pEntityKeyInfo);
-													}
-												}
-												while (kv.GotoNextKey(false));
-												kv.GoBack();
-												this.m_pEntityList.Push(pEntityInfo);
-												
-												// alow to directly use modify actions here
-												if (kv.GotoFirstSubKey(true))
-												{
-													CEntityListLump pEntityWrapperList = new CEntityListLump(CreateArray(sizeof(CEntityInfoLump)));
-													pEntityWrapperList.Push(pEntityInfo);
-													do
-													{
-														char szModifyType[MAX_KEY];
-														if (kv.GetSectionName(szModifyType, sizeof(szModifyType)))
-														{
-															this.ParseModifyAction(kv, szModifyType, pEntityWrapperList);
-														}
-													}
-													while (kv.GotoNextKey(true));
-													kv.GoBack();
-													pEntityWrapperList.Close();
-												}
-											}
-										}
-										else if (remove)
-										{
-											if (kv.GotoFirstSubKey(false))
-											{
-												CEntityInfoLump pEntityInfo = new CEntityInfoLump(CreateArray(sizeof(CEntityKeyLump)));
-												do
-												{
-													CEntityKeyLump pEntityKeyInfo;
-													if (kv.GetSectionName(pEntityKeyInfo.m_szKey, sizeof(pEntityKeyInfo.m_szKey)) && kv.GetDataType(NULL_STRING) != KvData_None)
-													{
-														kv.GetString(NULL_STRING, pEntityKeyInfo.m_szValue, sizeof(pEntityKeyInfo.m_szValue));
-														pEntityInfo.PushArray(pEntityKeyInfo);
-													}
-												}
-												while (kv.GotoNextKey(false));
-												kv.GoBack();
-												
-												for (int i = 0; i < this.m_pEntityList.Length; i++)
-												{
-													CEntityInfoLump pThisEntityInfo = this.m_pEntityList.Get(i);
-													if (pEntityInfo.Matches(pThisEntityInfo))
-													{
-														pThisEntityInfo.Close();
-														this.m_pEntityList.Erase(i);
-														i--;
-													}
-												}
-												pEntityInfo.Close();
-											}
-										}
-										else if (modify)
-										{
-											if (kv.GotoFirstSubKey(false))
-											{
-												CEntityListLump pTempEvaluatedList = this.EvaluateEntityList(kv);
-												if (pTempEvaluatedList.Length && kv.GotoFirstSubKey(true))
-												{
-													do
-													{
-														char szModifyType[MAX_KEY];
-														if (kv.GetSectionName(szModifyType, sizeof(szModifyType)))
-														{
-															this.ParseModifyAction(kv, szModifyType, pTempEvaluatedList);
-														}
-													}
-													while (kv.GotoNextKey(true));
-													kv.GoBack();
-												}
-												pTempEvaluatedList.Close();
-											}
-										}
-									}
-								}
-								while (kv.GotoNextKey(true));
-								kv.GoBack();
-							}
+							this.ParseEntityEdits(kv);
 						}
 					}
 				}
@@ -538,6 +464,185 @@ enum struct CGlobalLevelLump
 			kv.GoBack();
 		}
 		delete kv;
+	}
+	
+	bool ParseConditions(KeyValues kv, bool anyPass = false)
+	{
+		if (kv.GotoFirstSubKey(false))
+		{
+			char szCondition[MAX_KEY], szValue[MAX_VALUE];
+			bool bPassed = anyPass? false:true;
+			do
+			{
+				if (kv.GetSectionName(szCondition, sizeof(szCondition)))
+				{
+					kv.GetString(NULL_STRING, szValue, sizeof(szValue));
+					bool bResult = anyPass? false:true;
+					
+					if(StrEqual(szCondition, "any", false) && kv.GetDataType(NULL_STRING) == KvData_None)
+					{
+						bResult = this.ParseConditions(kv, true);
+					}
+					else if(StrEqual(szCondition, "globalstate", false))
+					{
+						bResult = CGlobalState.GetState(szValue) == GLOBAL_ON;
+					}
+					else if(StrEqual(szCondition, "!globalstate", false))
+					{
+						bResult = CGlobalState.GetState(szValue) != GLOBAL_ON;
+					}
+					
+					if(anyPass)
+					{
+						if(bResult)
+						{
+							bPassed = true;
+							break;
+						}
+					}
+					else // allPass
+					{
+						if(!bResult)
+						{
+							bPassed = false;
+							break;
+						}
+					}
+				}
+			}
+			while (kv.GotoNextKey(false));
+			
+			kv.GoBack();
+			if(bPassed)
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	void ParseEntityEdits(KeyValues kv)
+	{
+		if (kv.GotoFirstSubKey(true))
+		{
+			do
+			{
+				char szAction[MAX_KEY];
+				if (kv.GetSectionName(szAction, sizeof(szAction)))
+				{
+					if(StrEqual(szAction, "if", false))
+					{
+						if(this.ParseConditions(kv))
+						{
+							this.ParseEntityEdits(kv);
+						}
+						continue;
+					}
+					if(StrEqual(szAction, "any", false))
+					{
+						continue;
+					}
+					
+					bool add = IsAddSynonym(szAction);
+					bool remove = IsRemoveSynonym(szAction);
+					bool modify = IsModifySynonym(szAction);
+					if(!add && !remove && !modify) {
+						ThrowError("Unknown entity action \"%s\", expected one of add | remove | modify", szAction);
+					}
+					
+					if (add)
+					{
+						if (kv.GotoFirstSubKey(false))
+						{
+							CEntityInfoLump pEntityInfo = new CEntityInfoLump(CreateArray(sizeof(CEntityKeyLump)));
+							do
+							{
+								CEntityKeyLump pEntityKeyInfo;
+								if (kv.GetSectionName(pEntityKeyInfo.m_szKey, sizeof(pEntityKeyInfo.m_szKey)) && kv.GetDataType(NULL_STRING) != KvData_None)
+								{
+									kv.GetString(NULL_STRING, pEntityKeyInfo.m_szValue, sizeof(pEntityKeyInfo.m_szValue));
+									pEntityInfo.PushArray(pEntityKeyInfo);
+								}
+							}
+							while (kv.GotoNextKey(false));
+							kv.GoBack();
+							this.m_pEntityList.Push(pEntityInfo);
+							
+							// alow to directly use modify actions here
+							if (kv.GotoFirstSubKey(true))
+							{
+								CEntityListLump pEntityWrapperList = new CEntityListLump(CreateArray(sizeof(CEntityInfoLump)));
+								pEntityWrapperList.Push(pEntityInfo);
+								do
+								{
+									char szModifyType[MAX_KEY];
+									if (kv.GetSectionName(szModifyType, sizeof(szModifyType)))
+									{
+										this.ParseModifyAction(kv, szModifyType, pEntityWrapperList);
+									}
+								}
+								while (kv.GotoNextKey(true));
+								kv.GoBack();
+								pEntityWrapperList.Close();
+							}
+						}
+					}
+					else if (remove)
+					{
+						if (kv.GotoFirstSubKey(false))
+						{
+							CEntityInfoLump pEntityInfo = new CEntityInfoLump(CreateArray(sizeof(CEntityKeyLump)));
+							do
+							{
+								CEntityKeyLump pEntityKeyInfo;
+								if (kv.GetSectionName(pEntityKeyInfo.m_szKey, sizeof(pEntityKeyInfo.m_szKey)) && kv.GetDataType(NULL_STRING) != KvData_None)
+								{
+									kv.GetString(NULL_STRING, pEntityKeyInfo.m_szValue, sizeof(pEntityKeyInfo.m_szValue));
+									pEntityInfo.PushArray(pEntityKeyInfo);
+								}
+							}
+							while (kv.GotoNextKey(false));
+							kv.GoBack();
+							
+							for (int i = 0; i < this.m_pEntityList.Length; i++)
+							{
+								CEntityInfoLump pThisEntityInfo = this.m_pEntityList.Get(i);
+								if (pEntityInfo.Matches(pThisEntityInfo))
+								{
+									pThisEntityInfo.Close();
+									this.m_pEntityList.Erase(i);
+									i--;
+								}
+							}
+							pEntityInfo.Close();
+						}
+					}
+					else if (modify)
+					{
+						if (kv.GotoFirstSubKey(false))
+						{
+							CEntityListLump pTempEvaluatedList = this.EvaluateEntityList(kv);
+							if (pTempEvaluatedList.Length && kv.GotoFirstSubKey(true))
+							{
+								do
+								{
+									char szModifyType[MAX_KEY];
+									if (kv.GetSectionName(szModifyType, sizeof(szModifyType)))
+									{
+										this.ParseModifyAction(kv, szModifyType, pTempEvaluatedList);
+									}
+								}
+								while (kv.GotoNextKey(true));
+								kv.GoBack();
+							}
+							pTempEvaluatedList.Close();
+						}
+					}
+				}
+			}
+			while (kv.GotoNextKey(true));
+			kv.GoBack();
+		}
 	}
 	
 	CEntityListLump EvaluateEntityList(KeyValues kv)
@@ -605,22 +710,7 @@ enum struct CGlobalLevelLump
 						for (int i = 0; i < pTempEvaluatedList.Length; i++)
 						{
 							CEntityInfoLump pEditedEntityInfo = pTempEvaluatedList.Get(i);
-							for (int j = 0; j < pEditedEntityInfo.Length; j++)
-							{
-								CEntityKeyLump pThisKeyInfo;
-								if (pEditedEntityInfo.GetArray(j, pThisKeyInfo, sizeof(pThisKeyInfo)))
-								{
-									if (StrEqualsRegex(pKeyInfo.m_szKey, pThisKeyInfo.m_szKey, false))
-									{
-										pEditedEntityInfo.Erase(j);
-										break;
-									}
-								}
-							}
-							if(add)
-							{
-								pEditedEntityInfo.PushArray(pKeyInfo, sizeof(pKeyInfo));
-							}
+							pEditedEntityInfo.RemoveOrReplace(pKeyInfo, add);
 						}
 					}
 				}
@@ -633,16 +723,64 @@ enum struct CGlobalLevelLump
 	void ParseFunction(KeyValues kv, CEntityListLump pTempEvaluatedList)
 	{
 		char szFunction[MAX_KEY], szValue[MAX_KEY];
-		if (kv.GetSectionName(szFunction, sizeof(szFunction)) && kv.GetDataType(NULL_STRING) != KvData_None)
+		bool bFound = true;
+		if (kv.GetSectionName(szFunction, sizeof(szFunction)))
 		{
-			kv.GetString(NULL_STRING, szValue, sizeof(szValue));
-			if(StrEqual(szFunction, "delay_output", false))
+			// inline functions
+			if(kv.GetDataType(NULL_STRING) != KvData_None)
 			{
-				CEntityOutputHook pOutputHook;
-				pOutputHook.m_pEntityList = view_as<CEntityListLump>(CloneHandle(pTempEvaluatedList));
-				pOutputHook.m_szOutputName = szValue;
-				this.m_pOutputHookList.PushArray(pOutputHook);
-				LogDebug("Delaying output \"%s\" for %d entities", szValue, pTempEvaluatedList.Length);
+				kv.GetString(NULL_STRING, szValue, sizeof(szValue));
+				if(StrEqual(szFunction, "delay_output", false))
+				{
+					CEntityOutputHook pOutputHook;
+					pOutputHook.m_pEntityList = view_as<CEntityListLump>(CloneHandle(pTempEvaluatedList));
+					pOutputHook.m_szOutputName = szValue;
+					this.m_pOutputHookList.PushArray(pOutputHook);
+					LogDebug("Delaying output \"%s\" for %d entities", szValue, pTempEvaluatedList.Length);
+				}
+				
+				else bFound = false;
+			}
+			else
+			{
+				if(StrEqual(szFunction, "copy_model", false))
+				{
+					if(kv.GotoFirstSubKey(false))
+					{
+						CEntityListLump pTargetEvaluatedList;
+						pTargetEvaluatedList = this.EvaluateEntityList(kv);
+						if(!pTargetEvaluatedList.Length)
+						{
+							ThrowError("Found 0 entities for copy model matching (expects 1+)");
+						}
+						CEntityKeyLump pModelKey, pOriginKey;
+						for (int i = 0; i < pTargetEvaluatedList.Length; i++)
+						{
+							CEntityInfoLump pTargetEnt = pTargetEvaluatedList.Get(i);
+							if(pTargetEnt.GetKey("model", pModelKey))
+							{
+								bool bHasOrigin = pTargetEnt.GetKey("origin", pOriginKey);
+								for (int k = 0; k < pTempEvaluatedList.Length; k++)
+								{
+									CEntityInfoLump pTempEnt = pTempEvaluatedList.Get(k);
+									pTempEnt.RemoveOrReplace(pModelKey, true);
+									if(bHasOrigin)
+									{
+										pTempEnt.RemoveOrReplace(pOriginKey, true);
+									}
+								}
+								return;
+							}
+						}
+						ThrowError("Target entity for copy_model has no model property");
+					}
+				}
+				else bFound = false;
+			}
+			
+			if(!bFound)
+			{
+				ThrowError("Unknown function %s", szFunction);
 			}
 		}
 	}
