@@ -1,0 +1,117 @@
+#base "base\bm_sp_campaign.edt"
+
+"config"
+{
+	"nextmap"	"bm_c2a1a"
+	"equipment"
+	{
+		"suit" "1"
+		"item" "item_weapon_shotgun"
+		"item" "item_weapon_mp5"
+		"item" "item_weapon_357"
+		"item" "item_weapon_crowbar"
+		"item" "item_weapon_glock"
+		"item" "item_weapon_tripmine"
+		"item" "item_weapon_tripmine"
+		"item" "item_weapon_tripmine"
+		"item" "item_weapon_tripmine"
+		"item" "item_battery"
+		"item" "item_battery"
+		"item" "item_battery"
+		"item" "item_ammo_shotgun"
+		"item" "item_ammo_shotgun"
+		"item" "item_ammo_shotgun"
+		"item" "item_ammo_357"
+		"item" "item_ammo_mp5"
+		"item" "item_ammo_mp5"
+		"item" "item_ammo_mp5"
+		"item" "item_weapon_frag"
+		"item" "item_weapon_frag"
+		"item" "item_weapon_frag"
+		"item" "item_weapon_frag"
+		"item" "item_weapon_frag"
+	}
+	"entity"
+	{
+		// prepare changelevel for touch trigger
+		"modify"
+		{
+			"targetname" "c2a1b_c2a1a_changelevel"
+			"set"
+			{
+				"spawnflags" "0"
+				"StartDisabled" "1"
+			}
+		}
+		"modify"
+		{
+			"outputs"
+			{
+				"modify"
+				{
+					"target" "c2a1b_c2a1a_changelevel"
+					"input" "ChangeLevel"
+					"replace"
+					{
+						"input" "Enable"
+					}
+				}
+			}
+		}
+		// lock changelevel button
+		"modify"
+		{
+			"hammerid" "1532245"
+			"classname" "func_button"
+			"flags"
+			{
+				"spawnflags"
+				{
+					"add" "2048"
+				}
+			}
+			"add"
+			{
+				"targetname" "c2a1_silodoor_01_button"
+			}
+		}
+		"modify"
+		{
+			"targetname" "c2a1b_console_switch_01"
+			"outputs"
+			{
+				// lock the switch on
+				"add"
+				{
+					"output" "OnIn"
+					"target" "!self"
+					"input" "Lock"
+				}
+				// unlock changelevel button
+				"add"
+				{
+					"output" "OnIn"
+					"target" "c2a1_silodoor_01_button"
+					"input" "Unlock"
+				}
+			}
+		}
+	}
+	"checkpoint"
+	{
+		"spawn"
+		{
+			"origin"	"784 1040 320"
+			"angles"	"0 90 0"
+		}
+		"goal_switch"
+		{
+			"origin"	"1024 1760 -283"
+			"angles"	"0 90 0"
+			"triggerid" "c2a1b_console_switch_01"
+			"output"	"OnIn"
+			"bringall"	"1"
+			"bringall_radius" "250"
+		}
+	}
+}

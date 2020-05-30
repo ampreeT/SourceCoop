@@ -1,0 +1,18 @@
+// The config file for the black mesa coop mod by Diego003
+
+#base "coop_base.edt"
+
+"config"
+{
+	"nextmap"	"/.*/"
+	"equipment"
+	{
+		"suit" "1"
+	}
+	"console"
+	{
+	}
+	"entity_base_bmc_workshop_campaign"
+	{
+	}
+}

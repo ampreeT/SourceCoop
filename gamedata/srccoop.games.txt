@@ -145,6 +145,12 @@
 				"windows"	"444"
 				"linux"		"445"
 			}
+			"CBlackMesaPlayer::ShouldCollide"				// CBlackMesaPlayer::ShouldCollide(int, int)
+			{
+				"windows"	"18"
+				"linux"		"19"
+				"mac"		"19"
+			}
 		}
 		"Functions"
 		{
@@ -352,6 +358,24 @@
 					}
 				}
 			}
+			"CBlackMesaPlayer::ShouldCollide"
+			{
+				"offset"	"CBlackMesaPlayer::ShouldCollide"
+				"hooktype"	"entity"
+				"return"	"bool"
+				"this"		"entity"
+				"arguments"
+				{
+					"collisiongroup"
+					{
+						"type"	"int"
+					}
+					"contentsmask"
+					{
+						"type"	"int"
+					}
+				}
+			}
 			
 			//Detours
 			"CBasePlayer::SetSuitUpdate"
@@ -389,13 +413,6 @@
 				"callconv"	"thiscall"
 				"return"	"void"
 				"this"		"entity"
-			}
-			"CAI_GoalEntity::ResolveNamesPost"
-			{
-				"signature"	"CAI_GoalEntity::ResolveNames"
-				"callconv"	"thiscall"
-				"return"	"void"
-				"this"		"ignore"
 			}
 		}
 	}

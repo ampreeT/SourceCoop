@@ -1,0 +1,284 @@
+#base "base\bm_sp_campaign.edt"
+
+"config"
+{
+	"nextmap"	"bm_c2a1b"
+	"nextmap"	"bm_c2a2a"
+	"equipment"
+	{
+	}
+	"entity"
+	{
+		// spawn items
+		"modify"
+		{
+			"targetname" "c2a1a_equipment"
+			"flags"
+			{
+				"spawnflags"
+				{
+					"add" "2" // motion disabled
+					"add" "8" // silent pickup
+				}
+			}
+			"set"
+			{
+				"origin" "-513 -760 298" // move to player spawn
+			}
+		}
+		// turn prev. changelevel trig into invisible wall
+		"modify"
+		{
+			"classname" "trigger_changelevel"
+			"map" "bm_c1a4e"
+			"add"
+			{
+				"classname" "func_brush"
+				"rendermode" "10"
+			}
+		}
+		// allow pipe to fall
+		"#if"
+		{
+			"!globalstate" "c2a1_objective"
+			"#then"
+			{
+				"delete"
+				{
+					"classname" "logic_auto"
+					"hammerid" "1977683"
+				}
+			}
+		}
+		// prepare changelevel for touch trigger
+		"modify"
+		{
+			"targetname" "c2a1a_c2a1b_changelevel"
+			"add"
+			{
+				"spawnflags" "0"
+				"StartDisabled" "1"
+			}
+		}
+		"modify"
+		{
+			"outputs"
+			{
+				"modify"
+				{
+					"target" "c2a1a_c2a1b_changelevel"
+					"input" "ChangeLevel"
+					"replace"
+					{
+						"input" "Enable"
+					}
+				}
+			}
+		}
+		// barney can die without fading our screens
+		"modify"
+		{
+			"targetname" "GRD01_PowerUpControl"
+			"add"
+			{
+				"GameEndAlly" "0"
+			}
+		}
+		// fix noise at train rotating platform
+		"modify"
+		{
+			"targetname" "c2a1a_tram_rotator"
+			"add"
+			{
+				"loopmovesound" "0"
+			}
+		}
+		// if returning
+		"#if"
+		{
+			"globalstate" "c2a1_objective"
+			"#then"
+			{
+				// no going back
+				"modify"
+				{
+					"hammerid" "650183"
+					"flags"
+					{
+						"spawnflags"
+						{
+							"add" "2048" // locked
+						}
+					}
+				}
+				"modify"
+				{
+					"targetname" "c2a1_silodoor_01_sprite"
+					"set"
+					{
+						"rendercolor" "191 0 0"
+						"targetname" ""
+					}
+				}
+				"modify"
+				{
+					"targetname" "relay_poweron_global"
+					"outputs"
+					{
+						// trigger the big barrel explosion
+						"add"
+						{
+							"output" "OnTrigger"
+							"target" "c2a1a_heroes_relay"
+							"input" "Trigger"
+						}
+						// trigger bridge collapse
+						"add"
+						{
+							"output" "OnTrigger"
+							"target" "c2a1a_fall_spawn_relay"
+							"input" "Trigger"
+						}
+						"add"
+						{
+							"output" "OnTrigger"
+							"target" "c2a1a_fall_relay"
+							"input" "Trigger"
+							"delay" "0.5"
+						}
+						// trigger garg
+						"add"
+						{
+							"output" "OnTrigger"
+							"target" "c2a1a_garg_entrance_relay"
+							"input" "Trigger"
+						}
+						// trigger rubble collapse
+						"add"
+						{
+							"output" "OnTrigger"
+							"target" "c2a1a_collapse_relay"
+							"input" "Trigger"
+						}
+					}
+				}
+				"modify"
+				{
+					"targetname" "/c2a1a_heroes_relay|c2a1a_garg_entrance_relay|c2a1a_collapse_relay/"
+					"flags"
+					{
+						"spawnflags"
+						{
+							"add" "1" // only trigger once
+						}
+					}
+				}
+				"delete"
+				{
+					"targetname" "c2a1a_fall_trigger"
+				}
+				// Remove headcrab vent cutscene
+				"delete"
+				{
+					"hammerid" "894404"
+				}
+				"delete"
+				{
+					"targetname" "c2a1a_jumpcrab_vent"
+				}
+				// and other npcs that should be dead
+				"delete"
+				{
+					"targetname" "c2a1a_garg_squad_01"
+				}
+				"delete"
+				{
+					"targetname" "c2a1a_garg_squad_02"
+				}
+				"delete"
+				{
+					"targetname" "c2a1a_garg_squad_03"
+				}
+				"delete"
+				{
+					"targetname" "c2a1a_garg_squad_04"
+				}
+				// Lets leave one marine on the other side to bait the garg
+				// "delete"
+				// {
+				//	"targetname" "c2a1a_rpg_squad_01"
+				// }
+				"delete"
+				{
+					"targetname" "c2a1a_portal_01"
+				}
+				"delete"
+				{
+					"targetname" "c2a1a_portal_02"
+				}
+				"delete"
+				{
+					"targetname" "c2a1a_portal_03"
+				}
+				"delete"
+				{
+					"classname" "npc_headcrab"
+				}
+				"delete"
+				{
+					"classname" "npc_gman"
+				}
+				"delete"
+				{
+					"classname" "npc_alien_slave"
+				}
+				"delete"
+				{
+					"classname" "env_xen_portal_template"
+				}
+				"delete"
+				{
+					"classname" "env_xen_portal"
+				}
+				"delete"
+				{
+					"classname" "npc_bullsquid"
+				}
+			}
+		}
+	}
+	"checkpoint"
+	{
+		"spawn"
+		{
+			"origin"	"-513 -760 298"
+			"angles"	"0 270 0"
+		}
+		"#if"
+		{
+			"!globalstate" "c2a1_objective"
+			"#then"
+			{
+				"spawn_hallway"
+				{
+					"origin"	"888 -960 68"
+					"angles"	"0 105 0"
+					"triggerid"	"sscape_a_entrancecor1"
+					"output"	"OnPlay"
+				}
+			}
+		}
+		"#if"
+		{
+			"globalstate" "c2a1_objective"
+			"#then"
+			{
+				"spawn-returned"
+				{
+					"origin"	"603 965 -155"
+					"angles"	"0 135 0"
+				}
+			}
+		}
+	}
+}

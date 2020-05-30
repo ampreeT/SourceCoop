@@ -1,0 +1,15 @@
+#base "base\bmc_workshop_campaign.edt"
+
+"config"
+{
+	"equipment"
+	{
+		"suit" "0"
+	}
+	"entity"
+	{
+	}
+	"checkpoint"
+	{
+	}
+}

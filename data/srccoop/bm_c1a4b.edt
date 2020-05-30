@@ -268,100 +268,158 @@
 				}
 			}
 		}
-		// oxy/fuel (c1a4c) finished
-		"if"
+		// Oxy/fuel (c1a4c) finished
+		"#if"
 		{
 			"globalstate" "c1a4_objective_fuel"
 			"globalstate" "c1a4_objective_oxy"
 			
-			"delete"
+			"#then"
 			{
-				"targetname" "changelevel_bm_c1a4c"
-			}
-			"delete"
-			{
-				"targetname" "c1a4b_airlock_zombie_01"
-			}
-			"delete" // plank barricade
-			{
-				"hammerid" "/3926516|3925459|3925455|3925451|3925447|3925515/"
-				"classname" "prop_physics"
+				"delete"
+				{
+					"targetname" "changelevel_bm_c1a4c"
+				}
+				"delete"
+				{
+					"targetname" "c1a4b_airlock_zombie_01"
+				}
+				"delete" // plank barricade
+				{
+					"hammerid" "/3926516|3925459|3925455|3925451|3925447|3925515/"
+					"classname" "prop_physics"
+				}
 			}
 		}
-		// power (c1a4d) finished
-		"if"
+		// Power (c1a4d) finished
+		"#if"
 		{
 			"globalstate" "c1a4_objective_power"
 			
-			"delete"
+			"#then"
 			{
-				"targetname" "changelevel_bm_c1a4d"
-			}
-			"delete"
-			{
-				"hammerid" "3922808"
-				"classname" "npc_bullsquid"
-			}
-			"delete"
-			{
-				"hammerid" "3925011"
-				"classname" "npc_zombie_scientist"
-			}
-			"delete" // plank barricade
-			{
-				"hammerid" "/3925479|3925463|3925475|3925471|3925467|3926512/"
-				"classname" "prop_physics"
+				"delete"
+				{
+					"targetname" "changelevel_bm_c1a4d"
+				}
+				"delete"
+				{
+					"hammerid" "3922808"
+					"classname" "npc_bullsquid"
+				}
+				"delete"
+				{
+					"hammerid" "3925011"
+					"classname" "npc_zombie_scientist"
+				}
+				"delete" // plank barricade
+				{
+					"hammerid" "/3925479|3925463|3925475|3925471|3925467|3926512/"
+					"classname" "prop_physics"
+				}
 			}
 		}
 		// At least one finished
-		"if"
+		"#if"
 		{
-			"any"
+			"#any"
 			{
 				"globalstate" "c1a4_objective_fuel"
 				"globalstate" "c1a4_objective_oxy"
 				"globalstate" "c1a4_objective_power"
 			}
-			
-			"delete" // Be quiet
+			"#then"
 			{
-				"hammerid" "3927666"
-				"classname" "trigger_once"
-			}
-			"delete" // Guard running out and dying
-			{
-				"hammerid" "3927671"
-				"classname" "trigger_once"
-			}
-			"add"
-			{
-				"classname" "logic_auto"
-				"spawnflags" "1"
-				"outputs"
+				"delete" // Be quiet
 				{
-					"add"
+					"hammerid" "3927666"
+					"classname" "trigger_once"
+				}
+				"delete" // Guard running out and dying
+				{
+					"hammerid" "3927671"
+					"classname" "trigger_once"
+				}
+				"delete"
+				{
+					"classname" "npc_houndeye"
+				}
+				"add"
+				{
+					"classname" "logic_auto"
+					"spawnflags" "1"
+					"outputs"
 					{
-						"output" "OnMapSpawn"
-						"target" "c1a4c_controlroom_entry_door_button"
-						"input" "Lock"
+						// lock control room entrance door
+						"add"
+						{
+							"output" "OnMapSpawn"
+							"target" "c1a4c_controlroom_entry_door_button"
+							"input" "Lock"
+						}
+						"add"
+						{
+							"output" "OnMapSpawn"
+							"target" "c1a4c_controlroom_entry_door_button_sprite_green"
+							"input" "HideSprite"
+						}
+						"add"
+						{
+							"output" "OnMapSpawn"
+							"target" "c1a4c_controlroom_entry_door_button_sprite_red"
+							"input" "ShowSprite"
+						}
+						// start window broken
+						"add"
+						{
+							"output" "OnMapSpawn"
+							"target" "c1a4c_breakscript_relay"
+							"input" "Trigger"
+						}
 					}
-					"add"
+				}
+			}
+		}
+		// if returned from oxy
+		"#if"
+		{
+			"prevmap"	"bm_c1a4c"
+			"#then"
+			{
+				"add"
+				{
+					"classname" "logic_auto"
+					"spawnflags" "1"
+					"outputs"
 					{
-						"output" "OnMapSpawn"
-						"target" "c1a4c_controlroom_entry_door_button_sprite_green"
-						"input" "HideSprite"
+						"add"
+						{
+							"output" "OnMapSpawn"
+							"target" "c1a4b_fuel_button_out"
+							"input" "PressIn"
+						}
 					}
-					"add"
+				}
+			}
+		}
+		// if returned from power
+		"#if"
+		{
+			"prevmap"	"bm_c1a4d"
+			"#then"
+			{
+				"add"
+				{
+					"classname" "logic_auto"
+					"spawnflags" "1"
+					"outputs"
 					{
-						"output" "OnMapSpawn"
-						"target" "c1a4c_controlroom_entry_door_button_sprite_red"
-						"input" "ShowSprite"
-					}
-					"add"
-					{
-						"output" "OnMapSpawn"
-						"target" "c1a4c_breakscript_relay"
-						"input" "Trigger"
+						"add"
+						{
+							"output" "OnMapSpawn"
+							"target" "c1a4b_power_button_out"
+							"input" "PressIn"
+						}
 					}
 				}
 			}
@@ -375,17 +433,43 @@
 			"angles"	"0 180 0"
 			"followid"	"c1a4a_elevatorprop"
 		}
-		"oxyreturn"
+		"#if"
 		{
 			"prevmap"	"bm_c1a4c"
-			"origin"	"-2129 120 1352"
-			"angles"	"0 270 0"
+			"#then"
+			{
+				"oxyreturn"
+				{
+					"origin"	"-2129 120 1352"
+					"angles"	"0 270 0"
+				}
+				"oxyreturn2"
+				{
+					"origin"	"-2544 -2176 1381"
+					"angles"	"0 285 0"
+					"triggerid"	"c1a4c_fuel_entrance_door"
+					"output"	"OnOpen"
+				}
+			}
 		}
-		"powerreturn"
+		"#if"
 		{
 			"prevmap"	"bm_c1a4d"
-			"origin"	"-24 2128 1164"
-			"angles"	"0 180 0"
+			"#then"
+			{
+				"powerreturn"
+				{
+					"origin"	"-24 2128 1164"
+					"angles"	"0 180 0"
+				}
+				"powerreturn2"
+				{
+					"origin"	"-2176 -1552 1189"
+					"angles"	"0 210 0"
+					"triggerid"	"c1a4c_power_entrance_door"
+					"output"	"OnOpen"
+				}
+			}
 		}
 		
 		"silo_entry_tp"

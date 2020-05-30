@@ -283,11 +283,6 @@ enum struct CGlobalLevelLump
 		this.m_pModifiedCvarList = new Array_t(CreateArray());
 		this.m_pOutputHookList = new COutputHookLump(CreateArray(sizeof(CEntityOutputHook)));
 	}
-	bool IsCoopMap(const char[] szMapName)
-	{
-		char szMapPath[MAX_FORMAT];
-		return view_as<bool>(BuildPath(Path_SM, szMapPath, sizeof(szMapPath), "data/srccoop/%s.edt", szMapName) && FileExists(szMapPath));
-	}
 	void ParseMapEntities(const char szMapEntities[2097152])
 	{
 		this.m_pEntityList.Clear();
@@ -378,18 +373,8 @@ enum struct CGlobalLevelLump
 		this.m_iIntroType = INTRO_NONE;
 		this.m_bInstanceItems = false;
 	}
-	void ParseConfigFile(const char[] szMapName)
+	void ParseConfigFile(KeyValues kv)
 	{
-		char szMapPath[MAX_FORMAT];
-		if (!(BuildPath(Path_SM, szMapPath, sizeof(szMapPath), "data/srccoop/%s.edt", szMapName) && FileExists(szMapPath)))
-			ThrowError("Couldn't find map file %s", szMapName);
-
-		KeyValues kv = new KeyValues(szMapName);
-		
-		char szRoot[MAX_MAPNAME];
-		if (!(kv.ImportFromFile(szMapPath) && kv.GetSectionName(szRoot, sizeof(szRoot)) && strcmp(szRoot, "config") == 0))
-			ThrowError("Couldn't import %s into KeyValues", szMapName);
-		
 		if (kv.GotoFirstSubKey(false))
 		{
 			do
@@ -463,62 +448,6 @@ enum struct CGlobalLevelLump
 			while (kv.GotoNextKey(false));
 			kv.GoBack();
 		}
-		delete kv;
-	}
-	
-	bool ParseConditions(KeyValues kv, bool anyPass = false)
-	{
-		if (kv.GotoFirstSubKey(false))
-		{
-			char szCondition[MAX_KEY], szValue[MAX_VALUE];
-			bool bPassed = anyPass? false:true;
-			do
-			{
-				if (kv.GetSectionName(szCondition, sizeof(szCondition)))
-				{
-					kv.GetString(NULL_STRING, szValue, sizeof(szValue));
-					bool bResult = anyPass? false:true;
-					
-					if(StrEqual(szCondition, "any", false) && kv.GetDataType(NULL_STRING) == KvData_None)
-					{
-						bResult = this.ParseConditions(kv, true);
-					}
-					else if(StrEqual(szCondition, "globalstate", false))
-					{
-						bResult = CGlobalState.GetState(szValue) == GLOBAL_ON;
-					}
-					else if(StrEqual(szCondition, "!globalstate", false))
-					{
-						bResult = CGlobalState.GetState(szValue) != GLOBAL_ON;
-					}
-					
-					if(anyPass)
-					{
-						if(bResult)
-						{
-							bPassed = true;
-							break;
-						}
-					}
-					else // allPass
-					{
-						if(!bResult)
-						{
-							bPassed = false;
-							break;
-						}
-					}
-				}
-			}
-			while (kv.GotoNextKey(false));
-			
-			kv.GoBack();
-			if(bPassed)
-			{
-				return true;
-			}
-		}
-		return false;
 	}
 	
 	void ParseEntityEdits(KeyValues kv)
@@ -530,16 +459,13 @@ enum struct CGlobalLevelLump
 				char szAction[MAX_KEY];
 				if (kv.GetSectionName(szAction, sizeof(szAction)))
 				{
-					if(StrEqual(szAction, "if", false))
+					if(StrEqual(szAction, "#if", false))
 					{
-						if(this.ParseConditions(kv))
+						if(ParseConditions(kv) && kv.JumpToKey("#then"))
 						{
 							this.ParseEntityEdits(kv);
+							kv.GoBack();
 						}
-						continue;
-					}
-					if(StrEqual(szAction, "any", false))
-					{
 						continue;
 					}
 					
@@ -1034,4 +960,77 @@ stock int SplitNewline(const char[] szSource, const int nSize, char[] szBuffer)
 		i++;
 	strcopy(szBuffer, ((i + 1) < nSize) ? (i + 1) : nSize, szSource);	// strcopy inconvinently includes the null terminator
 	return (i < nSize) ? i : nSize;
+}
+
+bool ParseConditions(KeyValues kv, bool anyPass = false)
+{
+	if (kv.GotoFirstSubKey(false))
+	{
+		char szCondition[MAX_KEY], szValue[MAX_VALUE];
+		bool bPassed = anyPass? false:true;
+		do
+		{
+			if (kv.GetSectionName(szCondition, sizeof(szCondition)))
+			{
+				kv.GetString(NULL_STRING, szValue, sizeof(szValue));
+				bool bResult = anyPass? false:true;
+				
+				if(kv.GetDataType(NULL_STRING) == KvData_None)
+				{
+					if(StrEqual(szCondition, "#any", false))
+					{
+						bResult = ParseConditions(kv, true);
+					}
+					else if(StrEqual(szCondition, "#all", false) || StrEqual(szCondition, "#if", false))
+					{
+						bResult = ParseConditions(kv, false);
+					}
+				}
+				else
+				{
+					if(StrEqual(szCondition, "globalstate", false))
+					{
+						bResult = CGlobalState.GetState(szValue) == GLOBAL_ON;
+					}
+					else if(StrEqual(szCondition, "!globalstate", false))
+					{
+						bResult = CGlobalState.GetState(szValue) != GLOBAL_ON;
+					}
+					else if (StrEqual(szCondition, "prevmap", false))
+					{
+						bResult = StrEqualsRegex(szValue, g_szPrevMapName, false);
+					}
+					else if (StrEqual(szCondition, "!prevmap", false))
+					{
+						bResult = !StrEqualsRegex(szValue, g_szPrevMapName, false);
+					}
+				}
+				
+				if(anyPass)
+				{
+					if(bResult)
+					{
+						bPassed = true;
+						break;
+					}
+				}
+				else // allPass
+				{
+					if(!bResult)
+					{
+						bPassed = false;
+						break;
+					}
+				}
+			}
+		}
+		while (kv.GotoNextKey(false));
+		
+		kv.GoBack();
+		if(bPassed)
+		{
+			return true;
+		}
+	}
+	return false;
 }

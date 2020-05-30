@@ -108,10 +108,5 @@
 				"target" "!pvsplayer" 
 			}
 		}
-		// Unwanted and bugs players
-		"remove"
-		{
-			"classname" "player_loadsaved"
-		}
 	}
 }

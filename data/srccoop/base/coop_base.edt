@@ -7,5 +7,10 @@
 	}
 	"entity_base_coop"
 	{
+		// Unwanted and bugs players
+		"remove"
+		{
+			"classname" "player_loadsaved"
+		}
 	}
 }

@@ -36,6 +36,10 @@ stock bool StrEqualsRegex(const char[] pattern, const char[] str, bool caseSensi
 	int patternLength = strlen(pattern);
 	if(patternLength > 1 && pattern[0] == '/' && pattern[patternLength - 1] == '/')
 	{
+		if(str[0] == '\0') {
+			// regexing empty string errors out..
+			return false;
+		}
 		char[] patternStripped = new char[--patternLength];
 		strcopy(patternStripped, patternLength, pattern[1]);
 		int substrings = SimpleRegexMatch(str, patternStripped, caseSensitive? 0 : PCRE_CASELESS);

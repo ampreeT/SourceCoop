@@ -165,7 +165,7 @@ public MRESReturn Hook_ChangelevelAcceptInput(int _this, Handle hReturn, Handle 
 		{
 			char szInputType[MAX_FORMAT];
 			DHookGetParamString(hParams, 1, szInputType, sizeof(szInputType));
-			if (strcmp(szInputType, "ChangeLevel") == 0)
+			if (strcmp(szInputType, "ChangeLevel", false) == 0)
 			{
 				CChangelevel pChangelevel = CChangelevel(_this);
 				ChangeLevelTriggered(pChangelevel, CBlackMesaPlayer(-1));
@@ -202,7 +202,7 @@ public MRESReturn Hook_PointTeleportAcceptInput(int _this, Handle hReturn, Handl
 		{
 			char szInputType[MAX_FORMAT];
 			DHookGetParamString(hParams, 1, szInputType, sizeof(szInputType));
-			if (strcmp(szInputType, "Teleport") == 0)
+			if (strcmp(szInputType, "Teleport", false) == 0)
 			{
 				char szTarget[MAX_FORMAT];
 				CBaseEntity pTeleport = CBaseEntity(_this);
@@ -245,7 +245,7 @@ public MRESReturn Hook_PointViewcontrolAcceptInput(int _this, Handle hReturn, Ha
 			DHookGetParamString(hParams, 1, szInputType, sizeof(szInputType));
 			LogDebug("Hook_PointViewcontrolAcceptInput szInputType=%s", szInputType);
 
-			if (strcmp(szInputType, "Disable") == 0)
+			if (strcmp(szInputType, "Disable", false) == 0)
 			{
 				int iFollowerEnt = -1;
 				while ((iFollowerEnt = FindEntityByOwner(iFollowerEnt, pThis, "point_viewcontrol")) != -1)
@@ -255,7 +255,7 @@ public MRESReturn Hook_PointViewcontrolAcceptInput(int _this, Handle hReturn, Ha
 				}
 				// continue as normal //
 			}
-			else if (strcmp(szInputType, "Enable") == 0 && !bHookSkipEnable)
+			else if (strcmp(szInputType, "Enable", false) == 0 && !bHookSkipEnable)
 			{
 				CBaseEntity pActivator;
 				if(!DHookIsNullParam(hParams, 2))
@@ -278,12 +278,12 @@ public MRESReturn Hook_PointViewcontrolAcceptInput(int _this, Handle hReturn, Ha
 					return MRES_Supercede;
 				}
 			}
-			else if (strcmp(szInputType, "EnableAll") == 0) // new input
+			else if (strcmp(szInputType, "EnableAll", false) == 0) // new input
 			{
 				// use this (primary) viewcontrol with first client
 				// spin up temporary repeater cameras for every other client
 				// this is the only way to make this work 100% without recreating the entity entirely
-				
+
 				bHookSkipEnable = true;
 				g_bTempDontHookEnts = true;
 				bool bUsedThis;
@@ -302,7 +302,7 @@ public MRESReturn Hook_PointViewcontrolAcceptInput(int _this, Handle hReturn, Ha
 							bUsedThis = true;
 							continue;
 						}
-						
+
 						int iFollower = CreateEntityByName("point_viewcontrol");
 						CBaseEntity pFollower = CBaseEntity(iFollower);
 						if(pFollower.IsValidIndex())
@@ -352,7 +352,7 @@ public MRESReturn Hook_PointViewcontrolNeverEnable(int _this, Handle hReturn, Ha
 	{
 		char szInputType[MAX_FORMAT];
 		DHookGetParamString(hParams, 1, szInputType, sizeof(szInputType));
-		if (strcmp(szInputType, "Enable") == 0)
+		if (strcmp(szInputType, "Enable", false) == 0)
 		{
 			LogDebug("Hook_PointViewcontrolNeverEnable ent=%d", _this);
 			DHookSetReturn(hReturn, true);
@@ -375,10 +375,13 @@ public MRESReturn Hook_SpeedmodAcceptInput(int _this, Handle hReturn, Handle hPa
 		{
 			char szInputType[MAX_FORMAT];
 			DHookGetParamString(hParams, 1, szInputType, sizeof(szInputType));
-			if (strcmp(szInputType, "ModifySpeedAll") == 0) // new input
+			LogDebug("Hook_SpeedmodAcceptInput szInputType=%s", szInputType);
+			if (strcmp(szInputType, "ModifySpeedAll", false) == 0) // new input
 			{
+				fieldtype_t fieldType = DHookGetParamObjectPtrVar(hParams, 4, 16, ObjectValueType_Int);
 				char szParam[32];
 				DHookGetParamObjectPtrString(hParams, 4, 0, ObjectValueType_String, szParam, sizeof(szParam));
+				LogDebug("Hook_SpeedmodAcceptInput ft=%d, %s", fieldType, szParam);
 				bHookSkip = true;
 				for(int i = 1; i <= MaxClients; i++)
 				{
@@ -411,7 +414,7 @@ public MRESReturn Hook_ClientCommandAcceptInput(int _this, Handle hReturn, Handl
 			char szInputType[MAX_FORMAT];
 			DHookGetParamString(hParams, 1, szInputType, sizeof(szInputType));
 			LogDebug("Hook_ClientCommandAcceptInput input=%s", szInputType);
-			if (strcmp(szInputType, "CommandAll") == 0) // new input
+			if (strcmp(szInputType, "CommandAll", false) == 0) // new input
 			{
 				char szParam[MAX_FORMAT];
 				DHookGetParamObjectPtrString(hParams, 4, 0, ObjectValueType_String, szParam, sizeof(szParam));
@@ -473,7 +476,7 @@ public MRESReturn Hook_EnvCreditsAcceptInput(int _this, Handle hReturn, Handle h
 		{
 			char szInputType[MAX_FORMAT];
 			DHookGetParamString(hParams, 1, szInputType, sizeof(szInputType));
-			if (strcmp(szInputType, "ShowLogo") == 0)
+			if (strcmp(szInputType, "ShowLogo", false) == 0)
 			{
 				float flLogoLength = GetEntPropFloat(_this, Prop_Data, "m_flLogoLength");
 				if(flLogoLength)
@@ -495,7 +498,7 @@ public MRESReturn Hook_EnvCreditsAcceptInput(int _this, Handle hReturn, Handle h
 				DHookSetReturn(hReturn, true);
 				return MRES_Supercede;
 			}
-			if(strcmp(szInputType, "RollCredits") == 0)
+			if(strcmp(szInputType, "RollCredits", false) == 0)
 			{
 				Handle pMsg = StartMessageAll("CreditsMsg", USERMSG_RELIABLE);
 				if(pMsg != null) {
@@ -505,7 +508,7 @@ public MRESReturn Hook_EnvCreditsAcceptInput(int _this, Handle hReturn, Handle h
 				DHookSetReturn(hReturn, true);
 				return MRES_Supercede;
 			}
-			if(strcmp(szInputType, "RollOutroCredits") == 0)
+			if(strcmp(szInputType, "RollOutroCredits", false) == 0)
 			{
 				Handle pMsg = StartMessageAll("CreditsMsg", USERMSG_RELIABLE);
 				if(pMsg != null) {
@@ -581,7 +584,7 @@ public void Hook_ExplosionSpawn(int iEntIndex)
 	{
 		char buffer[MAX_VALUE];
 		GetEntPropString(iEntIndex, Prop_Data, "m_strEntityNameToIgnore", buffer, sizeof(buffer)); // this is entity handle m_hEntityIgnore in other games
-		if(StrEqual(buffer, "!player"))
+		if(StrEqual(buffer, "!player", false))
 		{
 			SetEntPropString(iEntIndex, Prop_Data, "m_strEntityNameToIgnore", "");
 			SetEntProp(iEntIndex, Prop_Data, "m_iClassIgnore", CLASS_PLAYER);
@@ -590,9 +593,10 @@ public void Hook_ExplosionSpawn(int iEntIndex)
 }
 
 //------------------------------------------------------
-// weapon models
+// weapons
+// use sp weapon models
 //------------------------------------------------------
-public MRESReturn Hook_WeaponSetModel(int _this, Handle hParams)	// use sp weapon models
+public MRESReturn Hook_WeaponSetModel(int _this, Handle hParams)
 {
 	if (!DHookIsNullParam(hParams, 1))
 	{
@@ -610,10 +614,10 @@ public MRESReturn Hook_WeaponSetModel(int _this, Handle hParams)	// use sp weapo
 					{ "models/weapons/w_shotgun_mp.mdl", "models/weapons/w_shotgun.mdl", },
 					{ "models/weapons/w_rpg_mp.mdl", "models/weapons/w_rpg.mdl" },
 				};
-				
+
 				char szModelName[MAX_CLASSNAME];
 				DHookGetParamString(hParams, 1, szModelName, sizeof(szModelName));
-				
+
 				for (int i = 0; i < sizeof(szWeaponModel); i++)
 				{
 					if (strcmp(szModelName, szWeaponModel[i][0], false) == 0)
@@ -643,7 +647,7 @@ methodmap CAI_ScriptConditions < CBaseEntity
 	{
 		return view_as<CAI_ScriptConditions>(InternalGetBaseEntity(iEntIndex));
 	}
-	
+
 	public bool IsDisabled()
 	{
 		return view_as<bool>(GetEntProp(this.GetEntIndex(), Prop_Data, "m_fDisabled"));
@@ -671,37 +675,23 @@ public MRESReturn Hook_AIConditionsThink(int _this)
 //------------------------------------------------------
 // CAI_GoalEntity - ai_goal_*
 // set goal entity to nearest player
-// this hook is cumbersomely separated in pre and post because dhooks crashes if entity is passed as [this] in post hook
 //------------------------------------------------------
+public MRESReturn Hook_ResolveNamesPost(int _this)
+{
+	char szGoal[MAX_TARGET_LENGTH];
+	GetEntPropString(_this, Prop_Data, "m_iszGoal", szGoal, sizeof(szGoal));
+
+	if(szGoal[0] == '\0' || strcmp(szGoal, "!player", false) == 0)
+	{
+		CBaseEntity pEnt = CBaseEntity(_this);
+		CBlackMesaPlayer pPlayer = GetNearestPlayer(pEnt);
+		SetEntPropEnt(_this, Prop_Data, "m_hGoalEntity", pPlayer.GetEntIndex());
+	}
+	return MRES_Ignored;
+}
+
+// this pre hook is required, otherwise the post hook will crash!
 public MRESReturn Hook_ResolveNames(int _this)
 {
-	static int curThis = -1;
-	static int curTick = -1;
-	
-	if(_this) // pre hook
-	{
-		LogDebug("Hook_ResolveNames Pre %d", _this);
-		curThis = _this;
-		curTick = GetGameTickCount();
-	}
-	else // post hook
-	{
-		if(curThis != -1 && curTick == GetGameTickCount())
-		{
-			LogDebug("Hook_ResolveNames Post %d", curThis);
-			
-			char szGoal[MAX_TARGET_LENGTH];
-			GetEntPropString(curThis, Prop_Data, "m_iszGoal", szGoal, sizeof(szGoal));
-			
-			if(szGoal[0] == '\0' || strcmp(szGoal, "!player", false) == 0)
-			{
-				CBaseEntity pEnt = CBaseEntity(curThis);
-				CBlackMesaPlayer pPlayer = GetNearestPlayer(pEnt);
-				SetEntPropEnt(curThis, Prop_Data, "m_hGoalEntity", pPlayer.GetEntIndex());
-			}
-		}
-		curThis = -1;
-		curTick = -1;
-	}
 	return MRES_Ignored;
 }

@@ -126,7 +126,6 @@ void load_gamedata()
 
 	load_dhook_virtual(pGameConfig, hkFAllowFlashlight, "CMultiplayRules::FAllowFlashlight");
 	load_dhook_virtual(pGameConfig, hkIsMultiplayer, "CMultiplayRules::IsMultiplayer");
-//	load_dhook_virtual(pGameConfig, hkIsDeathmatch, "CMultiplayRules::IsDeathmatch");
 	load_dhook_virtual(pGameConfig, hkIRelationType, "CBaseCombatCharacter::IRelationType");
 	load_dhook_virtual(pGameConfig, hkIsPlayerAlly, "CAI_BaseNPC::IsPlayerAlly");
 	load_dhook_virtual(pGameConfig, hkProtoSniperSelectSchedule, "CProtoSniper::SelectSchedule");
@@ -137,11 +136,10 @@ void load_gamedata()
 	load_dhook_virtual(pGameConfig, hkOnTryPickUp, "CBasePickup::OnTryPickUp");
 	load_dhook_virtual(pGameConfig, hkThink, "CBaseEntity::Think");
 	load_dhook_virtual(pGameConfig, hkChangeTeam, "CBlackMesaPlayer::ChangeTeam");
+	load_dhook_virtual(pGameConfig, hkShouldCollide, "CBlackMesaPlayer::ShouldCollide");
 //	load_dhook_detour(pGameConfig, hkSetSuitUpdate, "CBasePlayer::SetSuitUpdate", Hook_SetSuitUpdate, Hook_SetSuitUpdatePost);
 	load_dhook_detour(pGameConfig, hkUTIL_GetLocalPlayer, "UTIL_GetLocalPlayer", Hook_UTIL_GetLocalPlayer);
-	load_dhook_detour(pGameConfig, hkResolveNames, "CAI_GoalEntity::ResolveNames", Hook_ResolveNames);
-	load_dhook_detour(pGameConfig, hkResolveNamesPost, "CAI_GoalEntity::ResolveNamesPost", _, Hook_ResolveNames);
-
+	load_dhook_detour(pGameConfig, hkResolveNames, "CAI_GoalEntity::ResolveNames", Hook_ResolveNames, Hook_ResolveNamesPost);
 	CloseHandle(pGameConfig);
 }
 
@@ -149,8 +147,9 @@ public void OnPluginStart()
 {
 	load_gamedata();
 	InitDebugLog("sm_coop_debug", "SRCCOOP", ADMFLAG_ROOT);
-	g_pConvarCoopEnabled = CreateConVar("sm_coop_enabled", "1", "Sets if coop is enabled on campaign maps");
+	g_pConvarCoopEnabled = CreateConVar("sm_coop_enabled", "1", "Sets if coop is enabled on coop maps");
 	g_pConvarCoopTeam = CreateConVar("sm_coop_team", "scientist", "Sets which team to use in TDM mode. Valid values are [marines] or [scientist]. Setting anything else will not manage teams.");
+	g_pConvarCoopRespawnTime = CreateConVar("sm_coop_respawntime", "1.0", "Sets player respawn time in seconds. (This can only be used for making respawn times quicker, not longer)", _, true, 0.1);
 	g_pConvarWaitPeriod = CreateConVar("sm_coop_wait_period", "15.0", "The max number of seconds to wait since first player spawned in to start the map. The timer is skipped when all players enter the game.");
 	g_pConvarEndWaitPeriod = CreateConVar("sm_coop_end_wait_period", "60.0", "The max number of seconds to wait since first player triggered a changelevel. The timer speed increases each time a new player finishes the level.");
 	g_pConvarEndWaitFactor = CreateConVar("sm_coop_end_wait_factor", "1.0", "Controls how much the number of finished players increases the changelevel timer speed. 1.0 means full, 0 means none (timer will run full length).", _, true, 0.0, true, 1.0);
@@ -180,6 +179,16 @@ public void OnPluginStart()
 	}
 }
 
+#pragma dynamic 2097152
+public Action OnLevelInit(const char[] szMapName, char szMapEntities[2097152])		// you probably need to incease SlowScriptTimeout in core.cfg
+{
+	strcopy(g_szPrevMapName, sizeof(g_szPrevMapName), g_szMapName);
+	strcopy(g_szMapName, sizeof(g_szMapName), szMapName);
+	g_pCoopManager.OnLevelInit(szMapName, szMapEntities);
+
+	return Plugin_Changed;
+}
+
 public void OnMapStart()
 {
 	g_pCoopManager.OnMapStart();
@@ -199,7 +208,6 @@ public void OnConfigsExecuted()
 	if (g_pCoopManager.IsFeaturePatchingEnabled())
 	{
 		DHookGamerules(hkFAllowFlashlight, false, _, Hook_FAllowFlashlight);
-		//DHookGamerules(hkIsDeathmatch, false, _, Hook_IsDeathmatch);
 	}
 	if (g_pCoopManager.IsCoopModeEnabled())
 	{
@@ -230,8 +238,8 @@ public void OnClientPutInServer(int client)
 	SDKHook(client, SDKHook_PreThink, Hook_PlayerPreThink);
 	SDKHook(client, SDKHook_SpawnPost, Hook_PlayerSpawnPost);
 	SDKHook(client, SDKHook_TraceAttack, Hook_PlayerTraceAttack);
-	SDKHook(client, SDKHook_ShouldCollide, Hook_PlayerShouldCollide);
 	DHookEntity(hkChangeTeam, false, client, _, Hook_PlayerChangeTeam);
+	DHookEntity(hkShouldCollide, false, client, _, Hook_PlayerShouldCollide);
 }
 
 public void OnClientDisconnect(int client)
@@ -488,12 +496,6 @@ public MRESReturn Hook_IsMultiplayer(Handle hReturn, Handle hParams)
 	DHookSetReturn(hReturn, g_bIsMultiplayerOverride);
 	return MRES_Supercede;
 }
-
-//public MRESReturn Hook_IsDeathmatch(Handle hReturn, Handle hParams)
-//{
-//	DHookSetReturn(hReturn, false);
-//	return MRES_Supercede;
-//}
 
 public void Hook_CameraDeathSpawn(int iEntIndex)
 {

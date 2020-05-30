@@ -30,7 +30,7 @@ public void Hook_PlayerPreThinkPost(int iClient)
 	}
 	else
 	{
-		if(pPlayer.GetTeam() != TEAM_SPECTATOR && GetGameTime() - pPlayer.GetDeathTime() > 1.0)
+		if(pPlayer.GetTeam() != TEAM_SPECTATOR && GetGameTime() - pPlayer.GetDeathTime() > g_pConvarCoopRespawnTime.FloatValue)
 		{
 			int iPressed = pPlayer.GetPressedButtons();
 			if(iPressed != 0 && iPressed != IN_SCORE)
@@ -123,24 +123,27 @@ public Action Hook_PlayerTraceAttack(int victim, int &attacker, int &inflictor, 
 //------------------------------------------------------
 public MRESReturn Hook_PlayerChangeTeam(int _this, Handle hParams)
 {
-	int iTeamNum = DHookGetParam(hParams, 1);
-	if(iTeamNum == TEAM_SCIENTIST || iTeamNum == TEAM_MARINES)
+	if(g_pCoopManager.IsCoopModeEnabled())
 	{
-		char szTeam[16]; g_pConvarCoopTeam.GetString(szTeam, sizeof(szTeam));
-		if(StrEqual(szTeam, "scientist", false))
+		int iTeamNum = DHookGetParam(hParams, 1);
+		if(iTeamNum == TEAM_SCIENTIST || iTeamNum == TEAM_MARINES)
 		{
-			if(iTeamNum == TEAM_MARINES)
+			char szTeam[16]; g_pConvarCoopTeam.GetString(szTeam, sizeof(szTeam));
+			if(StrEqual(szTeam, "scientist", false))
 			{
-				DHookSetParam(hParams, 1, TEAM_SCIENTIST);
-				return MRES_ChangedHandled;
+				if(iTeamNum == TEAM_MARINES)
+				{
+					DHookSetParam(hParams, 1, TEAM_SCIENTIST);
+					return MRES_ChangedHandled;
+				}
 			}
-		}
-		else if(StrEqual(szTeam, "marines", false))
-		{
-			if(iTeamNum == TEAM_SCIENTIST)
+			else if(StrEqual(szTeam, "marines", false))
 			{
-				DHookSetParam(hParams, 1, TEAM_MARINES);
-				return MRES_ChangedHandled;
+				if(iTeamNum == TEAM_SCIENTIST)
+				{
+					DHookSetParam(hParams, 1, TEAM_MARINES);
+					return MRES_ChangedHandled;
+				}
 			}
 		}
 	}
@@ -150,12 +153,16 @@ public MRESReturn Hook_PlayerChangeTeam(int _this, Handle hParams)
 //------------------------------------------------------
 // NoBlock
 //------------------------------------------------------
-public bool Hook_PlayerShouldCollide(int entity, int collisiongroup, int contentsmask, bool originalResult)
+public MRESReturn Hook_PlayerShouldCollide(int _this, Handle hReturn, Handle hParams)
 {
-	//LogDebug("PlayerShouldCollide ent=%d cg=%d mask=%d original=%d", entity, collisiongroup, contentsmask, originalResult);
-	if(collisiongroup == COLLISION_GROUP_PLAYER || collisiongroup == COLLISION_GROUP_PLAYER_MOVEMENT)
+	if(g_pCoopManager.IsCoopModeEnabled())
 	{
-		return false;
+		int iCollisionGroup = DHookGetParam(hParams, 1);
+		if(iCollisionGroup == COLLISION_GROUP_PLAYER || iCollisionGroup == COLLISION_GROUP_PLAYER_MOVEMENT)
+		{
+			DHookSetReturn(hReturn, false);
+			return MRES_Supercede;
+		}
 	}
-	return true;
+	return MRES_Ignored;
 }

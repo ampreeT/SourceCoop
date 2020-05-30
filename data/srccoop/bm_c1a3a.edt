@@ -164,63 +164,70 @@
 	}
 	"checkpoint"
 	{
-		"spawn"
+		"#if"
 		{
 			"!globalstate" "c1a3c_c1a3a"
-			"origin"	"-519 990 -119"
-			"angles"	"0 0 0"
-		}
-		"gotlunch"
-		{
-			"!globalstate" "c1a3c_c1a3a"
-			"origin"	"-1536 -1178 -119"
-			"angles"	"0 90 0"
-			"triggerid" "bm_c1a3a_headcrab_killer"
-			"output"	"OnTrigger"
-		}
-		"militarycontrol"
-		{
-			"!globalstate" "c1a3c_c1a3a"
-			"origin"	"256 -1247 -312"
-			"angles"	"0 0 0"
-			"triggerid" "83365"
-			"output"	"OnTrigger"
-		}
-		"RescuedAtLast"
-		{
-			"!globalstate" "c1a3c_c1a3a"
-			"origin"	"1250 -1678 -39"
-			"angles"	"0 270 0"
-			"triggerid" "RescuedAtLast_trig03"
-			"output"	"OnTrigger"
-		}
-		"endlift"
-		{
-			"!globalstate" "c1a3c_c1a3a"
-			"origin"	"0 0 20"
-			"angles"	"0 0 0"
-			"followid"	"AToBElev"
-			"portal"	"768 -2208 -284"
-			"triggerid" "eb"
-			"output"	"OnPressed"
-			"delay"		"3"
+			"#then"
+			{
+				"spawn"
+				{
+					"origin"	"-519 990 -119"
+					"angles"	"0 0 0"
+				}
+				"gotlunch"
+				{
+					"origin"	"-1536 -1178 -119"
+					"angles"	"0 90 0"
+					"triggerid" "bm_c1a3a_headcrab_killer"
+					"output"	"OnTrigger"
+				}
+				"militarycontrol"
+				{
+					"origin"	"256 -1247 -312"
+					"angles"	"0 0 0"
+					"triggerid" "83365"
+					"output"	"OnTrigger"
+				}
+				"RescuedAtLast"
+				{
+					"origin"	"1250 -1678 -39"
+					"angles"	"0 270 0"
+					"triggerid" "RescuedAtLast_trig03"
+					"output"	"OnTrigger"
+				}
+				"endlift"
+				{
+					"origin"	"0 0 20"
+					"angles"	"0 0 0"
+					"followid"	"AToBElev"
+					"portal"	"768 -2208 -284"
+					"triggerid" "eb"
+					"output"	"OnPressed"
+					"delay"		"3"
+				}
+			}
 		}
 		
 		// return from bm_c1a3c
-		"spawn2"
+		"#if"
 		{
 			"globalstate" "c1a3c_c1a3a"
-			"origin"	"-2984 -877 32"
-			"angles"	"0 90 0"
-		}
-		"controlroom"
-		{
-			"globalstate" "c1a3c_c1a3a"
-			"origin"	"-533 608 -119"
-			"angles"	"0 0 0"
-			"triggerid"	"sec_door_02"
-			"output"	"OnFullyClosed"
-			"portal"	"-608 608 -91"
+			"#then"
+			{
+				"spawn2"
+				{
+					"origin"	"-2984 -877 32"
+					"angles"	"0 90 0"
+				}
+				"controlroom"
+				{
+					"origin"	"-533 608 -119"
+					"angles"	"0 0 0"
+					"triggerid"	"sec_door_02"
+					"output"	"OnFullyClosed"
+					"portal"	"-608 608 -91"
+				}
+			}
 		}
 	}
 }

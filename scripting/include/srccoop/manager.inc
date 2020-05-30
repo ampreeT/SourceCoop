@@ -144,7 +144,7 @@ enum struct CoopManager
 		this.m_pChangeLevelMgr = new ChangeLevelManager();
 	}
 
-	void MapReset(bool bIsCoopMap)
+	void OnLevelInit(const char[] szMapName, char szMapEntities[2097152])
 	{
 		this.m_pDelayedOutputs.Clear();
 		this.m_pStartTimer = null;
@@ -152,15 +152,26 @@ enum struct CoopManager
 		this.m_bGetReadyTimer = false;
 		this.m_bStarted = false;
 		this.m_bPlayerSpawned = false;
-		this.m_bIsCoopMap = bIsCoopMap;
 		this.m_pChangeLevelMgr.Clear();
 		for(int i = 0; i <= MaxClients; i++)
 		{
 			this.m_iClientChangeLvlIndicies[i] = -1;
 		}
-		if(bIsCoopMap && this.ShouldResetGlobalStates())
+		g_pLevelLump.Clear();
+		
+		KeyValues kv = this.LoadMapConfig(szMapName);
+		this.m_bIsCoopMap = kv != null;
+		
+		if(this.m_bIsCoopMap)
 		{
-			g_ServerGameDLL.GameShutdown();
+			if(this.ShouldResetGlobalStates())
+			{
+				g_ServerGameDLL.GameShutdown();
+			}
+			g_pLevelLump.ParseMapEntities(szMapEntities);
+			g_pLevelLump.ParseConfigFile(kv);
+			g_pLevelLump.ToString(szMapEntities);
+			delete kv;
 		}
 	}
 
@@ -173,7 +184,12 @@ enum struct CoopManager
 		{
 			CBM_MP_GameRules.SetStateIsInIntermission(STATE_WARMUP, false);
 			CBM_MP_GameRules.SetStateEndTime(STATE_WARMUP, GetGameTime() + 60 * 60 * 24 * 7);
-			g_SpawnSystem.ParseConfigFile(g_szMapName);
+			KeyValues kv = this.LoadMapConfig(g_szMapName);
+			if(kv != null) 
+			{
+				g_SpawnSystem.ParseConfigFile(kv);
+				delete kv;
+			}
 		}
 	}
 
@@ -387,26 +403,29 @@ enum struct CoopManager
 	{
 		return g_pConvarCoopEnabled.BoolValue;
 	}
+	
+	KeyValues LoadMapConfig(const char[] szMapName)
+	{
+		char szConfigPath[MAX_FORMAT];
+		BuildPath(Path_SM, szConfigPath, sizeof(szConfigPath), "data/srccoop/%s.edt", szMapName);
+		if (!FileExists(szConfigPath))
+		{
+			Format(szConfigPath, sizeof(szConfigPath), "maps/%s.edt", szMapName);
+			if(!FileExists(szConfigPath, true))
+			{
+				return null;
+			}
+		}
+		
+		KeyValues kv = new KeyValues(szMapName);
+		char szRoot[16];
+		if (!(kv.ImportFromFile(szConfigPath) && kv.GetSectionName(szRoot, sizeof(szRoot)) && strcmp(szRoot, "config", false) == 0))
+			ThrowError("Couldn't import %s into KeyValues", szMapName);
+		return kv;
+	}
 }
 
 CoopManager g_pCoopManager;
-
-#pragma dynamic 2097152
-public Action OnLevelInit(const char[] szMapName, char szMapEntities[2097152])		// you probably need to incease SlowScriptTimeout in core.cfg
-{
-	strcopy(g_szPrevMapName, sizeof(g_szPrevMapName), g_szMapName);
-	strcopy(g_szMapName, sizeof(g_szMapName), szMapName);
-	g_pCoopManager.MapReset(g_pLevelLump.IsCoopMap(szMapName));
-	g_pLevelLump.Clear();
-	if (g_pCoopManager.IsCoopModeEnabled())
-	{
-		g_pLevelLump.ParseMapEntities(szMapEntities);
-		g_pLevelLump.ParseConfigFile(szMapName);
-		g_pLevelLump.ToString(szMapEntities);
-	}
-
-	return Plugin_Changed;
-}
 
 public Action StartTimerCallback(Handle pTimer)
 {
