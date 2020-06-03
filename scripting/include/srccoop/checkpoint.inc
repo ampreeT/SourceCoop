@@ -555,14 +555,6 @@ enum struct CCoopSpawn
 
 CCoopSpawn g_SpawnSystem;
 
-//public Action Callback_GivePlayerSuit(Handle hTimer, CBlackMesaPlayer pPlayer)
-//{
-//	if (pPlayer.IsValid())
-//	{
-//		pPlayer.SetSuit(true);
-//	}
-//}
-
 public void RequestSpawnPlayer(CBlackMesaPlayer pPlayer)
 {
 	if(pPlayer.IsValid() && pPlayer.IsAlive())

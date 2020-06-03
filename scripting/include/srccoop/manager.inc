@@ -185,7 +185,7 @@ enum struct CoopManager
 			CBM_MP_GameRules.SetStateIsInIntermission(STATE_WARMUP, false);
 			CBM_MP_GameRules.SetStateEndTime(STATE_WARMUP, GetGameTime() + 60 * 60 * 24 * 7);
 			KeyValues kv = this.LoadMapConfig(g_szMapName);
-			if(kv != null) 
+			if(kv != null)
 			{
 				g_SpawnSystem.ParseConfigFile(kv);
 				delete kv;
@@ -342,7 +342,7 @@ enum struct CoopManager
 			if(this.m_iClientChangeLvlIndicies[j] != -1) votes++;
 		}
 		
-		int iPlayerCount = GetRealClientCount(true) - 1; // take off the 1 that we did with votes
+		int iPlayerCount = GetRealClientCount(true, false, true) - 1; // take off the 1 that we did with votes
 		if(iPlayerCount < 1)
 		{
 			return 0.0;

@@ -52,12 +52,12 @@ stock void InitDebugLog(const char[] convarBaseName, const char[] debugTag, int 
 	int numFlags = FlagBitsToArray(adminFlags, flags, sizeof(flags));
 	for(int i = 0; i < numFlags; i++) {
 		int len = strlen(flagChars);
-		
 		if(len > 0) {
 			len += StrCat(flagChars, sizeof(flagChars), ", ");
 		}
-		
-		FindFlagChar(flags[i], view_as<int>(flagChars[len]));
+		int flagChar;
+		FindFlagChar(flags[i], flagChar);
+		flagChars[len] = flagChar;
 		flagChars[len + 1] = 0;
 	}
 	

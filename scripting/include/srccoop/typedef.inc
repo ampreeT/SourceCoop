@@ -40,6 +40,7 @@
 #define	SF_NORESPAWN ( 1 << 30 )	// if set, item wont respawn in MP
 
 #define SF_AUTO_FIREONCE 0x01
+#define SF_REMOVE_ON_FIRE 0x001 // Relay will remove itself after being triggered.
 
 #define SF_CHANGELEVEL_NOTOUCH 0x0002
 

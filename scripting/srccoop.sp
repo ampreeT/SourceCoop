@@ -149,8 +149,8 @@ public void OnPluginStart()
 	InitDebugLog("sm_coop_debug", "SRCCOOP", ADMFLAG_ROOT);
 	g_pConvarCoopEnabled = CreateConVar("sm_coop_enabled", "1", "Sets if coop is enabled on coop maps");
 	g_pConvarCoopTeam = CreateConVar("sm_coop_team", "scientist", "Sets which team to use in TDM mode. Valid values are [marines] or [scientist]. Setting anything else will not manage teams.");
-	g_pConvarCoopRespawnTime = CreateConVar("sm_coop_respawntime", "1.0", "Sets player respawn time in seconds. (This can only be used for making respawn times quicker, not longer)", _, true, 0.1);
-	g_pConvarWaitPeriod = CreateConVar("sm_coop_wait_period", "15.0", "The max number of seconds to wait since first player spawned in to start the map. The timer is skipped when all players enter the game.");
+	g_pConvarCoopRespawnTime = CreateConVar("sm_coop_respawntime", "2.0", "Sets player respawn time in seconds. (This can only be used for making respawn times quicker, not longer)", _, true, 0.1);
+	g_pConvarWaitPeriod = CreateConVar("sm_coop_start_wait_period", "15.0", "The max number of seconds to wait since first player spawned in to start the map. The timer is skipped when all players enter the game.");
 	g_pConvarEndWaitPeriod = CreateConVar("sm_coop_end_wait_period", "60.0", "The max number of seconds to wait since first player triggered a changelevel. The timer speed increases each time a new player finishes the level.");
 	g_pConvarEndWaitFactor = CreateConVar("sm_coop_end_wait_factor", "1.0", "Controls how much the number of finished players increases the changelevel timer speed. 1.0 means full, 0 means none (timer will run full length).", _, true, 0.0, true, 1.0);
 	g_pLevelLump.Initialize();
@@ -182,6 +182,7 @@ public void OnPluginStart()
 #pragma dynamic 2097152
 public Action OnLevelInit(const char[] szMapName, char szMapEntities[2097152])		// you probably need to incease SlowScriptTimeout in core.cfg
 {
+	OnMapEnd(); // this does not always get called, so call it here
 	strcopy(g_szPrevMapName, sizeof(g_szPrevMapName), g_szMapName);
 	strcopy(g_szMapName, sizeof(g_szMapName), szMapName);
 	g_pCoopManager.OnLevelInit(szMapName, szMapEntities);
@@ -193,7 +194,7 @@ public void OnMapStart()
 {
 	g_pCoopManager.OnMapStart();
 	DHookGamerules(hkIsMultiplayer, false, _, Hook_IsMultiplayer);
-	
+	DHookGamerules(hkFAllowFlashlight, false, _, Hook_FAllowFlashlight);
 	for(int i = 0; i < g_pPostponedSpawns.Length; i++)
 	{
 		CBaseEntity pEnt = g_pPostponedSpawns.Get(i);
@@ -205,10 +206,6 @@ public void OnMapStart()
 
 public void OnConfigsExecuted()
 {
-	if (g_pCoopManager.IsFeaturePatchingEnabled())
-	{
-		DHookGamerules(hkFAllowFlashlight, false, _, Hook_FAllowFlashlight);
-	}
 	if (g_pCoopManager.IsCoopModeEnabled())
 	{
 		CBaseEntity pGameEquip = CreateByClassname("game_player_equip");	// will spawn players with nothing if it exists
@@ -346,16 +343,7 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 public void Hook_SpawnPost(int iEntIndex)
 {
 	CBaseEntity pEntity = CBaseEntity(iEntIndex);
-	/*if(pEntity.GetMoveType() == MOVETYPE_VPHYSICS)
-	{
-		char szClass[13]; pEntity.GetClassname(szClass, sizeof(szClass));
-		if(strcmp(szClass, "prop_physics") == 0) // prefix
-		{
-			pEntity.SetSpawnFlags(pEntity.GetSpawnFlags() | SF_PHYSPROP_ENABLE_PICKUP_OUTPUT);
-		}
-		SDKHook(iEntIndex, SDKHook_UsePost, Hook_Use);
-	}*/
-	
+
 	if (g_pCoopManager.IsCoopModeEnabled())
 	{
 		if(!g_pCoopManager.m_bStarted)
@@ -451,8 +439,32 @@ public Action OutputCallbackForDelay(const char[] output, int caller, int activa
 		{
 			RequestFrame(RequestStopThink, pFireOutputData.m_pCaller);
 		}
+		if(pFireOutputData.m_pCaller.IsClassname("logic_relay"))
+		{
+			int sf = pFireOutputData.m_pCaller.GetSpawnFlags();
+			if(sf & SF_REMOVE_ON_FIRE)
+			{
+				pFireOutputData.m_pCaller.SetSpawnFlags(sf &~ SF_REMOVE_ON_FIRE);
+				UnhookSingleEntityOutput(caller, output, OutputCallbackForDelay);
+				HookSingleEntityOutput(caller, output, DeleteEntOnDelayedOutputFire);
+			}
+		}
 	}
+
 	return Plugin_Stop;
+}
+
+public Action DeleteEntOnDelayedOutputFire(const char[] output, int caller, int activator, float delay)
+{
+	if(g_pCoopManager.m_bStarted)
+	{
+		RemoveEntity(caller);
+		return Plugin_Continue;
+	}
+	else
+	{
+		return Plugin_Stop;
+	}
 }
 
 public void RequestStopThink(CBaseEntity pEntity)
@@ -487,8 +499,12 @@ public Action Hook_BroadcastTeamsound(Event hEvent, const char[] szName, bool bD
 
 public MRESReturn Hook_FAllowFlashlight(Handle hReturn, Handle hParams)		// enable sp flashlight
 {
-	DHookSetReturn(hReturn, true);
-	return MRES_Supercede;
+	if (g_pCoopManager.IsFeaturePatchingEnabled())
+	{
+		DHookSetReturn(hReturn, true);
+		return MRES_Supercede;
+	}
+	return MRES_Ignored;
 }
 
 public MRESReturn Hook_IsMultiplayer(Handle hReturn, Handle hParams)

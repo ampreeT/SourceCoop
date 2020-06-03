@@ -1,10 +1,10 @@
-#base "base\bmc_workshop_campaign.edt"
+#base "base\bm_sp_campaign.edt"
 
 "config"
 {
+	"nextmap"	"/.*/"
 	"equipment"
 	{
-		"suit" "0"
 	}
 	"entity"
 	{

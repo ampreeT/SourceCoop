@@ -234,9 +234,9 @@ public MRESReturn Hook_PointTeleportAcceptInput(int _this, Handle hReturn, Handl
 //------------------------------------------------------
 public MRESReturn Hook_PointViewcontrolAcceptInput(int _this, Handle hReturn, Handle hParams)
 {
-	static bool bHookSkipEnable = false;
+	static bool bHookSkip = false;
 	LogDebug("Hook_PointViewcontrolAcceptInput ent=%d", _this);
-	if (g_pCoopManager.IsBugPatchingEnabled())
+	if (!bHookSkip && g_pCoopManager.IsBugPatchingEnabled())
 	{
 		if (!DHookIsNullParam(hParams, 1))
 		{
@@ -247,32 +247,51 @@ public MRESReturn Hook_PointViewcontrolAcceptInput(int _this, Handle hReturn, Ha
 
 			if (strcmp(szInputType, "Disable", false) == 0)
 			{
-				int iFollowerEnt = -1;
-				while ((iFollowerEnt = FindEntityByOwner(iFollowerEnt, pThis, "point_viewcontrol")) != -1)
+				HookSingleEntityOutput(_this, "OnEndFollow", OnEndFollowBlocker);
+				bHookSkip = true;
+				for(int i = 1; i <= MaxClients; i++)
 				{
-					LogDebug("Hook_PointViewcontrolAcceptInput disabling follower %d", iFollowerEnt);
-					AcceptEntityInput(iFollowerEnt, "Disable");
+					if(IsClientInGame(i))
+					{
+						CBlackMesaPlayer pPlayer = CBlackMesaPlayer(i);
+						if(pPlayer.GetViewEntity() == pThis)
+						{
+							SetEntPropEnt(_this, Prop_Data, "m_hPlayer", i);
+							pThis.AcceptInputStr("Disable");
+							SetClientViewEntity(i, i); // game wont reset player if dead
+						}
+					}
 				}
-				// continue as normal //
+				SetEntPropEnt(_this, Prop_Data, "m_hPlayer", -1);
+				UnhookSingleEntityOutput(_this, "OnEndFollow", OnEndFollowBlocker);
+				pThis.FireOutput("OnEndFollow", _this);
+				bHookSkip = false;
+				DHookSetReturn(hReturn, true);
+				return MRES_Supercede;
 			}
-			else if (strcmp(szInputType, "Enable", false) == 0 && !bHookSkipEnable)
+			else if (strcmp(szInputType, "Enable", false) == 0)
 			{
-				CBaseEntity pActivator;
+				CBlackMesaPlayer pActivator;
 				if(!DHookIsNullParam(hParams, 2))
 				{
-					pActivator = CBaseEntity(DHookGetParam(hParams, 2));
+					pActivator = CBlackMesaPlayer(DHookGetParam(hParams, 2));
 				}
 				if(pActivator.IsClassPlayer())
 				{
-					if(GetEntProp(_this, Prop_Data, "m_state") == USE_ON)
+					// prevent bugging out if already using cam
+					CBaseEntity pViewEntity = pActivator.GetViewEntity();
+					if(pViewEntity.IsValidIndex() && pViewEntity.IsClassname("point_viewcontrol") && pViewEntity != pThis)
 					{
-						AcceptEntityInput(_this, "Disable");
+						SetEntPropEnt(pViewEntity.GetEntIndex(), Prop_Data, "m_hPlayer", pActivator.GetEntIndex());
+						bHookSkip = true;
+						pViewEntity.AcceptInputStr("Disable");
+						bHookSkip = false;
+						pActivator.SetViewEntity(pActivator); // game wont reset player if dead
 					}
-					// continue as normal //
 				}
 				else
 				{
-					LogDebug("Hook_PointViewcontrolAcceptInput MRES_Supercede -  activator not a player > EnableAll");
+					LogDebug("Hook_PointViewcontrolAcceptInput activator not a player > EnableAll > MRES_Supercede");
 					AcceptEntityInput(_this, "EnableAll");
 					DHookSetReturn(hReturn, true);
 					return MRES_Supercede;
@@ -280,62 +299,13 @@ public MRESReturn Hook_PointViewcontrolAcceptInput(int _this, Handle hReturn, Ha
 			}
 			else if (strcmp(szInputType, "EnableAll", false) == 0) // new input
 			{
-				// use this (primary) viewcontrol with first client
-				// spin up temporary repeater cameras for every other client
-				// this is the only way to make this work 100% without recreating the entity entirely
-
-				bHookSkipEnable = true;
-				g_bTempDontHookEnts = true;
-				bool bUsedThis;
 				for(int i = 1; i <= MaxClients; i++)
 				{
 					if(IsClientInGame(i) && IsPlayerAlive(i))
 					{
-						if(!bUsedThis)
-						{
-							LogDebug("Hook_PointViewcontrolAcceptInput enabling primary camera");
-							if(GetEntProp(_this, Prop_Data, "m_state") == USE_ON)
-							{
-								AcceptEntityInput(_this, "Disable");
-							}
-							AcceptEntityInput(_this, "Enable", i);
-							bUsedThis = true;
-							continue;
-						}
-
-						int iFollower = CreateEntityByName("point_viewcontrol");
-						CBaseEntity pFollower = CBaseEntity(iFollower);
-						if(pFollower.IsValidIndex())
-						{
-							LogDebug("Hook_PointViewcontrolAcceptInput new follower camera %d", iFollower);
-							// copy all relevant properties
-							float vec[3];
-							char buffer[MAX_VALUE];
-							SetEntPropFloat(iFollower, Prop_Data, "m_fov", GetEntPropFloat(_this, Prop_Data, "m_fov"));
-							SetEntPropFloat(iFollower, Prop_Data, "m_fovSpeed", GetEntPropFloat(_this, Prop_Data, "m_fovSpeed"));
-							SetEntPropFloat(iFollower, Prop_Data, "m_trackSpeed", GetEntPropFloat(_this, Prop_Data, "m_trackSpeed"));
-							SetEntPropFloat(iFollower, Prop_Data, "m_acceleration", GetEntPropFloat(_this, Prop_Data, "m_acceleration"));
-							SetEntPropFloat(iFollower, Prop_Data, "m_deceleration", GetEntPropFloat(_this, Prop_Data, "m_deceleration"));
-							SetEntPropFloat(iFollower, Prop_Data, "m_flSpeed", GetEntPropFloat(_this, Prop_Data, "m_flSpeed"));
-							SetEntPropFloat(iFollower, Prop_Data, "m_flWait", GetEntPropFloat(_this, Prop_Data, "m_flWait"));
-							SetEntProp(iFollower, Prop_Data, "m_spawnflags", GetEntProp(_this, Prop_Data, "m_spawnflags"));
-							GetEntPropVector(_this, Prop_Data, "m_angAbsRotation", vec); SetEntPropVector(iFollower, Prop_Data, "m_angAbsRotation", vec);
-							GetEntPropVector(_this, Prop_Data, "m_vecAbsOrigin", vec); SetEntPropVector(iFollower, Prop_Data, "m_vecAbsOrigin", vec);
-							GetEntPropString(_this, Prop_Data, "m_iName", buffer, sizeof(buffer)); SetEntPropString(iFollower, Prop_Data, "m_iName", buffer);
-							GetEntPropString(_this, Prop_Data, "m_sPath", buffer, sizeof(buffer)); SetEntPropString(iFollower, Prop_Data, "m_sPath", buffer);
-							GetEntPropString(_this, Prop_Data, "m_iParent", buffer, sizeof(buffer)); SetEntPropString(iFollower, Prop_Data, "m_iParent", buffer);
-							GetEntPropString(_this, Prop_Data, "m_target", buffer, sizeof(buffer)); SetEntPropString(iFollower, Prop_Data, "m_target", buffer);
-							GetEntPropString(_this, Prop_Data, "m_iszTargetAttachment", buffer, sizeof(buffer)); SetEntPropString(iFollower, Prop_Data, "m_iszTargetAttachment", buffer);
-							pFollower.Spawn();
-							pFollower.AcceptInputStr("AddOutput", "OnEndFollow !self:kill::0:1");
-							pFollower.AcceptInputStr("Enable", _, CBlackMesaPlayer(i));
-							pFollower.SetOwner(pThis);
-							DHookEntity(hkAcceptInput, false, iFollower, _, Hook_PointViewcontrolNeverEnable);
-						}
+						AcceptEntityInput(_this, "Enable", i);
 					}
 				}
-				bHookSkipEnable = false;
-				g_bTempDontHookEnts = false;
 				DHookSetReturn(hReturn, true);
 				LogDebug("Hook_PointViewcontrolAcceptInput MRES_Supercede");
 				return MRES_Supercede;
@@ -346,20 +316,9 @@ public MRESReturn Hook_PointViewcontrolAcceptInput(int _this, Handle hReturn, Ha
 	return MRES_Ignored;
 }
 
-public MRESReturn Hook_PointViewcontrolNeverEnable(int _this, Handle hReturn, Handle hParams)
+public Action OnEndFollowBlocker(const char[] output, int caller, int activator, float delay)
 {
-	if (!DHookIsNullParam(hParams, 1))
-	{
-		char szInputType[MAX_FORMAT];
-		DHookGetParamString(hParams, 1, szInputType, sizeof(szInputType));
-		if (strcmp(szInputType, "Enable", false) == 0)
-		{
-			LogDebug("Hook_PointViewcontrolNeverEnable ent=%d", _this);
-			DHookSetReturn(hReturn, true);
-			return MRES_Supercede;
-		}
-	}
-	return MRES_Ignored;
+	return Plugin_Stop;
 }
 
 //------------------------------------------------------

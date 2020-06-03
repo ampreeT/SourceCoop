@@ -1,0 +1,87 @@
+#base "base\bm_sp_campaign.edt"
+
+"config"
+{
+	"nextmap"	"bm_c2a2c"
+	"equipment"
+	{
+	}
+	"console"
+	{
+		"sm_coop_end_wait_period" "0"
+	}
+	"entity"
+	{
+		// spawn items
+		"modify"
+		{
+			"targetname" "c2a2b_equipment"
+			"flags"
+			{
+				"spawnflags"
+				{
+					"add" "2" // motion disabled
+					"add" "8" // silent pickup
+				}
+			}
+		}
+		// sentry lasers from previous level
+		"delete"
+		{
+			"targetname" "c2a2a_sentry_trigger"
+		}
+		// delete door blocker
+		"delete"
+		{
+			"targetname" "c2a2b_blastdoor_block"
+		}
+		// use door kill instead
+		"modify"
+		{
+			"targetname" "c2a2b_blastdoor"
+			"set"
+			{
+				"forceclosed" "1"
+				"dmg" "50"
+			}
+		}
+	}
+	"checkpoint"
+	{
+		"spawn"
+		{
+			"origin" "-420 -3818 188"
+			"angles" "0 90 0"
+		}
+		"train"
+		{
+			"origin" "0 0 30"
+			"angles" "0 0 0"
+			"followid" "c2a2a_tram_a_base"
+		}
+		"silo"
+		{
+			"origin" "1521 -72 173"
+			"angles" "0 315 0"
+			"triggerid" "c2a2b_blastdoor"
+			"output" "OnOpen"
+		}
+		"silo-doorclosed"
+		{
+			"origin" "1521 -72 173"
+			"angles" "0 315 0"
+			"triggerid" "c2a2b_blastdoor"
+			"output" "OnFullyClosed"
+			"portal" "1376 0 189"
+		}
+		"silo-raiserocket"
+		{
+			"origin" "2342 2 1324"
+			"angles" "0 180 0"
+			"triggerid" "raise_button"
+			"output" "OnPressed"
+			"bringall" "1"
+			"bringall_radius" "200"
+		}
+	}
+}

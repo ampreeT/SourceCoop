@@ -54,6 +54,11 @@
 				"targetname" ""
 			}
 		}
+		// elevator button lock trigger
+		"delete"
+		{
+			"hammerid" "2039226"
+		}
 	}
 	"checkpoint"
 	{

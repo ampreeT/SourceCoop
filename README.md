@@ -9,7 +9,7 @@ Both linux and windows dedicated servers are supported.
 ## Features & fixes (not everything)
 - checkpoint system
 - map config & entity edit system
-- delayed map start system, delayed mapchange
+- delayed map start, delayed mapchange system
 - scripted scenes now filter for all players
 - re-enables flashlight and object pickup functionality in multiplayer
 - fixes sniper's crashing upon its first tick of running
@@ -18,8 +18,9 @@ Both linux and windows dedicated servers are supported.
 - fixed a crash caused by round restarts
 
 ## How to install
-- Install latest build of [metamod](https://www.sourcemm.net/downloads.php?branch=dev) and [sourcemod](https://www.sourcemod.net/downloads.php?branch=dev). Developement builds -not stable- are required for both at the moment (you may have to delete metamod's 64bit files to get it to work).
-- Install [DHooks with detour support](https://github.com/peace-maker/DHooks2/releases) extension.
+- Install latest dev build of [metamod](https://www.sourcemm.net/downloads.php?branch=dev). (Tested with build 1130) - On linux you may have to delete metamod's 64bit files.
+- Install latest dev build of [sourcemod](https://www.sourcemod.net/downloads.php?branch=dev). (Tested with build 6562)
+- Install latest [DHooks with detour support](https://github.com/peace-maker/DHooks2/releases) extension.
 - Copy the folders from this repository into sourcemod.
 
 At this point you can jump in and play supported maps in coop.
@@ -35,7 +36,7 @@ To be explained.. You may take a look at included edt's for examples.
 
 ### Tips
 - Match entities by targetname and/or classname, use hammerid as last resort (although it is in many cases unavoidable)
-- Put spawn points on the floor (in hammer place info_target for getting position, in game use cl_showpos 1). Players must touch spawn items on the first frame of teleport, if there are any to pick up.
+- Put spawn points on the floor (in hammer place info_target for getting position, in game use cl_showpos 1). Players must touch spawn items on the first frame of first teleport, if there are any to pick up.
 - Use correct base class for new configs, put repetitive properties in base class
 - Use "flags" block for modifying spawnflags when you only want to toggle some flags
 
@@ -44,7 +45,7 @@ The following convars are available:
 - sm_coop_enabled - Sets if coop is enabled on coop maps
 - sm_coop_team - Sets which team to use in TDM mode. Valid values are [marines] or [scientist]. Setting anything else will not manage teams.
 - sm_coop_respawntime - Sets player respawn time in seconds. (This can only be used for making respawn times quicker, not longer)
-- sm_coop_wait_period - The max number of seconds to wait since first player spawned in to start the map. The timer is skipped when all players enter the game.
+- sm_coop_start_wait_period - The max number of seconds to wait since first player spawned in to start the map. The timer is skipped when all players enter the game.
 - sm_coop_end_wait_period - The max number of seconds to wait since first player triggered a changelevel. The timer speed increases each time a new player finishes the level.
 - sm_coop_end_wait_factor - Controls how much the number of finished players increases the changelevel timer speed. 1.0 means full, 0 means none (timer will run full length).
 
@@ -55,7 +56,6 @@ The following convars are available:
 - hook UpdateEnemyMemory input on npcs, compare if !player or !pvsplayer > call manually (either closest player or all) (UpdateEnemyMemory( pEnemy, pEnemy->GetAbsOrigin(), this ))
 - custom difficulty based on player count
 - npcs can walk into player, make him stuck, then stop rendering
-- viewcontrol fix doesnt work (yet)
 
 ### non-critical
 - sniper HasCondition(...) offset should go in gamedata

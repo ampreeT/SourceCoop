@@ -83,6 +83,15 @@
 				"dmg" "50"
 			}
 		}
+		// move teleport a bit back so players dont see themselves
+		"modify"
+		{
+			"targetname" "disaster_pointteleport2"
+			"set"
+			{
+				"origin" "-9216 -3184 -888"
+			}
+		}
 		// cart push timeout - restart map
 		"modify"
 		{
