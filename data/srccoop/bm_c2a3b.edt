@@ -2,14 +2,94 @@
 
 "config"
 {
-	"nextmap"	"/.*/"
+	"nextmap"	"bm_c2a3c"
 	"equipment"
 	{
 	}
 	"entity"
 	{
+		// spawn items
+		"modify"
+		{
+			"targetname" "/player_spawn_weapon|player_spawn_ammo|player_spawn_suit/"
+			"flags"
+			{
+				"spawnflags"
+				{
+					"add" "2" // motion disabled
+					"add" "8" // silent pickup
+				}
+			}
+		}
+		// block previous changelevel
+		"modify"
+		{
+			"classname" "trigger_changelevel"
+			"map" "bm_c2a3a"
+			"add"
+			{
+				"classname" "func_brush"
+				"rendermode" "10" // dont render
+			}
+		}
+		"delete"
+		{
+			"targetname" "trig_block_player" // remove brush blocking door to npc area
+		}
+		// if scientist dies just open the door...
+		"modify"
+		{
+			"targetname" "SCI02_Cryo"
+			"add"
+			{
+				"GameEndAlly" "0"
+			}
+			"outputs"
+			{
+				"add"
+				{
+					"target" "c2a3a_icedoor"
+					"output" "OnDeath"
+					"input"	"Open"
+				}
+			}
+		}
+		// Kill fishies till fixed 
+		"delete"
+		{
+			"classname" "npc_ichthyosaur"
+		}
 	}
 	"checkpoint"
 	{
+		"spawn"
+		{
+			"origin" "456 -44 212"
+			"angles" "0 180 0"
+		}
+		"fencehole"
+		{
+			"portal" "0 -1050 0"
+			"origin" "300 -700 10"
+			"triggerid" "gman_relay"
+			"output" "OnTrigger"
+			"angles" "0 0 0"
+		}
+		"freezer1"
+		{
+			"triggerid" "icedoor"
+			"output" "OnClose"
+			"origin" "3580 -500 250"
+			"angles" "0 90 0"
+			"portal" "3580 -610 250"
+		}
+		"freezer2"
+		{
+			"triggerid" "c2a3a_icedoor"
+			"output" "OnClose"
+			"origin" "3500 -300 250"
+			"angles" "0 90 0"
+			"portal" "3500 -420 250"
+		}
 	}
 }

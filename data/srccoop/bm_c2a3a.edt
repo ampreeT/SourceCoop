@@ -2,14 +2,80 @@
 
 "config"
 {
-	"nextmap"	"/.*/"
+	"nextmap"	"bm_c2a3b"
 	"equipment"
 	{
 	}
 	"entity"
 	{
+		// spawn items
+		"modify"
+		{
+			"targetname" "/player_spawn_weapon|player_spawn_ammo|player_spawn_suit/"
+			"flags"
+			{
+				"spawnflags"
+				{
+					"add" "2" // motion disabled
+					"add" "8" // silent pickup
+				}
+			}
+		}
+		// Kill fishies until fixed
+		"delete"
+		{
+			"classname" "npc_ichthyosaur"
+		} 
 	}
 	"checkpoint"
 	{
+		"spawn"
+		{
+			"origin" "-1465 89 47"
+			"angles" "0 0 0"
+		}
+		"train"
+		{
+			"origin" "0 0 100"
+			"angles" "0 0 0"
+			"followid" "crashtrain"
+		}
+		"crashpool"
+		{
+			"origin" "1428 -976 -876"
+			"portal" "1368 -232 -40"
+			"angles" "0 272 0"
+			"triggerid" "track_52"
+			"output" "OnPass"
+		}
+		"stairwell"
+		{
+			"origin" "1828 -833 -704"
+			"angles" "0 0 0"
+			"triggerid" "trigger_c1a1b_zombie_12"
+			"output" "OnTrigger"
+		}
+		"fire"
+		{
+			"origin" "1947 973 -795"
+			"angles" "0 90 0" 
+			"triggerid" "trig_cc_app_base"
+			"output" "OnTrigger"
+		}
+		"fishyentrance"
+		{
+			"origin" "2850 -95 -572"
+			"angles" "0 90 0"
+			"triggerid" "trigger_c2a3a_flicker_01_ENABLE"
+			"output" "OnTrigger"
+		}
+		"cage"
+		{ 
+			"origin" "2712 512 -450"
+			"angles" "0 90 0"
+			"triggerid" "1719"
+			"output" "OnTrigger"
+			"bringall"	"1"
+		}
 	}
 }
