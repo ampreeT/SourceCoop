@@ -32,6 +32,16 @@
 				}
 			}
 		}
+		// door closing trigger
+		"modify"
+		{
+			"hammerid" "9196506"
+			"classname" "trigger_once"
+			"outputs"
+			{
+				"remove" {}
+			}
+		}
 		// remove lift blocker
 		"delete"
 		{
@@ -85,9 +95,8 @@
 		{
 			"origin"	"-4640 -1572 -1103"
 			"angles"	"0 180 0"
-			"triggerid"	"c1a1d_bt_block_d2"
-			"output"	"OnFullyClosed"
-			"portal"	"-4568 -1572 -1076"
+			"triggerid"	"9196506"
+			"output"	"OnTrigger"
 		}
 		"lift"
 		{

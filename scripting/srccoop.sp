@@ -137,7 +137,7 @@ void load_gamedata()
 	load_dhook_virtual(pGameConfig, hkThink, "CBaseEntity::Think");
 	load_dhook_virtual(pGameConfig, hkChangeTeam, "CBlackMesaPlayer::ChangeTeam");
 	load_dhook_virtual(pGameConfig, hkShouldCollide, "CBlackMesaPlayer::ShouldCollide");
-//	load_dhook_detour(pGameConfig, hkSetSuitUpdate, "CBasePlayer::SetSuitUpdate", Hook_SetSuitUpdate, Hook_SetSuitUpdatePost);
+	load_dhook_detour(pGameConfig, hkSetSuitUpdate, "CBasePlayer::SetSuitUpdate", Hook_SetSuitUpdate, Hook_SetSuitUpdatePost);
 	load_dhook_detour(pGameConfig, hkUTIL_GetLocalPlayer, "UTIL_GetLocalPlayer", Hook_UTIL_GetLocalPlayer);
 	load_dhook_detour(pGameConfig, hkResolveNames, "CAI_GoalEntity::ResolveNames", Hook_ResolveNames, Hook_ResolveNamesPost);
 	CloseHandle(pGameConfig);
@@ -147,11 +147,11 @@ public void OnPluginStart()
 {
 	load_gamedata();
 	InitDebugLog("sm_coop_debug", "SRCCOOP", ADMFLAG_ROOT);
-	g_pConvarCoopEnabled = CreateConVar("sm_coop_enabled", "1", "Sets if coop is enabled on coop maps");
+	g_pConvarCoopEnabled = CreateConVar("sm_coop_enabled", "1", "Sets if coop is enabled on coop maps", _, true, 0.0, true, 1.0);
 	g_pConvarCoopTeam = CreateConVar("sm_coop_team", "scientist", "Sets which team to use in TDM mode. Valid values are [marines] or [scientist]. Setting anything else will not manage teams.");
 	g_pConvarCoopRespawnTime = CreateConVar("sm_coop_respawntime", "2.0", "Sets player respawn time in seconds. (This can only be used for making respawn times quicker, not longer)", _, true, 0.1);
-	g_pConvarWaitPeriod = CreateConVar("sm_coop_start_wait_period", "15.0", "The max number of seconds to wait since first player spawned in to start the map. The timer is skipped when all players enter the game.");
-	g_pConvarEndWaitPeriod = CreateConVar("sm_coop_end_wait_period", "60.0", "The max number of seconds to wait since first player triggered a changelevel. The timer speed increases each time a new player finishes the level.");
+	g_pConvarWaitPeriod = CreateConVar("sm_coop_start_wait_period", "15.0", "The max number of seconds to wait since first player spawned in to start the map. The timer is skipped when all players enter the game.", _, true, 0.0);
+	g_pConvarEndWaitPeriod = CreateConVar("sm_coop_end_wait_period", "60.0", "The max number of seconds to wait since first player triggered a changelevel. The timer speed increases each time a new player finishes the level.", _, true, 0.0);
 	g_pConvarEndWaitFactor = CreateConVar("sm_coop_end_wait_factor", "1.0", "Controls how much the number of finished players increases the changelevel timer speed. 1.0 means full, 0 means none (timer will run full length).", _, true, 0.0, true, 1.0);
 	g_pLevelLump.Initialize();
 	g_SpawnSystem.Initialize();
@@ -206,6 +206,11 @@ public void OnMapStart()
 
 public void OnConfigsExecuted()
 {
+	RequestFrame(OnConfigsExecutedPost); // prevents a bug where this is fired too early if map changes in OnMapStart
+}
+
+public void OnConfigsExecutedPost()
+{
 	if (g_pCoopManager.IsCoopModeEnabled())
 	{
 		CBaseEntity pGameEquip = CreateByClassname("game_player_equip");	// will spawn players with nothing if it exists
@@ -221,8 +226,7 @@ public void OnConfigsExecuted()
 			pGameGamerules.AcceptInputStr("DisableCanisterDrops");
 			pGameGamerules.Kill();
 		}
-	}
-	
+	}	
 	PrecacheScriptSound("HL2Player.SprintStart");
 }
 
