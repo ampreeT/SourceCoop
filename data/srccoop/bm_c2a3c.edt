@@ -2,14 +2,70 @@
 
 "config"
 {
-	"nextmap"	"/.*/"
+	"nextmap"	"bm_c2a4a"
 	"equipment"
 	{
 	}
 	"entity"
 	{
+		"modify"
+		{
+			"targetname" "/player_spawn_weapon|player_spawn_ammo|player_spawn_suit|player_spawn_battery/"
+			"flags"
+			{
+				"spawnflags"
+				{
+					"add" "2" // motion disabled
+					"add" "8" // silent pickup
+				}
+			}
+			// Move equipment to new spawn location
+			"add"
+			{
+				"origin" "800 128 90"
+			}
+		}
+		// Turn the teleport-to-changelevel trigger_teleport into a trigger_once that changes the level instead
+		"modify"
+		{
+			"targetname" "gordon_teleport_byebye"
+			"add"
+			{
+				"classname" "trigger_once"
+			}
+			"outputs"
+			{
+				"add" {
+					"output" "OnTrigger"
+					"target" "c2a4a_transition"
+					"input" "ChangeLevel"
+				}
+			}
+		}
 	}
 	"checkpoint"
 	{
+		"spawn"
+		{
+			"origin" "800 128 70"
+			"angles" "0 180 0"
+		}
+		"elevator"
+		{
+			"origin" "0 0 60"
+			"angles" "0 180 0"
+			"followid" "elevator"
+			"portal" "-704 -1568 -160"
+			"triggerid" "elevator"
+			"output" "OnStart"
+		}
+		"ambush"
+		{
+			"triggerid" "trigger_ambush_scene"
+			"origin" "-4324 -56 465"
+			"angles" "0 180 0"
+			"output" "OnTrigger"
+			"bringall" "1"
+		}
 	}
 }

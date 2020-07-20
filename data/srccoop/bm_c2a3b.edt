@@ -20,6 +20,11 @@
 					"add" "8" // silent pickup
 				}
 			}
+			// Move equipment to new spawn location
+			"add"
+			{
+				"origin" "456 -44 240"
+			}
 		}
 		// block previous changelevel
 		"modify"

@@ -20,6 +20,37 @@
 					"add" "8" // silent pickup
 				}
 			}
+			// Move equipment to new spawn location
+			"add"
+			{
+				"origin" "-1465 89 65"
+			}
+		}
+		// prepare changelevel for touch trigger
+		"modify"
+		{
+			"targetname" "c2a3a_c2a3b_changelevel"
+			"add"
+			{
+				"StartDisabled" "1"
+				"spawnflags" "0"
+			}
+		}
+		"modify"
+		{
+			"targetname" "c2a3a_door_button_05"
+			"outputs"
+			{
+				"modify"
+				{
+					"target" "c2a3a_c2a3b_changelevel"
+					"input" "ChangeLevel"
+					"replace"
+					{
+						"input" "Enable"
+					}
+				}
+			}
 		}
 		// Kill fishies until fixed
 		"delete"
