@@ -37,11 +37,6 @@
 				"delay_output" "OnNewGame"
 			}
 		}
-		// no going back
-		"delete"
-		{
-			"targetname" "c1a4c_entry_button"
-		}
 		// dont close controlroom door
 		"modify"
 		{
@@ -92,7 +87,32 @@
 				}
 			}
 		}
+		// fix entry teleporter
+		// -------------------
+		// no going back
+		"delete"
+		{
+			"targetname" "c1a4c_entry_button"
+		}
+		// stay turned on longer to teleport everyone
+		"modify"
+		{
+			"targetname" "c1a4b_entry_cycle_relay"
+			"outputs"
+			{
+				"modify"
+				{
+					"target" "c1a4b_entry_teleport"
+					"input" "Disable"
+					"replace"
+					{
+						"delay" "2.1"
+					}
+				}
+			}
+		}
 		// fix c1a4d - power teleporter
+		// ----------------------------
 		"modify"
 		{
 			"targetname" "c1a4c_power_button_out"
@@ -127,6 +147,16 @@
 					"delay" "5"
 					"timestofire" "-1"
 				}
+				// stay turned on longer to teleport everyone
+				"modify"
+				{
+					"target" "c1a4c_power_teleport"
+					"input" "Disable"
+					"replace"
+					{
+						"delay" "1.6"
+					}
+				}
 			}
 		}
 		"modify"
@@ -156,9 +186,20 @@
 					"delay" "5"
 					"timestofire" "-1"
 				}
+				// stay turned on longer to teleport everyone
+				"modify"
+				{
+					"target" "c1a4b_power_teleport"
+					"input" "Disable"
+					"replace"
+					{
+						"delay" "2.1"
+					}
+				}
 			}
 		}
 		// fix c1a4c - oxy/fuel teleporter
+		// ----------------------------
 		"modify"
 		{
 			"targetname" "c1a4c_fuel_button_out"
@@ -193,6 +234,16 @@
 					"delay" "5"
 					"timestofire" "-1"
 				}
+				// stay turned on longer to teleport everyone
+				"modify"
+				{
+					"target" "c1a4c_fuel_teleport"
+					"input" "Disable"
+					"replace"
+					{
+						"delay" "1.6"
+					}
+				}
 			}
 		}
 		"modify"
@@ -221,6 +272,16 @@
 					"input" "Unlock"
 					"delay" "5"
 					"timestofire" "-1"
+				}
+				// stay turned on longer to teleport everyone
+				"modify"
+				{
+					"target" "c1a4b_fuel_teleport"
+					"input" "Disable"
+					"replace"
+					{
+						"delay" "2.1"
+					}
 				}
 			}
 		}

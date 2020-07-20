@@ -5,8 +5,6 @@
 	"nextmap"	"bm_c1a0a"
 	"console"
 	{
-		// somewhat fix train prediction lagging
-		"sv_client_predict" "0"
 	}
 	"entity"
 	{

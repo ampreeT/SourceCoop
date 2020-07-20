@@ -98,6 +98,20 @@
 #define SF_PHYSPROP_NO_COLLISIONS				0x200000		// Don't enable collisions on spawn
 #define SF_PHYSPROP_IS_GIB						0x400000		// Limit # of active gibs
 
+// Physbox spawnflags
+#define SF_PHYSBOX_ASLEEP					0x01000
+#define SF_PHYSBOX_IGNOREUSE				0x02000
+#define SF_PHYSBOX_DEBRIS					0x04000
+#define SF_PHYSBOX_MOTIONDISABLED			0x08000
+#define SF_PHYSBOX_USEPREFERRED				0x10000
+#define SF_PHYSBOX_ENABLE_ON_PHYSCANNON		0x20000
+#define SF_PHYSBOX_NO_ROTORWASH_PUSH		0x40000		// The rotorwash doesn't push these
+#define SF_PHYSBOX_ENABLE_PICKUP_OUTPUT		0x80000
+#define SF_PHYSBOX_ALWAYS_PICK_UP		    0x100000		// Physcannon can always pick this up, no matter what mass or constraints may apply.
+#define SF_PHYSBOX_NEVER_PICK_UP			0x200000		// Physcannon will never be able to pick this up.
+#define SF_PHYSBOX_NEVER_PUNT				0x400000		// Physcannon will never be able to punt this object.
+#define SF_PHYSBOX_PREVENT_PLAYER_TOUCH_ENABLE 0x800000		// If set, the player will not cause the object to enable its motion when bumped into
+
 enum
 {
 	AMMO_INVALID = 0,

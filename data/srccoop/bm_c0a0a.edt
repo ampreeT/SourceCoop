@@ -6,8 +6,6 @@
 	"intro_type"	"fade"
 	"console"
 	{
-		// somewhat fix train prediction lagging
-		"sv_client_predict" "0"
 	}
 	"entity"
 	{

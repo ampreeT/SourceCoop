@@ -26,7 +26,6 @@ Handle g_pCreateServerInterface;
 // DHooks
 // ----------------------------
 Handle hkFAllowFlashlight;
-//Handle hkIsDeathmatch;
 Handle hkIsMultiplayer;
 Handle hkIRelationType;
 Handle hkIsPlayerAlly;
@@ -35,7 +34,7 @@ Handle hkFindNamedEntity;
 Handle hkFindNamedEntityClosest;
 Handle hkSetModel;
 Handle hkAcceptInput;
-//Handle hkSetSuitUpdate;
+Handle hkSetSuitUpdate;
 Handle hkOnTryPickUp;
 Handle hkThink;
 Handle hkChangeTeam;

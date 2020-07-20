@@ -65,5 +65,13 @@
 			"output" "OnPressed"
 			"portal" "-536 -2688 108"
 		}
+		"blastdoor"
+		{
+			"origin" "905 -2008 77"
+			"angles" "0 0 0"
+			"triggerid" "blast_final_l"
+			"output" "OnFullyClosed"
+			"portal" "777 -2008 77"
+		}
 	}
 }

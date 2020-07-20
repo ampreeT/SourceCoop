@@ -10,6 +10,7 @@ Both linux and windows dedicated servers are supported.
 - checkpoint system
 - map config & entity edit system
 - delayed map start, delayed mapchange system
+- noblock and friendly fire protection
 - scripted scenes now filter for all players
 - re-enables flashlight and object pickup functionality in multiplayer
 - fixes sniper's crashing upon its first tick of running
@@ -24,6 +25,7 @@ Both linux and windows dedicated servers are supported.
 - Copy the folders from this repository into sourcemod.
 
 At this point you can jump in and play supported maps in coop.
+Playing with mp_teamplay 1 is recommended as this allows lag-free noblock.
 
 ## Adding coop support
 To enable coop mode on desired map, an edt file for it needs to be created first.
@@ -48,6 +50,7 @@ The following convars are available:
 - sm_coop_start_wait_period - The max number of seconds to wait since first player spawned in to start the map. The timer is skipped when all players enter the game.
 - sm_coop_end_wait_period - The max number of seconds to wait since first player triggered a changelevel. The timer speed increases each time a new player finishes the level.
 - sm_coop_end_wait_factor - Controls how much the number of finished players increases the changelevel timer speed. 1.0 means full, 0 means none (timer will run full length).
+- sm_coop_debug - Sets debug logging options
 
 # ToDo
 ### must-fix
@@ -56,6 +59,7 @@ The following convars are available:
 - hook UpdateEnemyMemory input on npcs, compare if !player or !pvsplayer > call manually (either closest player or all) (UpdateEnemyMemory( pEnemy, pEnemy->GetAbsOrigin(), this ))
 - custom difficulty based on player count
 - npcs can walk into player, make him stuck, then stop rendering
+- random linux server crashes related to npcs (pAnim, CalcAnimation, etc)
 
 ### non-critical
 - sniper HasCondition(...) offset should go in gamedata
@@ -78,12 +82,14 @@ The following convars are available:
 		- unable to recompile player models due to too many animation files overflow in studiomdl
 - find out if the 'admire hands' animation can be reenabled when picking up suit - guessing this has to do with sp/mp viewmodels
 - detour CBeam::RandomTargetname -> compare for !player -> return closest
-- no breakmodel gibs appear (BM MP issue)
 - checkpoint teleport should attempt to find free space if blocked
 - suit sound queue does not clear on death or spawn
 - barnacle grab range is larger than in sp?
+- npc voice volume seems way too low
 - add instancing for wall chargers
-- inwater overlay shows to all players
+- (BM MP issue) no breakmodel gibs appear
+- (BM MP issue) inwater overlay and possibly other overlays show to all players
+- (BM MP issue) other players' flashlight stays in place when they get out of range. One possible resolution would be to change transmit options or hook settransmit if it is an entity.
 
 ### feature
 - add a hardcore mode where map resets when everyone dies, disable respawning, put dead players on spectate
@@ -92,9 +98,7 @@ The following convars are available:
 
 ### map-issues
 - c1a1a
-	- lift wont go up again and kills players randomly
-- c1a4b
-	- teleport rooms often tp only 1 player at time
+	- Eli sometimes mysteriously dies and breaks the game
 - bm_c4a4a
 	- point_hurt (cyclone_hurt) has target !player (this picks first one)
 - xen maps
