@@ -2,14 +2,132 @@
 
 "config"
 {
-	"nextmap"	"/.*/"
+	"nextmap"	"bm_c2a4b"
 	"equipment"
 	{
+		"health" "45"
 	}
 	"entity"
 	{
+		// spawn items
+		"modify"
+		{
+			"targetname" "suit"
+			"flags"
+			{
+				"spawnflags"
+				{
+					"add" "2" // motion disabled
+					"add" "8" // silent pickup
+				}
+			}
+		}
+		// delay map start
+		"modify"
+		{
+			"classname"	"logic_auto"
+			"functions"
+			{
+				"delay_output" "OnMapSpawn"
+			}
+		}
+		// dont kill ents
+		"delete"
+		{
+			"targetname" "crusher_kill_relay"
+		}
+		// portal shouldn't close in mp
+		"modify"
+		{
+			"targetname" "outside_portal"
+			"remove"
+			{
+				"targetname" ""
+			}
+		}
+		// spawn with crowbar once it's picked up
+		"add"
+		{
+			"origin" "-5711.3 816 1185"
+			"classname" "item_weapon_crowbar"
+			"targetname" "spawn_crowbar"
+		}
+		"add"
+		{
+			"classname" "point_template"
+			"Template01" "spawn_crowbar"
+			"targetname" "spawn_crowbar_spawner"
+		}
+		"modify"
+		{
+			"hammerid" "2145021"
+			"classname" "item_weapon_crowbar"
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnPlayerPickup"
+					"target" "spawn_crowbar_spawner"
+					"input" "ForceSpawn"
+				}
+			}
+		}
+		// use changelevel touch trigger
+		"modify"
+		{
+			"outputs"
+			{
+				"remove"
+				{
+					"target" "bm_c2a4a_trigger"
+					"input" "ChangeLevel"
+				}
+			}
+		}
+		// block going past changelevel
+		"add"
+		{
+			"classname" "func_brush"
+			"rendermode" "10" // dont render
+			"functions"
+			{
+				"copy_model"
+				{
+					"targetname" "bm_c2a4a_trigger"
+					"classname" "trigger_changelevel"
+				}
+			}
+		}
 	}
 	"checkpoint"
 	{
+		"spawn"
+		{
+			"origin"	"-5712 816 1185"
+			"angles"	"0 0 0"
+		}
+		"spawn_top"
+		{
+			"origin"	"-2715 190 1049"
+			"angles"	"0 180 0"
+			"triggerid"	"north_compactor_trigger"
+			"output"	"OnTrigger"
+			"delay"		"25"
+		}
+		"crusherclosed"
+		{
+			"origin"	"-2162 -511 -184"
+			"angles"	"0 300 0"
+			"triggerid"	"west_trash_door"
+			"output"	"OnFullyClosed"
+			"portal"	"-3011 192 817"
+		}
+		"facility"
+		{
+			"origin"	"-823 864 -60"
+			"angles"	"0 45 0"
+			"triggerid"	"trigger_portal_interrupt"
+			"output"	"OnTrigger"
+		}
 	}
 }

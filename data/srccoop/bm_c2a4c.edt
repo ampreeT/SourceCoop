@@ -2,14 +2,100 @@
 
 "config"
 {
-	"nextmap"	"/.*/"
+	"nextmap"	"bm_c2a4e"
 	"equipment"
 	{
 	}
 	"entity"
 	{
+		// spawn items
+		"modify"
+		{
+			"targetname" "/suit|weapons/"
+			"flags"
+			{
+				"spawnflags"
+				{
+					"add" "2" // motion disabled
+					"add" "8" // silent pickup
+				}
+			}
+		}
+		// prepare changelevel
+		"modify"
+		{
+			"targetname" "trig_changlevel"
+			"set"
+			{
+				"classname" "func_brush"
+				"rendermode" "10" // dont render
+			}
+		}
+		"modify"
+		{
+			"targetname" "c2a4c_c2a4e_trig"
+			"classname" "trigger_changelevel"
+			"functions"
+			{
+				"copy_model"
+				{
+					"targetname" "trigger2_branch_snds_conveyorshaft8"
+				}
+			}
+		}
+		// mp fixes
+		"delete"
+		{
+			"targetname" "/trig_c2a4c_audiokill|trig_c2a4c_gibshooter_timer3_disable|trigger2_branch_snds_conveyorshaft8/"
+		}
+		"modify"
+		{
+			"hammerid" "1662733"
+			"outputs"
+			{
+				"modify"
+				{
+					"output" "OnStartTouch"
+					"replace"
+					{
+						"output" "OnStartTouchAll"
+					}
+				}
+				"modify"
+				{
+					"output" "OnEndTouch"
+					"replace"
+					{
+						"output" "OnEndTouchAll"
+					}
+				}
+			}
+		}
+		"modify"
+		{
+			"targetname" "relaybranch_gibshooters"
+			"outputs"
+			{
+				"remove"
+				{
+					"output" "OnFalse"
+				}
+			}
+		}
 	}
 	"checkpoint"
 	{
+		"spawn"
+		{
+			"origin"	"-1200 2190 514"
+			"angles"	"0 270 0"
+		}
+		"part2"
+		{
+			"origin"	"-604 -1038 165"
+			"angles"	"0 180 0"
+			"triggerid"	"conveyor_carrier01_controller"
+			"output"	"OnPressed"
+		}
 	}
 }
