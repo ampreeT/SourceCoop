@@ -2,14 +2,108 @@
 
 "config"
 {
-	"nextmap"	"/.*/"
+	"nextmap"	"bm_c2a4c"
 	"equipment"
 	{
 	}
 	"entity"
 	{
+		// spawn items
+		"modify"
+		{
+			"targetname" "/suit|weapons/"
+			"flags"
+			{
+				"spawnflags"
+				{
+					"add" "2" // motion disabled
+					"add" "8" // silent pickup
+				}
+			}
+		}
+		// make no-dmg fall trigger repeatable
+		"modify"
+		{
+			"hammerid" "1333962"
+			"classname" "trigger_once"
+			"set"
+			{
+				"classname" "trigger_multiple"
+			}
+			"outputs"
+			{
+				"remove"
+				{
+					"target" "fall_filter"
+					"input" "Kill"
+				}
+				"modify"
+				{
+					"output" "OnTrigger"
+					"replace"
+					{
+						"output" "OnStartTouch"
+					}
+				}
+				"add"
+				{
+					"output" "OnEndTouch"
+					"target" "!activator"
+					"input" "SetDamageFilter"
+					"timestofire" "-1"
+				}
+			}
+		}
+		// mp fixes
+		"delete"
+		{
+			"targetname" "c2a4b_audiokill2"
+		}
+		"modify"
+		{
+			"outputs"
+			{
+				"remove"
+				{
+					"target" "push"
+				}
+			}
+		}
+		// block going past changelevel
+		"add"
+		{
+			"classname" "func_brush"
+			"rendermode" "10" // dont render
+			"functions"
+			{
+				"copy_model"
+				{
+					"classname" "trigger_changelevel"
+					"map" "bm_c2a4c"
+				}
+			}
+		}
 	}
 	"checkpoint"
 	{
+		"spawn"
+		{
+			"origin"	"594 1 713"
+			"angles"	"0 180 0"
+		}
+		"sewers"
+		{
+			"origin"	"-1323 1 37"
+			"angles"	"0 0 0"
+			"triggerid" "trigger_incinerator_master_start"
+			"output"	"OnTrigger"
+		}
+		"conveyors"
+		{
+			"origin"	"-1046 -568 -219"
+			"angles"	"0 270 0"
+			"triggerid" "elevator_lever"
+			"output"	"OnFullyOpen"
+		}
 	}
 }
