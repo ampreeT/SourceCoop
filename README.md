@@ -60,6 +60,7 @@ The following convars are available:
 - custom difficulty based on player count
 - npcs can walk into player, make him stuck, then stop rendering
 - random linux server crashes related to npcs (pAnim, CalcAnimation, etc)
+- npc_xenturret AI causes crash on map load (it seems to be fine after loading)
 
 ### non-critical
 - sniper HasCondition(...) offset should go in gamedata
@@ -107,3 +108,9 @@ The following convars are available:
 # Authors
 - [ampreeT](https://steamcommunity.com/id/ampreeT/)
 - [Alienmario](https://steamcommunity.com/id/4oM0/)
+- [Rock](https://steamcommunity.com/id/Rock48/)
+
+## Dedicated Playtesters
+- [Googolplex23](https://steamcommunity.com/id/pandlfisher/)
+- [WindedCone](https://steamcommunity.com/id/AceOak57/)
+- [Antonio115](https://steamcommunity.com/profiles/76561198880559068/)
