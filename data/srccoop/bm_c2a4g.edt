@@ -2,14 +2,44 @@
 
 "config"
 {
-	"nextmap"	"/.*/"
+	"nextmap"	"bm_c2a4f"
 	"equipment"
 	{
 	}
 	"entity"
 	{
+		// spawn items
+		"modify"
+		{
+			"targetname" "/weapons|suit/"
+			"flags"
+			{
+				"spawnflags"
+				{
+					"add" "2" // motion disabled
+					"add" "8" // silent pickup
+				}
+			}
+		}
+		// block previous changelevel
+		"modify"
+		{
+			"classname" "trigger_changelevel"
+			"map"	"bm_c2a4f"
+			"landmark"	"bm_c2a4f_bm_c2a4g"
+			"add"
+			{
+				"classname" "func_brush"
+				"rendermode" "10" // dont render
+			}
+		}
 	}
 	"checkpoint"
 	{
+		"spawn"
+		{
+			"origin"	"1835 1687 30"
+			"angles"	"0 277.5 0"
+		}
 	}
 }

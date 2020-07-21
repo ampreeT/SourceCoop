@@ -2,14 +2,78 @@
 
 "config"
 {
-	"nextmap"	"/.*/"
+	"nextmap"	"bm_c2a5a"
 	"equipment"
 	{
 	}
 	"entity"
 	{
+		// spawn items
+		"modify"
+		{
+			"targetname" "/c2a4h_suit|c2a4h_weapons|c2a4h_ammo/"
+			"flags"
+			{
+				"spawnflags"
+				{
+					"add" "2" // motion disabled
+					"add" "8" // silent pickup
+				}
+			}
+		}
+		// Dont lock the front doors when they close
+		"modify"
+		{
+			"hammerid"	"631184"
+			"outputs"
+			{
+				"remove"
+				{
+					"input" "Lock"
+				}
+			}
+		}
+		// changelevel timer setup
+		"modify"
+		{
+			"targetname" "c2a4h_c2a5a_trigger"
+			"add"
+			{
+				"spawnflags" "0" // enable touch
+				"StartDisabled" "1" // initially disabled
+			}
+		}
+		"modify" // start countdown
+		{
+			"classname" "func_button"
+			"OnPressed" "/^c2a4h_c2a5a_triggerChangeLevel/"
+			"outputs"
+			{
+				"modify"
+				{
+					"input" "ChangeLevel"
+					"target" "c2a4h_c2a5a_trigger"
+					"replace"
+					{
+						"input" "Enable"
+					}
+				}
+			}
+		}
 	}
 	"checkpoint"
 	{
+		"spawn"
+		{
+			"origin"	"2409 -2206 -236"
+			"angles"	"0 270 0"
+		}
+		"tunnel"
+		{
+			"triggerid"	"733424"
+			"output"	"OnTrigger"
+			"origin"	"160 -3072 -315"
+			"angles"	"0 180 0"
+		}
 	}
 }

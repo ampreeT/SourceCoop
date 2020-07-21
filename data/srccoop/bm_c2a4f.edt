@@ -2,14 +2,383 @@
 
 "config"
 {
-	"nextmap"	"/.*/"
+	"nextmap"	"bm_c2a4g"
+	"nextmap"	"bm_c2a4h"
 	"equipment"
 	{
 	}
 	"entity"
 	{
+		// spawn items
+		"modify"
+		{
+			"targetname" "/weapons|suit/"
+			"flags"
+			{
+				"spawnflags"
+				{
+					"add" "2" // motion disabled
+					"add" "8" // silent pickup
+				}
+			}
+		}
+		// Allow tests to kill players too
+		"modify"
+		{
+			"classname"	"trigger_physics_trap"
+			"flags"
+			{
+				"spawnflags"
+				{
+					"add"	"1"
+				}
+			}
+		}
+		// block previous changelevel
+		"modify"
+		{
+			"classname" "trigger_changelevel"
+			"map" "bm_c2a4e"
+			"add"
+			{
+				"classname" "func_brush"
+				"rendermode" "10" // dont render
+			}
+		}
+		// building exit changelevel timer setup
+		"modify"
+		{
+			"targetname" "bm_c2a4f_bm_c2a4h_t"
+			"add"
+			{
+				"spawnflags" "0" // enable touch
+				"StartDisabled" "1" // initially disabled
+			}
+		}
+		"modify"
+		{
+			"targetname"	"player_touchleveltransition"
+			"outputs"
+			{
+				"modify"
+				{
+					"input" "ChangeLevel"
+					"target" "bm_c2a4f_bm_c2a4h_t"
+					"replace"
+					{
+						"input" "Enable"
+					}
+				}
+			}
+		}
+		// do not disable surgery door trig
+		"modify"
+		{
+			"targetname"	"Trig_WatchFreeman"
+			"outputs"
+			{
+				"remove"
+				{
+					"output" "OnStartTouch"
+					"target" "surgery_door_tr"
+					"input" "Disable"
+				}
+			}
+		}
+
+		// Since this doesn't work in MP, just use a simple scripted sequence instead.
+		"remove"
+		{
+			"classname"	"ai_goal_lead"
+		}
+
+		"create"
+		{
+			"targetname" "sci_damage_filter"
+			"classname" "filter_damage_class"
+		}
+		"modify"
+		{
+			"classname" "/npc_human_scientist|npc_human_scientist_female/"
+			"add"
+			{
+				"damagefilter" "sci_damage_filter" // invul scientists
+			}
+		}
+
+		// Turn the info_target entities that the ai_goal_lead sends 
+		// the scis to into scripted_sequence entities which get
+		// fired instead of the ai_goal_lead
+		"modify"
+		{
+			"targetname" "sci01_goal"
+			"add"
+			{
+				"classname" "scripted_sequence"
+				"m_flPostYaw" "-1"
+				"m_fMoveTo" "2"
+				"m_iszEntity" "SCI01_Surgery"
+				"spawnflags" "608"
+			}
+		}
+		"modify"
+		{
+			"targetname" "sci02_goal"
+			"add"
+			{
+				"classname" "scripted_sequence"
+				"m_flPostYaw" "-1"
+				"m_fMoveTo" "2"
+				"m_iszEntity" "SCI02_Surgery"
+				"spawnflags" "608"
+			}
+		}
+		"modify"
+		{
+			"targetname" "sci03_goal"
+			"add"
+			{
+				"classname" "scripted_sequence"
+				"m_flPostYaw" "-1"
+				"m_fMoveTo" "2"
+				"m_iszEntity" "SCI03_Surgery"
+				"spawnflags" "608"
+			}
+		}
+
+		"modify"
+		{
+			"targetname" "S_surgerymachineoff"
+			"classname" "logic_choreographed_scene"
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnCompletion"
+					"target" "sci01_goal"
+					"input"	"BeginSequence"
+				}
+				"add"
+				{
+					"output" "OnCompletion"
+					"target" "sci02_goal"
+					"input"	"BeginSequence"
+				}
+				"add"
+				{
+					"output" "OnCompletion"
+					"target" "sci03_goal"
+					"input"	"BeginSequence"
+				}
+			}
+		}
+
+		"create"
+		{
+			"classname"	"trigger_once"
+			"targetname" "testroom1_cp_trig"
+			"spawnflags"	"1"
+			"functions"
+			{
+				"copy_model"
+				{
+					"hammerid"	"1237923"
+				}
+			}
+		}
+		// Return from c2a4g
+		"#if"
+		{
+			"globalstate" "c2a4g_pl_fired"
+			"#then"
+			{
+				// Equipment for return from c2a4g spawnflags 10 (2 and 8) for disable motion & silent pickup
+				"create"
+				{
+					"origin" "384 2560 -400"
+					"spawnflags" "10"
+					"angles"	"0 270 0"
+					"classname" "item_suit"
+				}
+				"create"
+				{
+					"origin" "384 2560 -400"
+					"spawnflags" "10"
+					"angles"	"0 270 0"
+					"classname" "item_weapon_357"
+				}
+				"create"
+				{
+					"origin" "384 2560 -400"
+					"spawnflags" "10"
+					"angles"	"0 270 0"
+					"classname" "item_weapon_crowbar"
+				}
+				"create"
+				{
+					"origin" "384 2560 -400"
+					"spawnflags" "10"
+					"angles"	"0 270 0"
+					"classname" "item_weapon_frag"
+				}
+				"create"
+				{
+					"origin" "384 2560 -400"
+					"spawnflags" "10"
+					"angles"	"0 270 0"
+					"classname" "item_weapon_glock"
+				}
+				"create"
+				{
+					"origin" "384 2560 -400"
+					"spawnflags" "10"
+					"angles"	"0 270 0"
+					"classname" "item_weapon_satchel"
+				}
+				"create"
+				{
+					"origin" "384 2560 -400"
+					"spawnflags" "10"
+					"angles"	"0 270 0"
+					"classname" "item_weapon_glock"
+				}
+				"create"
+				{
+					"origin" "384 2560 -400"
+					"spawnflags" "10"
+					"angles"	"0 270 0"
+					"classname" "item_weapon_frag"
+				}
+				"create"
+				{
+					"origin" "384 2560 -400"
+					"spawnflags" "10"
+					"angles"	"0 270 0"
+					"classname" "item_weapon_crossbow"
+				}
+				"create"
+				{
+					"classname" "item_weapon_mp5"
+					"origin" "384 2560 -400"
+					"spawnflags" "10"
+					"angles"	"0 270 0"
+				}
+				"create"
+				{
+					"classname" "item_ammo_mp5"
+					"origin" "384 2560 -400"
+					"spawnflags" "10"
+					"angles"	"0 270 0"
+				}
+				"create"
+				{
+					"classname" "item_ammo_mp5"
+					"origin" "384 2560 -400"
+					"spawnflags" "10"
+					"angles"	"0 270 0"
+				}
+				"create"
+				{
+					"classname" "item_weapon_shotgun"
+					"origin" "384 2560 -400"
+					"spawnflags" "10"
+					"angles"	"0 270 0"
+				}
+				"create"
+				{
+					"classname" "item_ammo_shotgun"
+					"origin" "384 2560 -400"
+					"spawnflags" "10"
+					"angles"	"0 270 0"
+				}
+				"create"
+				{
+					"classname" "item_ammo_357"
+					"origin" "384 2560 -400"
+					"spawnflags" "10"
+					"angles"	"0 270 0"
+				}
+				"create"
+				{
+					"classname" "item_weapon_tau"
+					"origin" "384 2560 -400"
+					"spawnflags" "10"
+					"angles"	"0 270 0"
+				}
+				"create"
+				{
+					"classname" "item_ammo_energy"
+					"origin" "384 2560 -400"
+					"spawnflags" "10"
+					"angles"	"0 270 0"
+				}
+				"create"
+				{
+					"classname" "item_ammo_energy"
+					"origin" "384 2560 -400"
+					"spawnflags" "10"
+					"angles"	"0 270 0"
+				}
+			}
+		}
 	}
 	"checkpoint"
 	{
+		// Coming from c2a4e (QE map 1)
+		"#if"
+		{
+			"!globalstate" "c2a4g_pl_fired"
+			"#then"
+			{
+				"spawn"
+				{
+					"origin"	"3425 -861 -230"
+					"angles"	"0 270 0"
+				}
+				"testroom1_cp"
+				{
+					"origin"	"-528 -440 -235"
+					"angles"	"0 90 0"
+					"triggerid"	"testroom1_cp_trig"
+					"output"	"OnTrigger"
+				}
+				"frieght_ele_rm"
+				{
+					"origin"	"-944 1296 -363"
+					"angles"	"0 0 0"
+					"triggerid"	"cg_s_t"
+					"output"	"OnTrigger"
+				}
+			}
+		}
+		// Return from c2a4g
+		"#if"
+		{
+			"globalstate" "c2a4g_pl_fired"
+			"#then"
+			{
+				"spawn2"
+				{
+					"origin"	"384 2560 -420"
+					"angles"	"0 270 0"
+				}
+				"bigfight"
+				{
+					"origin"	"2752 -424 -284"
+					"angles"	"0 270 0"
+					"triggerid"	"sync"
+					"output"	"OnTrigger"
+					"bringall"	"1"
+				}
+				"exit"
+				{
+					"origin"	"2408 -2000 -235"
+					"angles"	"0 270 0"
+					"portal"	"2408 -1936 -223"
+					"triggerid"	"player_touchleveltransition"
+					"output"	"OnTrigger"
+				}
+			}
+		}
 	}
 }
