@@ -140,6 +140,7 @@ void load_gamedata()
 	load_dhook_detour(pGameConfig, hkSetSuitUpdate, "CBasePlayer::SetSuitUpdate", Hook_SetSuitUpdate, Hook_SetSuitUpdatePost);
 	load_dhook_detour(pGameConfig, hkUTIL_GetLocalPlayer, "UTIL_GetLocalPlayer", Hook_UTIL_GetLocalPlayer);
 	load_dhook_detour(pGameConfig, hkResolveNames, "CAI_GoalEntity::ResolveNames", Hook_ResolveNames, Hook_ResolveNamesPost);
+	load_dhook_detour(pGameConfig, hkCanSelectSchedule, "CAI_LeadBehavior::CanSelectSchedule", Hook_CanSelectSchedule);
 	CloseHandle(pGameConfig);
 }
 
@@ -226,7 +227,7 @@ public void OnConfigsExecutedPost()
 			pGameGamerules.AcceptInputStr("DisableCanisterDrops");
 			pGameGamerules.Kill();
 		}
-	}	
+	}
 	PrecacheScriptSound("HL2Player.SprintStart");
 }
 

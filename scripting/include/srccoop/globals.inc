@@ -41,6 +41,7 @@ Handle hkChangeTeam;
 Handle hkShouldCollide;
 Handle hkUTIL_GetLocalPlayer;
 Handle hkResolveNames;
+Handle hkCanSelectSchedule;
 
 // ----------------------------
 // Adresses, Interfaces

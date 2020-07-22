@@ -111,6 +111,7 @@ The following convars are available:
 - [Rock](https://steamcommunity.com/id/Rock48/)
 
 ## Dedicated Playtesters
+- [Diego003](https://steamcommunity.com/id/Diego63212/)
 - [Googolplex23](https://steamcommunity.com/id/pandlfisher/)
 - [WindedCone](https://steamcommunity.com/id/AceOak57/)
 - [Antonio115](https://steamcommunity.com/profiles/76561198880559068/)

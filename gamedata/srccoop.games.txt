@@ -37,6 +37,11 @@
 				"windows"	"\x55\x8B\xEC\x83\xEC\x08\x53\x56\x57\x8D\xB9\x60\x03\x00\x00"
 				"linux" 	"@_ZN14CAI_GoalEntity12ResolveNamesEv"
 			}
+			"CAI_LeadBehavior::CanSelectSchedule"	// bool CAI_LeadBehavior::CanSelectSchedule()
+			{
+				"windows"	"\xA1\x2A\x2A\x2A\x2A\x56\x8B\xF1\x83\x78\x14\x01\x0F\x8F\x2A\x2A\x2A\x2A"
+				"linux" 	"@_ZN16CAI_LeadBehavior17CanSelectScheduleEv"
+			}
 			"GlobalEntity_GetIndex" // int GlobalEntity_GetIndex( const char *pGlobalname );
 			{
 				"windows"	"\x55\x8B\xEC\x51\xFF\x75\x08\x8D\x45\xFC"
@@ -413,6 +418,13 @@
 				"callconv"	"thiscall"
 				"return"	"void"
 				"this"		"entity"
+			}
+			"CAI_LeadBehavior::CanSelectSchedule"
+			{
+				"signature"	"CAI_LeadBehavior::CanSelectSchedule"
+				"callconv"	"thiscall"
+				"return"	"bool"
+				"this"		"ignore"
 			}
 		}
 	}

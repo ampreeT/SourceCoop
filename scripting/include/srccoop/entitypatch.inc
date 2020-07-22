@@ -654,3 +654,15 @@ public MRESReturn Hook_ResolveNames(int _this)
 {
 	return MRES_Ignored;
 }
+
+//------------------------------------------------------
+// CAI_LeadBehavior
+// multiplayer support
+//------------------------------------------------------
+public MRESReturn Hook_CanSelectSchedule(Handle hReturn)
+{
+	LogDebug("Hook_CanSelectSchedule");
+	// ToDo: acutally check conditions as in original code
+	DHookSetReturn(hReturn, true);
+	return MRES_Supercede;
+}
