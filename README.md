@@ -55,7 +55,6 @@ The following convars are available:
 # ToDo
 ### must-fix
 - first-person camera death code needs to set original viewentity on callback OnMapEnd()
-- bigfish crash
 - hook UpdateEnemyMemory input on npcs, compare if !player or !pvsplayer > call manually (either closest player or all) (UpdateEnemyMemory( pEnemy, pEnemy->GetAbsOrigin(), this ))
 - custom difficulty based on player count
 - npcs can walk into player, make him stuck, then stop rendering
@@ -89,7 +88,6 @@ The following convars are available:
 - npc voice volume seems way too low
 - add instancing for wall chargers
 - (BM MP issue) no breakmodel gibs appear
-- (BM MP issue) inwater overlay and possibly other overlays show to all players
 - (BM MP issue) other players' flashlight stays in place when they get out of range. One possible resolution would be to change transmit options or hook settransmit if it is an entity.
 
 ### feature

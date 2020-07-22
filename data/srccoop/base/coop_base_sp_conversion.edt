@@ -108,5 +108,10 @@
 				"target" "!pvsplayer" 
 			}
 		}
+		// env_screenoverlay shows to all players once activated. Remove it until a solution is found.
+		"delete"
+		{
+			"classname" "env_screenoverlay"
+		}
 	}
 }

@@ -6,10 +6,6 @@
 	"equipment"
 	{
 	}
-	"console"
-	{
-		"sm_coop_end_wait_period" "0"
-	}
 	"entity"
 	{
 		// spawn items
@@ -44,6 +40,11 @@
 				"forceclosed" "1"
 				"dmg" "50"
 			}
+		}
+		// dont close last door
+		"delete"
+		{
+			"targetname" "c2a2b_fog_trigger"
 		}
 	}
 	"checkpoint"

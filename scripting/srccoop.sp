@@ -137,6 +137,7 @@ void load_gamedata()
 	load_dhook_virtual(pGameConfig, hkThink, "CBaseEntity::Think");
 	load_dhook_virtual(pGameConfig, hkChangeTeam, "CBlackMesaPlayer::ChangeTeam");
 	load_dhook_virtual(pGameConfig, hkShouldCollide, "CBlackMesaPlayer::ShouldCollide");
+	load_dhook_virtual(pGameConfig, hkIchthyosaurIdleSound, "CNPC_Ichthyosaur::IdleSound");
 	load_dhook_detour(pGameConfig, hkSetSuitUpdate, "CBasePlayer::SetSuitUpdate", Hook_SetSuitUpdate, Hook_SetSuitUpdatePost);
 	load_dhook_detour(pGameConfig, hkUTIL_GetLocalPlayer, "UTIL_GetLocalPlayer", Hook_UTIL_GetLocalPlayer);
 	load_dhook_detour(pGameConfig, hkResolveNames, "CAI_GoalEntity::ResolveNames", Hook_ResolveNames, Hook_ResolveNamesPost);
@@ -335,6 +336,10 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 		else if (strcmp(szClassname, "ai_script_conditions") == 0)
 		{
 			DHookEntity(hkThink, false, iEntIndex, _, Hook_AIConditionsThink);
+		}
+		else if (strcmp(szClassname, "npc_ichthyosaur") == 0)
+		{
+			DHookEntity(hkIchthyosaurIdleSound, false, iEntIndex, _, Hook_IchthyosaurIdleSound);
 		}
 		// if some explosions turn out to be damaging all players except one, this is the fix
 		//else if (strcmp(szClassname, "env_explosion") == 0)

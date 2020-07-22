@@ -10,7 +10,11 @@
 #define FROZEN_FADE_DUR_IN 700
 #define FROZEN_FADE_DUR_OUT 1500
 #define SND_TICK "bms_objects/clickbeep/click1.wav"
+#define SND_TICK_VOL 0.5
 #define SND_CHANGELEVEL "hev_vox/bell.wav"
+#define SND_CHANGELEVEL_VOL 0.5
+#define SND_CHANGELEVEL_TICK "bms_objects/clickbeep/click1.wav"
+#define SND_CHANGELEVEL_TICK_VOL 0.2
 
 
 enum struct ChangeLevelVoteLump
@@ -180,6 +184,7 @@ enum struct CoopManager
 	{
 		PrecacheSound(SND_TICK);
 		PrecacheSound(SND_CHANGELEVEL);
+		PrecacheSound(SND_CHANGELEVEL_TICK);
 
 		g_SpawnSystem.Clear();
 		if (this.m_bIsCoopMap) // cvars are not configured yet
@@ -329,7 +334,7 @@ enum struct CoopManager
 		{
 			this.m_iTicksToEnd = g_pConvarEndWaitPeriod.IntValue;
 			this.m_pChangeLevelTimer = CreateTimer(this.GetChangeLevelTimerInterval(), ChangeLevelTimerCallback, _, TIMER_FLAG_NO_MAPCHANGE);
-			EmitSoundToAll(SND_CHANGELEVEL);
+			EmitSoundToAll(SND_CHANGELEVEL, _, _, _, _, SND_CHANGELEVEL_VOL);
 		}
 		if(this.m_pChangeLevelMgr.SetPlayerVote(pChangelevel, pActivator, this.m_iClientChangeLvlIndicies))
 		{
@@ -445,7 +450,7 @@ public Action StartTimerCallback(Handle pTimer)
 		}
 		return Plugin_Stop;
 	}
-	EmitSoundToAll(SND_TICK);
+	EmitSoundToAll(SND_TICK, _, _, _, _, SND_TICK_VOL);
 	return Plugin_Continue;
 }
 
@@ -457,7 +462,7 @@ public Action ChangeLevelTimerCallback(Handle pTimer)
 	}
 	else
 	{
-		EmitSoundToAll(SND_TICK, _, _, _, _, 0.5);
+		EmitSoundToAll(SND_CHANGELEVEL_TICK, _, _, _, _, SND_CHANGELEVEL_TICK_VOL);
 		g_pCoopManager.m_pChangeLevelMgr.UpdateStatus(g_pCoopManager.m_iTicksToEnd);
 		g_pCoopManager.m_pChangeLevelTimer = CreateTimer(g_pCoopManager.GetChangeLevelTimerInterval(), ChangeLevelTimerCallback, _, TIMER_FLAG_NO_MAPCHANGE);
 	}

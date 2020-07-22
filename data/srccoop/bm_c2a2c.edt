@@ -31,6 +31,24 @@
 				"StartOpen" "1"
 			}
 		}
+		// dont close rocket blast window
+		"modify"
+		{
+			"outputs"
+			{
+				"remove"
+				{
+					"target" "blast_win"
+					"input" "SetAnimation"
+					"parameter" "idle"
+				}
+			}
+		}
+		// dont close train door
+		"delete"
+		{
+			"targetname" "c2a2c_trans_counter"
+		}
 		// train going through wall
 		"delete"
 		{

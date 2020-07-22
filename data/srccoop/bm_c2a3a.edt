@@ -52,11 +52,6 @@
 				}
 			}
 		}
-		// Kill fishies until fixed
-		"delete"
-		{
-			"classname" "npc_ichthyosaur"
-		} 
 	}
 	"checkpoint"
 	{

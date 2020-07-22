@@ -154,7 +154,11 @@
 			{
 				"windows"	"18"
 				"linux"		"19"
-				"mac"		"19"
+			}
+			"CNPC_Ichthyosaur::IdleSound"				// CNPC_Ichthyosaur::IdleSound()
+			{
+				"windows"	"468"
+				"linux"		"469"
 			}
 		}
 		"Functions"
@@ -380,6 +384,13 @@
 						"type"	"int"
 					}
 				}
+			}
+			"CNPC_Ichthyosaur::IdleSound"
+			{
+				"offset"	"CNPC_Ichthyosaur::IdleSound"
+				"hooktype"	"entity"
+				"return"	"void"
+				"this"		"entity"
 			}
 			
 			//Detours

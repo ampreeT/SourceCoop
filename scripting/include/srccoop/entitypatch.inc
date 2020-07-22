@@ -657,7 +657,7 @@ public MRESReturn Hook_ResolveNames(int _this)
 
 //------------------------------------------------------
 // CAI_LeadBehavior
-// multiplayer support
+// multiplayer support for ai_goal_lead
 //------------------------------------------------------
 public MRESReturn Hook_CanSelectSchedule(Handle hReturn)
 {
@@ -666,3 +666,14 @@ public MRESReturn Hook_CanSelectSchedule(Handle hReturn)
 	DHookSetReturn(hReturn, true);
 	return MRES_Supercede;
 }
+
+//------------------------------------------------------
+// CNPC_Ichthyosaur - npc_ichthyosaur
+// multiplayer fix
+//------------------------------------------------------
+public MRESReturn Hook_IchthyosaurIdleSound(int _this)
+{
+	// ToDo: do the things as in original code, albeit I can hardly spot a difference
+	return MRES_Supercede;
+}
+

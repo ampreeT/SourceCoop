@@ -39,6 +39,7 @@ Handle hkOnTryPickUp;
 Handle hkThink;
 Handle hkChangeTeam;
 Handle hkShouldCollide;
+Handle hkIchthyosaurIdleSound;
 Handle hkUTIL_GetLocalPlayer;
 Handle hkResolveNames;
 Handle hkCanSelectSchedule;
