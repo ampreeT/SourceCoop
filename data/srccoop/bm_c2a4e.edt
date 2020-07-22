@@ -33,6 +33,33 @@
 				}
 			}
 		}
+
+		// set up guard persistance
+		"add"
+		{
+			"classname" "env_global"
+			"targetname" "grd01_following_global"
+			"globalstate" "grd01_following"
+		}
+		"modify"
+		{
+			"targetname" "GRD01_Office"
+			"outputs"
+			{
+				"add"
+				{
+					"target" "grd01_following_global"
+					"output" "OnDeath"
+					"input"	"TurnOff"
+				}
+				"add"
+				{
+					"target" "grd01_following_global"
+					"output" "OnPlayerUse"
+					"input"	"TurnOn"
+				}
+			}
+		}
 	}
 	"checkpoint"
 	{

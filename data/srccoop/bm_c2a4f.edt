@@ -86,15 +86,10 @@
 			}
 		}
 
-		// Since this doesn't work in MP, just use a simple scripted sequence instead.
-		"remove"
-		{
-			"classname"	"ai_goal_lead"
-		}
-
+		// make friendly npcs invulnerable
 		"create"
 		{
-			"targetname" "sci_damage_filter"
+			"targetname" "friendly_npc_damage_filter"
 			"classname" "filter_damage_class"
 		}
 		"modify"
@@ -102,77 +97,11 @@
 			"classname" "/npc_human_scientist|npc_human_scientist_female/"
 			"add"
 			{
-				"damagefilter" "sci_damage_filter" // invul scientists
+				"damagefilter" "friendly_npc_damage_filter" // invul
 			}
 		}
 
-		// Turn the info_target entities that the ai_goal_lead sends 
-		// the scis to into scripted_sequence entities which get
-		// fired instead of the ai_goal_lead
-		"modify"
-		{
-			"targetname" "sci01_goal"
-			"add"
-			{
-				"classname" "scripted_sequence"
-				"m_flPostYaw" "-1"
-				"m_fMoveTo" "2"
-				"m_iszEntity" "SCI01_Surgery"
-				"spawnflags" "608"
-			}
-		}
-		"modify"
-		{
-			"targetname" "sci02_goal"
-			"add"
-			{
-				"classname" "scripted_sequence"
-				"m_flPostYaw" "-1"
-				"m_fMoveTo" "2"
-				"m_iszEntity" "SCI02_Surgery"
-				"spawnflags" "608"
-			}
-		}
-		"modify"
-		{
-			"targetname" "sci03_goal"
-			"add"
-			{
-				"classname" "scripted_sequence"
-				"m_flPostYaw" "-1"
-				"m_fMoveTo" "2"
-				"m_iszEntity" "SCI03_Surgery"
-				"spawnflags" "608"
-			}
-		}
-
-		"modify"
-		{
-			"targetname" "S_surgerymachineoff"
-			"classname" "logic_choreographed_scene"
-			"outputs"
-			{
-				"add"
-				{
-					"output" "OnCompletion"
-					"target" "sci01_goal"
-					"input"	"BeginSequence"
-				}
-				"add"
-				{
-					"output" "OnCompletion"
-					"target" "sci02_goal"
-					"input"	"BeginSequence"
-				}
-				"add"
-				{
-					"output" "OnCompletion"
-					"target" "sci03_goal"
-					"input"	"BeginSequence"
-				}
-			}
-		}
-
+		// checkpoint trigger
 		"create"
 		{
 			"classname"	"trigger_once"
@@ -183,6 +112,53 @@
 				"copy_model"
 				{
 					"hammerid"	"1237923"
+				}
+			}
+		}
+
+		// Did someone ask the guard in c2a4e to follow?
+		"add"
+		{
+			"classname" "env_global"
+			"targetname" "grd01_following_global"
+			"globalstate" "grd01_following"
+		}
+		"#if"
+		{
+			"globalstate" "grd01_following"
+			"#then"
+			{
+				// Spawn him again
+				"create"
+				{
+					"classname" "npc_human_security"
+					"targetname" "GRD01_Office"
+					"origin" "3361.78 -892.691 -272"
+					"additionalequipment" "Default"
+					"AlwaysTransition" "No"
+					"angles" "0 264 0"
+					"CanSpeakWhileScripting" "No"
+					"expressiontype" "Random"
+					"GameEndAlly" "No"
+					"physdamagescale" "1.0"
+					"renderamt" "255"
+					"rendercolor" "255 255 255"
+					"spawnflags" "516"
+					"OnDeath" "grd01_badjudgement_criticalTrigger0-1"
+					"OnDeath" "player_havoconallyiesTrigger0-1"
+					"OnPlayerUse" "Sci03_nag_TimerResetTimer0-1"
+					"OnDeath" "player_touchleveltransitionEnable0-1"
+					// TODO: keep guard invul?
+					"damagefilter" "friendly_npc_damage_filter"
+					"outputs"
+					{
+						"add"
+						{
+							"target" "grd01_following_global"
+							"output" "OnDeath"
+							"input"	"TurnOff"
+						}
+					}
 				}
 			}
 		}

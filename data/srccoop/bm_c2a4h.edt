@@ -21,15 +21,57 @@
 				}
 			}
 		}
+		// create sci from last map
+		"create"
+		{
+			"classname" "npc_human_scientist"
+			"AlwaysTransition" "No"
+			"angles" "0 93 0"
+			"CanSpeakWhileScripting" "1"
+			"expressiontype" "Random"
+			"GameEndAlly" "0"
+			"physdamagescale" "1.0"
+			"renderamt" "255"
+			"rendercolor" "255 255 255"
+			"spawnflags" "197124"
+			"squadname" "scis"
+			"targetname" "SCI03_Surgery"
+			"origin" "2465.6 -2211.84 -272"
+		}
+		// mp deathscene fix
+		"remove"
+		{
+			"hammerid" "1050674"
+		}
 		// Dont lock the front doors when they close
 		"modify"
 		{
 			"hammerid"	"631184"
+			"add"
+			{
+				// prevent sci from activating doors
+				"spawnflags" "1"
+			}
 			"outputs"
 			{
 				"remove"
 				{
 					"input" "Lock"
+				}
+				// Activate sci death scene
+				"add"
+				{
+					"target" "grd_fllw"
+					"output" "OnTrigger"
+					"input" "Activate"
+					"timestofire" "1"
+				}
+				"add"
+				{
+					"target" "sci03_deathscene"
+					"output" "OnTrigger"
+					"input" "Start"
+					"timestofire" "1"
 				}
 			}
 		}

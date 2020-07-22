@@ -68,6 +68,146 @@
 				}
 			}
 		}
+		"add"
+		{
+			"classname" "env_global"
+			"targetname" "grd01_following_c1a2b_global"
+			"globalstate" "grd01_following_c1a2b"
+		}
+		"add"
+		{
+			"classname" "env_global"
+			"targetname" "sci04_following_c1a2b_global"
+			"globalstate" "sci04_following_c1a2b"
+		}
+		"add"
+		{
+			"classname" "env_global"
+			"targetname" "grd02_following_c1a2b_global"
+			"globalstate" "grd02_following_c1a2b"
+		}
+		// Set up NPC persistance
+		"modify"
+		{
+			"targetname" "GRD02"
+			"outputs"
+			{
+				"add"
+				{
+					"target" "grd02_following_c1a2b_global"
+					"output" "OnDeath"
+					"input"	"TurnOff"
+				}
+			}
+		}
+		"modify"
+		{
+			"targetname" "SCI04"
+			"outputs"
+			{
+				"add"
+				{
+					"target" "sci04_following_c1a2b_global"
+					"output" "OnDeath"
+					"input"	"TurnOff"
+				}
+			}
+		}
+		"modify"
+		{
+			"targetname" "BDetect_Grd01_Storage"
+			"outputs"
+			{
+				"add"
+				{
+					"target" "grd01_following_c1a2b_global"
+					"output" "OnTrigger"
+					"input"	"TurnOn"
+					"timestofire" "1"
+				}
+			}
+		}
+		"modify"
+		{
+			"targetname" "BDetect_Grd02"
+			"outputs"
+			{
+				"add"
+				{
+					"target" "grd02_following_c1a2b_global"
+					"output" "OnTrigger"
+					"input"	"TurnOn"
+					"timestofire" "1"
+				}
+			}
+		}
+		"modify"
+		{
+			"targetname" "BDetect_Sci04"
+			"outputs"
+			{
+				"add"
+				{
+					"target" "sci04_following_c1a2b_global"
+					"output" "OnTrigger"
+					"input"	"TurnOn"
+					"timestofire" "1"
+				}
+			}
+		}
+		// NPC from last map persistance
+		"#if"
+		{
+			"globalstate" "grd01_following_c1a2a"
+			"#then"
+			{
+				"create"
+				{
+					"classname" "npc_human_security"
+					"targetname" "Grd01_Storage"
+					"origin" "-2304 705 45"
+					"additionalequipment" "weapon_glock"
+					"AlwaysTransition" "No"
+					"angles" "0 150.5 0"
+					"CanSpeakWhileScripting" "No"
+					"expressiontype" "2"
+					"GameEndAlly" "No"
+					"physdamagescale" "1.0"
+					"renderamt" "255"
+					"rendercolor" "255 255 255"
+					"spawnflags" "131588"
+					"outputs"
+					{
+						"add"
+						{
+							"target" "grd01_following_c1a2b_global"
+							"output" "OnDeath"
+							"input"	"TurnOff"
+						}
+					}
+				}
+				"create"
+				{
+					"classname" "ai_goal_follow"
+					"targetname" "Grd01_Storage_follow"
+					"actor" "Grd01_Storage"
+					"MaximumState" "1"
+				}
+				"modify"
+				{
+					"hammerid" "2595446"
+					"outputs"
+					{
+						"add"
+						{
+							"target" "Grd01_Storage_follow"
+							"output" "OnTrigger"
+							"input" "Activate"
+						}
+					}
+				}
+			}
+		}
 	}
 	"checkpoint"
 	{
