@@ -112,6 +112,14 @@
 #define SF_PHYSBOX_NEVER_PUNT				0x400000		// Physcannon will never be able to punt this object.
 #define SF_PHYSBOX_PREVENT_PLAYER_TOUCH_ENABLE 0x800000		// If set, the player will not cause the object to enable its motion when bumped into
 
+enum OperatingSystem
+{
+    OS_Unknown = -1,
+    OS_Windows,
+    OS_Linux,
+    OS_Mac
+}
+
 enum
 {
 	AMMO_INVALID = 0,

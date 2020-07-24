@@ -410,6 +410,16 @@ enum struct CCoopSpawn
 				char szValue[MAX_VALUE];
 				if (kv.GetSectionName(szKey, sizeof(szKey)))
 				{
+					if(StrEqual(szKey, "#if", false))
+					{
+						if(ParseConditions(kv) && kv.JumpToKey("#then"))
+						{
+							this.ParseEquipment(kv);
+							kv.GoBack();
+						}
+						continue;
+					}
+					
 					if (kv.GetDataType(NULL_STRING) != KvData_None)
 					{
 						kv.GetString(NULL_STRING, szValue, sizeof(szValue));

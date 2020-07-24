@@ -2,8 +2,17 @@
 
 "config"
 {
-	"console"
+	"console_base_coop"
 	{
+		"#if"
+		{
+			"os"	"linux"
+			"#then"
+			{
+				// important - fixes random linux server crashes
+				"sv_pvsskipanimation" "0"
+			}
+		}
 	}
 	"entity_base_coop"
 	{

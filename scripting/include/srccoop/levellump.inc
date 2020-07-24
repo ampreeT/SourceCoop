@@ -414,34 +414,51 @@ enum struct CGlobalLevelLump
 					}
 					else
 					{
-						if (strcmp(szType, "console", false) == 0)
+						if (strcmp(szType, "console", false) == 0  || StrContains(szType, "console_base") == 0)
 						{
-							if (kv.GotoFirstSubKey(false))
-							{
-								do
-								{
-									char szKey[MAX_KEY];
-									if (kv.GetSectionName(szKey, sizeof(szKey)) && kv.GetDataType(NULL_STRING) != KvData_None)
-									{
-										char szValue[MAX_VALUE];
-										kv.GetString(NULL_STRING, szValue, sizeof(szValue));
-										ConVar pConvar = FindConVar(szKey);
-										if(pConvar != null)
-										{
-											this.m_pModifiedCvarList.Push(pConvar);
-										}
-										ServerCommand("%s %s", szKey, szValue);
-									}
-								}
-								while (kv.GotoNextKey(false));
-								kv.GoBack();
-							}
+							this.ParseConsole(kv);
 						}
 						else if (strcmp(szType, "entity") == 0 || StrContains(szType, "entity_base") == 0)
 						{
 							LogDebug("Processing \"%s\" block for entity lump modifications", szType);
 							this.ParseEntityEdits(kv);
 						}
+					}
+				}
+			}
+			while (kv.GotoNextKey(false));
+			kv.GoBack();
+		}
+	}
+	
+	void ParseConsole(KeyValues kv)
+	{
+		if (kv.GotoFirstSubKey(false))
+		{
+			do
+			{
+				char szKey[MAX_KEY];
+				if (kv.GetSectionName(szKey, sizeof(szKey)))
+				{
+					if(StrEqual(szKey, "#if", false))
+					{
+						if(ParseConditions(kv) && kv.JumpToKey("#then"))
+						{
+							this.ParseConsole(kv);
+							kv.GoBack();
+						}
+						continue;
+					}
+					if(kv.GetDataType(NULL_STRING) != KvData_None)
+					{
+						char szValue[MAX_VALUE];
+						kv.GetString(NULL_STRING, szValue, sizeof(szValue));
+						ConVar pConvar = FindConVar(szKey);
+						if(pConvar != null)
+						{
+							this.m_pModifiedCvarList.Push(pConvar);
+						}
+						ServerCommand("%s %s", szKey, szValue);
 					}
 				}
 			}
@@ -973,7 +990,7 @@ bool ParseConditions(KeyValues kv, bool anyPass = false)
 			if (kv.GetSectionName(szCondition, sizeof(szCondition)))
 			{
 				kv.GetString(NULL_STRING, szValue, sizeof(szValue));
-				bool bResult = anyPass? false:true;
+				bool bResult = !anyPass;
 				
 				if(kv.GetDataType(NULL_STRING) == KvData_None)
 				{
@@ -1003,6 +1020,13 @@ bool ParseConditions(KeyValues kv, bool anyPass = false)
 					else if (StrEqual(szCondition, "!prevmap", false))
 					{
 						bResult = !StrEqualsRegex(szValue, g_szPrevMapName, false);
+					}
+					else if (StrEqual(szCondition, "os", false))
+					{
+						bResult = (
+							StrEqual(szValue, "linux", false) && g_serverOS == OS_Linux
+							|| StrEqual(szValue, "windows", false) && g_serverOS == OS_Windows
+						);
 					}
 				}
 				

@@ -3,12 +3,14 @@
 
 #include <srccoop>
 
+#define PLUGIN_VERSION "1.0.0"
+
 public Plugin myinfo =
 {
 	name = "SourceCoop",
 	author = "ampreeT",
 	description = "SourceCoop",
-	version = "1.0.0",
+	version = PLUGIN_VERSION,
 	url = "https://github.com/ampreeT/SourceCoop"
 };
 
@@ -43,9 +45,11 @@ stock Address GetEngineInterface(const char[] szInterface)
 void load_gamedata()
 {
 	char szConfigName[] = "srccoop.games";
-	Handle pGameConfig = LoadGameConfigFile(szConfigName);
+	GameData pGameConfig = LoadGameConfigFile(szConfigName);
 	if (pGameConfig == null)
 		SetFailState("Couldn't load game config %s", szConfigName);
+	
+	g_serverOS = view_as<OperatingSystem>(pGameConfig.GetOffset("_OS_Detector_"));
 
 	char szCreateEngineInterface[] = "CreateEngineInterface";
 	StartPrepSDKCall(SDKCall_Static);
@@ -149,6 +153,7 @@ public void OnPluginStart()
 {
 	load_gamedata();
 	InitDebugLog("sm_coop_debug", "SRCCOOP", ADMFLAG_ROOT);
+	CreateConVar("sourcecoop_version", PLUGIN_VERSION, _, FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
 	g_pConvarCoopEnabled = CreateConVar("sm_coop_enabled", "1", "Sets if coop is enabled on coop maps", _, true, 0.0, true, 1.0);
 	g_pConvarCoopTeam = CreateConVar("sm_coop_team", "scientist", "Sets which team to use in TDM mode. Valid values are [marines] or [scientist]. Setting anything else will not manage teams.");
 	g_pConvarCoopRespawnTime = CreateConVar("sm_coop_respawntime", "2.0", "Sets player respawn time in seconds. (This can only be used for making respawn times quicker, not longer)", _, true, 0.1);

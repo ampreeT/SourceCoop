@@ -58,5 +58,6 @@ char g_szPrevMapName[MAX_MAPNAME];
 bool g_bTempDontHookEnts;
 bool g_bIsMultiplayerOverride = true;
 bool g_bMapStarted;
+OperatingSystem g_serverOS;
 
 ArrayList g_pPostponedSpawns;

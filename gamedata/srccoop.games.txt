@@ -68,6 +68,11 @@
 		}
 		"Offsets"
 		{
+			"_OS_Detector_"
+			{
+				"windows"	"0"
+				"linux"		"1"
+			}
 			"CBlackMesaPlayer::PickupObject"			// CBlackMesaPlayer::PickupObject(CBaseEntity*, bool)
 			{
 				"windows"	"433"

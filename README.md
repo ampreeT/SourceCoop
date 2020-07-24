@@ -58,7 +58,6 @@ The following convars are available:
 - hook UpdateEnemyMemory input on npcs, compare if !player or !pvsplayer > call manually (either closest player or all) (UpdateEnemyMemory( pEnemy, pEnemy->GetAbsOrigin(), this ))
 - custom difficulty based on player count
 - npcs can walk into player, make him stuck, then stop rendering
-- random linux server crashes related to npcs (pAnim, CalcAnimation, etc)
 - npc_xenturret AI causes crash on map load (it seems to be fine after loading)
 
 ### non-critical
@@ -83,10 +82,11 @@ The following convars are available:
 - find out if the 'admire hands' animation can be reenabled when picking up suit - guessing this has to do with sp/mp viewmodels
 - detour CBeam::RandomTargetname -> compare for !player -> return closest
 - checkpoint teleport should attempt to find free space if blocked
-- suit sound queue does not clear on death or spawn
+- suit sound queue does not clear on respawn
 - barnacle grab range is larger than in sp?
 - npc voice volume seems way too low
 - add instancing for wall chargers
+- trip mines lose the bright blue beam color when mp_teamplay=1
 - (BM MP issue) no breakmodel gibs appear
 - (BM MP issue) other players' flashlight stays in place when they get out of range. One possible resolution would be to change transmit options or hook settransmit if it is an entity.
 
@@ -98,6 +98,8 @@ The following convars are available:
 ### map-issues
 - c1a1a
 	- Eli sometimes mysteriously dies and breaks the game
+- c2a3a
+	- during final cutscene hud is turned off, players cannot use chat or press esc
 - bm_c4a4a
 	- point_hurt (cyclone_hurt) has target !player (this picks first one)
 - xen maps
