@@ -84,10 +84,10 @@ The following convars are available:
 - checkpoint teleport should attempt to find free space if blocked
 - suit sound queue does not clear on respawn
 - barnacle grab range is larger than in sp?
+- tentacles can only 'hear' one player walking
 - npc voice volume seems way too low
 - add instancing for wall chargers
 - trip mines lose the bright blue beam color when mp_teamplay=1
-- (BM MP issue) no breakmodel gibs appear
 - (BM MP issue) other players' flashlight stays in place when they get out of range. One possible resolution would be to change transmit options or hook settransmit if it is an entity.
 
 ### feature

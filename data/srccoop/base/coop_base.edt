@@ -4,6 +4,9 @@
 {
 	"console_base_coop"
 	{
+		// fix for breakmodels not appearing
+		"breakable_multiplayer" "0"
+			
 		"#if"
 		{
 			"os"	"linux"
