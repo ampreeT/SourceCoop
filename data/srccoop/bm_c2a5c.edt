@@ -21,10 +21,20 @@
 				}
 			}
 		}
+		// fix bugged door sounds
+		"modify"
+		{
+			"classname" "func_door"
+			"set"
+			{
+				"loopmovesound" "0"
+			}
+		}
 		"create"
 		{
 			"targetname"	"climb_cp_trig"
 			"classname"		"trigger_once"
+			"spawnflags"	"1"
 			"functions"
 			{
 				"copy_model"
@@ -50,7 +60,7 @@
 		}
 		"chopperbattle"
 		{
-			"origin"	"-13095 -9965 4128"
+			"origin"	"-13340 -9965 4128"
 			"angles"	"0 0 0"
 			"triggerid"	"5220" // the rpg
 			"output"	"OnPlayerPickup"
