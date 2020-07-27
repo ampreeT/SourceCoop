@@ -2,14 +2,78 @@
 
 "config"
 {
-	"nextmap"	"/.*/"
+	"nextmap"	"bm_c2a5c"
 	"equipment"
 	{
 	}
 	"entity"
 	{
+		// spawn items
+		"modify"
+		{
+			"targetname" "/c2a5b_equipment/"
+			"flags"
+			{
+				"spawnflags"
+				{
+					"add" "2" // motion disabled
+					"add" "8" // silent pickup
+				}
+			}
+		}
+		// block return
+		"modify"
+		{
+			"targetname"	"trigger_cc_switch01"
+			"add"
+			{
+				"classname"		"func_brush"
+				"rendermode"	"10"
+			}
+		}
+		// Create a cp trigger
+		"create"
+		{
+			"classname"		"trigger_once"
+			"targetname"	"mineshaft_cp_trig"
+			"spawnflags"	"1"
+			"functions"
+			{
+				"copy_model"
+				{
+					"targetname"	"trigger_cc_mineshaft"
+				}
+			}
+		}
 	}
 	"checkpoint"
 	{
+		"spawn"
+		{
+			"origin"	"64 -1448 32"
+			"angles"	"0 90 0"
+		}
+		"mineshaft"
+		{
+			"origin"	"-3798 -286 535"
+			"angles"	"0 180 0"
+			"triggerid"	"mineshaft_cp_trig"
+			"output"	"OnTrigger"
+		}
+		"assault"
+		{
+			"origin"	"-1680 -2480 90"
+			"angles"	"0 0 0"
+			"triggerid"	"c2a5b_assault_trigger_03"
+			"output"	"OnTrigger"
+		}
+		"minefield"
+		{
+			"origin"	"-2141 2450 635"
+			"angles"	"0 180 0"
+			"triggerid"	"trigger_cavevalleydoor_close"
+			"output"	"OnTrigger"
+			"portal"	"-2032 2456 640"
+		}
 	}
 }

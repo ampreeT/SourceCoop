@@ -2,14 +2,58 @@
 
 "config"
 {
-	"nextmap"	"/.*/"
+	"nextmap"	"bm_c2a5d"
 	"equipment"
 	{
 	}
 	"entity"
 	{
+		// spawn items
+		"modify"
+		{
+			"targetname" "/c2a5c_equipment/"
+			"flags"
+			{
+				"spawnflags"
+				{
+					"add" "2" // motion disabled
+					"add" "8" // silent pickup
+				}
+			}
+		}
+		"create"
+		{
+			"targetname"	"climb_cp_trig"
+			"classname"		"trigger_once"
+			"functions"
+			{
+				"copy_model"
+				{
+					"hammerid"	"6293"
+				}
+			}
+		}
 	}
 	"checkpoint"
 	{
+		"spawn"
+		{
+			"origin"	"-13452 -4743 6350"
+			"angles"	"0 0 0"
+		}
+		"cliff1"
+		{
+			"origin"	"-12620 -8050 4200"
+			"angles"	"0 -90 0"
+			"triggerid"	"apache_flyby_maker"
+			"output"	"OnSpawnNPC"
+		}
+		"climb_start"
+		{
+			"origin"	"-12627 -11348 4200"
+			"angles"	"0 90 0"
+			"triggerid"	"climb_cp_trig"
+			"output"	"OnTrigger"
+		}
 	}
 }

@@ -2,14 +2,82 @@
 
 "config"
 {
-	"nextmap"	"/.*/"
+	"nextmap"	"bm_c2a5b"
 	"equipment"
 	{
 	}
 	"entity"
 	{
+		// spawn items
+		"modify"
+		{
+			"targetname" "/c2a5a_equipment/"
+			"flags"
+			{
+				"spawnflags"
+				{
+					"add" "2" // motion disabled
+					"add" "8" // silent pickup
+				}
+			}
+		}
+		// Change the trigger_reloadgame at the bottom of the dam
+		// into a trigger_hurt that kills people
+		"modify"
+		{
+			"targetname"	"trigger_reloadgame"
+			"add"
+			{
+				"classname"	"trigger_hurt"
+				"damagetype" "32"
+				"damage"	"10000"
+			}
+		}
+		// Copy the trigger that gets deleted when chopper dies to use as a checkpoint
+		"create"
+		{
+			"classname"		"trigger_once"
+			"targetname"	"dam_cp_trig"
+			"spawnflags"	"1"
+			"functions"
+			{
+				"copy_model"
+				{
+					"targetname"	"water_trigger_apache_friendly"
+				}
+			}
+			"outputs"
+			{
+				"add"
+				{
+					"output"	"OnTrigger"
+					"target"	"trigger_reloadgame"
+					"input"		"Kill"
+				}
+			}
+		}
 	}
 	"checkpoint"
 	{
+		"spawn"
+		{
+			"origin"	"1312 8000 1444"
+			"angles"	"0 270 0"
+		}
+		"dam_intro"
+		{
+			"origin"	"-2432 3008 1318"
+			"angles"	"0 270 0"
+			"portal"	"-2400 3120 1316"
+			"triggerid"	"intro_dam_trigger"
+			"output"	"OnTrigger"
+		}
+		"dam_intro"
+		{
+			"origin"	"64 114 -2450"
+			"angles"	"0 0 0"
+			"triggerid"	"dam_cp_trig"
+			"output"	"OnTrigger"
+		}
 	}
 }
