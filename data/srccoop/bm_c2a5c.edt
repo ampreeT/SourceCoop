@@ -43,10 +43,17 @@
 		}
 		"cliff1"
 		{
-			"origin"	"-12620 -8050 4200"
-			"angles"	"0 -90 0"
-			"triggerid"	"apache_flyby_maker"
-			"output"	"OnSpawnNPC"
+			"origin"	"-12739 -4743 6351"
+			"angles"	"0 0 0"
+			"triggerid"	"air_pass_trigger"
+			"output"	"OnTrigger"
+		}
+		"chopperbattle"
+		{
+			"origin"	"-13095 -9965 4128"
+			"angles"	"0 0 0"
+			"triggerid"	"5220" // the rpg
+			"output"	"OnPlayerPickup"
 		}
 		"climb_start"
 		{
