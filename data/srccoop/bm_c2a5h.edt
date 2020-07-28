@@ -2,14 +2,128 @@
 
 "config"
 {
-	"nextmap"	"/.*/"
+	"nextmap"	"bm_c2a5i"
 	"equipment"
 	{
 	}
 	"entity"
 	{
+		"modify"
+		{
+			"targetname" "/c2a5h_equipment_weapons|c2a5h_equipment_ammo|c2a5h_equipment_misc/"
+			"flags"
+			{
+				"spawnflags"
+				{
+					"add" "2" // motion disabled
+					"add" "8" // silent pickup
+				}
+			}
+		}
+		"delete"
+		{
+			"classname"	"npc_sniper"
+		}
+		// Change this door opening to an earlier trigger
+		"delete"
+		{
+			"hammerid"	"4691259"
+		}
+		"modify"
+		{
+			"targetname" "door_snark_break"
+			"outputs"
+			{
+				"add"
+				{
+					"target"	"h_roof_backdoor_01_bt"
+					"output"	"OnTrigger"
+					"input"		"Unlock"
+				}
+				"add"
+				{
+					"target"	"h_roof_backdoor_01_bt"
+					"output"	"OnTrigger"
+					"input"		"Open"
+					"delay"		"0.10"
+				}
+			}
+		}
+		// make quest guard invulnerable
+		"create"
+		{
+			"targetname" "hangar_guard_filter"
+			"classname" "filter_damage_class"
+		}
+		"modify"
+		{
+			"targetname"	"h_hangar_guard"
+			"add"
+			{
+				"damagefilter"	"hangar_guard_filter"
+			}
+		}
 	}
 	"checkpoint"
 	{
+		"spawn"
+		{
+			"origin"	"575 2815 164"
+			"angles"	"0 180 0"
+		}
+		"bigbattle"
+		{
+			"origin"	"192 488 453"
+			"angles"	"0 270 0"
+			"triggerid"	"107778"
+			"output"	"OnTrigger"
+		}
+		"toilets"
+		{
+			"origin"	"-881 -1677 565"
+			"angles"	"0 90 0"
+			"triggerid"	"door_snark_break"
+			"output"	"OnTrigger"
+		}
+		"hatch"
+		{
+			"origin"	"-650 -1950 300"
+			"angles"	"0 180 0"
+			"triggerid" "h_satchel_explode_finish_relay"
+			"output"	"OnTrigger"
+		}
+		"barney"
+		{
+			"origin"	"-3850 -1900 350"
+			"angles"	"0 90 0"
+			"triggerid"	"scene_grd_hangarmain01"
+			"output"	"OnTrigger1"
+			"bringall"	"1"
+			"bringall_radius" "350"
+		}
+		"warehouseexit"
+		{
+			"origin"	"-2276 -592 200"
+			"angles"	"0 0 0"
+			"triggerid"	"h_doorlooktrig"
+			"output"	"OnTrigger"
+			"portal"	"-2348 -592 212"
+		}
+		"barneyopensthedoor"
+		{
+			"origin"	"-484 -2428 85"
+			"angles"	"0 0 0"
+			"triggerid"	"math_playerandgrdend"
+			"output"	"OnHitMax"
+			"portal"	"-548 -2428 88"
+		}
+		"barneydied"
+		{
+			"origin"	"-448 -2608 80"
+			"angles"	"0 270 0"
+			"triggerid"	"door_exit_playertrig01a"
+			"output"	"OnTrigger"
+			"bringall"	"1"
+		}
 	}
 }

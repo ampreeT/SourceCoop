@@ -2,14 +2,107 @@
 
 "config"
 {
-	"nextmap"	"/.*/"
+	"nextmap"	"bm_c2a5h"
 	"equipment"
 	{
 	}
 	"entity"
 	{
+		"modify"
+		{
+			"targetname" "/g_spawn_equipment/"
+			"flags"
+			{
+				"spawnflags"
+				{
+					"add" "2" // motion disabled
+					"add" "8" // silent pickup
+				}
+			}
+		}
+		"create"
+		{
+			"classname"		"trigger_once"
+			"targetname"	"garage_cp_trig"
+			"spawnflags"	"1"
+			"functions"
+			{
+				"copy_model"
+				{
+					"hammerid"	"2829273"
+				}
+			}
+		}
+		"delete"
+		{
+			"targetname"	"g_warehouse_noreturn" 
+		}
 	}
 	"checkpoint"
 	{
+		"spawn"
+		{
+			"origin"	"-104 2312 292"
+			"angles"	"0 180 0"
+		}
+		"garagefirstfloor"
+		{
+			"origin" 	"-896 96 40"
+			"angles"	"0 270 0"
+			"triggerid"	"garage_cp_trig"
+			"output"	"OnTrigger"
+			"portal"	"-936 248 56"
+		}
+		"garageexit"
+		{
+			"origin" 	"-2000 -600 630"
+			"angles"	"0 180 0"
+			"triggerid"	"g_outpark_relay"
+			"output"	"OnTrigger"
+		}
+		"vent"
+		{
+			"origin"	"-3524 -700 360"
+			"angles"	"0 0 0"
+			"triggerid" "trigger_g_dd_s_andothers"
+			"output"	"OnTrigger"
+			"bringall"	"1"
+			"bringall_radius" "250"
+		}
+		"ambush"
+		{
+			"origin"	"-2892 -746 37"
+			"angles"	"0 180 0"
+			"triggerid"	"g_vent_collapse_relay"
+			"output"	"OnTrigger"
+		}
+		"warehouseexit"
+		{
+			"origin"	"-3389 -1728 45"
+			"angles"	"0 270 0"
+			"triggerid"	"4798300"
+			"output"	"OnTrigger"
+		}
+		"grunts"
+		{
+			"origin"	"-1784 -1920 37"
+			"angles"	"0 0 0"
+			"triggerid"	"g_tow_door_break"
+			"output"	"OnBreak"
+		}
+		"helipadstart"
+		{
+			"origin"	"1456 -3024 229"
+			"angles"	"0 270 0"
+			"triggerid"	"helipad_start_trigger"
+			"output"	"OnTrigger"
+		}
+		"helipadgarage"
+		{
+			"origin"	"1152 -5448 -90"
+			"angles"	"0 270 0"
+			"triggerid"	"1313872"
+			"output"	"OnTrigger"
+		}
 	}
 }

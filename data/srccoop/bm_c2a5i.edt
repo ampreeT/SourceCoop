@@ -2,14 +2,109 @@
 
 "config"
 {
-	"nextmap"	"/.*/"
+	// TODO: Mortar target picker does not work
+	"nextmap"	"bm_c3a1a"
 	"equipment"
 	{
 	}
 	"entity"
 	{
+		"modify"
+		{
+			"targetname" "/c2a5i_equipment_weapons|c2a5i_equipment_ammo|c2a5i_equipment_misc/"
+			"flags"
+			{
+				"spawnflags"
+				{
+					"add" "2" // motion disabled
+					"add" "8" // silent pickup
+				}
+			}
+		}
+		// merge these triggers for edge case
+		"delete"
+		{
+			"targetname"	"trigger_slamdoor"
+		}
+		"modify"
+		{
+			"targetname"	"trigger_scene_gargtrap"
+			"outputs"
+			{
+				"add"
+				{
+					"output"	"OnTrigger"
+					"target"	"i_garg_slamdoor"
+					"input"		"Close"
+				}
+			}
+		}
+
+		// setup changelevel timer
+		"modify"
+		{
+			"targetname"	"c2a5i_changelevel"
+			"add"
+			{
+				"spawnflags" "0" // enable touch
+				"StartDisabled" "1" // initially disabled
+			}
+		}
+		"modify"
+		{
+			"targetname"	"c3a1a_entrydoor"
+			"outputs"
+			{
+				"modify"
+				{
+					"input" "ChangeLevel"
+					"target" "c2a5i_changelevel"
+					"replace"
+					{
+						"input" "Enable"
+					}
+				}
+			}
+		}
+
+
 	}
 	"checkpoint"
 	{
+		"spawn"
+		{
+			"origin"	"-6144 -128 -220"
+			"angles"	"0 270 0"
+		}
+		"arena1"
+		{
+			"origin"	"-4145 -1832 -32"
+			"angles"	"0 0 0"
+			"triggerid"	"trigger_scene_radio_ifak"
+			"output"	"OnTrigger"
+		}
+		"rubbledoor"
+		{
+			"origin"	"-2232 80 1"
+			"angles"	"0 0 0"
+			"triggerid"	"i_garg_slamdoor"
+			"output"	"OnFullyClosed"
+			"portal"	"-2544 0 40"
+		}
+		"bigrubblecollapse"
+		{
+			"origin"	"-896 3944 -135"
+			"angles"	"0 90 0"
+			"triggerid"	"collapse_relay"
+			"output"	"OnTrigger"
+			"portal"	"-1136 3224 -80"
+		}
+		"finaltunnel"
+		{
+			"origin"	"-1024 6936 -100"
+			"angles"	"0 90 0"
+			"triggerid" "c2a5g_exit_wheel"
+			"output"	"OnPressed"
+		}
 	}
 }

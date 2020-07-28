@@ -54,6 +54,8 @@ The following convars are available:
 
 # ToDo
 ### must-fix
+- snipers crash game
+- target picker on bm_c2a5i
 - first-person camera death code needs to set original viewentity on callback OnMapEnd()
 - hook UpdateEnemyMemory input on npcs, compare if !player or !pvsplayer > call manually (either closest player or all) (UpdateEnemyMemory( pEnemy, pEnemy->GetAbsOrigin(), this ))
 - custom difficulty based on player count
