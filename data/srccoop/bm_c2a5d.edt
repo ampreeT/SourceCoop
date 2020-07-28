@@ -2,14 +2,137 @@
 
 "config"
 {
-	"nextmap"	"/.*/"
+	"nextmap"	"bm_c2a5e"
 	"equipment"
 	{
 	}
 	"entity"
 	{
+		"modify"
+		{
+			"targetname" "/c2a5d_equipment_weapons|c2a5d_equipment_ammo|c2a5d_equipment_misc/"
+			"flags"
+			{
+				"spawnflags"
+				{
+					"add" "2" // motion disabled
+					"add" "8" // silent pickup
+				}
+			}
+		}
+		// block prev changelevel
+		"modify"
+		{
+			"classname" "trigger_changelevel"
+			"map" "bm_c2a5c"
+			"add"
+			{
+				"classname" "func_brush"
+				"rendermode" "10" // dont render
+			}
+		}
+		// make road airlock button close first doors for consistency
+		"modify"
+		{
+			"targetname" "c2a5d_bunker_button"
+			"outputs"
+			{
+				"add"
+				{
+					"target" "c2a5d_bunker_door_in_right"
+					"output" "OnPressed"
+					"input"	"close"
+				}
+				"add"
+				{
+					"target" "c2a5d_bunker_door_in_left"
+					"output" "OnPressed"
+					"input"	"close"
+				}
+				// Delay second door open until first door closed
+				"modify"
+				{
+					"target" "c2a5d_bunker_door_out_left"
+					"replace"
+					{
+						"delay" "5.0"
+					}
+				}
+				"modify"
+				{
+					"target" "c2a5d_bunker_door_out_right"
+					"replace"
+					{
+						"delay" "5.0"
+					}
+				}
+			}
+		}
+		// changelevel timer setup
+		"modify"
+		{
+			"targetname" "c2a5d_c2a5e_transition_trigger"
+			"add"
+			{
+				"spawnflags" "0" // enable touch
+				"StartDisabled" "1" // initially disabled
+			}
+		}
+		"modify"
+		{
+			"targetname" "c2a5d_c2a5e_transition_relay"
+			"outputs"
+			{
+				"modify"
+				{
+					"input" "ChangeLevel"
+					"target" "c2a5d_c2a5e_transition_trigger"
+					"replace"
+					{
+						"input" "Enable"
+					}
+				}
+			}
+		}
+
 	}
 	"checkpoint"
 	{
+		"spawn"
+		{
+			"origin"	"256 1571 -1020"
+			"angles"	"0 270 0"
+		}
+		"pipe"
+		{
+			"origin"	"-383 1073 -579"
+			"angles"	"0 270 0"
+			"triggerid" "922426"
+			"output"	"OnTrigger"
+		}
+		"road_airlock"
+		{
+			"origin"	"-1280 -32 -219"
+			"angles"	"0 180 0"
+			"triggerid" "c2a5d_bunker_door_in_left"
+			"output"	"OnFullyClosed"
+			"portal"	"-1034 -32 -210"
+		}
+		"road"
+		{
+			"origin"	"-1640 -32 -219"
+			"angles"	"0 180 0"
+			"triggerid" "c2a5d_bunker_door_out_left"
+			"output"	"OnFullyClosed"
+			"portal"	"-1280 -32 -210"
+		}
+		"changelevel"
+		{
+			"origin"	"-1968 4272 -539"
+			"angles"	"0 0 0"
+			"triggerid" "c2a5d_exit_blastdoor_right"
+			"output"	"OnFullyClosed"
+			"portal"	"-2168 4272 -512"
+		}
 	}
 }

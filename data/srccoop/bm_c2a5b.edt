@@ -62,7 +62,7 @@
 		}
 		"assault"
 		{
-			"origin"	"-1680 -2480 90"
+			"origin"	"-2800 1736 450"
 			"angles"	"0 0 0"
 			"triggerid"	"c2a5b_assault_trigger_03"
 			"output"	"OnTrigger"

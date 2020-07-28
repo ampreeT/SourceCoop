@@ -2,14 +2,119 @@
 
 "config"
 {
-	"nextmap"	"/.*/"
+	"nextmap"	"bm_c2a5g"
 	"equipment"
 	{
 	}
+	// TODO: look into playerhashivehand globalstate
 	"entity"
 	{
+		"modify"
+		{
+			"targetname" "/c2a5f_equipment_weapons|c2a5f_equipment_ammo|c2a5f_equipment_misc/"
+			"flags"
+			{
+				"spawnflags"
+				{
+					"add" "2" // motion disabled
+					"add" "8" // silent pickup
+				}
+			}
+		}
+		// block prev changelevel
+		"modify"
+		{
+			"classname" "trigger_changelevel"
+			"map" "bm_c2a5e"
+			"add"
+			{
+				"classname" "func_brush"
+				"rendermode" "10" // dont render
+			}
+		}
+		// Make guard from last map invul, 
+		// move him behind a cutscene trigger
+		// make auto follow player
+		// also remove the npc_maker for him
+		"delete"
+		{
+			"targetname" "maker_grd_jackson"
+		}
+		"delete"
+		{
+			"classname"	"npc_sniper"
+		}
+		"create"
+		{
+			"targetname" "grd02_invul"
+			"classname" "filter_damage_class"
+		}
+		"modify"
+		{
+			"targetname"	"GRD02_HiveHand"
+			"add"
+			{
+				"origin" "-2816 -1792 -256"
+				"damagefilter" "grd02_invul"
+				// remove template npc, gag, and nogreet flags
+				"spawnflags" "516"
+			}
+		}
+		"create"
+		{
+			"classname" "ai_goal_follow"
+			"targetname" "GRD02_HiveHand_follow"
+			"actor" "GRD02_HiveHand"
+			"MaximumState" "1"
+		}
+		"modify"
+		{
+			"hammerid" "3736906"
+			"outputs"
+			{
+				"add"
+				{
+					"target" "GRD02_HiveHand_follow"
+					"output" "OnTrigger"
+					"input" "Activate"
+				}
+			}
+		}
+		"create"
+		{
+			"classname"	"trigger_once"
+			"targetname" "armory_cp_trig"
+			"spawnflags" "1"
+			"functions"
+			{
+				"copy_model"
+				{
+					"hammerid" "3353372"
+				}
+			}
+		}
 	}
 	"checkpoint"
 	{
+		"spawn"
+		{
+			"origin"	"-2368 -1664 -220"
+			"angles"	"0 65 0"
+		}
+		"armory"
+		{
+			"origin"	"-480 -1468 420"
+			"angles"	"0 0 0"
+			"triggerid"	"armory_cp_trig"
+			"output"	"OnTrigger"
+		}
+		"arena2"
+		{
+			"origin"	"1024 -2526 250"
+			"angles"	"0 270 0"
+			"triggerid"	"block_door"
+			"output"	"OnFullyClosed"
+			"portal"	"1024 -2392 250"
+		}
 	}
 }

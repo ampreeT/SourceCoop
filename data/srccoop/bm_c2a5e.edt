@@ -2,14 +2,96 @@
 
 "config"
 {
-	"nextmap"	"/.*/"
+	"nextmap"	"bm_c2a5f"
 	"equipment"
 	{
 	}
 	"entity"
 	{
+		"modify"
+		{
+			"targetname" "/c2a5e_equipment_weapons|c2a5e_equipment_ammo|c2a5e_equipment_misc/"
+			"flags"
+			{
+				"spawnflags"
+				{
+					"add" "2" // motion disabled
+					"add" "8" // silent pickup
+				}
+			}
+		}
+		// Kill the end game condition for triggering the tripmines...
+		// TODO: How should we *actually* handle this?
+		"delete"
+		{
+			"targetname"	"player_hit_mine"
+		}
+		"delete"
+		{
+			"classname"	"npc_sniper"
+		}
+		// dont let the hivehand get flung across the room 
+		// when someone inevitably triggers a tripmine
+		"modify"
+		{
+			"targetname"	"hivehand_pickup"
+			"add"
+			{
+				"spawnflags"	"2" // motion disabled
+			}
+		}
+		// make end level guard invulnerable
+		"create"
+		{
+			"targetname" "grd02_invul"
+			"classname" "filter_damage_class"
+		}
+		"modify"
+		{
+			"targetname"	"GRD02_HiveHand"
+			"add"
+			{
+				"damagefilter" "grd02_invul"
+			}
+		}
 	}
 	"checkpoint"
 	{
+		"spawn"
+		{
+			"origin"	"-2448 80 76"
+			"angles"	"0 345 0"
+		}
+		"sniper"
+		{
+			"origin"	"416 -1248 29"
+			"angles"	"0 0 0"
+			"triggerid"	"trigger_scene_grd_sniper"
+			"output"	"OnTrigger"
+		}
+		"tripmines"
+		{
+			"origin"	"112 768 69"
+			"angles"	"0 90 0"
+			"triggerid"	"scene_caution_trigger"
+			"output"	"OnTrigger"
+		}
+		"hivehand"
+		{
+			"origin"	"-210 -391 69"
+			"angles"	"0 90 0"
+			"triggerid"	"hivehand_pickup"
+			"output"	"OnPlayerPickup"
+			"bringall"	"1"
+			"bringall_radius" "200"
+		}
+		"elevator"
+		{
+			"origin"	"0 0 30"
+			"angles"	"0 0 0"
+			"triggerid"	"Puzzle_lift2_button"
+			"output"	"OnPressed"
+			"followid"	"Puzzle_lift2"
+		}
 	}
 }
