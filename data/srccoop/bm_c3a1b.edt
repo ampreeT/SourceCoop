@@ -2,14 +2,56 @@
 
 "config"
 {
-	"nextmap"	"/.*/"
+	"nextmap"	"bm_c3a2a"
 	"equipment"
 	{
 	}
 	"entity"
 	{
+		// spawn items
+		"modify"
+		{
+			"targetname" "c3a1a_equipment"
+			"flags"
+			{
+				"spawnflags"
+				{
+					"add" "2" // motion disabled
+					"add" "8" // silent pickup
+				}
+			}
+		}
 	}
 	"checkpoint"
 	{
+		"spawn"
+		{
+			"origin"	"1568 -1591 -343"
+			"angles"	"0 184 0"
+		}
+		"elevator"
+		{
+			"origin"	"-32 0 0"
+			"angles"	"0 0 0"
+			"followid"	"eb"
+			"triggerid"	"eb"
+			"output"	"OnPressed"
+			"bringall"	"1"
+		}
+		"aliengangbang"
+		{
+			"origin"	"-736 504 -1364"
+			"angles"	"0 0 0"
+			"triggerid"	"2617023"
+			"output"	"OnBreak"
+		}
+		"doublegate"
+		{
+			"origin"	"1400 228 -1536"
+			"angles"	"0 0 0"
+			"triggerid"	"lld2"
+			"output"	"OnFullyClosed"
+			"portal"	"1396 -89 -1507"
+		}
 	}
 }

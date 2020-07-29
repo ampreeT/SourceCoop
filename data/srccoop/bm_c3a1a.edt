@@ -2,14 +2,63 @@
 
 "config"
 {
-	"nextmap"	"/.*/"
+	"nextmap"	"bm_c3a1b"
 	"equipment"
 	{
 	}
 	"entity"
 	{
+		// spawn items
+		"modify"
+		{
+			"targetname" "c3a1a_equipment"
+			"flags"
+			{
+				"spawnflags"
+				{
+					"add" "2" // motion disabled
+					"add" "8" // silent pickup
+				}
+			}
+		}
+		// block previous changelevel
+		"modify"
+		{
+			"classname" "trigger_changelevel"
+			"map"	"bm_c2a5i"
+			"add"
+			{
+				"classname" "func_brush"
+				"rendermode" "10" // dont render
+			}
+		}
+		// dont do the hatch closing and barney killing
+		"delete"
+		{
+			"targetname" "grd01_closeshatch"
+		}
 	}
 	"checkpoint"
 	{
+		"spawn"
+		{
+			"origin"	"4975 499 -497"
+			"angles"	"0 300 0"
+		}
+		"ceilingcollapse"
+		{
+			"origin"	"5425 -992 -435"
+			"angles"	"0 0 0"
+			"triggerid" "1361215"
+			"output"	"OnTrigger"
+			"portal"	"5377 -415 -440"
+		}
+		"goingdownthehole"
+		{
+			"origin"	"2656 -776 -551"
+			"angles"	"0 270 0"
+			"triggerid" "hatch_door"
+			"output"	"OnFullyOpen"
+		}
 	}
 }
