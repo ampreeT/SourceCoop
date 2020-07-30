@@ -51,13 +51,16 @@ public MRESReturn Hook_IsPlayerAlly(int _this, Handle hReturn, Handle hParams)
 public MRESReturn Hook_ProtoSniperSelectSchedule(int _this, Handle hReturn, Handle hParams)	// https://github.com/ValveSoftware/source-sdk-2013/blob/0d8dceea4310fde5706b3ce1c70609d72a38efdf/mp/src/game/server/hl2/proto_sniper.cpp#L1385
 {
 	CProtoSniper pSniper = CProtoSniper(_this);
-
+	
 	if (pSniper.HasCondition(view_as<int>(COND_ENEMY_DEAD)))
 	{
+		// unsure why this is crashing; unneeded
+		/*
 		if (PrecacheSound("NPC_Sniper.TargetDestroyed", true))
 		{
 			EmitGameSoundToAll("NPC_Sniper.TargetDestroyed", pSniper.GetEntIndex());
 		}
+		*/
 	}
 
 	if (!pSniper.IsWeaponLoaded())
@@ -65,36 +68,57 @@ public MRESReturn Hook_ProtoSniperSelectSchedule(int _this, Handle hReturn, Hand
 		DHookSetReturn(hReturn, SCHED_RELOAD);
 		return MRES_Supercede;
 	}
-
-	// Add Hear Danger here
-
-	if (!pSniper.IsEnabled())
+	
+	if (pSniper.HasCondition(view_as<int>(COND_HEAR_DANGER)))
 	{
-		DHookSetReturn(hReturn, 54);
+		// Hear Danger; add glint, ect. here
+		DHookSetReturn(hReturn, SCHED_PSNIPER_SUPPRESSED);
 		return MRES_Supercede;
 	}
-
+	
+	if (!pSniper.IsEnabled())
+	{
+		DHookSetReturn(hReturn, SCHED_PSNIPER_DISABLEDWAIT);
+		return MRES_Supercede;
+	}
+	
+	// Sweep target here
+	
 	CBaseEntity pEnemy = pSniper.GetEnemy();
 	if (!pEnemy.IsValid() || pSniper.HasCondition(view_as<int>(COND_ENEMY_DEAD)))
 	{
 		pSniper.SetEnemy(CBaseEntity());
-		DHookSetReturn(hReturn, 89);
+		DHookSetReturn(hReturn, SCHED_PSNIPER_SCAN);
 		return MRES_Supercede;
 	}
-
-	if (pSniper.HasCondition(view_as<int>(COND_LOST_ENEMY)))
+	
+	/*
+	if (pSniper.HasCondition(view_as<int>(COND_SNIPER_FRUSTRATED)))
 	{
-		DHookSetReturn(hReturn, 89);
+		DHookSetReturn(hReturn, SCHED_PSNIPER_FRUSTRATED_ATTACK);
 		return MRES_Supercede;
 	}
-
+	
+	if (pSniper.HasCondition(view_as<int>(COND_SNIPER_CANATTACKDECOY)))
+	{
+		DHookSetReturn(hReturn, SCHED_RANGE_ATTACK2);
+		return MRES_Supercede;
+	}
+	
+	if (pSniper.HasCondition(view_as<int>(COND_SNIPER_NO_SHOT)))
+	{
+		DHookSetReturn(hReturn, SCHED_PSNIPER_NO_CLEAR_SHOT);
+		return MRES_Supercede;
+	}
+	*/
+	
 	if (pSniper.HasCondition(view_as<int>(COND_CAN_RANGE_ATTACK1)))
 	{
-		DHookSetReturn(hReturn, 43);
+		DHookSetReturn(hReturn, SCHED_RANGE_ATTACK1);
 		return MRES_Supercede;
 	}
 
-	DHookSetReturn(hReturn, 89);
+	DHookSetReturn(hReturn, SCHED_PSNIPER_CAMP);
 	return MRES_Supercede;
 }
 

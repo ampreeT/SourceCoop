@@ -442,7 +442,19 @@ methodmap CAI_BaseNPC < CBaseCombatCharacter
 		if (bOutOfBounds)
 			ThrowError("Received out of bounds index %d; range is 0-255", iCondition);
 		
-		int iOffsetConditions = GetEntProp(this.GetEntIndex(), Prop_Data, "m_bForceConditionsGather") - 0x100;		// m_bForceConditionsGather (datamap) - 0x100 = m_Conditions
+		// m_Conditions is not a netprop/datamap
+		// sizeof(CAI_ScheduleBits) == 32 bytes
+		//	CAI_ScheduleBits	m_Conditions;
+		//	CAI_ScheduleBits	m_CustomInterruptConditions;
+		//	CAI_ScheduleBits	m_ConditionsPreIgnore;
+		//	CAI_ScheduleBits	m_InverseIgnoreConditions;
+		//	bool				m_bForceConditionsGather;
+		// m_Conditions = offsetof(this, m_bForceConditionsGather) - (sizeof(CAI_ScheduleBits) * 4)
+		
+		int iForceConditionsGatherOffset = FindDataMapInfo(this.GetEntIndex(), "m_bForceConditionsGather");		// m_bForceConditionsGather (datamap) - 128 = m_Conditions
+		if (iForceConditionsGatherOffset == -1)
+			ThrowError("Unable to retrieve offset %s", "m_bForceConditionsGather");
+		int iOffsetConditions = iForceConditionsGatherOffset - 128;
 		
 		Address pAddress = this.GetAddress();
 		int iOffsetIndex = iCondition / CHAR_BIT;
