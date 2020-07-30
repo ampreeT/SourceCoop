@@ -567,6 +567,12 @@ CCoopSpawn g_SpawnSystem;
 
 public void RequestSpawnPlayer(CBlackMesaPlayer pPlayer)
 {
+	// one more frame to allow time for picking up batteries after suit is picked up
+	RequestFrame(RequestSpawnPlayer2, pPlayer);
+}
+
+public void RequestSpawnPlayer2(CBlackMesaPlayer pPlayer)
+{
 	if(pPlayer.IsValid() && pPlayer.IsAlive())
 	{
 		CCoopSpawnEntry pCheckpoint;

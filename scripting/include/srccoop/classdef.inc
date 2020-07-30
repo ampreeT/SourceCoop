@@ -46,6 +46,10 @@ methodmap CBaseEntity
 	{
 		return IsValidEntity(this.GetEntIndex());
 	}
+	public bool HasEdict()
+	{
+		return IsValidEdict(this.GetEntIndex());
+	}
 	public bool IsValidIndex()
 	{
 		return this.GetEntIndex() != -1;
@@ -309,6 +313,26 @@ methodmap CBaseEntity
 	public void SetViewOffset(const float vec[3])
 	{
 		SetEntPropVector(this.GetEntIndex(), Prop_Data, "m_vecViewOffset", vec);
+	}
+	public bool GetModel(char[] szBuffer, const int iMaxLength)
+	{
+		return view_as<bool>(GetEntPropString(this.GetEntIndex(), Prop_Data, "m_ModelName", szBuffer, iMaxLength));
+	}
+	public void SetModel(const char[] szModel)
+	{
+		SetEntityModel(this.GetEntIndex(), szModel);
+	}
+	public void SetModelName(const char[] szModel)
+	{
+		SetEntPropString(this.GetEntIndex(), Prop_Data, "m_ModelName", szModel);
+	}
+	public int GetEffects()
+	{
+		return GetEntProp(this.GetEntIndex(), Prop_Send, "m_fEffects");
+	}
+	public void SetEffects(int iEffects)
+	{
+		SetEntProp(this.GetEntIndex(), Prop_Send, "m_fEffects", iEffects); 
 	}
 }
 
