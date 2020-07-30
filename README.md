@@ -22,7 +22,7 @@ Both linux and windows dedicated servers are supported.
 - Install latest dev build of [metamod](https://www.sourcemm.net/downloads.php?branch=dev). (Tested with build 1130) - On linux you may have to delete metamod's 64bit files.
 - Install latest dev build of [sourcemod](https://www.sourcemod.net/downloads.php?branch=dev). (Tested with build 6562)
 - Install latest [DHooks with detour support](https://github.com/peace-maker/DHooks2/releases) extension.
-- Copy the folders from this repository into sourcemod.
+- Copy folders from this repository into sourcemod.
 
 At this point you can jump in and play supported maps in coop.
 Playing with mp_teamplay 1 is recommended as this allows lag-free noblock.
@@ -60,6 +60,8 @@ The following convars are available:
 - custom difficulty based on player count
 - npcs can walk into player, make him stuck, then stop rendering
 - npc_xenturret AI causes crash on map load (it seems to be fine after loading)
+- random linux server crashes related to npcs (pAnim, CalcAnimation, etc)
+- drowning crash (CBM_MP_GameRules::GetCurrentState())
 
 ### non-critical
 - sniper HasCondition(...) offset should go in gamedata

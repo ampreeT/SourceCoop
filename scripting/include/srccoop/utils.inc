@@ -89,6 +89,15 @@ stock void FormatTimeLengthLong(int seconds, char[] out, int size)
 	}
 }
 
+stock int SplitNewline(const char[] szSource, const int nSize, char[] szBuffer)
+{
+	int i = 0;
+	while (szSource[i] != '\n' && szSource[i] != '\0')
+		i++;
+	strcopy(szBuffer, ((i + 1) < nSize) ? (i + 1) : nSize, szSource);	// strcopy inconvinently includes the null terminator
+	return (i < nSize) ? i : nSize;
+}
+
 stock int FindEntityByHammerID(int iHammerID, const char[] szClassname = "*")
 {
 	int startEnt = -1;
@@ -211,6 +220,21 @@ stock void ScaleVectors(const float vecA[3], const float vecB[3], float vecResul
 	vecResult[0] = vecA[0] * vecB[0];
 	vecResult[1] = vecA[1] * vecB[1];
 	vecResult[2] = vecA[2] * vecB[2];
+}
+
+stock void MoveVector(const float vecStart[3], const float vecEnd[3], float scale, float vecResult[3])
+{
+	SubtractVectors(vecEnd, vecStart, vecResult);
+	ScaleVector(vecResult, scale);
+	AddVectors(vecStart, vecResult, vecResult);
+}
+
+stock void GetVectorDistanceVector(const float vecA[3], const float vecB[3], float vecResult[3])
+{
+	SubtractVectors(vecA, vecB, vecResult);
+	vecResult[0] = FloatAbs(vecResult[0]);
+	vecResult[1] = FloatAbs(vecResult[1]);
+	vecResult[2] = FloatAbs(vecResult[2]);
 }
 
 /**

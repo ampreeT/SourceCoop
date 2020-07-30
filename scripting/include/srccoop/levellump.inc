@@ -4,6 +4,10 @@
 #define _srccoop_levellump_included
 
 #define OUTPUT_SEPARATOR "\27"
+#define BRUSH_FIXUP_MDL "models/error.mdl"
+#define BRUSH_FIXUP_IDENT "$BRUSHFIXUP$"
+#define BRUSH_FIXUP_IDENT_LEN 12
+#define BRUSH_FIXUP_SEPARATOR " "
 
 enum struct CEntityKeyLump
 {
@@ -718,6 +722,28 @@ enum struct CGlobalLevelLump
 						ThrowError("Target entity for copy_model has no model property");
 					}
 				}
+				else if(StrEqual(szFunction, "set_model", false))
+				{
+					if(kv.GetDataType("from") != KvData_None && kv.GetDataType("to") != KvData_None)
+					{
+						float vecFrom[3], vecTo[3];
+						kv.GetVector("from", vecFrom);
+						kv.GetVector("to", vecTo);
+						
+						CEntityKeyLump pModelKey;
+						pModelKey.m_szKey = "model";
+						Format(pModelKey.m_szValue, sizeof(pModelKey.m_szValue), "%s%f%s%f%s%f%s%f%s%f%s%f", BRUSH_FIXUP_IDENT,
+							vecFrom[0], BRUSH_FIXUP_SEPARATOR, vecFrom[1], BRUSH_FIXUP_SEPARATOR, vecFrom[2], BRUSH_FIXUP_SEPARATOR,
+							vecTo[0], BRUSH_FIXUP_SEPARATOR, vecTo[1], BRUSH_FIXUP_SEPARATOR, vecTo[2]);
+							
+						for (int k = 0; k < pTempEvaluatedList.Length; k++)
+						{
+							CEntityInfoLump pEnt = pTempEvaluatedList.Get(k);
+							pEnt.RemoveOrReplace(pModelKey, true);
+						}
+					}
+					else ThrowError("Function set_model without parameters 'from' and 'to'");
+				}
 				else bFound = false;
 			}
 			
@@ -970,15 +996,7 @@ enum struct CGlobalLevelLump
 
 CGlobalLevelLump g_pLevelLump;
 
-stock int SplitNewline(const char[] szSource, const int nSize, char[] szBuffer)
-{
-	int i = 0;
-	while (szSource[i] != '\n' && szSource[i] != '\0')
-		i++;
-	strcopy(szBuffer, ((i + 1) < nSize) ? (i + 1) : nSize, szSource);	// strcopy inconvinently includes the null terminator
-	return (i < nSize) ? i : nSize;
-}
-
+// Is outside the enum struct, because it's also used by checkpoint.inc
 bool ParseConditions(KeyValues kv, bool anyPass = false)
 {
 	if (kv.GotoFirstSubKey(false))
@@ -1057,4 +1075,59 @@ bool ParseConditions(KeyValues kv, bool anyPass = false)
 		}
 	}
 	return false;
+}
+
+public Action Hook_FixupBrushModels(int iEntIndex)
+{
+	SDKUnhook(iEntIndex, SDKHook_Spawn, Hook_FixupBrushModels);
+	
+	CBaseEntity pThis = CBaseEntity(iEntIndex);
+	static char szModelName[PLATFORM_MAX_PATH];
+	pThis.GetModel(szModelName, sizeof(szModelName));
+	if(strncmp(szModelName, BRUSH_FIXUP_IDENT, BRUSH_FIXUP_IDENT_LEN) == 0)
+	{
+		if(PrecacheModel(BRUSH_FIXUP_MDL))
+		{
+			pThis.SetModelName(BRUSH_FIXUP_MDL);
+			
+			DataPack pack = new DataPack();
+			pack.WriteCell(pThis);
+			pack.WriteString(szModelName);
+			pack.Reset();
+			RequestFrame(FixupBrushModelsPost, pack);
+		} else {
+			ThrowError("Couldn't precache model %s", BRUSH_FIXUP_MDL);
+		}
+	}
+	return Plugin_Continue;
+}
+
+public void FixupBrushModelsPost(DataPack pack)
+{
+	CBaseEntity pThis = pack.ReadCell();
+	if(pThis.IsValid())
+	{
+		char szModelName[PLATFORM_MAX_PATH];
+		pack.ReadString(szModelName, sizeof(szModelName));
+		
+		char buffers[6][128];
+		ExplodeString(szModelName[BRUSH_FIXUP_IDENT_LEN], BRUSH_FIXUP_SEPARATOR, buffers, sizeof(buffers), sizeof(buffers[]));
+		float vecFrom[3], vecTo[3], vecOrigin[3], vecDistance[3], vecMins[3], vecMaxs[3];
+		vecFrom[0] = StringToFloat(buffers[0]); vecTo[0] = StringToFloat(buffers[3]);
+		vecFrom[1] = StringToFloat(buffers[1]); vecTo[1] = StringToFloat(buffers[4]);
+		vecFrom[2] = StringToFloat(buffers[2]); vecTo[2] = StringToFloat(buffers[5]);
+		
+		MoveVector(vecFrom, vecTo, 0.5, vecOrigin);
+		GetVectorDistanceVector(vecFrom, vecTo, vecDistance);
+		vecMins = vecDistance;
+		ScaleVector(vecMins, -0.5);
+		vecMaxs = vecDistance;
+		ScaleVector(vecMaxs, 0.5);
+		
+		pThis.Teleport(vecOrigin);
+		pThis.SetCollisionBounds(vecMins, vecMaxs);
+		pThis.SetSolidType(SOLID_BBOX);
+		pThis.SetEffects(pThis.GetEffects() | EF_NODRAW);
+	}
+	delete pack;
 }

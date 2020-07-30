@@ -269,8 +269,11 @@ public void OnPluginEnd()
 public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 {
 	CBaseEntity pEntity = CBaseEntity(iEntIndex);
+	
 	if (!g_bTempDontHookEnts && pEntity.IsValid())
 	{
+		SDKHook(iEntIndex, SDKHook_Spawn, Hook_FixupBrushModels);
+		
 		if (strncmp(szClassname, "npc_human_scientist", 19) == 0)
 		{
 			DHookEntity(hkIRelationType, true, iEntIndex, _, Hook_ScientistIRelationType);
@@ -357,10 +360,9 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 
 public void Hook_SpawnPost(int iEntIndex)
 {
-	CBaseEntity pEntity = CBaseEntity(iEntIndex);
-
 	if (g_pCoopManager.IsCoopModeEnabled())
 	{
+		CBaseEntity pEntity = CBaseEntity(iEntIndex);
 		if(!g_pCoopManager.m_bStarted)
 		{
 			Array_t pOutputHookList = g_pLevelLump.GetOutputHooksForEntity(pEntity);
