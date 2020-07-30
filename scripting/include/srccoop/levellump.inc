@@ -1094,7 +1094,7 @@ public Action Hook_FixupBrushModels(int iEntIndex)
 			pack.WriteCell(pThis);
 			pack.WriteString(szModelName);
 			pack.Reset();
-			CreateTimer(1.0, FixupBrushModelsPost, pack);
+			RequestFrame(FixupBrushModelsPost, pack);
 		} else {
 			ThrowError("Couldn't precache model %s", BRUSH_FIXUP_MDL);
 		}
@@ -1102,7 +1102,7 @@ public Action Hook_FixupBrushModels(int iEntIndex)
 	return Plugin_Continue;
 }
 
-public Action FixupBrushModelsPost(Handle timer, DataPack pack)
+public void FixupBrushModelsPost(DataPack pack)
 {
 	CBaseEntity pThis = pack.ReadCell();
 	if(pThis.IsValid())
@@ -1128,10 +1128,6 @@ public Action FixupBrushModelsPost(Handle timer, DataPack pack)
 		pThis.SetCollisionBounds(vecMins, vecMaxs);
 		pThis.SetSolidType(SOLID_BBOX);
 		pThis.SetEffects(pThis.GetEffects() | EF_NODRAW);
-		
-//		PrintToServer("ORIGIN %f %f %f", vecOrigin[0], vecOrigin[1], vecOrigin[2]);
-//		PrintToServer("MINS %f %f %f", vecMins[0], vecMins[1], vecMins[2]);
-//		PrintToServer("MAXS %f %f %f", vecMaxs[0], vecMaxs[1], vecMaxs[2]);
 	}
 	delete pack;
 }
