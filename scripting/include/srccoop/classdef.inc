@@ -465,8 +465,8 @@ methodmap CAI_BaseNPC < CBaseCombatCharacter
 		bool bOutOfBounds = view_as<bool>((iCondition > 255) || (iCondition < 0));
 		if (bOutOfBounds)
 			ThrowError("Received out of bounds index %d; range is 0-255", iCondition);
-			
-		int iOffsetConditions = 2288;		// m_bForceConditionsGather (datamap) - 0x100 = m_Conditions
+		
+		int iOffsetConditions = GetEntProp(this.GetEntIndex(), Prop_Data, "m_bForceConditionsGather") - 0x100;		// m_bForceConditionsGather (datamap) - 0x100 = m_Conditions
 		
 		Address pAddress = this.GetAddress();
 		int iOffsetIndex = iCondition / CHAR_BIT;

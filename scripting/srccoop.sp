@@ -283,11 +283,11 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 		{
 			DHookEntity(hkIsPlayerAlly, true, iEntIndex, _, Hook_IsPlayerAlly);
 		}
-		//else if (strcmp(szClassname, "npc_sniper", false) == 0)
-		//{
-		//	DHookEntity(hkProtoSniperSelectSchedule, false, pEntity.GetEntIndex(), _, Hook_ProtoSniperSelectSchedule);
-		//	DHookEntity(hkProtoSniperSelectSchedule, true, pEntity.GetEntIndex(), _, Hook_ProtoSniperSelectSchedule);
-		//}
+		else if (strcmp(szClassname, "npc_sniper", false) == 0)
+		{
+			DHookEntity(hkProtoSniperSelectSchedule, false, pEntity.GetEntIndex(), _, Hook_ProtoSniperSelectSchedule);
+			DHookEntity(hkProtoSniperSelectSchedule, true, pEntity.GetEntIndex(), _, Hook_ProtoSniperSelectSchedule);
+		}
 		else if ((strcmp(szClassname, "instanced_scripted_scene", false) == 0) ||
 				(strcmp(szClassname, "logic_choreographed_scene", false) == 0) ||
 				(strcmp(szClassname, "scripted_scene", false) == 0))

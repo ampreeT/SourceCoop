@@ -66,7 +66,7 @@ public MRESReturn Hook_ProtoSniperSelectSchedule(int _this, Handle hReturn, Hand
 		return MRES_Supercede;
 	}
 
-	// Hear Danger
+	// Add Hear Danger here
 
 	if (!pSniper.IsEnabled())
 	{
