@@ -5,6 +5,44 @@
 
 #include <sdktools>
 
+#define STATE_WARMUP "m_StateWarmup"
+#define STATE_ROUND "m_StateRound"
+#define STATE_INTERMISSION "m_StateIntermission"
+
+enum struct FireOutputData
+{
+	char m_szName[MAX_KEY];
+	CBaseEntity m_pCaller;
+	CBaseEntity m_pActivator;
+	float m_flDelay;
+}
+
+enum
+{
+	STATE_WARMUP_INDEX = 0,
+	STATE_INTERMISSION_INDEX,
+	STATE_ROUND_INDEX
+}
+
+enum
+{
+	STATE_ELEMENT_DONE_TIME = 0,
+	STATE_ELEMENT_NEXT_STATE,
+	STATE_ELEMENT_IS_IN_INTERMISSION
+}
+
+enum GLOBALESTATE
+{
+	GLOBAL_OFF = 0,
+	GLOBAL_ON = 1,
+	GLOBAL_DEAD = 2
+};
+
+Handle g_pGlobalEntityGetIndex;
+Handle g_pGlobalEntityGetState;
+
+Handle g_pGameShutdown;
+
 methodmap Array_t < ArrayList
 {
 	public Array_t(ArrayList pHandle = null)
@@ -104,10 +142,10 @@ methodmap CBaseEntity
 	public bool IsPickupItem()
 	{
 		char szNetClass[32];
-		if(this.GetNetClassname(szNetClass, sizeof(szNetClass))) {
+		if(this.GetNetClassname(szNetClass, sizeof(szNetClass)))
+		{
 			//LogDebug(szNetClass);
-			if(strcmp(szNetClass, "CBasePickup") == 0 || strcmp(szNetClass, "CItem_Battery") == 0)
-				return true;
+			return (strcmp(szNetClass, "CBasePickup") == 0 || strcmp(szNetClass, "CItem_Battery") == 0);
 		}
 		return false;
 	}
@@ -181,7 +219,7 @@ methodmap CBaseEntity
 	{
 		return DispatchKeyValue(this.GetEntIndex(), szKeyValue, szValue);
 	}
-	public bool SetKeyValueFl(const char[] szKeyValue, float fValue)
+	public bool SetKeyValueFl(const char[] szKeyValue, const float fValue)
 	{
 		return DispatchKeyValueFloat(this.GetEntIndex(), szKeyValue, fValue);
 	}
@@ -229,9 +267,9 @@ methodmap CBaseEntity
 	{
 		HookSingleEntityOutput(this.GetEntIndex(), szOutput, pCallback, bOnce);
 	}
-	public void FireOutput(const char[] output, int activator=-1, float delay=0.0)
+	public void FireOutput(const char[] szOutput, const int iActivator = -1, const float flDelay = 0.0)
 	{
-		FireEntityOutput(this.GetEntIndex(), output, activator, delay);
+		FireEntityOutput(this.GetEntIndex(), szOutput, iActivator, flDelay);
 	}
 	public int GetHammerID()
 	{
@@ -277,7 +315,7 @@ methodmap CBaseEntity
 	{
 		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_CollisionGroup");
 	}
-	public void SetCollisionGroup(int iCollisionGroup)
+	public void SetCollisionGroup(const int iCollisionGroup)
 	{
 		SetEntProp(this.GetEntIndex(), Prop_Data, "m_CollisionGroup", iCollisionGroup);
 	}
@@ -293,18 +331,18 @@ methodmap CBaseEntity
 	{
 		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_usSolidFlags");
 	}
-	public void SetSolidFlags(int iSolidFlags)
+	public void SetSolidFlags(const int iSolidFlags)
 	{
 		SetEntProp(this.GetEntIndex(), Prop_Data, "m_usSolidFlags", iSolidFlags);
 	}
-	public void SetNextThinkTick(int iTick)
+	public void SetNextThinkTick(const int iTick)
 	{
 		SetEntProp(view_as<int>(this), Prop_Data, "m_nNextThinkTick", iTick);
 	}
-	public void SetNextThink(float thinkTime)
+	public void SetNextThink(float flThinkTime)
 	{
-		int thinkTick = (thinkTime == -1)? -1 : (TIME_TO_TICKS(thinkTime));
-		this.SetNextThinkTick(thinkTick);
+		int iThinkTick = (flThinkTime == -1) ? -1 : (TIME_TO_TICKS(flThinkTime));
+		this.SetNextThinkTick(iThinkTick);
 	}
 	public void GetViewOffset(float vec[3])
 	{
@@ -330,7 +368,7 @@ methodmap CBaseEntity
 	{
 		return GetEntProp(this.GetEntIndex(), Prop_Send, "m_fEffects");
 	}
-	public void SetEffects(int iEffects)
+	public void SetEffects(const int iEffects)
 	{
 		SetEntProp(this.GetEntIndex(), Prop_Send, "m_fEffects", iEffects); 
 	}
@@ -496,6 +534,14 @@ methodmap CProtoSniper < CAI_BaseNPC
 		return view_as<CProtoSniper>(InternalGetBaseEntity(iEntIndex));
 	}
 	
+	public bool IsSweepHighestPriority()
+	{
+		return view_as<bool>(GetEntProp(this.GetEntIndex(), Prop_Data, "m_bSweepHighestPriority"));
+	}
+	public CBaseEntity GetSweepTarget()
+	{
+		return CBaseEntity(GetEntPropEnt(this.GetEntIndex(), Prop_Data, "m_hSweepTarget"));
+	}
 	public bool IsWeaponLoaded()
 	{
 		return view_as<bool>(GetEntProp(this.GetEntIndex(), Prop_Data, "m_fWeaponLoaded"));
@@ -769,32 +815,6 @@ public bool Callback_GetAimTarget(int iEntity, int iMask, any pData)
 	return !view_as<bool>(iEntity == pData);
 }
 
-enum struct FireOutputData
-{
-	char m_szName[MAX_KEY];
-	CBaseEntity m_pCaller;
-	CBaseEntity m_pActivator;
-	float m_flDelay;
-}
-
-#define STATE_WARMUP "m_StateWarmup"
-#define STATE_ROUND "m_StateRound"
-#define STATE_INTERMISSION "m_StateIntermission"
-
-enum
-{
-	STATE_WARMUP_INDEX = 0,
-	STATE_INTERMISSION_INDEX,
-	STATE_ROUND_INDEX
-}
-
-enum
-{
-	STATE_ELEMENT_DONE_TIME = 0,
-	STATE_ELEMENT_NEXT_STATE,
-	STATE_ELEMENT_IS_IN_INTERMISSION
-}
-
 methodmap CBM_MP_GameRules
 {
 	public static int GetStateIndex(const char[] szStateProp)
@@ -826,16 +846,6 @@ methodmap CBM_MP_GameRules
 	}
 }
 
-enum GLOBALESTATE
-{
-	GLOBAL_OFF = 0,
-	GLOBAL_ON = 1,
-	GLOBAL_DEAD = 2
-};
-
-Handle g_pGlobalEntityGetIndex;
-Handle g_pGlobalEntityGetState;
-
 methodmap CGlobalState
 {
 	public static int GetIndex(const char[] szGlobalname)
@@ -853,8 +863,6 @@ methodmap CGlobalState
 		return CGlobalState.GetStateByIndex(CGlobalState.GetIndex(szGlobalname));
 	}
 }
-
-Handle g_pGameShutdown;
 
 methodmap IServerGameDLL
 {

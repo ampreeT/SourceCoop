@@ -35,6 +35,8 @@
 #define VEC_DUCK_HULL_MAX {16.0, 16.0, 36.0}
 #define VEC_DUCK_VIEW {0.0, 0.0, 28.0}
 
+#define SF_SNIPERTARGET_NOINTERRUPT 2
+
 #define SF_INFOPLAYERSTART_MASTER 1
 
 #define	SF_NORESPAWN ( 1 << 30 )	// if set, item wont respawn in MP
@@ -287,6 +289,17 @@ enum SCOND_t
 	// IMPORTANT: This must be the last enum
 	// ======================================
 	LAST_SHARED_CONDITION	
+};
+
+enum //Sniper_Conds
+{
+	COND_SNIPER_CANATTACKDECOY = LAST_SHARED_CONDITION,
+	COND_SNIPER_SUPPRESSED,
+	COND_SNIPER_ENABLED,
+	COND_SNIPER_DISABLED,
+	COND_SNIPER_FRUSTRATED,
+	COND_SNIPER_SWEEP_TARGET,
+	COND_SNIPER_NO_SHOT,
 };
 
 //=========================================================

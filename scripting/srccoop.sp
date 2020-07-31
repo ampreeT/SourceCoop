@@ -14,7 +14,7 @@ public Plugin myinfo =
 	url = "https://github.com/ampreeT/SourceCoop"
 };
 
-void load_dhook_detour(const Handle pGameConfig, Handle& pHandle, const char[] szFuncName, DHookCallback pCallbackPre = INVALID_FUNCTION, DHookCallback pCallbackPost = INVALID_FUNCTION)
+stock void LoadDHookDetour(const Handle pGameConfig, Handle& pHandle, const char[] szFuncName, DHookCallback pCallbackPre = INVALID_FUNCTION, DHookCallback pCallbackPost = INVALID_FUNCTION)
 {
 	pHandle = DHookCreateFromConf(pGameConfig, szFuncName);
 	if (pHandle == null)
@@ -25,24 +25,24 @@ void load_dhook_detour(const Handle pGameConfig, Handle& pHandle, const char[] s
 		SetFailState("Couldn't enable post detour hook %s", szFuncName);
 }
 
-void load_dhook_virtual(const Handle pGameConfig, Handle& pHandle, const char[] szFuncName)
+stock void LoadDHookVirtual(const Handle pGameConfig, Handle& pHandle, const char[] szFuncName)
 {
 	pHandle = DHookCreateFromConf(pGameConfig, szFuncName);
 	if (pHandle == null)
 		SetFailState("Couldn't create hook %s", szFuncName);
 }
 
-stock Address GetServerInterface(const char[] szInterface)
+public Address GetServerInterface(const char[] szInterface)
 {
 	return view_as<Address>(SDKCall(g_pCreateServerInterface, szInterface, 0));
 }
 
-stock Address GetEngineInterface(const char[] szInterface)
+public Address GetEngineInterface(const char[] szInterface)
 {
 	return view_as<Address>(SDKCall(g_pCreateEngineInterface, szInterface, 0));
 }
 
-void load_gamedata()
+void LoadGameData()
 {
 	char szConfigName[] = "srccoop.games";
 	GameData pGameConfig = LoadGameConfigFile(szConfigName);
@@ -83,20 +83,22 @@ void load_gamedata()
 	if (!(g_ServerGameDLL = IServerGameDLL(GetServerInterface(szInterfaceGame))))
 		SetFailState("Could not get interface for %s", "g_ServerGameDLL");
 	
-//	char szPickupObject[] = "CBlackMesaPlayer::PickupObject";
-//	StartPrepSDKCall(SDKCall_Player);
-//	if (!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Virtual, szPickupObject))
-//		SetFailState("Could not obtain gamedata offset %s", szPickupObject);
-//	PrepSDKCall_AddParameter(SDKType_CBaseEntity, SDKPass_Pointer);
-//	PrepSDKCall_AddParameter(SDKType_Bool, SDKPass_Plain);
-//	if (!(g_pPickupObject = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szPickupObject);
+	/*
+	char szPickupObject[] = "CBlackMesaPlayer::PickupObject";
+	StartPrepSDKCall(SDKCall_Player);
+	if (!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Virtual, szPickupObject))
+		SetFailState("Could not obtain gamedata offset %s", szPickupObject);
+	PrepSDKCall_AddParameter(SDKType_CBaseEntity, SDKPass_Pointer);
+	PrepSDKCall_AddParameter(SDKType_Bool, SDKPass_Plain);
+	if (!(g_pPickupObject = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szPickupObject);
 	
-//	char szSendWeaponAnim[] = "CBaseCombatWeapon::SendWeaponAnim";
-//	StartPrepSDKCall(SDKCall_Entity);
-//	if (!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Virtual, szSendWeaponAnim))
-//		SetFailState("Could not obtain gamedata offset %s", szSendWeaponAnim);
-//	PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
-//	if (!(g_pSendWeaponAnim = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szSendWeaponAnim);
+	char szSendWeaponAnim[] = "CBaseCombatWeapon::SendWeaponAnim";
+	StartPrepSDKCall(SDKCall_Entity);
+	if (!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Virtual, szSendWeaponAnim))
+		SetFailState("Could not obtain gamedata offset %s", szSendWeaponAnim);
+	PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
+	if (!(g_pSendWeaponAnim = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szSendWeaponAnim);
+	*/
 		
 	char szGameShutdown[] = "CServerGameDLL::GameShutdown";
 	StartPrepSDKCall(SDKCall_Raw);
@@ -128,30 +130,32 @@ void load_gamedata()
 	PrepSDKCall_AddParameter(SDKType_Vector, SDKPass_ByRef);
 	if (!(g_pSetCollisionBounds = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szSetCollisionBounds);
 
-	load_dhook_virtual(pGameConfig, hkFAllowFlashlight, "CMultiplayRules::FAllowFlashlight");
-	load_dhook_virtual(pGameConfig, hkIsMultiplayer, "CMultiplayRules::IsMultiplayer");
-	load_dhook_virtual(pGameConfig, hkIRelationType, "CBaseCombatCharacter::IRelationType");
-	load_dhook_virtual(pGameConfig, hkIsPlayerAlly, "CAI_BaseNPC::IsPlayerAlly");
-	load_dhook_virtual(pGameConfig, hkProtoSniperSelectSchedule, "CProtoSniper::SelectSchedule");
-	load_dhook_virtual(pGameConfig, hkFindNamedEntity, "CSceneEntity::FindNamedEntity");
-	load_dhook_virtual(pGameConfig, hkFindNamedEntityClosest, "CSceneEntity::FindNamedEntityClosest");
-	load_dhook_virtual(pGameConfig, hkSetModel, "CBaseEntity::SetModel");
-	load_dhook_virtual(pGameConfig, hkAcceptInput, "CBaseEntity::AcceptInput");
-	load_dhook_virtual(pGameConfig, hkOnTryPickUp, "CBasePickup::OnTryPickUp");
-	load_dhook_virtual(pGameConfig, hkThink, "CBaseEntity::Think");
-	load_dhook_virtual(pGameConfig, hkChangeTeam, "CBlackMesaPlayer::ChangeTeam");
-	load_dhook_virtual(pGameConfig, hkShouldCollide, "CBlackMesaPlayer::ShouldCollide");
-	load_dhook_virtual(pGameConfig, hkIchthyosaurIdleSound, "CNPC_Ichthyosaur::IdleSound");
-	load_dhook_detour(pGameConfig, hkSetSuitUpdate, "CBasePlayer::SetSuitUpdate", Hook_SetSuitUpdate, Hook_SetSuitUpdatePost);
-	load_dhook_detour(pGameConfig, hkUTIL_GetLocalPlayer, "UTIL_GetLocalPlayer", Hook_UTIL_GetLocalPlayer);
-	load_dhook_detour(pGameConfig, hkResolveNames, "CAI_GoalEntity::ResolveNames", Hook_ResolveNames, Hook_ResolveNamesPost);
-	load_dhook_detour(pGameConfig, hkCanSelectSchedule, "CAI_LeadBehavior::CanSelectSchedule", Hook_CanSelectSchedule);
+	LoadDHookVirtual(pGameConfig, hkFAllowFlashlight, "CMultiplayRules::FAllowFlashlight");
+	LoadDHookVirtual(pGameConfig, hkIsMultiplayer, "CMultiplayRules::IsMultiplayer");
+	LoadDHookVirtual(pGameConfig, hkIRelationType, "CBaseCombatCharacter::IRelationType");
+	LoadDHookVirtual(pGameConfig, hkIsPlayerAlly, "CAI_BaseNPC::IsPlayerAlly");
+	LoadDHookVirtual(pGameConfig, hkProtoSniperSelectSchedule, "CProtoSniper::SelectSchedule");
+	LoadDHookVirtual(pGameConfig, hkFindNamedEntity, "CSceneEntity::FindNamedEntity");
+	LoadDHookVirtual(pGameConfig, hkFindNamedEntityClosest, "CSceneEntity::FindNamedEntityClosest");
+	LoadDHookVirtual(pGameConfig, hkSetModel, "CBaseEntity::SetModel");
+	LoadDHookVirtual(pGameConfig, hkAcceptInput, "CBaseEntity::AcceptInput");
+	LoadDHookVirtual(pGameConfig, hkOnTryPickUp, "CBasePickup::OnTryPickUp");
+	LoadDHookVirtual(pGameConfig, hkThink, "CBaseEntity::Think");
+	LoadDHookVirtual(pGameConfig, hkChangeTeam, "CBlackMesaPlayer::ChangeTeam");
+	LoadDHookVirtual(pGameConfig, hkShouldCollide, "CBlackMesaPlayer::ShouldCollide");
+	LoadDHookVirtual(pGameConfig, hkIchthyosaurIdleSound, "CNPC_Ichthyosaur::IdleSound");
+	LoadDHookDetour(pGameConfig, hkSetSuitUpdate, "CBasePlayer::SetSuitUpdate", Hook_SetSuitUpdate, Hook_SetSuitUpdatePost);
+	LoadDHookDetour(pGameConfig, hkUTIL_GetLocalPlayer, "UTIL_GetLocalPlayer", Hook_UTIL_GetLocalPlayer);
+	LoadDHookDetour(pGameConfig, hkResolveNames, "CAI_GoalEntity::ResolveNames", Hook_ResolveNames, Hook_ResolveNamesPost);
+	LoadDHookDetour(pGameConfig, hkCanSelectSchedule, "CAI_LeadBehavior::CanSelectSchedule", Hook_CanSelectSchedule);
+	
 	CloseHandle(pGameConfig);
 }
 
 public void OnPluginStart()
 {
-	load_gamedata();
+	LoadGameData();
+	
 	InitDebugLog("sm_coop_debug", "SRCCOOP", ADMFLAG_ROOT);
 	CreateConVar("sourcecoop_version", PLUGIN_VERSION, _, FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
 	g_pConvarCoopEnabled = CreateConVar("sm_coop_enabled", "1", "Sets if coop is enabled on coop maps", _, true, 0.0, true, 1.0);
@@ -160,16 +164,14 @@ public void OnPluginStart()
 	g_pConvarWaitPeriod = CreateConVar("sm_coop_start_wait_period", "15.0", "The max number of seconds to wait since first player spawned in to start the map. The timer is skipped when all players enter the game.", _, true, 0.0);
 	g_pConvarEndWaitPeriod = CreateConVar("sm_coop_end_wait_period", "60.0", "The max number of seconds to wait since first player triggered a changelevel. The timer speed increases each time a new player finishes the level.", _, true, 0.0);
 	g_pConvarEndWaitFactor = CreateConVar("sm_coop_end_wait_factor", "1.0", "Controls how much the number of finished players increases the changelevel timer speed. 1.0 means full, 0 means none (timer will run full length).", _, true, 0.0, true, 1.0);
+	
 	g_pLevelLump.Initialize();
 	g_SpawnSystem.Initialize();
 	g_pCoopManager.Initialize();
 	g_pInstancingManager.Initialize();
 	g_pPostponedSpawns = CreateArray();
 	
-	HookEvent("player_spawn", Event_PlayerSpawnPost, EventHookMode_Post);
-	AddNormalSoundHook(PlayerSoundListener);
-	
-	if(GetEngineVersion() == Engine_BlackMesa)
+	if (GetEngineVersion() == Engine_BlackMesa)
 	{
 		HookEvent("broadcast_teamsound", Hook_BroadcastTeamsound, EventHookMode_Pre);
 		UserMsg iIntroCredits = GetUserMessageId("IntroCredits");
@@ -177,9 +179,12 @@ public void OnPluginStart()
 			HookUserMessage(iIntroCredits, Hook_IntroCreditsMsg, true);
 	}
 	
-	for(int i = 1; i <= MaxClients; i++)
+	HookEvent("player_spawn", Event_PlayerSpawnPost, EventHookMode_Post);
+	AddNormalSoundHook(PlayerSoundListener);
+	
+	for (int i = 1; i <= MaxClients; i++)
 	{
-		if(IsClientInGame(i))
+		if (IsClientInGame(i))
 		{
 			OnClientPutInServer(i);
 		}
@@ -200,13 +205,16 @@ public Action OnLevelInit(const char[] szMapName, char szMapEntities[2097152])		
 public void OnMapStart()
 {
 	g_pCoopManager.OnMapStart();
+	
 	DHookGamerules(hkIsMultiplayer, false, _, Hook_IsMultiplayer);
 	DHookGamerules(hkFAllowFlashlight, false, _, Hook_FAllowFlashlight);
-	for(int i = 0; i < g_pPostponedSpawns.Length; i++)
+	
+	for (int i = 0; i < g_pPostponedSpawns.Length; i++)
 	{
 		CBaseEntity pEnt = g_pPostponedSpawns.Get(i);
 		RequestFrame(SpawnPostponedItem, pEnt);
 	}
+	
 	g_pPostponedSpawns.Clear();
 	g_bMapStarted = true;
 }
@@ -259,6 +267,22 @@ public void OnMapEnd()
 {
 	g_pLevelLump.RevertConvars();
 	g_bMapStarted = false;
+	
+	PrintToServer("Hello????");
+	for (int i = 1; i <= MaxClients; i++)
+	{
+		PrintToServer("trying %d", i);
+		CBaseEntity pPlayer = CBaseEntity(i);
+		if (pPlayer.IsValid())
+		{
+			//CBaseEntity pViewEntity = pPlayer.GetViewEntity();
+			//if (pViewEntity.IsValid() && pViewEntity != pPlayer)
+			//{
+				PrintToServer("\n\n\nholla over at this boy %d\n\n\n\n\n", i);
+			//	pPlayer.SetViewEntity(pPlayer);
+			//}
+		}
+	}
 }
 
 public void OnPluginEnd()
@@ -524,12 +548,6 @@ public MRESReturn Hook_FAllowFlashlight(Handle hReturn, Handle hParams)		// enab
 	return MRES_Ignored;
 }
 
-public MRESReturn Hook_IsMultiplayer(Handle hReturn, Handle hParams)
-{
-	DHookSetReturn(hReturn, g_bIsMultiplayerOverride);
-	return MRES_Supercede;
-}
-
 public void Hook_CameraDeathSpawn(int iEntIndex)
 {
 	if (g_pCoopManager.IsFeaturePatchingEnabled())
@@ -548,6 +566,12 @@ public void Hook_CameraDeathSpawn(int iEntIndex)
 			}
 		}
 	}
+}
+
+public MRESReturn Hook_IsMultiplayer(Handle hReturn, Handle hParams)
+{
+	DHookSetReturn(hReturn, g_bIsMultiplayerOverride);
+	return MRES_Supercede;
 }
 
 // todo read this later

@@ -21,8 +21,8 @@ enum struct CCoopSpawnEntry
 	
 	void Initialize()
 	{
-		this.m_pTriggerEnt = CBaseEntity(-1);
-		this.m_pFollowEnt = CBaseEntity(-1);
+		this.m_pTriggerEnt = CBaseEntity();
+		this.m_pFollowEnt = CBaseEntity();
 	}
 	
 	bool TeleportPlayer(CBlackMesaPlayer pPlayer, bool bForceTeleport = false, bool bIsBringAllTP = false)
@@ -228,20 +228,20 @@ enum struct CCoopSpawn
 	{
 		CCoopSpawnEntry pCheckpoint;
 		// pickup possible spawn items and make sure player spawned in if second teleport is blocked
-		if(this.GetCheckpointByIndex(0, pCheckpoint))
+		if (this.GetCheckpointByIndex(0, pCheckpoint))
 		{
 			pCheckpoint.TeleportPlayer(pPlayer, true);
-			if(this.m_iCurrentCheckpoint > 0)
+			if (this.m_iCurrentCheckpoint > 0)
 			{
 				RequestFrame(RequestSpawnPlayer, pPlayer);
 			}
 		}
-		if(bSpawnEquipment) RequestFrame(RequestSpawnEquipment, pPlayer);
+		if (bSpawnEquipment) RequestFrame(RequestSpawnEquipment, pPlayer);
 	}
 	void CreatePortal(const float vecPosition[3])
 	{
 		CBaseEntity pParticle = CBaseEntity(CreateEntityByName("info_particle_system"));
-		if(pParticle.IsValidIndex())
+		if (pParticle.IsValidIndex())
 		{
 			pParticle.SetKeyValueStr("effect_name", "teleport_lambda_entrance");
 			pParticle.SetKeyValueStr("start_active", "1");
@@ -573,10 +573,10 @@ public void RequestSpawnPlayer(CBlackMesaPlayer pPlayer)
 
 public void RequestSpawnPlayer2(CBlackMesaPlayer pPlayer)
 {
-	if(pPlayer.IsValid() && pPlayer.IsAlive())
+	if (pPlayer.IsValid() && pPlayer.IsAlive())
 	{
 		CCoopSpawnEntry pCheckpoint;
-		if(g_SpawnSystem.GetCurrentCheckpoint(pCheckpoint))
+		if (g_SpawnSystem.GetCurrentCheckpoint(pCheckpoint))
 		{
 			pCheckpoint.TeleportPlayer(pPlayer);
 		}
@@ -585,7 +585,7 @@ public void RequestSpawnPlayer2(CBlackMesaPlayer pPlayer)
 
 public void RequestSpawnEquipment(CBlackMesaPlayer pPlayer)
 {
-	if(pPlayer.IsValid() && pPlayer.IsAlive())
+	if (pPlayer.IsValid() && pPlayer.IsAlive())
 	{
 		g_SpawnSystem.SpawnPlayerEquipment(pPlayer);
 	}
@@ -594,7 +594,7 @@ public void RequestSpawnEquipment(CBlackMesaPlayer pPlayer)
 public void Callback_Checkpoint(const char[] szName, int iCaller, int iActivator, float flDelay)
 {
 	CCoopSpawnEntry pCheckpoint; int iIndex;
-	if((iIndex = g_SpawnSystem.FindCheckpointByOutput(CBaseEntity(iCaller), szName, pCheckpoint)) != -1)
+	if ((iIndex = g_SpawnSystem.FindCheckpointByOutput(CBaseEntity(iCaller), szName, pCheckpoint)) != -1)
 	{
 		CreateTimer(pCheckpoint.m_flDelay, Callback_CheckpointTimer, iIndex, TIMER_FLAG_NO_MAPCHANGE);
 	}
@@ -605,13 +605,13 @@ public Action Callback_CheckpointTimer(Handle timer, int iCheckpointIndex)
 	g_SpawnSystem.ActivateCheckpoint(iCheckpointIndex);
 }
 
-public void Hook_TouchPortal(int entity, int other)
+public void Hook_TouchPortal(int iEntity, int iOther)
 {
-	CBlackMesaPlayer pPlayer = CBlackMesaPlayer(other);
-	if(pPlayer.IsClassPlayer())
+	CBlackMesaPlayer pPlayer = CBlackMesaPlayer(iOther);
+	if (pPlayer.IsClassPlayer())
 	{
 		CCoopSpawnEntry pCheckpoint;
-		if(g_SpawnSystem.GetCurrentCheckpoint(pCheckpoint) && pCheckpoint.TeleportPlayer(pPlayer))
+		if (g_SpawnSystem.GetCurrentCheckpoint(pCheckpoint) && pCheckpoint.TeleportPlayer(pPlayer))
 		{
 			pPlayer.PlayGameSound(SND_PORTAL);
 		}
