@@ -6,7 +6,10 @@
 	{
 		// fix for breakmodels not appearing
 		"breakable_multiplayer" "0"
-			
+		
+		// disables statistics and also functions as a temp crashfix
+		"sv_ranked" "0"
+		
 		"#if"
 		{
 			"os"	"linux"

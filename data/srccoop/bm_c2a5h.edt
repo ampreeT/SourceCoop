@@ -20,10 +20,6 @@
 				}
 			}
 		}
-		"delete"
-		{
-			"classname"	"npc_sniper"
-		}
 		// Change this door opening to an earlier trigger
 		"delete"
 		{

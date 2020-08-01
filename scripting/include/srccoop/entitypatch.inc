@@ -136,6 +136,18 @@ public MRESReturn Hook_ProtoSniperSelectSchedule(int _this, Handle hReturn, Hand
 	return MRES_Supercede;
 }
 
+// For some reason, sniper tracers hard crash my client, thankfully it's easy to turn them off.
+public Action BlackMesaFireBulletsTEHook(const char[] szTEName, const int[] iClients, int iNumClients, float flDelay)
+{
+	int iAmmoId = TE_ReadNum("m_iAmmoID");
+	if(iAmmoId == AMMO_SNIPERROUND)
+	{
+		TE_WriteNum("m_bDoTracers", 0);
+		return Plugin_Changed;
+	}
+	return Plugin_Continue;
+}
+
 //------------------------------------------------------
 // Scene entities
 // fix findnamedentity returning sp player ( nullptr )

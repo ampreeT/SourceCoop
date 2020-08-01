@@ -177,6 +177,7 @@ public void OnPluginStart()
 		UserMsg iIntroCredits = GetUserMessageId("IntroCredits");
 		if(iIntroCredits != INVALID_MESSAGE_ID)
 			HookUserMessage(iIntroCredits, Hook_IntroCreditsMsg, true);
+		AddTempEntHook("BlackMesa Shot", BlackMesaFireBulletsTEHook);
 	}
 	
 	HookEvent("player_spawn", Event_PlayerSpawnPost, EventHookMode_Post);

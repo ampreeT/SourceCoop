@@ -13,7 +13,7 @@ public void Hook_PlayerPreThink(int iClient)
 {
 	if(!g_pCoopManager.IsCoopModeEnabled())
 		return;
-		
+	
 	if(IsPlayerAlive(iClient))
 		g_bIsMultiplayerOverride = false;
 }
@@ -56,7 +56,7 @@ public Action PlayerSoundListener(int clients[MAXPLAYERS], int &numClients, char
 			szLastSuitSound[clients[i]] = sample;
 		}
 	}
-	if(strncmp(sample, "physics\\footsteps\\", 18) == 0 || strncmp(sample, "player/suit_sprint.wav", 22) == 0)
+	else if(strncmp(sample, "physics\\footsteps\\", 18) == 0 || strncmp(sample, "player/suit_sprint.wav", 22) == 0)
 	{
 		// Footsteps are emitted on the server but not sent to client, because the client usually plays them on its own - but not when sprinting in MP mode (actually just pressing +speed!)
 		// We can resolve this by sending the footsteps, which are already generated on the server, to the client.
@@ -95,10 +95,11 @@ public void Hook_PlayerSpawnPost(int iClient)
 		return;
 	
 	CBlackMesaPlayer pPlayer = CBlackMesaPlayer(iClient);
-	// Reset sprinting
+	// Correct the 'damages' from the prethink hook hack
 	pPlayer.SetSuit(false);
 	pPlayer.SetMaxSpeed(190.0);
 	pPlayer.SetIsSprinting(false);
+	pPlayer.SetSolidFlags(pPlayer.GetSolidFlags() & ~FSOLID_NOT_SOLID);
 	// Stop HEV sounds
 	StopSound(iClient, SNDCHAN_STATIC, szLastSuitSound[iClient]);
 }

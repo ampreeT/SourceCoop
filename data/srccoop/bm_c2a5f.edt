@@ -40,10 +40,6 @@
 		{
 			"targetname" "maker_grd_jackson"
 		}
-		"delete"
-		{
-			"classname"	"npc_sniper"
-		}
 		"create"
 		{
 			"targetname" "grd02_invul"

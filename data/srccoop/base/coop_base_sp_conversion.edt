@@ -113,5 +113,17 @@
 		{
 			"classname" "env_screenoverlay"
 		}
+		// We never want player_speedmod to suppress HUD in MP as this hides chat and even the main menu
+		"modify"
+		{
+			"classname" "player_speedmod"
+			"flags"
+			{
+				"spawnflags"
+				{
+					"remove" "2" // Suppress HUD
+				}
+			}
+		}
 	}
 }

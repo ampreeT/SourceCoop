@@ -25,20 +25,42 @@
 				"origin" "800 128 90"
 			}
 		}
-		// Turn the teleport-to-changelevel trigger_teleport into a trigger_once that changes the level instead
+		// Change level instead of activating the teleport
 		"modify"
 		{
-			"targetname" "gordon_teleport_byebye"
-			"add"
-			{
-				"classname" "trigger_once"
-			}
+			"targetname" "scene_AMBUSH02"
 			"outputs"
 			{
-				"add" {
+				"modify"
+				{
+					"output" "OnCompletion"
+					"target" "gordon_teleport_byebye"
+					"replace"
+					{
+						"target" "c2a4a_transition"
+						"input" "Changelevel"
+					}
+				}
+			}
+		}
+		// Move the players to the second scene location so we can hear the dialog
+		"add"
+		{
+			"classname" "point_teleport"
+			"targetname" "_srccoop_finalscene_tp"
+			"origin" "-5952 -1024 417"
+			"target" "!player"
+		}
+		"modify"
+		{
+			"targetname" "relay_sceneteleport"
+			"outputs"
+			{
+				"add"
+				{
 					"output" "OnTrigger"
-					"target" "c2a4a_transition"
-					"input" "ChangeLevel"
+					"target" "_srccoop_finalscene_tp"
+					"input" "Teleport"
 				}
 			}
 		}

@@ -26,10 +26,6 @@
 		{
 			"targetname"	"player_hit_mine"
 		}
-		"delete"
-		{
-			"classname"	"npc_sniper"
-		}
 		// dont let the hivehand get flung across the room 
 		// when someone inevitably triggers a tripmine
 		"modify"

@@ -61,7 +61,6 @@ The following convars are available:
 - npcs can walk into player, make him stuck, then stop rendering
 - npc_xenturret AI causes crash on map load (it seems to be fine after loading)
 - random linux server crashes related to npcs (pAnim, CalcAnimation, etc)
-- drowning crash (CBM_MP_GameRules::GetCurrentState())
 
 ### non-critical
 - sniper HasCondition(...) offset should go in gamedata
@@ -99,10 +98,6 @@ The following convars are available:
 - allow configuring more features from edt configs
 
 ### map-issues
-- c1a1a
-	- Eli sometimes mysteriously dies and breaks the game
-- c2a3a
-	- during final cutscene hud is turned off, players cannot use chat or press esc
 - bm_c4a4a
 	- point_hurt (cyclone_hurt) has target !player (this picks first one)
 - xen maps

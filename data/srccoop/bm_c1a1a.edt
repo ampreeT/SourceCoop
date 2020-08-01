@@ -59,6 +59,20 @@
 		{
 			"hammerid" "2039226"
 		}
+		// make vital scientists invulnerable
+		"create"
+		{
+			"targetname" "_srccoop_sci_filter"
+			"classname" "filter_damage_class"
+		}
+		"modify"
+		{
+			"GameEndAlly"	"1"
+			"add"
+			{
+				"damagefilter"	"_srccoop_sci_filter"
+			}
+		}
 	}
 	"checkpoint"
 	{

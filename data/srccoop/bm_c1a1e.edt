@@ -84,6 +84,7 @@
 			"angles"	"0 270 0"
 			"triggerid"	"storage_door4"
 			"output"	"OnOpen"
+			"portal"	"-3024 -6026 -3931"
 		}
 		"jumppuzzle"
 		{
