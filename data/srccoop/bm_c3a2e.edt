@@ -2,14 +2,110 @@
 
 "config"
 {
-	"nextmap"	"/.*/"
+	"nextmap"	"bm_c3a2c"
 	"equipment"
 	{
 	}
 	"entity"
 	{
+		// spawn items
+		"modify"
+		{
+			"targetname" "/ammo|suit|weapons/"
+			"flags"
+			{
+				"spawnflags"
+				{
+					"add" "2" // motion disabled
+					"add" "8" // silent pickup
+				}
+			}
+			"set"
+			{
+				"origin" "-1056 -240 440"
+			}
+		}
+		// fix bugged door sounds
+		"modify"
+		{
+			"classname" "func_door"
+			"set"
+			{
+				"loopmovesound" "0"
+			}
+		}
+		// fix logic_auto not firing
+		"modify"
+		{
+			"classname" "logic_auto"
+			"outputs"
+			{
+				"modify"
+				{
+					"output" "OnMapTransition"
+					"replace"
+					{
+						"output" "OnMapSpawn"
+					}
+				}
+			}
+		}
+		// changelevel: enable on map goal
+		"modify"
+		{
+			"targetname" "blue-c_changelevel"
+			"set"
+			{
+				"StartDisabled"	"1"
+			}
+		}
+		"modify"
+		{
+			"targetname" "pump_water_&i1"
+			"outputs"
+			{
+				"add"
+				{
+					"target"	"blue-c_changelevel"
+					"output"	"OnFullyOpen"
+					"input"		"Enable"
+				}
+			}
+		}
+		// dont close doors
+		"modify"
+		{
+			"targetname" "blue_pumpvorts_trigger2"
+			"outputs"
+			{
+				"remove"
+				{
+					"input"	"/^((?!StartPortal).)*$/" // delete all outputs except for npc spawner
+				}
+			}
+		}
 	}
 	"checkpoint"
 	{
+		"spawn"
+		{
+			"origin"	"-1056 -240 420"
+			"angles"	"0 0 0"
+		}
+		"controlroom"
+		{
+			"origin"	"216 984 836"
+			"angles"	"0 180 0"
+			"triggerid"	"sscape_pump1_controlroom"
+			"output"	"OnPlay"
+		}
+		"pumplever"
+		{
+			"origin"	"280 2316 789"
+			"angles"	"0 180 0"
+			"triggerid"	"pump_lever_&i1"
+			"output"	"OnOpen"
+			"bringall"	"1"
+		}
 	}
 }

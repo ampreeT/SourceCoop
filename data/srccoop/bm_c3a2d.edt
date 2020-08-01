@@ -2,14 +2,123 @@
 
 "config"
 {
-	"nextmap"	"/.*/"
+	"nextmap"	"bm_c3a2c"
 	"equipment"
 	{
+		// equipment copied from c3a2c
+		"suit"	"1"
+		"item" "item_battery"
+		"item" "item_battery"
+		"item" "item_battery"
+		"item" "item_grenade_mp5"
+		"item" "item_grenade_mp5"
+		"item" "item_grenade_mp5"
+		"item" "item_ammo_shotgun"
+		"item" "item_weapon_satchel"
+		"item" "item_weapon_gluon"
+		"item" "item_weapon_crossbow"
+		"item" "item_weapon_hivehand"
+		"item" "item_weapon_tau"
+		"item" "item_weapon_shotgun"
+		"item" "item_weapon_crowbar"
+		"item" "item_weapon_mp5"
+		"item" "item_weapon_glock"
+		"item" "item_weapon_frag"
+		"item" "item_ammo_357"
+		"item" "item_weapon_rpg"
+		"item" "item_grenade_rpg"
+		"item" "item_weapon_tripmine"
+		"item" "item_weapon_357"
+//		"item" "item_ammo_crossbow"
+		"item" "item_ammo_mp5"
+		"item" "item_ammo_mp5"
+		"item" "item_ammo_glock"
 	}
 	"entity"
 	{
+		// spawn items
+		"modify"
+		{
+			"targetname" "/ammo|suit|weapons/"
+			"flags"
+			{
+				"spawnflags"
+				{
+					"add" "2" // motion disabled
+					"add" "8" // silent pickup
+				}
+			}
+		}
+		// fix bugged door sounds
+		"modify"
+		{
+			"classname" "func_door"
+			"set"
+			{
+				"loopmovesound" "0"
+			}
+		}
+		// fix logic_auto not firing
+		"modify"
+		{
+			"classname" "logic_auto"
+			"outputs"
+			{
+				"modify"
+				{
+					"output" "OnMapTransition"
+					"replace"
+					{
+						"output" "OnMapSpawn"
+					}
+				}
+			}
+		}
+		// changelevel: enable on map goal
+		"modify"
+		{
+			"targetname" "orange-c_changelevel"
+			"set"
+			{
+				"StartDisabled"	"1"
+			}
+		}
+		"modify"
+		{
+			"targetname" "pump_water_&i"
+			"outputs"
+			{
+				"add"
+				{
+					"target"	"orange-c_changelevel"
+					"output"	"OnFullyOpen"
+					"input"		"Enable"
+				}
+			}
+		}	
 	}
 	"checkpoint"
 	{
+		"spawn"
+		{
+			"origin"	"-272 864 575.512"
+			"angles"	"0 0 0"
+		}
+		"drainopen"
+		{
+			"origin"	"780 -806 156"
+			"angles"	"0 225 0"
+			"triggerid"	"drain_button_&i"
+			"output"	"OnPressed"
+			"portal"	"1211 698 149"
+		}
+		"pumplever"
+		{
+			"origin"	"646 -1697 925"
+			"angles"	"0 180 0"
+			"triggerid"	"pump_lever_&i"
+			"output"	"OnOpen"
+			"bringall"	"1"
+		}
 	}
 }

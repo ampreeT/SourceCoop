@@ -2,14 +2,266 @@
 
 "config"
 {
-	"nextmap"	"/.*/"
+	"nextmap"	"bm_c3a2d"
+	"nextmap"	"bm_c3a2e"
+	"nextmap"	"bm_c3a2f"
+	"intro_type"	"none"
 	"equipment"
 	{
 	}
 	"entity"
 	{
+		// spawn items
+		"modify"
+		{
+			"targetname" "/ammo|suit|weapons/"
+			"flags"
+			{
+				"spawnflags"
+				{
+					"add" "2" // motion disabled
+					"add" "8" // silent pickup
+				}
+			}
+			"set"
+			{
+				"origin" "92 1296 1007.51"
+			}
+		}
+		// delay map start
+		"modify"
+		{
+			"targetname" "transition_elevator_path2"
+			"functions"
+			{
+				"delay_output" "OnPass"
+			}
+		}
+		// fix bugged door sounds
+		"modify"
+		{
+			"classname" "func_door"
+			"set"
+			{
+				"loopmovesound" "0"
+			}
+		}
+		// dont close elevator door
+		"delete"
+		{
+			"hammerid" "3480470"
+			"classname" "trigger_once"
+		}
+		// fix logic_auto outputs not firing
+		"modify"
+		{
+			"classname" "logic_auto"
+			"outputs"
+			{
+				"modify"
+				{
+					"output" "OnMapTransition"
+					"replace"
+					{
+						"output" "OnMapSpawn"
+					}
+				}
+			}
+		}
+		// ????? why does this have to be set
+		"modify"
+		{
+			"targetname" "reactor_entrance_counter"
+			"set"
+			{
+				"max" "2"
+			}
+		}
+		
+		// Changelevel stuff
+		// -----------------
+		"modify"
+		{
+			"outputs"
+			{
+				"modify"
+				{
+					"input" "Changelevel"
+					"replace"
+					{
+						"input" "Enable"
+					}
+				}
+			}
+		}
+		// prepare c3a2d changelevel
+		"modify"
+		{
+			"targetname" "c-orange_changelevel"
+			"set"
+			{
+				"spawnflags" "0"
+				"StartDisabled" "1"
+			}
+			"functions"
+			{
+				"set_model"
+				{
+					"from"	"1464 176 -184"
+					"to"	"1152 400 -320"
+				}
+			}
+		}
+		// prepare c3a2e changelevel
+		"modify"
+		{
+			"targetname" "c-blue_changelevel"
+			"set"
+			{
+				"spawnflags" "0"
+				"StartDisabled" "1"
+			}
+			"functions"
+			{
+				"set_model"
+				{
+					"from"	"1464 3216 -320"
+					"to"	"1152 3440 -184"
+				}
+			}
+		}		
+		// block going past c3a2f changelevel area
+		"create"
+		{
+			"classname" "trigger_push"
+			"spawnflags" "1"
+			"pushdir" "0 180 0"
+			"speed" "150"
+			"functions"
+			{
+				"set_model"
+				{
+					"from" "1725 1744 -696"
+					"to" "1141 1872 -888"
+				}
+			}
+		}
+		
+		// Globalstate stuff
+		// -----------------
+		"#if"
+		{
+			"globalstate" "blue_pump_on"
+			"#then"
+			{
+				"remove"
+				{
+					"targetname" "c-blue_changelevel"
+				}
+				"remove"
+				{
+					"targetname" "LC_blastdoor_template_green_&i3"
+				}
+				"modify"
+				{
+					"targetname" "LC_blastdoor_template_red_&i3"
+					"set"
+					{
+						"spawnflags" "1"
+					}
+				}
+				"delete"
+				{
+					"targetname" "LC_blastdoor_template_button_&i3"
+				}
+			}
+		}
+		"#if"
+		{
+			"globalstate" "orange_pump_on"
+			"#then"
+			{
+				"remove"
+				{
+					"targetname" "c-orange_changelevel"
+				}
+				"remove"
+				{
+					"targetname" "LC_blastdoor_template_green_&i2"
+				}
+				"modify"
+				{
+					"targetname" "LC_blastdoor_template_red_&i2"
+					"set"
+					{
+						"spawnflags" "1"
+					}
+				}
+				"delete"
+				{
+					"targetname" "LC_blastdoor_template_button_&i1"
+				}
+			}
+		}
+		"#if"
+		{
+			"#any"
+			{
+				"globalstate" "blue_pump_on"
+				"globalstate" "orange_pump_on"
+			}
+			"#then"
+			{
+				"remove"
+				{
+					"classname" "npc_houndeye"
+					"targetname" "/^c3a2c_houndeye_pack_/"
+				}
+				"remove"
+				{
+					"targetname" "/c3a2c_hungry_vort_02|c3a2c_hungry_vort_01/"
+				}
+			}
+		}
 	}
 	"checkpoint"
 	{
+		"spawn"
+		{
+			"origin"	"92 1296 1007.51"
+			"angles"	"0 0 0"
+		}
+		"elevator"
+		{
+			"origin"	"0 0 -60"
+			"angles"	"0 0 0"
+			"followid"	"transition_elevator"
+		}
+		
+		"#if"
+		{
+			"prevmap"	"bm_c3a2d"
+			"#then"
+			{
+				"return_c3a2d"
+				{
+					"origin"	"1408 288 -308"
+					"angles"	"0 180 0"
+				}
+			}
+		}
+		
+		"#if"
+		{
+			"prevmap"	"bm_c3a2e"
+			"#then"
+			{
+				"return_c3a2e"
+				{
+					"origin"	"1408 3328 -308"
+					"angles"	"0 180 0"
+				}
+			}
+		}
 	}
 }

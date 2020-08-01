@@ -2,14 +2,92 @@
 
 "config"
 {
-	"nextmap"	"/.*/"
+	"nextmap"	"bm_c3a2b"
+	"intro_type"	"none"
 	"equipment"
 	{
 	}
 	"entity"
 	{
+		// spawn items
+		"modify"
+		{
+			"targetname" "/ammo|suit|weapons/"
+			"flags"
+			{
+				"spawnflags"
+				{
+					"add" "2" // motion disabled
+					"add" "8" // silent pickup
+				}
+			}
+			"set"
+			{
+				"origin" "3848 -2224 8"
+			}
+		}
+		// delay map start
+		"modify"
+		{
+			"hammerid" "3402289"
+			"classname" "logic_auto"
+			"functions"
+			{
+				"delay_output" "OnMapSpawn"
+			}
+		}
+		// fix bugged door sounds
+		"modify"
+		{
+			"classname" "func_door"
+			"set"
+			{
+				"loopmovesound" "0"
+			}
+		}
+		// changelevel elevator - dont go all the way down
+		"modify"
+		{
+			"targetname" "elevator_path2_small2"
+			"set"
+			{
+				"origin"	"3440 -2528 -2312"
+			}
+		}
 	}
 	"checkpoint"
 	{
+		"spawn"
+		{
+			"origin" "3848 -2224 8"
+			"angles" "0 90 0"
+		}
+		"elevator"
+		{
+			"origin"	"0 -64 0"
+			"angles"	"0 90 0"
+			"followid"	"big_elevator_button"
+			"triggerid"	"big_elevator_button"
+			"output"	"OnPressed"
+			"portal"	"3939 -1258 37"
+			"delay"		"8"
+		}
+		"door_to_garage"
+		{
+			"origin"	"5252 -688 -2428"
+			"angles"	"0 270 0"
+			"triggerid"	"door_to_garage"
+			"output"	"OnOpen"
+		}
+		"end"
+		{
+			"origin"	"0 0 20"
+			"angles"	"0 0 0"
+			"followid"	"elevator_small2"
+			"triggerid"	"elevator_small2"
+			"output"	"OnStart"
+			"portal"	"3535 -2528 -2035"
+			"delay"		"3"
+		}
 	}
 }
