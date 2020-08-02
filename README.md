@@ -6,6 +6,8 @@ Map entities can be directly modified as they load on the server, which removes 
 
 Both linux and windows dedicated servers are supported.
 
+[> Getting started <](https://github.com/ampreeT/SourceCoop/wiki/Getting-started)
+
 ## Features & fixes (not everything)
 - checkpoint system
 - map config & entity edit system
@@ -17,40 +19,6 @@ Both linux and windows dedicated servers are supported.
 - fixed scientists crash when seeing a non-friendly
 - fixed npcs from not being able to shoot with anything but the shotgun
 - fixed a crash caused by round restarts
-
-## How to install
-- Install latest dev build of [metamod](https://www.sourcemm.net/downloads.php?branch=dev). (Tested with build 1130) - On linux you may have to delete metamod's 64bit files.
-- Install latest dev build of [sourcemod](https://www.sourcemod.net/downloads.php?branch=dev). (Tested with build 6562)
-- Install latest [DHooks with detour support](https://github.com/peace-maker/DHooks2/releases) extension.
-- Copy folders from this repository into sourcemod.
-
-At this point you can jump in and play supported maps in coop.
-Playing with mp_teamplay 1 is recommended as this allows lag-free noblock.
-
-## Adding coop support
-To enable coop mode on desired map, an edt file for it needs to be created first.
-EDT files are searched at specific locations in this order:
-1. sourcemod/data/srccoop/mapname.edt
-2. maps/mapname.edt (This location can also be loaded from inside the bsp, therefore enabling embedded configs)
-
-## EDT format
-To be explained.. You may take a look at included edt's for examples.
-
-### Tips
-- Match entities by targetname and/or classname, use hammerid as last resort (although it is in many cases unavoidable)
-- Put spawn points on the floor (in hammer place info_target for getting position, in game use cl_showpos 1). Players must touch spawn items on the first frame of first teleport, if there are any to pick up.
-- Use correct base class for new configs, put repetitive properties in base class
-- Use "flags" block for modifying spawnflags when you only want to toggle some flags
-
-## Customizing
-The following convars are available:
-- sm_coop_enabled - Sets if coop is enabled on coop maps
-- sm_coop_team - Sets which team to use in TDM mode. Valid values are [marines] or [scientist]. Setting anything else will not manage teams.
-- sm_coop_respawntime - Sets player respawn time in seconds. (This can only be used for making respawn times quicker, not longer)
-- sm_coop_start_wait_period - The max number of seconds to wait since first player spawned in to start the map. The timer is skipped when all players enter the game.
-- sm_coop_end_wait_period - The max number of seconds to wait since first player triggered a changelevel. The timer speed increases each time a new player finishes the level.
-- sm_coop_end_wait_factor - Controls how much the number of finished players increases the changelevel timer speed. 1.0 means full, 0 means none (timer will run full length).
-- sm_coop_debug - Sets debug logging options
 
 # ToDo
 ### must-fix
