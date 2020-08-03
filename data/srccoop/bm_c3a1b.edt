@@ -29,6 +29,14 @@
 			"origin"	"1568 -1591 -343"
 			"angles"	"0 184 0"
 		}
+		"garagedoor"
+		{
+			"origin"	"-1160 765 -355"
+			"angles"	"0 90 0"
+			"portal"	"-1160 590 -330"
+			"triggerid"	"bunker_west_entrance"
+			"output"	"OnFullyClosed"
+		}
 		"elevator"
 		{
 			"origin"	"-32 0 0"
