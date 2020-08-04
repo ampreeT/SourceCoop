@@ -91,6 +91,18 @@
 				}
 			}
 		}
+		"modify"
+		{
+			"targetname"	"relay_slamdoorwayshut"
+			"outputs"
+			{
+				"remove"
+				{
+					"target"	"LC_blastdoor_template_door_&i7"
+					"input"		"Close"
+				}
+			}
+		}
 		// Block players from continuing past changelevel
 		"create"
 		{
