@@ -12,6 +12,7 @@ ConVar g_pConvarCoopRespawnTime;
 ConVar g_pConvarWaitPeriod;
 ConVar g_pConvarEndWaitPeriod;
 ConVar g_pConvarEndWaitFactor;
+ConVar g_pConvarShowWelcomeMessage;
 
 // ----------------------------
 // SDK Calls
@@ -43,6 +44,7 @@ Handle hkIchthyosaurIdleSound;
 Handle hkUTIL_GetLocalPlayer;
 Handle hkResolveNames;
 Handle hkCanSelectSchedule;
+Handle hkSetupBones;
 
 // ----------------------------
 // Adresses, Interfaces

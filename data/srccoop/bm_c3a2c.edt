@@ -263,5 +263,13 @@
 				}
 			}
 		}
+		
+		"finalroom"
+		{
+			"origin" "-1446 944 -19"
+			"angles" "0 90 0"
+			"triggerid" "LC_blastdoor_template_door_&i6"
+			"output" "OnOpen"
+		}
 	}
 }

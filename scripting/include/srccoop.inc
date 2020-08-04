@@ -8,15 +8,17 @@
 #include <sdkhooks>
 #include <regex>
 #include <dhooks>
-
-#include <logdebug>
+#include <topmenus>
 
 #pragma newdecls required
 #pragma semicolon 1
 
+#include <logdebug>
+
 #include <srccoop/typedef.inc>
 #include <srccoop/classdef.inc>
 #include <srccoop/utils.inc>
+#include <srccoop_api>
 
 #include <srccoop/globals.inc>
 #include <srccoop/levellump.inc>
@@ -25,3 +27,4 @@
 #include <srccoop/entitypatch.inc>
 #include <srccoop/playerpatch.inc>
 #include <srccoop/instancing.inc>
+#include <srccoop/menu.inc>

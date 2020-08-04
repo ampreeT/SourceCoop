@@ -24,7 +24,6 @@ Both linux and windows dedicated servers are supported.
 ### must-fix
 - target picker on bm_c2a5i
 - first-person camera death code needs to set original viewentity on callback OnMapEnd()
-- hook UpdateEnemyMemory input on npcs, compare if !player or !pvsplayer > call manually (either closest player or all) (UpdateEnemyMemory( pEnemy, pEnemy->GetAbsOrigin(), this ))
 - custom difficulty based on player count
 - npcs can walk into player, make him stuck, then stop rendering
 - npc_xenturret AI causes crash on map load (it seems to be fine after loading)
@@ -66,6 +65,8 @@ Both linux and windows dedicated servers are supported.
 - allow configuring more features from edt configs
 
 ### map-issues
+- bm_c3a1b
+	- tank downstairs can bug and never break, preventing progress
 - bm_c3a2h
 	- trigger to make barney open weapons lockup doesn't exist for some reason
 	- equipping the long jump module uses a give client command, this needs to be changed

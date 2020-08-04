@@ -10,7 +10,7 @@ public MRESReturn Hook_UTIL_GetLocalPlayer(Handle hReturn)
 {
 	if (g_pCoopManager.IsBugPatchingEnabled())
 	{
-		LogDebug("WARN: Game called UTIL_GetLocalPlayer");
+		LogDebug("WARN: UTIL_GetLocalPlayer");
 		for(int i = 1; i <= MaxClients; i++)
 		{
 			if(IsClientInGame(i))
@@ -24,7 +24,7 @@ public MRESReturn Hook_UTIL_GetLocalPlayer(Handle hReturn)
 }
 
 //------------------------------------------------------
-// CNPC_Human_Scientist - npc_human_scientist
+// CNPC_Human_Scientist - npc_human_scientist*
 // crash fix when getting scared
 //------------------------------------------------------
 public MRESReturn Hook_ScientistIRelationType(int _this, Handle hReturn, Handle hParams)
@@ -34,13 +34,94 @@ public MRESReturn Hook_ScientistIRelationType(int _this, Handle hReturn, Handle 
 }
 
 //------------------------------------------------------
-// CAI_BaseNPC - npc_human_scientist, npc_human_security
+// CAI_BaseNPC - npc_human_scientist*, npc_human_security
 // scientists should classify as allies (in MP, base function returns false when player is not passed in)
 // this allows npcs to pass filter in 'player ally only' triggers
 //------------------------------------------------------
 public MRESReturn Hook_IsPlayerAlly(int _this, Handle hReturn, Handle hParams)
 {
 	DHookSetReturn(hReturn, true);
+	return MRES_Supercede;
+}
+
+//------------------------------------------------------
+// CAI_BaseNPC
+// Fix UpdateEnemyMemory input when player string is passed as parameter
+//------------------------------------------------------
+public MRESReturn Hook_BaseNPCAcceptInput(int _this, Handle hReturn, Handle hParams)
+{
+	if (g_pCoopManager.IsBugPatchingEnabled())
+	{
+		if (!DHookIsNullParam(hParams, 1))
+		{
+			char szInputType[MAX_FORMAT];
+			DHookGetParamString(hParams, 1, szInputType, sizeof(szInputType));
+			if (strcmp(szInputType, "UpdateEnemyMemory", false) == 0)
+			{
+				char szParam[32];
+				DHookGetParamObjectPtrString(hParams, 4, 0, ObjectValueType_String, szParam, sizeof(szParam));
+				if(StrEqual(szParam, "!player", false) || StrEqual(szParam, "!pvsplayer", false))
+				{
+					CAI_BaseNPC pThis = CAI_BaseNPC(_this);
+					CBlackMesaPlayer pPlayer;
+					float vecAbsOrigin[3];
+					for(int i = 1; i <= MaxClients; i++)
+					{
+						if(IsClientInGame(i))
+						{
+							pPlayer = CBlackMesaPlayer(i);
+							pPlayer.GetAbsOrigin(vecAbsOrigin);
+							pThis.UpdateEnemyMemory(pPlayer, vecAbsOrigin, pThis);
+						}
+					}
+					DHookSetReturn(hReturn, true);
+					return MRES_Supercede;
+				}
+			}
+		}
+	}
+	return MRES_Ignored;
+}
+
+//------------------------------------------------------
+// CAI_BaseNPC - npc_gargantua
+// fix the 'ChasePlayer' input by setting a target ent.
+//------------------------------------------------------
+public MRESReturn Hook_GargAcceptInputPost(int _this, Handle hReturn, Handle hParams)
+{
+	if (g_pCoopManager.IsBugPatchingEnabled())
+	{
+		if (!DHookIsNullParam(hParams, 1))
+		{
+			char szInputType[MAX_FORMAT];
+			DHookGetParamString(hParams, 1, szInputType, sizeof(szInputType));
+			if (strcmp(szInputType, "chaseplayer", false) == 0)
+			{
+				SDKHook(_this, SDKHook_ThinkPost, GargantuaChaseThink);
+				GargantuaChaseThink(_this);
+			}
+			else if (strcmp(szInputType, "chaseend", false) == 0)
+			{
+				SDKUnhook(_this, SDKHook_ThinkPost, GargantuaChaseThink);
+			}
+		}
+	}
+	return MRES_Ignored;
+}
+
+public void GargantuaChaseThink(int _this)
+{
+	CAI_BaseNPC pThis = CAI_BaseNPC(_this);
+	pThis.SetTargetEnt(GetNearestPlayer(pThis));
+}
+
+//------------------------------------------------------
+// CNPC_Ichthyosaur - npc_ichthyosaur
+// multiplayer crashfix
+//------------------------------------------------------
+public MRESReturn Hook_IchthyosaurIdleSound(int _this)
+{
+	// ToDo: do the things as in original code, albeit I can hardly spot a difference
 	return MRES_Supercede;
 }
 
@@ -177,9 +258,10 @@ public MRESReturn Hook_FindNamedEntity(int _this, Handle hReturn, Handle hParams
 }
 
 //------------------------------------------------------
-// CChangelevel
+// CChangelevel - trigger_changelevel
+// Hook to handle mapchanges
 //------------------------------------------------------
-bool ChangeLevelTriggered(CChangelevel pChangelevel, CBlackMesaPlayer pActivator)
+void ChangeLevelTriggered(CChangelevel pChangelevel, CBlackMesaPlayer pActivator)
 {
 	char szMapName[MAX_MAPNAME];
 	if (pChangelevel.GetMapName(szMapName, sizeof(szMapName)) && g_pLevelLump.m_pNextMapList.IsInMapList(szMapName))
@@ -716,14 +798,3 @@ public MRESReturn Hook_CanSelectSchedule(Handle hReturn)
 	DHookSetReturn(hReturn, true);
 	return MRES_Supercede;
 }
-
-//------------------------------------------------------
-// CNPC_Ichthyosaur - npc_ichthyosaur
-// multiplayer fix
-//------------------------------------------------------
-public MRESReturn Hook_IchthyosaurIdleSound(int _this)
-{
-	// ToDo: do the things as in original code, albeit I can hardly spot a difference
-	return MRES_Supercede;
-}
-

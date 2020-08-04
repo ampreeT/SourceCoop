@@ -88,8 +88,6 @@
 				"windows"	"8"
 				"linux"		"8"
 			}
-			
-			// Hooks
 			"CMultiplayRules::FAllowFlashlight"		// CMultiplayRules::FAllowFlashlight()
 			{
 				"windows"	"56"
@@ -164,6 +162,16 @@
 			{
 				"windows"	"468"
 				"linux"		"469"
+			}
+			"SetupBones"				// CBaseAnimating::SetupBones
+			{
+				"windows"	"218"
+				"linux"		"219"
+			}
+			"CAI_BaseNPC::UpdateEnemyMemory"				// CAI_BaseNPC::UpdateEnemyMemory(CBaseEntity*, Vector const&, CBaseEntity*)
+			{
+				"windows"	"529"
+				"linux"		"533"
 			}
 		}
 		"Functions"
@@ -396,6 +404,24 @@
 				"hooktype"	"entity"
 				"return"	"void"
 				"this"		"entity"
+			}
+			"SetupBones"
+			{
+				"offset"	"SetupBones"
+				"hooktype"	"entity"
+				"return"	"void"
+				"this"		"entity"
+				"arguments"
+				{
+					"pBoneToWorld"
+					{
+						"type"	"objectptr"
+					}
+					"boneMask"
+					{
+						"type"	"int"
+					}
+				}
 			}
 			
 			//Detours

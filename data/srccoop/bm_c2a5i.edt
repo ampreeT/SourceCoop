@@ -39,7 +39,42 @@
 				}
 			}
 		}
-
+		// dont stop chasing until reached the end
+		"modify"
+		{
+			"hammerid" "/^((?!962790).)*$/" // everything except the chase end trigger
+			"outputs"
+			{
+				"remove"
+				{
+					"input" "chaseend"
+				}
+			}
+		}
+		// triggers on top of the tower
+		"modify"
+		{
+			"hammerid" "/1457972|1239127|1717569/"
+			"outputs"
+			{
+				"modify"
+				{
+					"output" "OnEndTouch"
+					"replace"
+					{
+						"output" "OnEndTouchAll"
+					}
+				}
+				"modify"
+				{
+					"output" "OnStartTouch"
+					"replace"
+					{
+						"output" "OnStartTouchAll"
+					}
+				}
+			}
+		}
 		// setup changelevel timer
 		"modify"
 		{
@@ -66,8 +101,6 @@
 				}
 			}
 		}
-
-
 	}
 	"checkpoint"
 	{

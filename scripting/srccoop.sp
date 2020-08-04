@@ -14,24 +14,6 @@ public Plugin myinfo =
 	url = "https://github.com/ampreeT/SourceCoop"
 };
 
-stock void LoadDHookDetour(const Handle pGameConfig, Handle& pHandle, const char[] szFuncName, DHookCallback pCallbackPre = INVALID_FUNCTION, DHookCallback pCallbackPost = INVALID_FUNCTION)
-{
-	pHandle = DHookCreateFromConf(pGameConfig, szFuncName);
-	if (pHandle == null)
-		SetFailState("Couldn't create hook %s", szFuncName);
-	if (pCallbackPre != INVALID_FUNCTION && !DHookEnableDetour(pHandle, false, pCallbackPre))
-		SetFailState("Couldn't enable pre detour hook %s", szFuncName);
-	if (pCallbackPost != INVALID_FUNCTION && !DHookEnableDetour(pHandle, true, pCallbackPost))
-		SetFailState("Couldn't enable post detour hook %s", szFuncName);
-}
-
-stock void LoadDHookVirtual(const Handle pGameConfig, Handle& pHandle, const char[] szFuncName)
-{
-	pHandle = DHookCreateFromConf(pGameConfig, szFuncName);
-	if (pHandle == null)
-		SetFailState("Couldn't create hook %s", szFuncName);
-}
-
 public Address GetServerInterface(const char[] szInterface)
 {
 	return view_as<Address>(SDKCall(g_pCreateServerInterface, szInterface, 0));
@@ -129,6 +111,16 @@ void LoadGameData()
 	PrepSDKCall_AddParameter(SDKType_Vector, SDKPass_ByRef);
 	PrepSDKCall_AddParameter(SDKType_Vector, SDKPass_ByRef);
 	if (!(g_pSetCollisionBounds = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szSetCollisionBounds);
+	
+	char szUpdateEnemyMemory[] = "CAI_BaseNPC::UpdateEnemyMemory";
+	StartPrepSDKCall(SDKCall_Entity);
+	if(!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Virtual, szUpdateEnemyMemory))
+		SetFailState("Could not obtain gamedata offset %s", szUpdateEnemyMemory);
+	PrepSDKCall_AddParameter(SDKType_CBaseEntity, SDKPass_Pointer);
+	PrepSDKCall_AddParameter(SDKType_Vector, SDKPass_ByRef);
+	PrepSDKCall_AddParameter(SDKType_CBaseEntity, SDKPass_Pointer);
+	PrepSDKCall_SetReturnInfo(SDKType_Bool, SDKPass_Plain);
+	if (!(g_pUpdateEnemyMemory = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szUpdateEnemyMemory);
 
 	LoadDHookVirtual(pGameConfig, hkFAllowFlashlight, "CMultiplayRules::FAllowFlashlight");
 	LoadDHookVirtual(pGameConfig, hkIsMultiplayer, "CMultiplayRules::IsMultiplayer");
@@ -144,6 +136,7 @@ void LoadGameData()
 	LoadDHookVirtual(pGameConfig, hkChangeTeam, "CBlackMesaPlayer::ChangeTeam");
 	LoadDHookVirtual(pGameConfig, hkShouldCollide, "CBlackMesaPlayer::ShouldCollide");
 	LoadDHookVirtual(pGameConfig, hkIchthyosaurIdleSound, "CNPC_Ichthyosaur::IdleSound");
+	LoadDHookVirtual(pGameConfig, hkSetupBones, "SetupBones");
 	LoadDHookDetour(pGameConfig, hkSetSuitUpdate, "CBasePlayer::SetSuitUpdate", Hook_SetSuitUpdate, Hook_SetSuitUpdatePost);
 	LoadDHookDetour(pGameConfig, hkUTIL_GetLocalPlayer, "UTIL_GetLocalPlayer", Hook_UTIL_GetLocalPlayer);
 	LoadDHookDetour(pGameConfig, hkResolveNames, "CAI_GoalEntity::ResolveNames", Hook_ResolveNames, Hook_ResolveNamesPost);
@@ -152,24 +145,33 @@ void LoadGameData()
 	CloseHandle(pGameConfig);
 }
 
+public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
+{
+	CreateNative("GetCoopTopMenu", Native_GetCoopTopMenu);
+	RegPluginLibrary(SRCCOOP_LIBRARY);
+	return APLRes_Success;
+}
+
 public void OnPluginStart()
 {
 	LoadGameData();
 	
-	InitDebugLog("sm_coop_debug", "SRCCOOP", ADMFLAG_ROOT);
+	InitDebugLog("sourcecoop_debug", "SRCCOOP", ADMFLAG_ROOT);
 	CreateConVar("sourcecoop_version", PLUGIN_VERSION, _, FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
-	g_pConvarCoopEnabled = CreateConVar("sm_coop_enabled", "1", "Sets if coop is enabled on coop maps", _, true, 0.0, true, 1.0);
-	g_pConvarCoopTeam = CreateConVar("sm_coop_team", "scientist", "Sets which team to use in TDM mode. Valid values are [marines] or [scientist]. Setting anything else will not manage teams.");
-	g_pConvarCoopRespawnTime = CreateConVar("sm_coop_respawntime", "2.0", "Sets player respawn time in seconds. (This can only be used for making respawn times quicker, not longer)", _, true, 0.1);
-	g_pConvarWaitPeriod = CreateConVar("sm_coop_start_wait_period", "15.0", "The max number of seconds to wait since first player spawned in to start the map. The timer is skipped when all players enter the game.", _, true, 0.0);
-	g_pConvarEndWaitPeriod = CreateConVar("sm_coop_end_wait_period", "60.0", "The max number of seconds to wait since first player triggered a changelevel. The timer speed increases each time a new player finishes the level.", _, true, 0.0);
-	g_pConvarEndWaitFactor = CreateConVar("sm_coop_end_wait_factor", "1.0", "Controls how much the number of finished players increases the changelevel timer speed. 1.0 means full, 0 means none (timer will run full length).", _, true, 0.0, true, 1.0);
+	g_pConvarCoopEnabled = CreateConVar("sourcecoop_enabled", "1", "Sets if coop is enabled on coop maps", _, true, 0.0, true, 1.0);
+	g_pConvarShowWelcomeMessage = CreateConVar("sourcecoop_show_welcome_msg", "1.0", "Should the plugin greet players?", _, true, 0.0, true, 1.0);
+	g_pConvarCoopTeam = CreateConVar("sourcecoop_team", "scientist", "Sets which team to use in TDM mode. Valid values are [marines] or [scientist]. Setting anything else will not manage teams.");
+	g_pConvarCoopRespawnTime = CreateConVar("sourcecoop_respawntime", "2.0", "Sets player respawn time in seconds. (This can only be used for making respawn times quicker, not longer)", _, true, 0.1);
+	g_pConvarWaitPeriod = CreateConVar("sourcecoop_start_wait_period", "15.0", "The max number of seconds to wait since first player spawned in to start the map. The timer is skipped when all players enter the game.", _, true, 0.0);
+	g_pConvarEndWaitPeriod = CreateConVar("sourcecoop_end_wait_period", "60.0", "The max number of seconds to wait since first player triggered a changelevel. The timer speed increases each time a new player finishes the level.", _, true, 0.0);
+	g_pConvarEndWaitFactor = CreateConVar("sourcecoop_end_wait_factor", "1.0", "Controls how much the number of finished players increases the changelevel timer speed. 1.0 means full, 0 means none (timer will run full length).", _, true, 0.0, true, 1.0);
 	
 	g_pLevelLump.Initialize();
 	g_SpawnSystem.Initialize();
 	g_pCoopManager.Initialize();
 	g_pInstancingManager.Initialize();
 	g_pPostponedSpawns = CreateArray();
+	InitializeMenus();
 	
 	if (GetEngineVersion() == Engine_BlackMesa)
 	{
@@ -257,6 +259,8 @@ public void OnClientPutInServer(int client)
 	SDKHook(client, SDKHook_TraceAttack, Hook_PlayerTraceAttack);
 	DHookEntity(hkChangeTeam, false, client, _, Hook_PlayerChangeTeam);
 	DHookEntity(hkShouldCollide, false, client, _, Hook_PlayerShouldCollide);
+	
+	GreetPlayer(client);
 }
 
 public void OnClientDisconnect(int client)
@@ -268,7 +272,7 @@ public void OnMapEnd()
 {
 	g_pLevelLump.RevertConvars();
 	g_bMapStarted = false;
-	
+	/*
 	PrintToServer("Hello????");
 	for (int i = 1; i <= MaxClients; i++)
 	{
@@ -284,11 +288,23 @@ public void OnMapEnd()
 			//}
 		}
 	}
+	*/
 }
 
 public void OnPluginEnd()
 {
 	
+}
+
+public MRESReturn Hook_SetupBones(int _this, Handle hParams)
+{
+	CBaseEntity pEntity = CBaseEntity(_this);
+	char name[32];
+	char class[32];
+	pEntity.GetTargetname(name, sizeof(name));
+	pEntity.GetClassname(class, sizeof(class));
+	LogDebug("SETUPBONES: %d %s %s", _this, name, class);
+	return MRES_Ignored;
 }
 
 public void OnEntityCreated(int iEntIndex, const char[] szClassname)
@@ -298,20 +314,35 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 	if (!g_bTempDontHookEnts && pEntity.IsValid())
 	{
 		SDKHook(iEntIndex, SDKHook_Spawn, Hook_FixupBrushModels);
+		SDKHook(iEntIndex, SDKHook_SpawnPost, Hook_SpawnPost);
 		
-		if (strncmp(szClassname, "npc_human_scientist", 19) == 0)
+		if(pEntity.IsClassNPC())
 		{
-			DHookEntity(hkIRelationType, true, iEntIndex, _, Hook_ScientistIRelationType);
-			DHookEntity(hkIsPlayerAlly, true, iEntIndex, _, Hook_IsPlayerAlly);
-		}
-		else if(strcmp(szClassname, "npc_human_security") == 0)
-		{
-			DHookEntity(hkIsPlayerAlly, true, iEntIndex, _, Hook_IsPlayerAlly);
-		}
-		else if (strcmp(szClassname, "npc_sniper", false) == 0)
-		{
-			DHookEntity(hkProtoSniperSelectSchedule, false, pEntity.GetEntIndex(), _, Hook_ProtoSniperSelectSchedule);
-			DHookEntity(hkProtoSniperSelectSchedule, true, pEntity.GetEntIndex(), _, Hook_ProtoSniperSelectSchedule);
+//			DHookEntity(hkSetupBones, false, iEntIndex, _, Hook_SetupBones);
+			DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_BaseNPCAcceptInput);
+		
+			if (strncmp(szClassname, "npc_human_scientist", 19) == 0)
+			{
+				DHookEntity(hkIRelationType, true, iEntIndex, _, Hook_ScientistIRelationType);
+				DHookEntity(hkIsPlayerAlly, true, iEntIndex, _, Hook_IsPlayerAlly);
+			}
+			else if (strcmp(szClassname, "npc_human_security") == 0)
+			{
+				DHookEntity(hkIsPlayerAlly, true, iEntIndex, _, Hook_IsPlayerAlly);
+			}
+			else if (strcmp(szClassname, "npc_sniper", false) == 0)
+			{
+				DHookEntity(hkProtoSniperSelectSchedule, false, pEntity.GetEntIndex(), _, Hook_ProtoSniperSelectSchedule);
+				DHookEntity(hkProtoSniperSelectSchedule, true, pEntity.GetEntIndex(), _, Hook_ProtoSniperSelectSchedule);
+			}
+			else if (strcmp(szClassname, "npc_ichthyosaur") == 0)
+			{
+				DHookEntity(hkIchthyosaurIdleSound, false, iEntIndex, _, Hook_IchthyosaurIdleSound);
+			}
+			else if (strcmp(szClassname, "npc_gargantua") == 0)
+			{
+				DHookEntity(hkAcceptInput, true, iEntIndex, _, Hook_GargAcceptInputPost);
+			}
 		}
 		else if ((strcmp(szClassname, "instanced_scripted_scene", false) == 0) ||
 				(strcmp(szClassname, "logic_choreographed_scene", false) == 0) ||
@@ -322,7 +353,7 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 		}
 		else if (strncmp(szClassname, "item_", 5) == 0)
 		{
-			if(g_pLevelLump.m_bInstanceItems)
+			if (g_pLevelLump.m_bInstanceItems)
 			{
 				if(pEntity.IsPickupItem())
 				{
@@ -370,16 +401,11 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 		{
 			DHookEntity(hkThink, false, iEntIndex, _, Hook_AIConditionsThink);
 		}
-		else if (strcmp(szClassname, "npc_ichthyosaur") == 0)
-		{
-			DHookEntity(hkIchthyosaurIdleSound, false, iEntIndex, _, Hook_IchthyosaurIdleSound);
-		}
 		// if some explosions turn out to be damaging all players except one, this is the fix
 		//else if (strcmp(szClassname, "env_explosion") == 0)
 		//{
 		//	SDKHook(iEntIndex, SDKHook_SpawnPost, Hook_ExplosionSpawn);
 		//}
-		SDKHook(iEntIndex, SDKHook_SpawnPost, Hook_SpawnPost);
 	}
 }
 
@@ -573,6 +599,14 @@ public MRESReturn Hook_IsMultiplayer(Handle hReturn, Handle hParams)
 {
 	DHookSetReturn(hReturn, g_bIsMultiplayerOverride);
 	return MRES_Supercede;
+}
+
+void GreetPlayer(int client)
+{
+	if(g_pConvarShowWelcomeMessage.BoolValue)
+	{
+		Msg(client, "This server runs SourceCoop version %s.\nYou can press %s=%s or type %s/coopmenu%s for extra settings.", PLUGIN_VERSION, CHAT_COLOR_SEC, CHAT_COLOR_PRI, CHAT_COLOR_SEC, CHAT_COLOR_PRI);
+	}
 }
 
 // todo read this later

@@ -115,6 +115,7 @@ enum struct CCoopSpawn
 	Array_t m_pCheckpointList;
 	int m_iCurrentCheckpoint;
 	CCoopEquipment m_pDefaultEquipment;
+	bool m_bSpawnEquipmentFlag[MAXPLAYERS+1];
 	
 	void Clear()
 	{
@@ -231,12 +232,9 @@ enum struct CCoopSpawn
 		if (this.GetCheckpointByIndex(0, pCheckpoint))
 		{
 			pCheckpoint.TeleportPlayer(pPlayer, true);
-			if (this.m_iCurrentCheckpoint > 0)
-			{
-				RequestFrame(RequestSpawnPlayer, pPlayer);
-			}
 		}
-		if (bSpawnEquipment) RequestFrame(RequestSpawnEquipment, pPlayer);
+		RequestFrame(RequestSpawnPlayer, pPlayer);
+		this.m_bSpawnEquipmentFlag[pPlayer.GetEntIndex()] = bSpawnEquipment;
 	}
 	void CreatePortal(const float vecPosition[3])
 	{
@@ -576,18 +574,14 @@ public void RequestSpawnPlayer2(CBlackMesaPlayer pPlayer)
 	if (pPlayer.IsValid() && pPlayer.IsAlive())
 	{
 		CCoopSpawnEntry pCheckpoint;
-		if (g_SpawnSystem.GetCurrentCheckpoint(pCheckpoint))
+		if (g_SpawnSystem.m_iCurrentCheckpoint > 0 && g_SpawnSystem.GetCurrentCheckpoint(pCheckpoint))
 		{
 			pCheckpoint.TeleportPlayer(pPlayer);
 		}
-	}
-}
-
-public void RequestSpawnEquipment(CBlackMesaPlayer pPlayer)
-{
-	if (pPlayer.IsValid() && pPlayer.IsAlive())
-	{
-		g_SpawnSystem.SpawnPlayerEquipment(pPlayer);
+		if(g_SpawnSystem.m_bSpawnEquipmentFlag[pPlayer.GetEntIndex()])
+		{
+			g_SpawnSystem.SpawnPlayerEquipment(pPlayer);
+		}
 	}
 }
 

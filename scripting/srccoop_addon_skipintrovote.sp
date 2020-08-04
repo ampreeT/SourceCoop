@@ -1,16 +1,16 @@
 #include <sourcemod>
-#include <srccoop/utils.inc>
+#include <srccoop_api>
 
 #pragma newdecls required
 #pragma semicolon 1
 
 public Plugin myinfo =
 {
-	name = "BM Coop Skip intro",
+	name = "SourceCoop SkipIntroVote",
 	author = "Alienmario",
-	description = "Skip campaign intro player-vote",
+	description = "Skip campaign intro player votes",
 	version = "1.0.0",
-	url = ""
+	url = "https://github.com/ampreeT/SourceCoop"
 };
 
 #define VOTE_DURATION 20

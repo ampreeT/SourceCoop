@@ -3,7 +3,9 @@
 #endif
 #define _srccoop_typedef_included
 
-#define CHAT_TAG "\x07c75c1e[SRCCOOP]\x07e69c12 "
+#define CHAT_TAG "\x07eb6f28[SRCCOOP]\x07e69c12 "
+#define CHAT_COLOR_PRI "\x07e69c12"
+#define CHAT_COLOR_SEC "\x07eb6f28"
 
 #define CHAR_BIT 8
 

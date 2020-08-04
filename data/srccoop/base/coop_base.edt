@@ -2,24 +2,15 @@
 
 "config"
 {
-	"console_base_coop"
+	"console"
 	{
 		// fix for breakmodels not appearing
 		"breakable_multiplayer" "0"
 		
 		// disables statistics and also functions as a temp crashfix
 		"sv_ranked" "0"
-		
-		"#if"
-		{
-			"os"	"linux"
-			"#then"
-			{
-				// important - fixes random linux server crashes
-				"sv_pvsskipanimation" "0"
-			}
-		}
 	}
+	
 	"entity_base_coop"
 	{
 		// Unwanted and bugs players

@@ -63,6 +63,7 @@ methodmap Array_t < ArrayList
 }
 
 Handle g_pSetCollisionBounds;
+Handle g_pUpdateEnemyMemory;
 
 public int InternalGetBaseEntity(const int iEntIndex)
 {
@@ -497,6 +498,18 @@ methodmap CAI_BaseNPC < CBaseCombatCharacter
 	public void SetEnemy(CBaseEntity pEntity)
 	{
 		SetEntPropEnt(this.GetEntIndex(), Prop_Data, "m_hEnemy", pEntity.GetEntIndex());
+	}
+	public bool UpdateEnemyMemory(CBaseEntity pEnemy, const float vecPosition[3], CBaseEntity pInformer)
+	{
+		return SDKCall(g_pUpdateEnemyMemory, this, pEnemy, vecPosition, pInformer);
+	}
+	public void SetTargetEnt(CBaseEntity pTarget)
+	{
+		SetEntPropEnt(this.GetEntIndex(), Prop_Data, "m_hTargetEnt", pTarget.GetEntIndex());
+	}
+	public CBaseEntity GetTargetEnt()
+	{
+		return CBaseEntity(GetEntPropEnt(this.GetEntIndex(), Prop_Data, "m_hTargetEnt"));
 	}
 	public bool HasCondition(const int iCondition)
 	{

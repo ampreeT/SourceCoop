@@ -3,8 +3,25 @@
 #endif
 #define _srccoop_utils_included
 
-#include <srccoop/typedef.inc>
-#include <srccoop/classdef.inc>
+#if defined _dhooks_included
+stock void LoadDHookDetour(const Handle pGameConfig, Handle& pHandle, const char[] szFuncName, DHookCallback pCallbackPre = INVALID_FUNCTION, DHookCallback pCallbackPost = INVALID_FUNCTION)
+{
+	pHandle = DHookCreateFromConf(pGameConfig, szFuncName);
+	if (pHandle == null)
+		SetFailState("Couldn't create hook %s", szFuncName);
+	if (pCallbackPre != INVALID_FUNCTION && !DHookEnableDetour(pHandle, false, pCallbackPre))
+		SetFailState("Couldn't enable pre detour hook %s", szFuncName);
+	if (pCallbackPost != INVALID_FUNCTION && !DHookEnableDetour(pHandle, true, pCallbackPost))
+		SetFailState("Couldn't enable post detour hook %s", szFuncName);
+}
+
+stock void LoadDHookVirtual(const Handle pGameConfig, Handle& pHandle, const char[] szFuncName)
+{
+	pHandle = DHookCreateFromConf(pGameConfig, szFuncName);
+	if (pHandle == null)
+		SetFailState("Couldn't create hook %s", szFuncName);
+}
+#endif
 
 stock void Msg(int client, const char[] msg, any ...)
 {

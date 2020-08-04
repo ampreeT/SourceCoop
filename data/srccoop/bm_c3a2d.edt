@@ -74,6 +74,11 @@
 				}
 			}
 		}
+		// no door locking
+		"delete"
+		{
+			"targetname" "locked_door"
+		}
 		// changelevel: enable on map goal
 		"modify"
 		{
@@ -110,7 +115,7 @@
 			"angles"	"0 225 0"
 			"triggerid"	"drain_button_&i"
 			"output"	"OnPressed"
-			"portal"	"1211 698 149"
+			"portal"	"872 -736 157"
 		}
 		"pumplever"
 		{
