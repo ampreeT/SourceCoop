@@ -2,14 +2,138 @@
 
 "config"
 {
-	"nextmap"	"/.*/"
+	"nextmap"	"bm_c3a2h"
 	"equipment"
 	{
 	}
 	"entity"
 	{
+		// spawn items
+		"modify"
+		{
+			"targetname" "/ammo|suit|weapons/"
+			"flags"
+			{
+				"spawnflags"
+				{
+					"add" "2" // motion disabled
+					"add" "8" // silent pickup
+				}
+			}
+			"add"
+			{
+				"origin"	"836 2376 540" // ensure all items are inside player
+			}
+		}
+		// First CP trigger
+		"create"
+		{
+			"targetname"	"door1cp_trig"
+			"classname"		"trigger_once"
+			"spawnflags"	"1"
+			"functions"
+			{
+				// use the door itself as the template for the trigger
+				"copy_model"
+				{
+					"targetname"	"LC_blastdoor_template_door_&i8"
+				}
+			}
+		}
+		// teleporter puzzle start checkpoint trigger
+		"create"
+		{
+			"targetname"	"telestart_trig"
+			"classname"		"trigger_once"
+			"spawnflags"	"1"
+			"functions"
+			{
+				"copy_model"
+				{
+					"targetname"	"GRD02_Player_Present"
+				}
+			}
+		}
+		// AAAAHHH LOOPING SOUND
+		"modify"
+		{
+			"classname"	"func_door"
+			"add"
+			{
+				"loopmovesound" "0"
+			}
+		}
+		// deathtrap reactor puzzle checkpoint trigger
+		"create"
+		{
+			"targetname"	"deathtrap_reactor_cp_trig"
+			"classname"		"trigger_once"
+			"spawnflags"	"1"
+			"functions"
+			{
+				"copy_model"
+				{
+					"targetname"	"trigger_chamberbottom_playerarrival"
+				}
+			}
+		}
+		// Keep the last door open
+		"modify"
+		{
+			"targetname"	"LC_blastdoor_template_door_&i7"
+			"outputs"
+			{
+				"add"
+				{
+					"output"	"OnFullyOpen"
+					"target"	"!self"
+					"input"		"Lock"
+				}
+			}
+		}
+		// Block players from continuing past changelevel
+		"create"
+		{
+			"classname"		"func_brush"
+			"rendermode"	"10" // dont render
+			"origin"		"848 -364 1562" // ensure origin inbounds
+			"functions"
+			{
+				"set_model"
+				{
+					"from"	"924 -380 1504"
+					"to"	"772 -348 1620"
+				}
+			}
+		}
 	}
 	"checkpoint"
 	{
+		"spawn"
+		{
+			"origin"	"836 2376 521"
+			"angles"	"0 270 0"
+		}
+		"door1"
+		{
+			"origin"	"1420 2080 489"
+			"angles"	"0 0 0"
+			"triggerid"	"door1cp_trig"
+			"output"	"OnTrigger"
+		}
+		"telepuzzlestart"
+		{
+			"origin"	"752 240 496"
+			"angles"	"0 90 0"
+			"triggerid"	"telestart_trig"
+			"output"	"OnTrigger"
+		}
+		"telepuzzlestart"
+		{
+			"origin"	"848 1480 104"
+			"angles"	"0 270 0"
+			"triggerid"	"deathtrap_reactor_cp_trig"
+			"output"	"OnTrigger"
+		}
 	}
 }

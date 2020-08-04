@@ -2,14 +2,152 @@
 
 "config"
 {
-	"nextmap"	"/.*/"
+	"nextmap"	"bm_c3a2g"
 	"equipment"
 	{
 	}
 	"entity"
 	{
+		
+		// spawn items
+		"modify"
+		{
+			"targetname" "/ammo|suit|weapons/"
+			"flags"
+			{
+				"spawnflags"
+				{
+					"add" "2" // motion disabled
+					"add" "8" // silent pickup
+				}
+			}
+			"add"
+			{
+				"origin"	"-952 -144 -780" // ensure all items are inside player
+			}
+		}
+		// Block prev changlevel
+		"modify"
+		{
+			"classname"	"trigger_changelevel"
+			"map"		"bm_c3a2c"
+			"add"
+			{
+				"classname"	"func_brush"
+			}
+		}
+		// create coolant exit cp trigger
+		"create"
+		{
+			"targetname"	"coolant_exit_trig"
+			"classname"		"trigger_once"
+			"spawnflags"	"1"
+			"origin"		"140 -160 -724"
+			"functions"
+			{
+				"set_model"
+				{
+					"from"	"544 -576 -672"
+					"to"	"-264 256 -776"
+				}
+			}
+		}
+		// Prevent door to switch from closing...
+		"modify"
+		{
+			"targetname"	"trigger_snd_kill"
+			"outputs"
+			{
+				"remove"
+				{
+					"input" "Close"
+				}
+			}
+		}
+		// fix bugged door sound and keep open
+		"modify"
+		{
+			"targetname"	"gate_door"
+			"add"
+			{
+				"loopmovesound" "0"
+			}
+			"outputs"
+			{
+				"add"
+				{
+					"output"	"OnFullyOpen"
+					"target"	"!self"
+					"input"		"Lock"
+				}
+			}
+		}
+		// Modify door that triggers the changelevel to be locked
+		// forcing players to walk up the ladder
+		"modify"
+		{
+			// turn off green light
+			"targetname"	"LC_blastdoor_template_green_&i9"
+			"add"
+			{
+				"spawnflags"	"0"
+			}
+		}
+		"modify"
+		{
+			// turn on red light
+			"targetname"	"LC_blastdoor_template_red_&i9"
+			"add"
+			{
+				"spawnflags"	"1"
+			}
+		}
+		// lock the button
+		"modify"
+		{
+			"targetname"	"LC_blastdoor_template_button_&i9"
+			"add"
+			{
+				"locked_sound"	"10"	// buzz when locked
+				"spawnflags"	"3073"	// start locked+dontmove
+			}
+		}
+		// Block players from climbing ladder"
+		"create"
+		{
+			"classname"		"func_brush"
+			"rendermode"	"10" // dont render
+			"origin"		"132 1360 2208" // ensure origin inbounds
+			"functions"
+			{
+				"set_model"
+				{
+					"from"	"232 1488 2232"
+					"to"	"32 1232 2184"
+				}
+			}
+		}
 	}
 	"checkpoint"
 	{
+		"spawn"
+		{
+			"origin"	"-952 -144 -800"
+			"angles"	"0 0 0"
+		}
+		"exitedcoolant"
+		{
+			"origin"	"304 -424 -775"
+			"angles"	"0 30 0"
+			"triggerid"	"coolant_exit_trig"
+			"output"	"OnTrigger"
+		}
+		"laserswitch"
+		{
+			"origin"	"544 64 865"
+			"angles"	"0 270 0"
+			"triggerid"	"pump_button_&i1"
+			"output"	"OnIn"
+		}
 	}
 }

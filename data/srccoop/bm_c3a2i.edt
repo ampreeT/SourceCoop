@@ -2,14 +2,136 @@
 
 "config"
 {
-	"nextmap"	"/.*/"
+	"nextmap"	"bm_c4a1a"
 	"equipment"
 	{
+		// Players are meant to have all weapons,
+		// full health, suit, and ammo at this point
+		// TODO: players respawning at checkpoints don't get any equipment
+		"suit"	"1"
+		// Full suit battery
+		"item" "item_battery"
+		"item" "item_battery"
+		"item" "item_battery"
+		"item" "item_battery"
+		"item" "item_battery"
+		"item" "item_battery"
+		"item" "item_battery"
+		// Crowbar 
+		"item" "item_weapon_crowbar"
+		// 10 grenades
+		"item" "item_weapon_frag"
+		"item" "item_weapon_frag"
+		"item" "item_weapon_frag"
+		"item" "item_weapon_frag"
+		"item" "item_weapon_frag"
+		"item" "item_weapon_frag"
+		"item" "item_weapon_frag"
+		"item" "item_weapon_frag"
+		"item" "item_weapon_frag"
+		"item" "item_weapon_frag"
+		// 5 satchels
+		"item" "item_weapon_satchel"
+		"item" "item_weapon_satchel"
+		"item" "item_weapon_satchel"
+		"item" "item_weapon_satchel"
+		"item" "item_weapon_satchel"
+		// Crossbow (full ammo included)
+		"item" "item_weapon_crossbow"
+		// Hive hand
+		"item" "item_weapon_hivehand"
+		// Tau cannon + gluon + 60 extra ammo (100 total)
+		"item" "item_weapon_tau"
+		"item" "item_weapon_gluon"
+		"item" "item_ammo_energy"
+		"item" "item_ammo_energy"
+		"item" "item_ammo_energy"
+		// RPG + 5 extra rockets (6 total)
+		"item" "item_weapon_rpg"
+		"item" "item_grenade_rpg"
+		"item" "item_grenade_rpg"
+		"item" "item_grenade_rpg"
+		"item" "item_grenade_rpg"
+		"item" "item_grenade_rpg"
+		// 6 tripmines
+		"item" "item_weapon_tripmine"
+		"item" "item_weapon_tripmine"
+		"item" "item_weapon_tripmine"
+		"item" "item_weapon_tripmine"
+		"item" "item_weapon_tripmine"
+		"item" "item_weapon_tripmine"
+		// 357 + 18 reserve ammo
+		"item" "item_weapon_357"
+		"item" "item_ammo_357"
+		// MP5 + glock + 150 reserve ammo + 3 mp5 grenades
+		"item" "item_weapon_mp5"
+		"item" "item_weapon_glock"
+		"item" "item_ammo_mp5"
+		"item" "item_ammo_mp5"
+		"item" "item_ammo_mp5"
+		"item" "item_ammo_mp5"
+		"item" "item_grenade_mp5"
+		"item" "item_grenade_mp5"
+		"item" "item_grenade_mp5"
+		// Shotgun + 64 reserve ammo
+		"item" "item_weapon_shotgun"
+		"item" "item_ammo_shotgun"
+		"item" "item_ammo_shotgun"
+		"item" "item_ammo_shotgun"
+		"item" "item_ammo_shotgun"
+		"item" "item_ammo_shotgun"
+		"item" "item_ammo_shotgun"
+		"item" "item_ammo_shotgun"
+		// Long jump module
+		"item" "item_longjump"
 	}
 	"entity"
 	{
+		// Don't delete all the prop_dynamics in the airlock lmao
+		"delete"
+		{
+			"targetname"	"purgetheheretic_thexeno"
+		}
+		// prevent buggy areaportal from closing
+		"modify"
+		{
+			"targetname"	"tele_intro_first_trigger"
+			"outputs"
+			{
+				"remove"
+				{
+					"target"	"airlock_door2_portal1"
+					"input"	"Close"
+				}
+
+				// prevent the entrance door from closing until
+				// checkpoint equipment bug is fixed
+				"remove"
+				{
+					"target"	"airlock_door2"
+				}
+				"remove"
+				{
+					"target"	"tele_door_block"
+				}
+			}
+		}
 	}
 	"checkpoint"
 	{
+		"spawn"
+		{
+			"origin"	"2240 -320 32"
+			"angles"	"0 90 0"
+		}
+		// disabled until equipment bug is fixed
+		// "arena"
+		// {
+		// 	"origin"	"893 0 8"
+		// 	"angles"	"0 180 0"
+		// 	"triggerid"	"sci11_beginwalk"
+		// 	"output"	"OnTrigger"
+		// 	"portal"	"1144 0 40"
+		// }
 	}
 }

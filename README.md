@@ -66,6 +66,11 @@ Both linux and windows dedicated servers are supported.
 - allow configuring more features from edt configs
 
 ### map-issues
+- bm_c3a2h
+	- trigger to make barney open weapons lockup doesn't exist for some reason
+	- equipping the long jump module uses a give client command, this needs to be changed
+- bm_c3a2i
+	- equipment does not get given to player upon CP respawn
 - bm_c4a4a
 	- point_hurt (cyclone_hurt) has target !player (this picks first one)
 - xen maps

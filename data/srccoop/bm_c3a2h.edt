@@ -2,14 +2,65 @@
 
 "config"
 {
-	"nextmap"	"/.*/"
+	"nextmap"	"bm_c3a2i"
 	"equipment"
 	{
 	}
 	"entity"
 	{
+		"modify"
+		{
+			"targetname" "/ammo|suit|weapons/"
+			"flags"
+			{
+				"spawnflags"
+				{
+					"add" "2" // motion disabled
+					"add" "8" // silent pickup
+				}
+			}
+			"add"
+			{
+				"origin"	"0 -1680 -1010" // ensure all items are inside player
+			}
+		}
+		// make npcs invulnerable
+		"create"
+		{
+			"targetname" "friendly_npc_damage_filter"
+			"classname" "filter_damage_class"
+		}
+		"modify"
+		{
+			"GameEndAlly" "1"
+			"add"
+			{
+				"damagefilter" "friendly_npc_damage_filter"
+			}
+		}
 	}
 	"checkpoint"
 	{
+		"spawn"
+		{
+			"origin"	"0 -1680 -1047"
+			"angles"	"0 270 0"
+		}
+		"cutscene"
+		{
+			"origin"	"1792 -1072 9"
+			"angles"	"0 90 0"
+			"triggerid"	"DepotDoorRIGHTFUNC"
+			"output"	"OnFullyClosed"
+			"portal"	"1800 -1448 45"
+		}
+		"airlock"
+		{
+			"origin"	"2240 -320 32"
+			"angles"	"0 90 0"
+			"triggerid"	"airlock_relay1"
+			"output"	"OnTrigger"
+			"portal"	"2248 -560 72"
+		}
 	}
 }
