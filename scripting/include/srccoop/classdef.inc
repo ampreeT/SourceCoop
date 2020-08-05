@@ -821,6 +821,45 @@ methodmap CBlackMesaPlayer < CBaseCombatCharacter
 	{
 		EmitSoundToClient(this.GetEntIndex(), szSound);
 	}
+	/**
+	 * Gets this player's score
+	 *
+	 * @return				The player's score
+	 */
+	public int GetScore()
+	{
+		return GetClientFrags(this.GetEntIndex());
+	}
+	/**
+	 * Sets this player's score to the given value
+	 *
+	 * @param iScore		Value to set as the score for the player
+	 */
+	public void SetScore(int iScore)
+	{
+		SetEntProp(this.GetEntIndex(), Prop_Data, "m_iFrags", iScore);
+	}
+	/**
+	 * Modifies the player's score by the provided points
+	 * 
+	 * @param iPoints		The amount of points to add or subtract
+	 * @return				The new score for the player
+	 */
+	public int ModifyScore(int iPoints)
+	{
+		int iNewScore = this.GetScore() + iPoints;
+		this.SetScore(iNewScore);
+		return iNewScore;
+	}
+	/**
+	 * Returns how many times the given player has died
+	 * 
+	 * @return				The number of deaths
+	 */
+	public int GetDeaths()
+	{
+		return GetClientDeaths(this.GetEntIndex());
+	}
 }
 
 public bool Callback_GetAimTarget(int iEntity, int iMask, any pData)
