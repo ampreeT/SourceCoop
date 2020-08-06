@@ -19,6 +19,8 @@ Both linux and windows dedicated servers are supported.
 - fixed scientists crash when seeing a non-friendly
 - fixed npcs from not being able to shoot with anything but the shotgun
 - fixed a crash caused by round restarts
+- optional thirdperson plugin
+- optional scoreboard and chat killfeed plugin
 
 # ToDo
 ### must-fix

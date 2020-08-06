@@ -822,6 +822,15 @@ methodmap CBlackMesaPlayer < CBaseCombatCharacter
 		EmitSoundToClient(this.GetEntIndex(), szSound);
 	}
 	/**
+	 * Returns how many times the given player has died
+	 * 
+	 * @return				The number of deaths
+	 */
+	public int GetDeaths()
+	{
+		return GetClientDeaths(this.GetEntIndex());
+	}
+	/**
 	 * Gets this player's score
 	 *
 	 * @return				The player's score
@@ -832,6 +841,8 @@ methodmap CBlackMesaPlayer < CBaseCombatCharacter
 	}
 	/**
 	 * Sets this player's score to the given value
+	 *    TODO:	figure out some way to update the outwards facing scoreboard
+	 *			that gametracker & steam server info dialog boxes use
 	 *
 	 * @param iScore		Value to set as the score for the player
 	 */
@@ -850,15 +861,6 @@ methodmap CBlackMesaPlayer < CBaseCombatCharacter
 		int iNewScore = this.GetScore() + iPoints;
 		this.SetScore(iNewScore);
 		return iNewScore;
-	}
-	/**
-	 * Returns how many times the given player has died
-	 * 
-	 * @return				The number of deaths
-	 */
-	public int GetDeaths()
-	{
-		return GetClientDeaths(this.GetEntIndex());
 	}
 }
 
