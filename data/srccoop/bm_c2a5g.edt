@@ -10,7 +10,7 @@
 	{
 		"modify"
 		{
-			"targetname" "/g_spawn_equipment/"
+			"targetname" "g_spawn_equipment"
 			"flags"
 			{
 				"spawnflags"

@@ -11,7 +11,7 @@
 		// spawn items
 		"modify"
 		{
-			"targetname" "/suit|weapons/"
+			"targetname" "/^(suit|weapons)$/"
 			"flags"
 			{
 				"spawnflags"
@@ -46,7 +46,7 @@
 		// mp fixes
 		"delete"
 		{
-			"targetname" "/trig_c2a4c_audiokill|trig_c2a4c_gibshooter_timer3_disable|trigger2_branch_snds_conveyorshaft8/"
+			"targetname" "/^(trig_c2a4c_audiokill|trig_c2a4c_gibshooter_timer3_disable|trigger2_branch_snds_conveyorshaft8)$/"
 		}
 		"modify"
 		{

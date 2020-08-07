@@ -21,7 +21,7 @@ Handle g_pCreateEngineInterface;
 Handle g_pCreateServerInterface;
 
 //Handle g_pPickupObject;
-//Handle g_pSendWeaponAnim;
+Handle g_pSendWeaponAnim;
 
 // ----------------------------
 // DHooks

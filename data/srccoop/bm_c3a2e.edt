@@ -11,7 +11,7 @@
 		// spawn items
 		"modify"
 		{
-			"targetname" "/ammo|suit|weapons/"
+			"targetname" "/^(ammo|suit|weapons)$/"
 			"flags"
 			{
 				"spawnflags"
@@ -23,15 +23,6 @@
 			"set"
 			{
 				"origin" "-1056 -240 440"
-			}
-		}
-		// fix bugged door sounds
-		"modify"
-		{
-			"classname" "func_door"
-			"set"
-			{
-				"loopmovesound" "0"
 			}
 		}
 		// fix logic_auto not firing

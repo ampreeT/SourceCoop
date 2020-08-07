@@ -11,7 +11,7 @@
 		// spawn items
 		"modify"
 		{
-			"targetname" "/c2a4h_suit|c2a4h_weapons|c2a4h_ammo/"
+			"targetname" "/^(c2a4h_suit|c2a4h_weapons|c2a4h_ammo)$/"
 			"flags"
 			{
 				"spawnflags"

@@ -11,7 +11,7 @@
 	{
 		"modify"
 		{
-			"targetname" "/c2a5f_equipment_weapons|c2a5f_equipment_ammo|c2a5f_equipment_misc/"
+			"targetname" "/^(c2a5f_equipment_weapons|c2a5f_equipment_ammo|c2a5f_equipment_misc)$/"
 			"flags"
 			{
 				"spawnflags"
@@ -40,18 +40,13 @@
 		{
 			"targetname" "maker_grd_jackson"
 		}
-		"create"
-		{
-			"targetname" "grd02_invul"
-			"classname" "filter_damage_class"
-		}
 		"modify"
 		{
 			"targetname"	"GRD02_HiveHand"
 			"add"
 			{
 				"origin" "-2816 -1792 -256"
-				"damagefilter" "grd02_invul"
+				"damagefilter" "__srccoop_damage_filter"
 				// remove template npc, gag, and nogreet flags
 				"spawnflags" "516"
 			}

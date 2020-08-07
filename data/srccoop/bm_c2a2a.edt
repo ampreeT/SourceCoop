@@ -9,7 +9,7 @@
 	}
 	"console"
 	{
-		"sm_coop_end_wait_period" "0"
+		"sourcecoop_end_wait_period" "0"
 	}
 	"entity"
 	{

@@ -69,7 +69,7 @@
 		// the crane gets stuck if the buttons are pressed too quickly
 		"modify"
 		{
-			"targetname" "/c1a4f_reactor_power_button_d_relay|c1a4f_reactor_power_button_g_relay/"
+			"targetname" "/^(c1a4f_reactor_power_button_d_relay|c1a4f_reactor_power_button_g_relay)$/"
 			"outputs"
 			{
 				"add"
@@ -88,7 +88,7 @@
 		}
 		"modify"
 		{
-			"targetname" "/c1a4f_reactor_power_button_g|c1a4f_reactor_power_button_d/"
+			"targetname" "/^(c1a4f_reactor_power_button_g|c1a4f_reactor_power_button_d)$/"
 			"outputs"
 			{
 				"modify"

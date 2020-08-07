@@ -11,7 +11,7 @@
 		// spawn items
 		"modify"
 		{
-			"targetname" "/ammo|suit|weapons/"
+			"targetname" "/^(ammo|suit|weapons)$/"
 			"flags"
 			{
 				"spawnflags"
@@ -52,15 +52,6 @@
 				{
 					"targetname"	"GRD02_Player_Present"
 				}
-			}
-		}
-		// AAAAHHH LOOPING SOUND
-		"modify"
-		{
-			"classname"	"func_door"
-			"add"
-			{
-				"loopmovesound" "0"
 			}
 		}
 		// deathtrap reactor puzzle checkpoint trigger
@@ -108,7 +99,6 @@
 		{
 			"classname"		"func_brush"
 			"rendermode"	"10" // dont render
-			"origin"		"848 -364 1562" // ensure origin inbounds
 			"functions"
 			{
 				"set_model"

@@ -23,7 +23,7 @@
 		// spawn items
 		"modify"
 		{
-			"targetname" "/suit|weapons|ammo/"
+			"targetname" "/^(suit|weapons|ammo)$/"
 			"flags"
 			{
 				"spawnflags"

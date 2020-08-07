@@ -39,7 +39,7 @@
 		// spawn items
 		"modify"
 		{
-			"targetname" "/ammo|suit|weapons/"
+			"targetname" "/^(ammo|suit|weapons)$/"
 			"flags"
 			{
 				"spawnflags"
@@ -47,15 +47,6 @@
 					"add" "2" // motion disabled
 					"add" "8" // silent pickup
 				}
-			}
-		}
-		// fix bugged door sounds
-		"modify"
-		{
-			"classname" "func_door"
-			"set"
-			{
-				"loopmovesound" "0"
 			}
 		}
 		// fix logic_auto not firing

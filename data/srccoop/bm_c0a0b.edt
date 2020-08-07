@@ -6,6 +6,10 @@
 	"console"
 	{
 	}
+	"equipment"
+	{
+		"item"	"weapon_crowbar"
+	}
 	"entity"
 	{
 		// delay map start
@@ -33,15 +37,6 @@
 			"add"
 			{
 				"speed" "0"
-			}
-		}
-		// fix horrid noise at train rotating platform
-		"modify"
-		{
-			"targetname" "train_elevator_rotate"
-			"add"
-			{
-				"loopmovesound" "0"
 			}
 		}
 		// fix tram-stuck when there are no players for trigger

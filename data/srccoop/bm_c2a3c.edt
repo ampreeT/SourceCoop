@@ -10,7 +10,7 @@
 	{
 		"modify"
 		{
-			"targetname" "/player_spawn_weapon|player_spawn_ammo|player_spawn_suit|player_spawn_battery/"
+			"targetname" "/^(player_spawn_weapon|player_spawn_ammo|player_spawn_suit|player_spawn_battery)$/"
 			"flags"
 			{
 				"spawnflags"

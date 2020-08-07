@@ -73,14 +73,14 @@ void LoadGameData()
 	PrepSDKCall_AddParameter(SDKType_CBaseEntity, SDKPass_Pointer);
 	PrepSDKCall_AddParameter(SDKType_Bool, SDKPass_Plain);
 	if (!(g_pPickupObject = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szPickupObject);
-	
+	*/
 	char szSendWeaponAnim[] = "CBaseCombatWeapon::SendWeaponAnim";
 	StartPrepSDKCall(SDKCall_Entity);
 	if (!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Virtual, szSendWeaponAnim))
 		SetFailState("Could not obtain gamedata offset %s", szSendWeaponAnim);
 	PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
 	if (!(g_pSendWeaponAnim = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szSendWeaponAnim);
-	*/
+	
 		
 	char szGameShutdown[] = "CServerGameDLL::GameShutdown";
 	StartPrepSDKCall(SDKCall_Raw);

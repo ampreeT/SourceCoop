@@ -12,7 +12,7 @@
 		// spawn items
 		"modify"
 		{
-			"targetname" "/weapons|suit/"
+			"targetname" "/^(weapons|suit)$/"
 			"flags"
 			{
 				"spawnflags"
@@ -87,17 +87,12 @@
 		}
 
 		// make friendly npcs invulnerable
-		"create"
-		{
-			"targetname" "friendly_npc_damage_filter"
-			"classname" "filter_damage_class"
-		}
 		"modify"
 		{
-			"classname" "/npc_human_scientist|npc_human_scientist_female/"
+			"classname" "/^npc_human_scientist/"
 			"add"
 			{
-				"damagefilter" "friendly_npc_damage_filter" // invul
+				"damagefilter" "__srccoop_damage_filter"
 			}
 		}
 
@@ -149,7 +144,7 @@
 					"OnPlayerUse" "Sci03_nag_TimerResetTimer0-1"
 					"OnDeath" "player_touchleveltransitionEnable0-1"
 					// TODO: keep guard invul?
-					"damagefilter" "friendly_npc_damage_filter"
+					"damagefilter" "__srccoop_damage_filter"
 					"outputs"
 					{
 						"add"

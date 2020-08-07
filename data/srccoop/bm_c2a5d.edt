@@ -10,7 +10,7 @@
 	{
 		"modify"
 		{
-			"targetname" "/c2a5d_equipment_weapons|c2a5d_equipment_ammo|c2a5d_equipment_misc/"
+			"targetname" "/^(c2a5d_equipment_weapons|c2a5d_equipment_ammo|c2a5d_equipment_misc)$/"
 			"flags"
 			{
 				"spawnflags"

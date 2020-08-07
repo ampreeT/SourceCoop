@@ -7,6 +7,10 @@
 	"console"
 	{
 	}
+	"equipment"
+	{
+		"item"	"weapon_crowbar"
+	}
 	"entity"
 	{
 		// delay map start

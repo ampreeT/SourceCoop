@@ -11,7 +11,7 @@
 		// spawn items
 		"modify"
 		{
-			"targetname" "/suit|weapons|ammo/"
+			"targetname" "/^(suit|weapons|ammo)$/"
 			"flags"
 			{
 				"spawnflags"
@@ -56,7 +56,7 @@
 				"remove"
 				{
 					"output" "OnFullyOpen"
-					"target" "/c1a3b-c1a3c-elevator_doorleft|c1a3b-c1a3c-elevator_doorright/"
+					"target" "/^(c1a3b-c1a3c-elevator_doorleft|c1a3b-c1a3c-elevator_doorright)$/"
 				}
 			}
 		}

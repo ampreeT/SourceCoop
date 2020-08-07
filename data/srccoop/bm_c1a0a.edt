@@ -4,8 +4,21 @@
 {
 	"nextmap"		"bm_c1a0b"
 	"intro_type"	"none"
+	"equipment"
+	{
+		"item"	"weapon_crowbar"
+	}
 	"entity"
 	{
+		// make all npcs invulnerable
+		"modify"
+		{
+			"classname" "/^npc_/"
+			"add"
+			{
+				"damagefilter" "__srccoop_damage_filter"
+			}
+		}
 		// delay map start
 		"modify"
 		{

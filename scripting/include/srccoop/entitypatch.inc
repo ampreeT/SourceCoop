@@ -509,16 +509,43 @@ public MRESReturn Hook_ClientCommandAcceptInput(int _this, Handle hReturn, Handl
 			{
 				char szParam[MAX_FORMAT];
 				DHookGetParamObjectPtrString(hParams, 4, 0, ObjectValueType_String, szParam, sizeof(szParam));
-				bHookSkip = true;
-				for(int i = 1; i <= MaxClients; i++)
+				
+				// do special handling for the give command: give it to all and add to equipment for later spawns
+				
+				int iStart = 5;
+				if(strncmp(szParam, "give ", iStart, false) == 0)
 				{
-					if(IsClientInGame(i))
+					if(strncmp(szParam[iStart], "item_weapon_", 12, false) == 0)
 					{
-						SetVariantString(szParam);
-						AcceptEntityInput(_this, "Command", i);
+						iStart += 5; // start after item_
 					}
+					for(int i = 1; i <= MaxClients; i++)
+					{
+						if(IsClientInGame(i) && IsPlayerAlive(i))
+						{
+							CBlackMesaPlayer pPlayer = CBlackMesaPlayer(i);
+							if(!pPlayer.HasWeapon(szParam[iStart]))
+							{
+								pPlayer.GiveItem(szParam[iStart]);
+							}
+						}
+					}
+					g_SpawnSystem.AddSpawnItem(szParam[iStart]);
 				}
-				bHookSkip = false;
+				
+				else
+				{
+					bHookSkip = true;
+					for(int i = 1; i <= MaxClients; i++)
+					{
+						if(IsClientInGame(i))
+						{
+							SetVariantString(szParam);
+							AcceptEntityInput(_this, "Command", i);
+						}
+					}
+					bHookSkip = false;
+				}
 				DHookSetReturn(hReturn, true);
 				return MRES_Supercede;
 			}

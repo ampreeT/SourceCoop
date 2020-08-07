@@ -11,7 +11,7 @@
 		// spawn items
 		"modify"
 		{
-			"targetname" "/c2a5c_equipment/"
+			"targetname" "c2a5c_equipment"
 			"flags"
 			{
 				"spawnflags"
@@ -19,15 +19,6 @@
 					"add" "2" // motion disabled
 					"add" "8" // silent pickup
 				}
-			}
-		}
-		// fix bugged door sounds
-		"modify"
-		{
-			"classname" "func_door"
-			"set"
-			{
-				"loopmovesound" "0"
 			}
 		}
 		"create"

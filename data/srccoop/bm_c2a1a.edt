@@ -75,24 +75,6 @@
 				}
 			}
 		}
-		// barney can die without fading our screens
-		"modify"
-		{
-			"targetname" "GRD01_PowerUpControl"
-			"add"
-			{
-				"GameEndAlly" "0"
-			}
-		}
-		// fix noise at train rotating platform
-		"modify"
-		{
-			"targetname" "c2a1a_tram_rotator"
-			"add"
-			{
-				"loopmovesound" "0"
-			}
-		}
 		// if returning
 		"#if"
 		{
@@ -164,7 +146,7 @@
 				}
 				"modify"
 				{
-					"targetname" "/c2a1a_heroes_relay|c2a1a_garg_entrance_relay|c2a1a_collapse_relay/"
+					"targetname" "/^(c2a1a_heroes_relay|c2a1a_garg_entrance_relay|c2a1a_collapse_relay)$/"
 					"flags"
 					{
 						"spawnflags"

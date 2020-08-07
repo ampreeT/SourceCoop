@@ -14,7 +14,7 @@
 		// spawn items
 		"modify"
 		{
-			"targetname" "/ammo|suit|weapons/"
+			"targetname" "/^(ammo|suit|weapons)$/"
 			"flags"
 			{
 				"spawnflags"
@@ -35,15 +35,6 @@
 			"functions"
 			{
 				"delay_output" "OnPass"
-			}
-		}
-		// fix bugged door sounds
-		"modify"
-		{
-			"classname" "func_door"
-			"set"
-			{
-				"loopmovesound" "0"
 			}
 		}
 		// dont close elevator door

@@ -12,7 +12,7 @@
 		// spawn items
 		"modify"
 		{
-			"targetname" "/ammo|suit|weapons/"
+			"targetname" "/^(ammo|suit|weapons)$/"
 			"flags"
 			{
 				"spawnflags"
@@ -42,7 +42,6 @@
 			"targetname"	"coolant_exit_trig"
 			"classname"		"trigger_once"
 			"spawnflags"	"1"
-			"origin"		"140 -160 -724"
 			"functions"
 			{
 				"set_model"
@@ -64,14 +63,10 @@
 				}
 			}
 		}
-		// fix bugged door sound and keep open
+		// keep open
 		"modify"
 		{
 			"targetname"	"gate_door"
-			"add"
-			{
-				"loopmovesound" "0"
-			}
 			"outputs"
 			{
 				"add"
@@ -117,7 +112,6 @@
 		{
 			"classname"		"func_brush"
 			"rendermode"	"10" // dont render
-			"origin"		"132 1360 2208" // ensure origin inbounds
 			"functions"
 			{
 				"set_model"

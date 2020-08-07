@@ -91,7 +91,7 @@
 		// dont stop ambient sounds
 		"modify"
 		{
-			"targetname" "/relaybranch_snds_servicehallway|relaybranch_snds_sewer_s1a|relaybranch_snds_sewer_s1b|relaybranch_snds_sewer_s2/"
+			"targetname" "/^(relaybranch_snds_servicehallway|relaybranch_snds_sewer_s1a|relaybranch_snds_sewer_s1b|relaybranch_snds_sewer_s2)$/"
 			"outputs"
 			{
 				"remove"

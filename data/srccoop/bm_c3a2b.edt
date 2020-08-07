@@ -11,7 +11,7 @@
 		// spawn items
 		"modify"
 		{
-			"targetname" "/ammo|suit|weapons/"
+			"targetname" "/^(ammo|suit|weapons)$/"
 			"flags"
 			{
 				"spawnflags"
@@ -23,15 +23,6 @@
 			"set"
 			{
 				"origin" "3280 -2496 -2432"
-			}
-		}
-		// fix bugged door sounds
-		"modify"
-		{
-			"classname" "func_door"
-			"set"
-			{
-				"loopmovesound" "0"
 			}
 		}
 		// dont close blast doors at start
@@ -60,11 +51,6 @@
 			}
 		}
 		// make first scientist invul until door opens
-		"create"
-		{
-			"targetname" "filter_invul"
-			"classname" "filter_damage_class"
-		}
 		"delete"
 		{
 			"targetname"	"SCI01_critical"
@@ -74,7 +60,7 @@
 			"targetname"	"SCI01_LastLambdaEntrance"
 			"set"
 			{
-				"damagefilter"	"filter_invul"
+				"damagefilter"	"__srccoop_damage_filter"
 			}
 		}
 		"modify"

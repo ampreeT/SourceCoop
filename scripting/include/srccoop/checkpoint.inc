@@ -559,6 +559,30 @@ enum struct CCoopSpawn
 		}
 	}
 	
+	bool AddSpawnItem(const char[] szItem, bool bAllowDuplicates = false)
+	{
+		if(!bAllowDuplicates)
+		{
+			for (int i = 0; i < this.m_pDefaultEquipment.m_pWeaponList.Length; i++)
+			{
+				CCoopWeaponEntry pWeaponEntry;
+				if (this.m_pDefaultEquipment.m_pWeaponList.GetArray(i, pWeaponEntry, sizeof(pWeaponEntry)))
+				{
+					// does basic checking of item_weapon vs weapon_ strings
+					if(StrContains(pWeaponEntry.m_szClassname, szItem, false) != -1 || StrContains(szItem, pWeaponEntry.m_szClassname, false) != -1)
+					{
+						return false;
+					}
+				}
+			}
+		}
+		CCoopWeaponEntry pWeaponEntry;
+		strcopy(pWeaponEntry.m_szClassname, sizeof(pWeaponEntry.m_szClassname), szItem);
+		pWeaponEntry.m_iPrimaryAmmo = -1;
+		pWeaponEntry.m_iSecondaryAmmo = -1;
+		this.m_pDefaultEquipment.m_pWeaponList.PushArray(pWeaponEntry);
+		return true;
+	}
 }
 
 CCoopSpawn g_SpawnSystem;

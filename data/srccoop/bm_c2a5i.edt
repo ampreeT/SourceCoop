@@ -11,7 +11,7 @@
 	{
 		"modify"
 		{
-			"targetname" "/c2a5i_equipment_weapons|c2a5i_equipment_ammo|c2a5i_equipment_misc/"
+			"targetname" "/^(c2a5i_equipment_weapons|c2a5i_equipment_ammo|c2a5i_equipment_misc)$/"
 			"flags"
 			{
 				"spawnflags"
@@ -54,7 +54,7 @@
 		// triggers on top of the tower
 		"modify"
 		{
-			"hammerid" "/1457972|1239127|1717569/"
+			"hammerid" "/^(1457972|1239127|1717569)$/"
 			"outputs"
 			{
 				"modify"

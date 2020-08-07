@@ -11,7 +11,7 @@
 		// spawn items
 		"modify"
 		{
-			"targetname" "/player_spawn_weapon|player_spawn_ammo|player_spawn_suit/"
+			"targetname" "/^(player_spawn_weapon|player_spawn_ammo|player_spawn_suit)$/"
 			"flags"
 			{
 				"spawnflags"

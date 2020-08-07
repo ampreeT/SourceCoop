@@ -4,8 +4,21 @@
 {
 	"nextmap"		"bm_c1a1a"
 	"intro_type"	"none"
+	"equipment"
+	{
+		"item"	"weapon_crowbar"
+	}
 	"entity"
 	{
+		// make all npcs invulnerable
+		"modify"
+		{
+			"classname" "/^npc_/"
+			"add"
+			{
+				"damagefilter" "__srccoop_damage_filter"
+			}
+		}
 		// delay map start
 		"modify"
 		{
@@ -77,7 +90,7 @@
 		}
 		"modify"
 		{
-			"targetname" "/chamber_airlocktop|chamber_airlockbot/"
+			"targetname" "/^(chamber_airlocktop|chamber_airlockbot)$/"
 			"add"
 			{
 				"dmg" "50"

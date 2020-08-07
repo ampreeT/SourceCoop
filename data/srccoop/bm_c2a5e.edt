@@ -10,7 +10,7 @@
 	{
 		"modify"
 		{
-			"targetname" "/c2a5e_equipment_weapons|c2a5e_equipment_ammo|c2a5e_equipment_misc/"
+			"targetname" "/^(c2a5e_equipment_weapons|c2a5e_equipment_ammo|c2a5e_equipment_misc)$/"
 			"flags"
 			{
 				"spawnflags"
@@ -37,17 +37,12 @@
 			}
 		}
 		// make end level guard invulnerable
-		"create"
-		{
-			"targetname" "grd02_invul"
-			"classname" "filter_damage_class"
-		}
 		"modify"
 		{
 			"targetname"	"GRD02_HiveHand"
 			"add"
 			{
-				"damagefilter" "grd02_invul"
+				"damagefilter" "__srccoop_damage_filter"
 			}
 		}
 	}

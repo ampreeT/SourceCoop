@@ -455,6 +455,43 @@ methodmap CSceneEntity < CBaseEntity
 	}
 }
 
+methodmap CBaseCombatWeapon < CBaseAnimating
+{
+	public CBaseCombatWeapon(const int iEntIndex = -1)
+	{
+		return view_as<CBaseCombatWeapon>(InternalGetBaseEntity(iEntIndex));
+	}
+	
+	public CBaseEntity GetOwner()
+	{
+		return CBaseEntity(GetEntPropEnt(this.GetEntIndex(), Prop_Send, "m_hOwner"));
+	}
+	public int GetPrimaryAmmo()
+	{
+		return GetEntProp(this.GetEntIndex(), Prop_Send, "m_iClip1");
+	}
+	public void SetPrimaryAmmo(const int iPrimaryAmmo)
+	{
+		SetEntProp(this.GetEntIndex(), Prop_Send, "m_iClip1", iPrimaryAmmo); 
+	}
+	public float GetNextPrimaryAttack()
+	{
+		return GetEntPropFloat(this.GetEntIndex(), Prop_Send, "m_flNextPrimaryAttack");
+	}
+	public void SetNextPrimaryAttack(const float flNextPrimaryAttack)
+	{
+		SetEntPropFloat(this.GetEntIndex(), Prop_Send, "m_flNextPrimaryAttack", flNextPrimaryAttack); 
+	}
+	public float GetNextSecondaryAttack()
+	{
+		return GetEntPropFloat(this.GetEntIndex(), Prop_Send, "m_flNextSecondaryAttack");
+	}
+	public void SetNextSecondaryAttack(const float flNextSecondaryAttack)
+	{
+		SetEntPropFloat(this.GetEntIndex(), Prop_Send, "m_flNextSecondaryAttack", flNextSecondaryAttack); 
+	}
+}
+
 methodmap CBaseCombatCharacter < CBaseAnimating
 {
 	public CBaseCombatCharacter(const int iEntIndex = -1)
@@ -474,9 +511,13 @@ methodmap CBaseCombatCharacter < CBaseAnimating
 	{
 		return view_as<bool>(this.GetHealth() > 0);
 	}
-	public CBaseEntity GetActiveWeapon()
+	public CBaseCombatWeapon GetActiveWeapon()
 	{
-		return CBaseEntity(GetEntPropEnt(this.GetEntIndex(), Prop_Send, "m_hActiveWeapon"));
+		return CBaseCombatWeapon(GetEntPropEnt(this.GetEntIndex(), Prop_Send, "m_hActiveWeapon"));
+	}
+	public void SetActiveWeapon(CBaseCombatWeapon pWeapon)
+	{
+		SetEntPropEnt(this.GetEntIndex(), Prop_Send, "m_hActiveWeapon", pWeapon.GetEntIndex());
 	}
 }
 
@@ -562,27 +603,6 @@ methodmap CProtoSniper < CAI_BaseNPC
 	public bool IsEnabled()
 	{
 		return view_as<bool>(GetEntProp(this.GetEntIndex(), Prop_Data, "m_fEnabled"));
-	}
-}
-
-methodmap CBaseCombatWeapon < CBaseAnimating
-{
-	public CBaseCombatWeapon(const int iEntIndex = -1)
-	{
-		return view_as<CBaseCombatWeapon>(InternalGetBaseEntity(iEntIndex));
-	}
-	
-	public CBaseEntity GetOwner()
-	{
-		return CBaseEntity(GetEntPropEnt(this.GetEntIndex(), Prop_Send, "m_hOwner"));
-	}
-	public int GetPrimaryAmmo()
-	{
-		return GetEntProp(this.GetEntIndex(), Prop_Send, "m_iClip1");
-	}
-	public void SetPrimaryAmmo(const int iPrimaryAmmo)
-	{
-		SetEntProp(this.GetEntIndex(), Prop_Send, "m_iClip1", iPrimaryAmmo); 
 	}
 }
 
@@ -673,6 +693,22 @@ methodmap CBlackMesaPlayer < CBaseCombatCharacter
 	{
 		return view_as<CBaseCombatWeapon>(this.GiveItem(szWeaponName));
 	}
+	public void RemoveWeapon(CBaseCombatWeapon pWeapon)
+	{
+		RemovePlayerItem(this.GetEntIndex(), pWeapon.GetEntIndex());
+	}
+	public bool HasWeapon(const char[] szWeaponName)
+	{
+		for (int i = 0; i < MAX_WEAPONS; i++)
+		{
+			CBaseCombatWeapon pWeapon = this.GetWeaponFromIndex(i);
+			if (pWeapon.IsValid() && pWeapon.IsClassname(szWeaponName))
+			{
+				return true;
+			}
+		}
+		return false;
+	}
 	public bool EquipWeapon(const char[] szWeaponName)	// change to CBaseEntity
 	{
 		for (int i = 0; i < MAX_WEAPONS; i++)
@@ -680,14 +716,10 @@ methodmap CBlackMesaPlayer < CBaseCombatCharacter
 			CBaseCombatWeapon pWeapon = this.GetWeaponFromIndex(i);
 			if (pWeapon.IsValid())
 			{
-				char szClassname[MAX_CLASSNAME];
-				if (pWeapon.GetClassname(szClassname, sizeof(szClassname)))
+				if (pWeapon.IsClassname(szWeaponName))
 				{
-					if (strcmp(szWeaponName, szClassname, false) == 0)
-					{
-						SetEntPropEnt(this.GetEntIndex(), Prop_Send, "m_hActiveWeapon", pWeapon.GetEntIndex());
-						return true;
-					}
+					SetEntPropEnt(this.GetEntIndex(), Prop_Send, "m_hActiveWeapon", pWeapon.GetEntIndex());
+					return true;
 				}
 			}
 		}
@@ -796,6 +828,14 @@ methodmap CBlackMesaPlayer < CBaseCombatCharacter
 		SetEntPropEnt(this.GetEntIndex(), Prop_Data, "m_hViewEntity", bIsThisEntity ? -1 : pEntity.GetEntIndex());
 		SetEntPropEnt(this.GetEntIndex(), Prop_Send, "m_hViewEntity", bIsThisEntity ? -1 : pEntity.GetEntIndex());
 		SetClientViewEntity(this.GetEntIndex(), pEntity.GetEntIndex());
+	}
+	public CBaseEntity GetViewModel()
+	{
+		return CBaseEntity(GetEntPropEnt(this.GetEntIndex(), Prop_Send, "m_hViewModel"));
+	}
+	public void SetViewModel(CBaseEntity pEntity)
+	{
+		SetEntPropEnt(this.GetEntIndex(), Prop_Send, "m_hViewModel", pEntity.GetEntIndex());
 	}
 	public float GetDeathTime()
 	{

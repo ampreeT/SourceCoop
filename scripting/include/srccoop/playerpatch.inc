@@ -15,7 +15,9 @@ public void Hook_PlayerPreThink(int iClient)
 		return;
 	
 	if(IsPlayerAlive(iClient))
+	{
 		g_bIsMultiplayerOverride = false;
+	}
 }
 
 public void Hook_PlayerPreThinkPost(int iClient)
@@ -26,7 +28,7 @@ public void Hook_PlayerPreThinkPost(int iClient)
 	
 	CBlackMesaPlayer pPlayer = CBlackMesaPlayer(iClient);
 	if(pPlayer.IsAlive())
-	{	
+	{
 	}
 	else
 	{

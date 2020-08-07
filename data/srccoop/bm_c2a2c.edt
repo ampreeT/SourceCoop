@@ -11,7 +11,7 @@
 		// spawn items
 		"modify"
 		{
-			"targetname" "/c2a2c_equipment|c2a2c_equipment_suit/"
+			"targetname" "/^(c2a2c_equipment|c2a2c_equipment_suit)$/"
 			"flags"
 			{
 				"spawnflags"
@@ -52,7 +52,7 @@
 		// train going through wall
 		"delete"
 		{
-			"targetname" "/track_66|track_65/"
+			"targetname" "/^(track_66|track_65)$/"
 		}
 	}
 	"checkpoint"

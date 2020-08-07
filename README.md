@@ -8,7 +8,7 @@ Both linux and windows dedicated servers are supported.
 
 [> Getting started <](https://github.com/ampreeT/SourceCoop/wiki/Getting-started)
 
-## Features & fixes (not everything)
+## Features & fixes
 - checkpoint system
 - map config & entity edit system
 - delayed map start, delayed mapchange system
@@ -19,13 +19,16 @@ Both linux and windows dedicated servers are supported.
 - fixed scientists crash when seeing a non-friendly
 - fixed npcs from not being able to shoot with anything but the shotgun
 - fixed a crash caused by round restarts
+- optional thirdperson plugin
+- optional scoreboard and chat killfeed plugin
+- **_many others that will be documented once the project is completed_**
 
 # ToDo
 ### must-fix
 - target picker on bm_c2a5i
 - first-person camera death code needs to set original viewentity on callback OnMapEnd()
 - custom difficulty based on player count
-- npcs can walk into player, make him stuck, then stop rendering
+- npcs need to push player away, otherwise they walk into player, make him stuck/stop rendering
 - npc_xenturret AI causes crash on map load (it seems to be fine after loading)
 - random linux server crashes related to npcs (pAnim, CalcAnimation, etc)
 
@@ -58,6 +61,7 @@ Both linux and windows dedicated servers are supported.
 - add instancing for wall chargers
 - trip mines lose the bright blue beam color when mp_teamplay=1
 - (BM MP issue) other players' flashlight stays in place when they get out of range. One possible resolution would be to change transmit options or hook settransmit if it is an entity.
+- make point_hurt with target of !player affect all players
 
 ### feature
 - add a hardcore mode where map resets when everyone dies, disable respawning, put dead players on spectate
@@ -65,13 +69,10 @@ Both linux and windows dedicated servers are supported.
 - allow configuring more features from edt configs
 
 ### map-issues
+- bm_c1a3c
+	- getting possessed by mortars
 - bm_c3a1b
 	- tank downstairs can bug and never break, preventing progress
-- bm_c3a2h
-	- trigger to make barney open weapons lockup doesn't exist for some reason
-	- equipping the long jump module uses a give client command, this needs to be changed
-- bm_c3a2i
-	- equipment does not get given to player upon CP respawn
 - bm_c4a4a
 	- point_hurt (cyclone_hurt) has target !player (this picks first one)
 - xen maps

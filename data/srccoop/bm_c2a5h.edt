@@ -10,7 +10,7 @@
 	{
 		"modify"
 		{
-			"targetname" "/c2a5h_equipment_weapons|c2a5h_equipment_ammo|c2a5h_equipment_misc/"
+			"targetname" "/^(c2a5h_equipment_weapons|c2a5h_equipment_ammo|c2a5h_equipment_misc)$/"
 			"flags"
 			{
 				"spawnflags"
@@ -46,17 +46,12 @@
 			}
 		}
 		// make quest guard invulnerable
-		"create"
-		{
-			"targetname" "hangar_guard_filter"
-			"classname" "filter_damage_class"
-		}
 		"modify"
 		{
 			"targetname"	"h_hangar_guard"
 			"add"
 			{
-				"damagefilter"	"hangar_guard_filter"
+				"damagefilter"	"__srccoop_damage_filter"
 			}
 		}
 	}

@@ -78,7 +78,7 @@
 		// dont stop ambient sounds
 		"modify"
 		{
-			"targetname" "/relaybranch_snds_b_cor1_misc|relaybranch_snds_cor1a|relaybranch_snds_ccor1_s1|relaybranch_snds_ccor1_entryway|relaybranch_snds_entry_p2/"
+			"targetname" "/^(relaybranch_snds_b_cor1_misc|relaybranch_snds_cor1a|relaybranch_snds_ccor1_s1|relaybranch_snds_ccor1_entryway|relaybranch_snds_entry_p2)$/"
 			"outputs"
 			{
 				"remove"
@@ -347,7 +347,7 @@
 				}
 				"delete" // plank barricade
 				{
-					"hammerid" "/3926516|3925459|3925455|3925451|3925447|3925515/"
+					"hammerid" "/^(3926516|3925459|3925455|3925451|3925447|3925515)$/"
 					"classname" "prop_physics"
 				}
 			}
@@ -375,7 +375,7 @@
 				}
 				"delete" // plank barricade
 				{
-					"hammerid" "/3925479|3925463|3925475|3925471|3925467|3926512/"
+					"hammerid" "/^(3925479|3925463|3925475|3925471|3925467|3926512)$/"
 					"classname" "prop_physics"
 				}
 			}

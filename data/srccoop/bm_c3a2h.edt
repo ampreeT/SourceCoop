@@ -8,9 +8,10 @@
 	}
 	"entity"
 	{
+		// spawn items
 		"modify"
 		{
-			"targetname" "/ammo|suit|weapons/"
+			"targetname" "/^(ammo|suit|weapons)$/"
 			"flags"
 			{
 				"spawnflags"
@@ -24,18 +25,13 @@
 				"origin"	"0 -1680 -1010" // ensure all items are inside player
 			}
 		}
-		// make npcs invulnerable
-		"create"
-		{
-			"targetname" "friendly_npc_damage_filter"
-			"classname" "filter_damage_class"
-		}
+		// this portal should never close
 		"modify"
 		{
-			"GameEndAlly" "1"
-			"add"
+			"targetname" "airlock_door_portal_out"
+			"remove"
 			{
-				"damagefilter" "friendly_npc_damage_filter"
+				"targetname" ""
 			}
 		}
 	}

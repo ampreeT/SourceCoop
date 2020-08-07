@@ -6,6 +6,7 @@
 	"equipment"
 	{
 		"health" "95"
+		"item"	"weapon_crowbar"
 	}
 	"entity"
 	{
@@ -31,15 +32,6 @@
 					"add" "8" // silent pickup
 				}
 			}
-		}
-		// crowbar spawn
-		"create"
-		{
-			"classname" "item_weapon_crowbar"
-			"angles" "0 270 0"
-			"origin" "220 1392 456"
-			"respawntime" "1"
-			"spawnflags" "2"
 		}
 		// door close trigger
 		"delete"
@@ -73,7 +65,7 @@
 	{
 		"spawn"
 		{
-			"origin"	"-1330 1806 332"
+			"origin"	"-1330 1806 296"
 			"angles"	"0 270 0"
 		}
 		"hall"

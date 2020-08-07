@@ -29,5 +29,12 @@
 			"origin"	"128 128 -1909"
 			"angles"	"0 225 0"
 		}
+		"outlook"
+		{
+			"origin"	"144 -536 -1916"
+			"angles"	"0 285 0"
+			"triggerid"	"trigger_cc_radiation01"
+			"output"	"OnStartTouch"
+		}
 	}
 }
