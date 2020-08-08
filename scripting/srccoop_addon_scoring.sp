@@ -61,6 +61,7 @@ public void PopulateEntityNameMap() {
 		SetTrieString(hTrie, "npc_human_scientist_female", "a Friendly Scientist");
 		SetTrieString(hTrie, "npc_human_security", "a Friendly Security Guard");
 		SetTrieString(hTrie, "npc_barnacle", "Barnacle");
+		SetTrieString(hTrie, "npc_vortigaunt", "Vortigaunt");
 		SetTrieString(hTrie, "npc_alien_slave", "Vortigaunt");
 		SetTrieString(hTrie, "npc_alien_grunt", "Alien Grunt");
 		SetTrieString(hTrie, "npc_alien_grunt_melee", "Alien Grunt");
@@ -81,6 +82,7 @@ public void PopulateEntityNameMap() {
 		SetTrieString(hTrie, "npc_zombie_hev", "HEV Zombie");
 		SetTrieString(hTrie, "npc_bullsquid", "Bullsquid");
 		SetTrieString(hTrie, "npc_sentry_ground", "Ground Turret");
+		SetTrieString(hTrie, "npc_sentry_ceiling", "Ceiling Turret");
 		SetTrieString(hTrie, "npc_sniper", "Sniper");
 		SetTrieString(hTrie, "npc_apache", "Apache");
 		SetTrieString(hTrie, "npc_ichthyosaur", "a Dumb Fish");
@@ -93,6 +95,7 @@ public void PopulateEntityNameMap() {
 		SetTrieString(hTrie, "npc_xort", "Friendly Vortigaunt");
 		SetTrieString(hTrie, "npc_alien_controller", "Alien Controller");
 		SetTrieString(hTrie, "npc_xontroller", "Alien Controller");
+		
 
 		// misc
 		SetTrieString(hTrie, "prop_physics", "a physics prop");
