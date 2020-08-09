@@ -6,6 +6,11 @@
 	"equipment"
 	{
 	}
+	"define"
+	{
+		// do our viewcontrol fixup manually since map has player triggered views
+		"viewcontrol_allplayers" "0"
+	}
 	"entity"
 	{
 	}

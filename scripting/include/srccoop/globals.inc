@@ -44,7 +44,9 @@ Handle hkIchthyosaurIdleSound;
 Handle hkUTIL_GetLocalPlayer;
 Handle hkResolveNames;
 Handle hkCanSelectSchedule;
-Handle hkSetupBones;
+Handle hkPickup_ForcePlayerToDropThisObject;
+Handle hkHandleAnimEvent;
+Handle hkRunAI;
 
 // ----------------------------
 // Adresses, Interfaces
@@ -58,8 +60,14 @@ IServerGameDLL g_ServerGameDLL;
 char g_szMapName[MAX_MAPNAME];
 char g_szPrevMapName[MAX_MAPNAME];
 bool g_bTempDontHookEnts;
-bool g_bIsMultiplayerOverride = true;
 bool g_bMapStarted;
 OperatingSystem g_serverOS;
 
 ArrayList g_pPostponedSpawns;
+StringMap g_EdtDefinesMap;
+
+// represents the return value of the IsMultiplayer hook
+bool g_bIsMultiplayerOverride = true; 
+
+// the entity which UTIL_GetLocalPlayer hook will return the closest player to
+CBaseEntity g_pLocalPlayerCallingEntity = view_as<CBaseEntity>(-1);

@@ -169,3 +169,41 @@ public MRESReturn Hook_PlayerShouldCollide(int _this, Handle hReturn, Handle hPa
 	}
 	return MRES_Ignored;
 }
+
+//------------------------------------------------------
+// Pickup_ForcePlayerToDropThisObject
+// reconstructed to avoid crash on UTIL_GetLocalPlayer nullptr
+//------------------------------------------------------
+public MRESReturn Hook_ForcePlayerToDropThisObject(Handle hParams)
+{
+	if (g_pCoopManager.IsBugPatchingEnabled())
+	{
+		if(!DHookIsNullParam(hParams, 1))
+		{
+			// singleplayer doesn't care what's passed in so we have to check for both player or item
+			CBaseEntity pParam = CBaseEntity(DHookGetParam(hParams, 1));
+			if(pParam.IsClassPlayer())
+			{
+				view_as<CBlackMesaPlayer>(pParam).ForceDropOfCarriedPhysObjects();
+			}
+			else
+			{
+				for(int i = 1; i <= MaxClients; i++)
+				{
+					if(IsClientInGame(i))
+					{
+						// is this player carrying the required item?
+						CBlackMesaPlayer pPlayer = CBlackMesaPlayer(i);
+						if(pPlayer.GetCarriedObject() == pParam)
+						{
+							pPlayer.ForceDropOfCarriedPhysObjects();
+							break;
+						}
+					}
+				}
+			}
+		}
+		return MRES_Supercede;
+	}
+	return MRES_Ignored;
+}

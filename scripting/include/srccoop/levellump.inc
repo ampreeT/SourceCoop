@@ -286,6 +286,7 @@ enum struct CGlobalLevelLump
 		this.m_pNextMapList = new CNextMapLump(CreateArray(MAX_MAPNAME));
 		this.m_pModifiedCvarList = new Array_t(CreateArray());
 		this.m_pOutputHookList = new COutputHookLump(CreateArray(sizeof(CEntityOutputHook)));
+		g_EdtDefinesMap = new StringMap();
 	}
 	void ParseMapEntities(const char szMapEntities[2097152])
 	{
@@ -376,6 +377,7 @@ enum struct CGlobalLevelLump
 		this.m_pOutputHookList.Clear();
 		this.m_iIntroType = INTRO_NONE;
 		this.m_bInstanceItems = false;
+		g_EdtDefinesMap.Clear();
 	}
 	void ParseConfigFile(KeyValues kv)
 	{
@@ -418,6 +420,10 @@ enum struct CGlobalLevelLump
 					}
 					else
 					{
+						if (strcmp(szType, "define", false) == 0)
+						{
+							this.ParseDefines(kv);
+						}
 						if (strcmp(szType, "console", false) == 0  || StrContains(szType, "console_base") == 0)
 						{
 							this.ParseConsole(kv);
@@ -427,6 +433,37 @@ enum struct CGlobalLevelLump
 							LogDebug("Processing \"%s\" block for entity lump modifications", szType);
 							this.ParseEntityEdits(kv);
 						}
+					}
+				}
+			}
+			while (kv.GotoNextKey(false));
+			kv.GoBack();
+		}
+	}
+	
+	void ParseDefines(KeyValues kv)
+	{
+		if (kv.GotoFirstSubKey(false))
+		{
+			do
+			{
+				char szKey[MAX_FORMAT];
+				if (kv.GetSectionName(szKey, sizeof(szKey)))
+				{
+					if(StrEqual(szKey, "#if", false))
+					{
+						if(ParseConditions(kv) && kv.JumpToKey("#then"))
+						{
+							this.ParseDefines(kv);
+							kv.GoBack();
+						}
+						continue;
+					}
+					if(kv.GetDataType(NULL_STRING) != KvData_None)
+					{
+						char szValue[MAX_FORMAT];
+						kv.GetString(NULL_STRING, szValue, sizeof(szValue));
+						g_EdtDefinesMap.SetString(szKey, szValue, true);
 					}
 				}
 			}
@@ -1044,6 +1081,14 @@ bool ParseConditions(KeyValues kv, bool anyPass = false)
 						bResult = (
 							StrEqual(szValue, "linux", false) && g_serverOS == OS_Linux
 							|| StrEqual(szValue, "windows", false) && g_serverOS == OS_Windows
+						);
+					}
+					else
+					{
+						char szDefineValue[MAX_VALUE];
+						bResult = (
+							g_EdtDefinesMap.GetString(szCondition, szDefineValue, sizeof(szDefineValue))
+							&& StrEqual(szValue, szDefineValue, false)
 						);
 					}
 				}

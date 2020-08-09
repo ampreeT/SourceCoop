@@ -25,12 +25,14 @@ Both linux and windows dedicated servers are supported.
 
 # ToDo
 ### must-fix
-- target picker on bm_c2a5i
+- target picker on bm_c2a5i (env_mortar_controller's vgui launch button doesn't work)
 - first-person camera death code needs to set original viewentity on callback OnMapEnd()
-- custom difficulty based on player count
-- npcs need to push player away, otherwise they walk into player, make him stuck/stop rendering
-- npc_xenturret AI causes crash on map load (it seems to be fine after loading)
+- custom difficuly based on player count
+- npcs need to pusht player away, otherwise they walk into player, make him stuck/stop rendering
+	- investigate https://github.com/ValveSoftware/source-sdk-2013/blob/0d8dceea4310fde5706b3ce1c70609d72a38efdf/mp/src/game/server/ai_basenpc.cpp#L3822
 - random linux server crashes related to npcs (pAnim, CalcAnimation, etc)
+	- debug SelectSchedule...
+- point_viewcontrol needs to respect the "Interruptable by player" spawnflag for all clients
 
 ### non-critical
 - sniper HasCondition(...) offset should go in gamedata
@@ -62,11 +64,14 @@ Both linux and windows dedicated servers are supported.
 - trip mines lose the bright blue beam color when mp_teamplay=1
 - (BM MP issue) other players' flashlight stays in place when they get out of range. One possible resolution would be to change transmit options or hook settransmit if it is an entity.
 - make point_hurt with target of !player affect all players
+- npc_xenturret - fix beam end position
 
 ### feature
 - add a hardcore mode where map resets when everyone dies, disable respawning, put dead players on spectate
 - xen portal checkpoint effect
-- allow configuring more features from edt configs
+- allow configuring more features
+	- create bitflags of enabled features, accessible with cvar, togglable with commands
+- show changelevel bounds with tempents
 
 ### map-issues
 - bm_c1a3c

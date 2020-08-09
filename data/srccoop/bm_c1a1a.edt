@@ -11,15 +11,6 @@
 	}
 	"entity"
 	{
-		// make all npcs invulnerable
-		"modify"
-		{
-			"classname" "/^npc_/"
-			"add"
-			{
-				"damagefilter" "__srccoop_damage_filter"
-			}
-		}
 		// delay map start
 		"modify"
 		{

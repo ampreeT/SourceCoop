@@ -11,6 +11,12 @@
 		"bm_multiplayer_fall_protection" "1"
 		"sv_mp_spawneffect_item" "0"
 	}
+	"define"
+	{
+		"viewcontrol_allplayers" "1"
+		"clientcommand_allplayers" "1"
+		"speedmod_allplayers" "1"
+	}
 	"entity_base_sp_conversion"
 	{
 		// remove globalnames - prevents unspawned entities
@@ -61,39 +67,78 @@
 						"parameter" "!pvsplayer"
 					}
 				}
-				// player_speedmod normally accepts the activator. In maps made for SP, we want all players to be affected. New input ModifySpeedAll has been added for that purpose.
+			}
+		}
+		// point_viewcontrol normally accepts the activator. In maps made for SP, we want all players to be affected. New input EnableAll has been added for that purpose.
+		"#if"
+		{
+			"viewcontrol_allplayers" "1"
+			"#then"
+			{
 				"modify"
 				{
-					"input" "ModifySpeed"
-					"replace"
+					"outputs"
 					{
-						"input" "ModifySpeedAll"
+						"modify"
+						{
+							"input" "Enable"
+							"target"
+							{
+								"classname" "point_viewcontrol"
+							}
+							"replace"
+							{
+								"input" "EnableAll"
+							}
+						}
 					}
 				}
-				// point_viewcontrol normally accepts the activator. In maps made for SP, we want all players to be affected. New input EnableAll has been added for that purpose.
+			}
+		}
+		// player_speedmod normally accepts the activator. In maps made for SP, we want all players to be affected. New input ModifySpeedAll has been added for that purpose.
+		"#if"
+		{
+			"speedmod_allplayers" "1"
+			"#then"
+			{
 				"modify"
 				{
-					"input" "Enable"
-					"target"
+					"outputs"
 					{
-						"classname" "point_viewcontrol"
-					}
-					"replace"
-					{
-						"input" "EnableAll"
+						"modify"
+						{
+							"input" "ModifySpeed"
+							"replace"
+							{
+								"input" "ModifySpeedAll"
+							}
+						}
 					}
 				}
-				// point_clientcommand normally accepts the activator. In maps made for SP, we want all players to be affected. New input CommandAll has been added for that purpose.
+			}
+		}
+		// point_clientcommand normally accepts the activator. In maps made for SP, we want all players to be affected. New input CommandAll has been added for that purpose.
+		"#if"
+		{
+			"clientcommand_allplayers" "1"
+			"#then"
+			{
 				"modify"
 				{
-					"input" "Command"
-					"target"
+					"outputs"
 					{
-						"classname" "point_clientcommand"
-					}
-					"replace"
-					{
-						"input" "CommandAll"
+						"modify"
+						{
+							"input" "Command"
+							"target"
+							{
+								"classname" "point_clientcommand"
+							}
+							"replace"
+							{
+								"input" "CommandAll"
+							}
+						}
 					}
 				}
 			}

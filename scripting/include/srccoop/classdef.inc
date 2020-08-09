@@ -83,15 +83,15 @@ methodmap CBaseEntity
 	}
 	public bool IsValid()
 	{
+		if(view_as<int>(this) == -1)
+		{
+			return false;
+		}
 		return IsValidEntity(this.GetEntIndex());
 	}
 	public bool HasEdict()
 	{
 		return IsValidEdict(this.GetEntIndex());
-	}
-	public bool IsValidIndex()
-	{
-		return this.GetEntIndex() != -1;
 	}
 	public Address GetAddress()
 	{
@@ -852,6 +852,23 @@ methodmap CBlackMesaPlayer < CBaseCombatCharacter
 	public int GetTeam()
 	{
 		return GetClientTeam(this.GetEntIndex());
+	}
+	public CBaseEntity GetUseEntity()
+	{
+		return CBaseEntity(GetEntPropEnt(this.GetEntIndex(), Prop_Data, "m_hUseEntity"));
+	}
+	public CBaseEntity GetCarriedObject()
+	{
+		CBaseEntity pUseEntity = this.GetUseEntity();
+		if(pUseEntity.IsValid() && pUseEntity.IsClassname("player_pickup"))
+		{
+			return CBaseEntity(GetEntPropEnt(pUseEntity.GetEntIndex(), Prop_Data, "m_attachedEntity"));
+		}
+		return CBaseEntity();
+	}
+	public void ForceDropOfCarriedPhysObjects()
+	{
+		this.AcceptInputStr("ForceDropPhysObjects");
 	}
 	public void PlayGameSound(char[] szSound)
 	{

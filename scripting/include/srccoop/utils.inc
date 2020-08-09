@@ -161,7 +161,7 @@ stock CBaseEntity CreateByClassname(const char[] szClassname)
 	return CBaseEntity(CreateEntityByName(szClassname));
 }
 
-stock CBlackMesaPlayer GetNearestPlayer(CBaseEntity pOriginEntity)
+stock CBlackMesaPlayer GetNearestPlayer(CBaseEntity pOriginEntity, bool bOnlyAlive = true)
 {
 	float vecEntityPosition[3];
 	pOriginEntity.GetAbsOrigin(vecEntityPosition);
@@ -171,12 +171,12 @@ stock CBlackMesaPlayer GetNearestPlayer(CBaseEntity pOriginEntity)
 	for (int i = 1; i < (MaxClients + 1); i++)
 	{
 		CBlackMesaPlayer pPlayer = CBlackMesaPlayer(i);
-		if (pPlayer.IsValid() && pPlayer.IsAlive())
+		if (pPlayer.IsValid() && (!bOnlyAlive || pPlayer.IsAlive()))
 		{
 			float vecPlayerPosition[3];
 			pPlayer.GetAbsOrigin(vecPlayerPosition);
 
-			float flDistance = GetVectorDistance(vecEntityPosition, vecPlayerPosition, false);
+			float flDistance = GetVectorDistance(vecEntityPosition, vecPlayerPosition, true);
 			if (flDistance < flBestDistance)
 			{
 				pBestPlayer = pPlayer;

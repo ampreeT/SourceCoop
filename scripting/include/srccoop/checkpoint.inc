@@ -239,7 +239,7 @@ enum struct CCoopSpawn
 	void CreatePortal(const float vecPosition[3])
 	{
 		CBaseEntity pParticle = CBaseEntity(CreateEntityByName("info_particle_system"));
-		if (pParticle.IsValidIndex())
+		if (pParticle.IsValid())
 		{
 			pParticle.SetKeyValueStr("effect_name", "teleport_lambda_entrance");
 			pParticle.SetKeyValueStr("start_active", "1");

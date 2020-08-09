@@ -8,19 +8,31 @@
 //------------------------------------------------------
 public MRESReturn Hook_UTIL_GetLocalPlayer(Handle hReturn)
 {
-	if (g_pCoopManager.IsBugPatchingEnabled())
+	if (g_pLocalPlayerCallingEntity.IsValid())
 	{
-		LogDebug("WARN: UTIL_GetLocalPlayer");
-		for(int i = 1; i <= MaxClients; i++)
+		CBlackMesaPlayer pPlayer = GetNearestPlayer(g_pLocalPlayerCallingEntity, false);
+		if(pPlayer.IsValid())
 		{
-			if(IsClientInGame(i))
-			{
-				DHookSetReturn(hReturn, i);
-				return MRES_Supercede;
-			}
+			LogDebug("Overriding UTIL_GetLocalPlayer");
+			DHookSetReturn(hReturn, pPlayer.GetEntIndex());
+			return MRES_Supercede;
 		}
 	}
 	return MRES_Ignored;
+}
+
+void SetLocalPlayerCallingEntity(int iEntIndex)
+{
+	if(g_pLocalPlayerCallingEntity.IsValid())
+	{
+		LogDebug("WARN: SetLocalPlayerCallingEntity, but one has already been set");
+	}
+	g_pLocalPlayerCallingEntity = CBaseEntity(iEntIndex);
+}
+
+void ClearLocalPlayerCallingEntity()
+{
+	g_pLocalPlayerCallingEntity = CBaseEntity();
 }
 
 //------------------------------------------------------
@@ -130,7 +142,7 @@ public MRESReturn Hook_IchthyosaurIdleSound(int _this)
 // crashed is called by a call to AI_GetSinglePlayer that doesn't check for nullptr
 // this function is remade from scratch
 //------------------------------------------------------
-public MRESReturn Hook_ProtoSniperSelectSchedule(int _this, Handle hReturn, Handle hParams)	// https://github.com/ValveSoftware/source-sdk-2013/blob/0d8dceea4310fde5706b3ce1c70609d72a38efdf/mp/src/game/server/hl2/proto_sniper.cpp#L1385
+public MRESReturn Hook_ProtoSniperSelectSchedule(int _this, Handle hReturn)	// https://github.com/ValveSoftware/source-sdk-2013/blob/0d8dceea4310fde5706b3ce1c70609d72a38efdf/mp/src/game/server/hl2/proto_sniper.cpp#L1385
 {
 	CProtoSniper pSniper = CProtoSniper(_this);
 	
@@ -228,6 +240,43 @@ public Action BlackMesaFireBulletsTEHook(const char[] szTEName, const int[] iCli
 	}
 	return Plugin_Continue;
 }
+
+//------------------------------------------------------
+// CNPC_XenTurret - npc_xenturret
+// Crash fix - selecting schedules in empty server causes all sorts of issues due to calls to UTIL_GetLocalPlayer()
+//------------------------------------------------------
+public MRESReturn Hook_XenTurretSelectSchedule(int _this, Handle hReturn)
+{
+	if(!GetClientCount())
+	{
+		DHookSetReturn(hReturn, 88);
+		return MRES_Supercede;
+	}
+	return MRES_Ignored;
+}
+
+public MRESReturn Hook_XenTurretHandleAnimEvent(int _this, Handle hParams)
+{
+	SetLocalPlayerCallingEntity(_this);
+	return MRES_Ignored;
+}
+public MRESReturn Hook_XenTurretHandleAnimEventPost(int _this, Handle hParams)
+{
+	ClearLocalPlayerCallingEntity();
+	return MRES_Ignored;
+}
+
+public MRESReturn Hook_XenTurretRunAI(int _this)
+{
+	SetLocalPlayerCallingEntity(_this);
+	return MRES_Ignored;
+}
+public MRESReturn Hook_XenTurretRunAIPost(int _this)
+{
+	ClearLocalPlayerCallingEntity();
+	return MRES_Ignored;
+}
+
 
 //------------------------------------------------------
 // Scene entities
@@ -412,7 +461,7 @@ public MRESReturn Hook_PointViewcontrolAcceptInput(int _this, Handle hReturn, Ha
 				{
 					// prevent bugging out if already using cam
 					CBaseEntity pViewEntity = pActivator.GetViewEntity();
-					if(pViewEntity.IsValidIndex() && pViewEntity.IsClassname("point_viewcontrol") && pViewEntity != pThis)
+					if(pViewEntity.IsValid() && pViewEntity.IsClassname("point_viewcontrol") && pViewEntity != pThis)
 					{
 						SetEntPropEnt(pViewEntity.GetEntIndex(), Prop_Data, "m_hPlayer", pActivator.GetEntIndex());
 						bHookSkip = true;

@@ -52,6 +52,11 @@
 				"windows"	"\x55\x8B\xEC\x8B\x45\x08\x85\xC0\x78\x2A\x3B\x05\x2A\x2A\x2A\x2A\x7D\x2A\x8D\x0C\x40\xA1\x2A\x2A\x2A\x2A\x8B\x44\x88\x04"
 				"linux" 	"@_Z21GlobalEntity_GetStatei"
 			}
+			"Pickup_ForcePlayerToDropThisObject" // void Pickup_ForcePlayerToDropThisObject(CBaseEntity *)
+			{
+				"windows"	"\x55\x8B\xEC\x56\x8B\x75\x08\x85\xF6\x74\x2A\x8B\x8E\xE4\x01\x00\x00"
+				"linux" 	"@_Z34Pickup_ForcePlayerToDropThisObjectP11CBaseEntity"
+			}
 			"CreateEngineInterface"
 			{
 				"library"		"engine"
@@ -163,15 +168,20 @@
 				"windows"	"468"
 				"linux"		"469"
 			}
-			"SetupBones"				// CBaseAnimating::SetupBones
-			{
-				"windows"	"218"
-				"linux"		"219"
-			}
 			"CAI_BaseNPC::UpdateEnemyMemory"				// CAI_BaseNPC::UpdateEnemyMemory(CBaseEntity*, Vector const&, CBaseEntity*)
 			{
 				"windows"	"529"
 				"linux"		"533"
+			}
+			"CBaseAnimating::HandleAnimEvent"				// CBaseAnimating::HandleAnimEvent(animevent_t*)
+			{
+				"windows"	"221"
+				"linux"		"222"
+			}
+			"CAI_BaseNPC::RunAI"				// CAI_BaseNPC::RunAI()
+			{
+				"windows"	"358"
+				"linux"		"359"
 			}
 		}
 		"Functions"
@@ -405,25 +415,27 @@
 				"return"	"void"
 				"this"		"entity"
 			}
-			"SetupBones"
+			"CBaseAnimating::HandleAnimEvent"
 			{
-				"offset"	"SetupBones"
+				"offset"	"CBaseAnimating::HandleAnimEvent"
 				"hooktype"	"entity"
 				"return"	"void"
 				"this"		"entity"
 				"arguments"
 				{
-					"pBoneToWorld"
+					"pEvent"
 					{
 						"type"	"objectptr"
 					}
-					"boneMask"
-					{
-						"type"	"int"
-					}
 				}
 			}
-			
+			"CAI_BaseNPC::RunAI"
+			{
+				"offset"	"CAI_BaseNPC::RunAI"
+				"hooktype"	"entity"
+				"return"	"void"
+				"this"		"entity"
+			}
 			//Detours
 			"CBasePlayer::SetSuitUpdate"
 			{
@@ -450,9 +462,8 @@
 			"UTIL_GetLocalPlayer"
 			{
 				"signature"	"UTIL_GetLocalPlayer"
-				"callconv"	"thiscall"
+				"callconv"	"cdecl"
 				"return"	"cbaseentity"
-				"this"		"ignore"
 			}
 			"CAI_GoalEntity::ResolveNames"
 			{
@@ -467,6 +478,19 @@
 				"callconv"	"thiscall"
 				"return"	"bool"
 				"this"		"ignore"
+			}
+			"Pickup_ForcePlayerToDropThisObject"
+			{
+				"signature"	"Pickup_ForcePlayerToDropThisObject"
+				"callconv"	"cdecl"
+				"return"	"void"
+				"arguments"
+				{
+					"pTarget"
+					{
+						"type"	"cbaseentity"
+					}
+				}
 			}
 		}
 	}

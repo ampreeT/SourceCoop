@@ -136,11 +136,13 @@ void LoadGameData()
 	LoadDHookVirtual(pGameConfig, hkChangeTeam, "CBlackMesaPlayer::ChangeTeam");
 	LoadDHookVirtual(pGameConfig, hkShouldCollide, "CBlackMesaPlayer::ShouldCollide");
 	LoadDHookVirtual(pGameConfig, hkIchthyosaurIdleSound, "CNPC_Ichthyosaur::IdleSound");
-	LoadDHookVirtual(pGameConfig, hkSetupBones, "SetupBones");
-	LoadDHookDetour(pGameConfig, hkSetSuitUpdate, "CBasePlayer::SetSuitUpdate", Hook_SetSuitUpdate, Hook_SetSuitUpdatePost);
+	LoadDHookVirtual(pGameConfig, hkHandleAnimEvent, "CBaseAnimating::HandleAnimEvent");
+	LoadDHookVirtual(pGameConfig, hkRunAI, "CAI_BaseNPC::RunAI");
 	LoadDHookDetour(pGameConfig, hkUTIL_GetLocalPlayer, "UTIL_GetLocalPlayer", Hook_UTIL_GetLocalPlayer);
+	LoadDHookDetour(pGameConfig, hkSetSuitUpdate, "CBasePlayer::SetSuitUpdate", Hook_SetSuitUpdate, Hook_SetSuitUpdatePost);
 	LoadDHookDetour(pGameConfig, hkResolveNames, "CAI_GoalEntity::ResolveNames", Hook_ResolveNames, Hook_ResolveNamesPost);
 	LoadDHookDetour(pGameConfig, hkCanSelectSchedule, "CAI_LeadBehavior::CanSelectSchedule", Hook_CanSelectSchedule);
+	LoadDHookDetour(pGameConfig, hkPickup_ForcePlayerToDropThisObject, "Pickup_ForcePlayerToDropThisObject", Hook_ForcePlayerToDropThisObject);
 	
 	CloseHandle(pGameConfig);
 }
@@ -232,13 +234,13 @@ public void OnConfigsExecutedPost()
 	if (g_pCoopManager.IsCoopModeEnabled())
 	{
 		CBaseEntity pGameEquip = CreateByClassname("game_player_equip");	// will spawn players with nothing if it exists
-		if (pGameEquip.IsValidIndex())
+		if (pGameEquip.IsValid())
 		{
 			pGameEquip.SetSpawnFlags(SF_PLAYER_EQUIP_STRIP_SUIT);
 			pGameEquip.Spawn();
 		}
 		CBaseEntity pGameGamerules = CreateByClassname("game_mp_gamerules");
-		if (pGameGamerules.IsValidIndex())
+		if (pGameGamerules.IsValid())
 		{
 			pGameGamerules.Spawn();
 			pGameGamerules.AcceptInputStr("DisableCanisterDrops");
@@ -296,17 +298,6 @@ public void OnPluginEnd()
 	
 }
 
-public MRESReturn Hook_SetupBones(int _this, Handle hParams)
-{
-	CBaseEntity pEntity = CBaseEntity(_this);
-	char name[32];
-	char class[32];
-	pEntity.GetTargetname(name, sizeof(name));
-	pEntity.GetClassname(class, sizeof(class));
-	LogDebug("SETUPBONES: %d %s %s", _this, name, class);
-	return MRES_Ignored;
-}
-
 public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 {
 	CBaseEntity pEntity = CBaseEntity(iEntIndex);
@@ -318,7 +309,6 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 		
 		if(pEntity.IsClassNPC())
 		{
-//			DHookEntity(hkSetupBones, false, iEntIndex, _, Hook_SetupBones);
 			DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_BaseNPCAcceptInput);
 		
 			if (strncmp(szClassname, "npc_human_scientist", 19) == 0)
@@ -332,8 +322,15 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 			}
 			else if (strcmp(szClassname, "npc_sniper", false) == 0)
 			{
-				DHookEntity(hkProtoSniperSelectSchedule, false, pEntity.GetEntIndex(), _, Hook_ProtoSniperSelectSchedule);
-				DHookEntity(hkProtoSniperSelectSchedule, true, pEntity.GetEntIndex(), _, Hook_ProtoSniperSelectSchedule);
+				DHookEntity(hkProtoSniperSelectSchedule, false, iEntIndex, _, Hook_ProtoSniperSelectSchedule);
+			}
+			else if (strcmp(szClassname, "npc_xenturret", false) == 0)
+			{
+				DHookEntity(hkProtoSniperSelectSchedule, false, iEntIndex, _, Hook_XenTurretSelectSchedule);
+				DHookEntity(hkHandleAnimEvent, false, iEntIndex, _, Hook_XenTurretHandleAnimEvent);
+				DHookEntity(hkHandleAnimEvent, true, iEntIndex, _, Hook_XenTurretHandleAnimEventPost);
+				DHookEntity(hkRunAI, false, iEntIndex, _, Hook_XenTurretRunAI);
+				DHookEntity(hkRunAI, true, iEntIndex, _, Hook_XenTurretRunAIPost);
 			}
 			else if (strcmp(szClassname, "npc_ichthyosaur") == 0)
 			{
