@@ -25,7 +25,7 @@ public Plugin myinfo =
 public void OnPluginStart()
 {
 	PopulateEntityNameMap();
-	HookEvent("entity_killed", Event_EntKilled);
+	HookEvent("entity_killed", Event_EntKilled, EventHookMode_Pre);
 }
 
 // name fix copied from Alienmario's HL2MP deathnotices
@@ -95,6 +95,8 @@ public void PopulateEntityNameMap() {
 		SetTrieString(hTrie, "npc_xort", "Friendly Vortigaunt");
 		SetTrieString(hTrie, "npc_alien_controller", "Alien Controller");
 		SetTrieString(hTrie, "npc_xontroller", "Alien Controller");
+		SetTrieString(hTrie, "npc_gargantua", "Gargantua");
+
 		
 
 		// misc
@@ -102,7 +104,7 @@ public void PopulateEntityNameMap() {
 	}
 }
 
-public void Event_EntKilled(Event event, const char[] name, bool dontBroadcast)
+public Action Event_EntKilled(Event event, const char[] name, bool dontBroadcast)
 {
 	CBaseEntity pKilled = CBaseEntity(event.GetInt("entindex_killed"));
 	CBaseEntity pAttacker = CBaseEntity(event.GetInt("entindex_attacker"));
@@ -122,6 +124,7 @@ public void Event_EntKilled(Event event, const char[] name, bool dontBroadcast)
 		CBlackMesaPlayer pClient = view_as<CBlackMesaPlayer>(pAttacker.GetEntIndex());
 		if (pKilled.IsClassNPC())
 		{
+			CAI_BaseNPC pNPC = CAI_BaseNPC(pKilled.GetEntIndex());
 			// A player killed an NPC
 			pClient.GetName(szAttackerName, sizeof(szAttackerName));
 
@@ -137,8 +140,50 @@ public void Event_EntKilled(Event event, const char[] name, bool dontBroadcast)
 			else
 			{	
 				EntityNameFix(szKilledName);
-				PrintToChatAll("%s%s%s killed %s%s%s with %s%s", COLOR_KILL_SCORE_ENT, szAttackerName, COLOR_WHITE, COLOR_KILL_SCORE_ENT, szKilledName, COLOR_WHITE, COLOR_KILL_SCORE_ENT, szInflictorClass);
-				pClient.ModifyScore(1);
+				char szMessage[254];
+
+				// Check to see if the npc that was killed was targetting another player
+				char szSavedName[32];
+				char szSavedNameColor[] = COLOR_KILL_SCORE_ENT;
+				StrCat(szMessage, sizeof(szMessage), "%s%s%s killed %s%s%s with %s%s");
+
+				// Did the NPC that was killed have an enemy targeted?
+				CBaseEntity pKilledEnemy = pNPC.GetEnemy();
+
+				int iPointsToAward = 1;
+				if(pKilledEnemy.IsValid())
+				{
+					// Was it a player different from the killer?
+					if (pKilledEnemy.IsClassPlayer() && pKilledEnemy.GetEntIndex() != pClient.GetEntIndex())
+					{
+						CBlackMesaPlayer pTargetClient = CBlackMesaPlayer(pKilledEnemy.GetEntIndex()); 
+						iPointsToAward += 1;
+						pTargetClient.GetName(szSavedName, sizeof(szSavedName));
+						StrCat(szMessage, sizeof(szMessage), "%s saving %s%s");
+					}
+					// Or an NPC
+					else if (pKilledEnemy.IsClassNPC())
+					{
+						// Was the NPC friendly?
+						pKilledEnemy.GetClassname(szSavedName, sizeof(szSavedName));
+						
+						if ((StrContains(szSavedName, "human_scientist", false) > -1) || 
+							(StrContains(szSavedName, "human_security", false) > -1))
+						{
+							iPointsToAward += 1;
+							szSavedNameColor = COLOR_MURDER_VICTIM;
+						}
+						else
+							szSavedNameColor = COLOR_CRIMSON;
+
+						EntityNameFix(szSavedName);
+						StrCat(szMessage, sizeof(szMessage), "%s saving %s%s");
+					}
+				}
+
+
+				PrintToChatAll(szMessage, COLOR_KILL_SCORE_ENT, szAttackerName, COLOR_WHITE, COLOR_KILL_SCORE_ENT, szKilledName, COLOR_WHITE, COLOR_KILL_SCORE_ENT, szInflictorClass, COLOR_MURDER, szSavedNameColor, szSavedName);
+				pClient.ModifyScore(iPointsToAward);
 			}
 		}
 	}
@@ -150,15 +195,17 @@ public void Event_EntKilled(Event event, const char[] name, bool dontBroadcast)
 			CBlackMesaPlayer pClient = view_as<CBlackMesaPlayer>(pKilled.GetEntIndex());
 			pClient.GetName(szKilledName, sizeof(szKilledName));
 			EntityNameFix(szAttackerName);
+
+			char szMessage[254];
+			StrCat(szMessage, sizeof(szMessage), "%s%s%s was killed by %s%s");
+
 			if (strcmp(szAttackerName, szInflictorClass, false) != 0)
-			{
-				PrintToChatAll("%s%s%s was killed by %s%s%s with %s%s", COLOR_CRIMSON, szKilledName, COLOR_WHITE, COLOR_CRIMSON, szAttackerName, COLOR_WHITE, COLOR_CRIMSON, szInflictorClass);
-			}
-			// If an NPC doesn't use a weapon, don't print the weapon name
-			else
-			{
-				PrintToChatAll("%s%s%s was killed by %s%s", COLOR_CRIMSON, szKilledName, COLOR_WHITE, COLOR_CRIMSON, szAttackerName);
-			}
+				StrCat(szMessage, sizeof(szMessage), "%s with %s%s");
+			
+			
+			PrintToChatAll(szMessage, COLOR_CRIMSON, szKilledName, COLOR_WHITE, COLOR_CRIMSON, szAttackerName, COLOR_WHITE, COLOR_CRIMSON, szInflictorClass);
 		}
 	}
+
+	return Plugin_Continue;
 }

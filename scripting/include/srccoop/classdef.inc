@@ -953,6 +953,12 @@ methodmap CBlackMesaPlayer < CBaseCombatCharacter
 	public void SetScore(int iScore)
 	{
 		SetEntProp(this.GetEntIndex(), Prop_Data, "m_iFrags", iScore);
+
+		// Force server to actually recognize the score update
+		CBaseEntity pTempGameScore = CBaseEntity(CreateEntityByName("game_score"));
+		pTempGameScore.Spawn();
+		pTempGameScore.AcceptInputStr("ApplyScore", "", this);
+		pTempGameScore.Kill();
 	}
 	/**
 	 * Modifies the player's score by the provided points
