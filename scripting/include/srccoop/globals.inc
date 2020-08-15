@@ -47,6 +47,7 @@ Handle hkCanSelectSchedule;
 Handle hkPickup_ForcePlayerToDropThisObject;
 Handle hkHandleAnimEvent;
 Handle hkRunAI;
+Handle hkSetPlayerAvoidState;
 
 // ----------------------------
 // Adresses, Interfaces
@@ -64,7 +65,6 @@ bool g_bMapStarted;
 OperatingSystem g_serverOS;
 
 ArrayList g_pPostponedSpawns;
-StringMap g_EdtDefinesMap;
 
 // represents the return value of the IsMultiplayer hook
 bool g_bIsMultiplayerOverride = true; 

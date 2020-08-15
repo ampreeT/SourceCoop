@@ -279,6 +279,7 @@ enum struct CGlobalLevelLump
 	COutputHookLump m_pOutputHookList;
 	IntroType m_iIntroType;
 	bool m_bInstanceItems;
+	StringMap m_EdtDefinesMap;
 	
 	void Initialize()
 	{
@@ -286,7 +287,7 @@ enum struct CGlobalLevelLump
 		this.m_pNextMapList = new CNextMapLump(CreateArray(MAX_MAPNAME));
 		this.m_pModifiedCvarList = new Array_t(CreateArray());
 		this.m_pOutputHookList = new COutputHookLump(CreateArray(sizeof(CEntityOutputHook)));
-		g_EdtDefinesMap = new StringMap();
+		this.m_EdtDefinesMap = new StringMap();
 	}
 	void ParseMapEntities(const char szMapEntities[2097152])
 	{
@@ -377,7 +378,7 @@ enum struct CGlobalLevelLump
 		this.m_pOutputHookList.Clear();
 		this.m_iIntroType = INTRO_NONE;
 		this.m_bInstanceItems = false;
-		g_EdtDefinesMap.Clear();
+		this.m_EdtDefinesMap.Clear();
 	}
 	void ParseConfigFile(KeyValues kv)
 	{
@@ -424,7 +425,7 @@ enum struct CGlobalLevelLump
 						{
 							this.ParseDefines(kv);
 						}
-						if (strcmp(szType, "console", false) == 0  || StrContains(szType, "console_base") == 0)
+						else if (strcmp(szType, "console", false) == 0  || StrContains(szType, "console_base") == 0)
 						{
 							this.ParseConsole(kv);
 						}
@@ -463,7 +464,7 @@ enum struct CGlobalLevelLump
 					{
 						char szValue[MAX_FORMAT];
 						kv.GetString(NULL_STRING, szValue, sizeof(szValue));
-						g_EdtDefinesMap.SetString(szKey, szValue, true);
+						this.m_EdtDefinesMap.SetString(szKey, szValue, true);
 					}
 				}
 			}
@@ -1033,6 +1034,7 @@ enum struct CGlobalLevelLump
 
 CGlobalLevelLump g_pLevelLump;
 
+
 // Is outside the enum struct, because it's also used by checkpoint.inc
 bool ParseConditions(KeyValues kv, bool anyPass = false)
 {
@@ -1087,7 +1089,7 @@ bool ParseConditions(KeyValues kv, bool anyPass = false)
 					{
 						char szDefineValue[MAX_VALUE];
 						bResult = (
-							g_EdtDefinesMap.GetString(szCondition, szDefineValue, sizeof(szDefineValue))
+							g_pLevelLump.m_EdtDefinesMap.GetString(szCondition, szDefineValue, sizeof(szDefineValue))
 							&& StrEqual(szValue, szDefineValue, false)
 						);
 					}

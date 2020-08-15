@@ -4,6 +4,42 @@
 #define _srccoop_playerpatch_included
 
 //------------------------------------------------------
+// Allow flashlight
+//------------------------------------------------------
+public MRESReturn Hook_FAllowFlashlight(Handle hReturn, Handle hParams)
+{
+	if (g_pCoopManager.IsFeaturePatchingEnabled())
+	{
+		DHookSetReturn(hReturn, true);
+		return MRES_Supercede;
+	}
+	return MRES_Ignored;
+}
+
+//------------------------------------------------------
+// Singleplayer (firstperson) death camera
+//------------------------------------------------------
+public void Hook_CameraDeathSpawn(int iEntIndex)
+{
+	if (g_pCoopManager.IsFeaturePatchingEnabled())
+	{
+		CBaseEntity pEntity = CBaseEntity(iEntIndex);
+		if (pEntity.IsValid())
+		{
+			CBlackMesaPlayer pOwner = view_as<CBlackMesaPlayer>(pEntity.GetOwner());
+			if (pOwner.IsValid() && pOwner.IsClassPlayer())
+			{
+				CBaseEntity pViewEntity = pOwner.GetViewEntity();
+				if (!pViewEntity.IsValid() || pViewEntity == pOwner)
+				{
+					pOwner.SetViewEntity(pEntity);
+				}
+			}
+		}
+	}
+}
+
+//------------------------------------------------------
 // The singleplayer override for PreThink handles our
 // prop pickup, sprinting, vm anims, suit queue updates, etc
 //
@@ -107,13 +143,32 @@ public void Hook_PlayerSpawnPost(int iClient)
 }
 
 //------------------------------------------------------
-// Disable FF
+// Player TraceAttack hook
 //------------------------------------------------------
 public Action Hook_PlayerTraceAttack(int victim, int &attacker, int &inflictor, float &damage, int &damagetype, int &ammotype, int hitbox, int hitgroup)
 {
 	if(g_pCoopManager.IsCoopModeEnabled())
 	{
+		// Disable FF
 		if(attacker != victim && CBlackMesaPlayer(attacker).IsClassPlayer())
+		{
+			return Plugin_Handled;
+		}
+	}
+	return Plugin_Continue;
+}
+
+//------------------------------------------------------
+// Player TakeDamage hook
+//------------------------------------------------------
+public Action Hook_PlayerTakeDamage(int victim, int &attacker, int &inflictor, float &damage, int &damagetype)
+{
+	if(g_pCoopManager.IsCoopModeEnabled())
+	{
+		CBaseEntity pInflictor = CBaseEntity(inflictor);
+		
+		// Disable telefragging (CTriggerTeleport::TelefragEntities)
+		if(pInflictor.IsValid() && pInflictor.IsClassname("trigger_teleport"))
 		{
 			return Plugin_Handled;
 		}

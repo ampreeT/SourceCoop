@@ -30,6 +30,8 @@
 #define TICKS_TO_TIME(%1)		( TICK_INTERVAL *(%1) )
 #define ROUND_TO_TICKS(%1)		( TICK_INTERVAL * TIME_TO_TICKS(%1) )
 
+#define vec3_origin {0.0, 0.0, 0.0}
+
 #define VEC_HULL_MIN {-16.0, -16.0, 0.0}
 #define VEC_HULL_MAX {16.0, 16.0, 72.0}
 #define VEC_VIEW {0.0, 0.0, 64.0}
@@ -37,6 +39,9 @@
 #define VEC_DUCK_HULL_MAX {16.0, 16.0, 36.0}
 #define VEC_DUCK_VIEW {0.0, 0.0, 28.0}
 
+//------------------------------------------------------
+// Spawnflags
+//------------------------------------------------------
 #define SF_SNIPERTARGET_NOINTERRUPT 2
 
 #define SF_INFOPLAYERSTART_MASTER 1
@@ -52,35 +57,6 @@
 #define SF_PLAYER_EQUIP_STRIP_SUIT 4
 
 #define SF_MESSAGE_ALL			0x0002
-
-#define EF_NODRAW 32
-
-#define FFADE_IN			0x0001		// Just here so we don't pass 0 into the function
-#define FFADE_OUT			0x0002		// Fade out (not in)
-#define FFADE_MODULATE		0x0004		// Modulate (don't blend)
-#define FFADE_STAYOUT		0x0008		// ignores the duration, stays faded out until new ScreenFade message received
-#define FFADE_PURGE			0x0010		// Purges all other fades, replacing them with this one
-
-// entity capabilities
-// These are caps bits to indicate what an object's capabilities (currently used for +USE, save/restore and level transitions)
-#define		FCAP_MUST_SPAWN				0x00000001		// Spawn after restore
-#define		FCAP_ACROSS_TRANSITION		0x00000002		// should transfer between transitions 
-// UNDONE: This will ignore transition volumes (trigger_transition), but not the PVS!!!
-#define		FCAP_FORCE_TRANSITION		0x00000004		// ALWAYS goes across transitions
-#define		FCAP_NOTIFY_ON_TRANSITION	0x00000008		// Entity will receive Inside/Outside transition inputs when a transition occurs
-
-#define		FCAP_IMPULSE_USE			0x00000010		// can be used by the player
-#define		FCAP_CONTINUOUS_USE			0x00000020		// can be used by the player
-#define		FCAP_ONOFF_USE				0x00000040		// can be used by the player
-#define		FCAP_DIRECTIONAL_USE		0x00000080		// Player sends +/- 1 when using (currently only tracktrains)
-// NOTE: Normally +USE only works in direct line of sight.  Add these caps for additional searches
-#define		FCAP_USE_ONGROUND			0x00000100
-#define		FCAP_USE_IN_RADIUS			0x00000200
-#define		FCAP_SAVE_NON_NETWORKABLE	0x00000400
-
-#define		FCAP_MASTER					0x10000000		// Can be used to "master" other entities (like multisource)
-#define		FCAP_WCEDIT_POSITION		0x40000000		// Can change position and update Hammer in edit mode
-#define		FCAP_DONT_SAVE				0x80000000		// Don't save this
 
 // Phys prop spawnflags
 #define SF_PHYSPROP_START_ASLEEP				0x000001
@@ -115,6 +91,51 @@
 #define SF_PHYSBOX_NEVER_PICK_UP			0x200000		// Physcannon will never be able to pick this up.
 #define SF_PHYSBOX_NEVER_PUNT				0x400000		// Physcannon will never be able to punt this object.
 #define SF_PHYSBOX_PREVENT_PLAYER_TOUCH_ENABLE 0x800000		// If set, the player will not cause the object to enable its motion when bumped into
+
+//------------------------------------------------------
+// Effects flags
+//------------------------------------------------------
+#define EF_NODRAW 32
+
+//------------------------------------------------------
+// Settings for m_takedamage
+//------------------------------------------------------
+#define DAMAGE_NO			0
+#define DAMAGE_EVENTS_ONLY	1		// Call damage functions, but don't modify health
+#define DAMAGE_YES			2
+#define DAMAGE_AIM			3
+
+//------------------------------------------------------
+// Screen Fade flags
+//------------------------------------------------------
+#define FFADE_IN			0x0001		// Just here so we don't pass 0 into the function
+#define FFADE_OUT			0x0002		// Fade out (not in)
+#define FFADE_MODULATE		0x0004		// Modulate (don't blend)
+#define FFADE_STAYOUT		0x0008		// ignores the duration, stays faded out until new ScreenFade message received
+#define FFADE_PURGE			0x0010		// Purges all other fades, replacing them with this one
+
+//------------------------------------------------------
+// These are caps bits to indicate what an object's capabilities (currently used for +USE, save/restore and level transitions)
+//------------------------------------------------------
+#define		FCAP_MUST_SPAWN				0x00000001		// Spawn after restore
+#define		FCAP_ACROSS_TRANSITION		0x00000002		// should transfer between transitions 
+// UNDONE: This will ignore transition volumes (trigger_transition), but not the PVS!!!
+#define		FCAP_FORCE_TRANSITION		0x00000004		// ALWAYS goes across transitions
+#define		FCAP_NOTIFY_ON_TRANSITION	0x00000008		// Entity will receive Inside/Outside transition inputs when a transition occurs
+
+#define		FCAP_IMPULSE_USE			0x00000010		// can be used by the player
+#define		FCAP_CONTINUOUS_USE			0x00000020		// can be used by the player
+#define		FCAP_ONOFF_USE				0x00000040		// can be used by the player
+#define		FCAP_DIRECTIONAL_USE		0x00000080		// Player sends +/- 1 when using (currently only tracktrains)
+// NOTE: Normally +USE only works in direct line of sight.  Add these caps for additional searches
+#define		FCAP_USE_ONGROUND			0x00000100
+#define		FCAP_USE_IN_RADIUS			0x00000200
+#define		FCAP_SAVE_NON_NETWORKABLE	0x00000400
+
+#define		FCAP_MASTER					0x10000000		// Can be used to "master" other entities (like multisource)
+#define		FCAP_WCEDIT_POSITION		0x40000000		// Can change position and update Hammer in edit mode
+#define		FCAP_DONT_SAVE				0x80000000		// Don't save this
+
 
 enum OperatingSystem
 {
@@ -307,6 +328,24 @@ enum //Sniper_Conds
 	COND_SNIPER_FRUSTRATED,
 	COND_SNIPER_SWEEP_TARGET,
 	COND_SNIPER_NO_SHOT,
+};
+
+// =======================================
+//  Movement goals 
+//	Used both to store the current movment goal in m_routeGoalType and to or/and with route
+// =======================================
+enum //GoalType_t 
+{
+	GOALTYPE_NONE,
+	GOALTYPE_TARGETENT,
+	GOALTYPE_ENEMY,
+	GOALTYPE_PATHCORNER,
+	GOALTYPE_LOCATION,
+	GOALTYPE_LOCATION_NEAREST_NODE,
+	GOALTYPE_FLANK,
+	GOALTYPE_COVER,
+	
+	GOALTYPE_INVALID
 };
 
 //=========================================================
@@ -530,7 +569,9 @@ enum fieldtype_t
 	FIELD_TYPECOUNT,		// MUST BE LAST
 };
 
+//------------------------------------------------------
 // BMS specific activity list
+//------------------------------------------------------
 enum
 {
 	ACT_INVALID = -1,			// So we have something more succint to check for than '-1'

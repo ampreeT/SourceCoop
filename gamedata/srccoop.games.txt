@@ -57,6 +57,11 @@
 				"windows"	"\x55\x8B\xEC\x56\x8B\x75\x08\x85\xF6\x74\x2A\x8B\x8E\xE4\x01\x00\x00"
 				"linux" 	"@_Z34Pickup_ForcePlayerToDropThisObjectP11CBaseEntity"
 			}
+			"CBaseAnimating::GetSequenceLinearMotion" // void CBaseAnimating::GetSequenceLinearMotion(int,Vector *)
+			{
+				"windows"	"\x55\x8B\xEC\x56\x8B\xF1\x80\xBE\x31\x03\x00\x00\x00\x75\x2A\x83\xBE\x74\x04\x00\x00\x00\x75\x2A\xE8\x2A\x2A\x2A\x2A\x85\xC0\x74\x2A\x8B\xCE\xE8\x2A\x2A\x2A\x2A\x8B\x8E\x74\x04\x00\x00\x85\xC9\x74\x2A\x83\x39\x00\x75\x2A\x33\xC9\xFF\x75\x0C"
+				"linux" 	"@_ZN14CBaseAnimating23GetSequenceLinearMotionEiP6Vector"
+			}
 			"CreateEngineInterface"
 			{
 				"library"		"engine"
@@ -182,6 +187,16 @@
 			{
 				"windows"	"358"
 				"linux"		"359"
+			}
+			"CAI_BaseNPC::SetPlayerAvoidState" // CAI_BaseNPC::SetPlayerAvoidState()
+			{
+				"windows"	"372"
+				"linux"		"373"
+			}
+			"CAI_BaseNPC::ShouldPlayerAvoid" // CAI_BaseNPC::ShouldPlayerAvoid()
+			{
+				"windows"	"371"
+				"linux"		"372"
 			}
 		}
 		"Functions"
@@ -436,7 +451,16 @@
 				"return"	"void"
 				"this"		"entity"
 			}
+			"CAI_BaseNPC::SetPlayerAvoidState"
+			{
+				"offset"	"CAI_BaseNPC::SetPlayerAvoidState"
+				"hooktype"	"entity"
+				"return"	"void"
+				"this"		"entity"
+			}
+			
 			//Detours
+			
 			"CBasePlayer::SetSuitUpdate"
 			{
 				"signature"	"CBasePlayer::SetSuitUpdate"

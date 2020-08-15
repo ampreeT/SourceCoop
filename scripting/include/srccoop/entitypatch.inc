@@ -96,6 +96,73 @@ public MRESReturn Hook_BaseNPCAcceptInput(int _this, Handle hReturn, Handle hPar
 }
 
 //------------------------------------------------------
+// CAI_BaseNPC
+// Recreation of SetPlayerAvoidState for MP compatibility
+// From https://github.com/ValveSoftware/source-sdk-2013/blob/0d8dceea4310fde5706b3ce1c70609d72a38efdf/mp/src/game/server/ai_basenpc.cpp#L3822
+//------------------------------------------------------
+public MRESReturn Hook_SetPlayerAvoidState(int _this)
+{
+	if (g_pCoopManager.IsBugPatchingEnabled())
+	{
+		LogDebug("Hook_SetPlayerAvoidState");
+		CAI_BaseNPC pThis = CAI_BaseNPC(_this);
+		
+		bool bShouldPlayerAvoid;
+		float vNothing[3];
+		
+		pThis.GetSequenceLinearMotion(pThis.GetSequence(), vNothing);
+		bool bIsMoving = (pThis.IsMoving() || !VecEqual(vNothing, vec3_origin));
+		
+		//If we are coming out of a script, check if we are stuck inside the player.
+		if (pThis.GetPerformAvoidance() || (pThis.ShouldPlayerAvoid() && bIsMoving))
+		{
+			float vMins[3], vMaxs[3], vOrigin[3], vPlrMins[3], vPlrMaxs[3], vPlrOrigin[3];
+			pThis.GetMins(vMins);
+			pThis.GetMaxs(vMaxs);
+			pThis.GetAbsOrigin(vOrigin);
+			AddVectors(vMins, vOrigin, vMins);
+			AddVectors(vMaxs, vOrigin, vMaxs);
+			
+			for(int i = 1; i <= MaxClients; i++)
+			{
+				if(IsClientInGame(i) && IsPlayerAlive(i))
+				{
+					CBlackMesaPlayer pPlayer = CBlackMesaPlayer(i);
+					pPlayer.GetMins(vPlrMins);
+					pPlayer.GetMaxs(vPlrMaxs);
+					pPlayer.GetAbsOrigin(vPlrOrigin);
+					AddVectors(vPlrMins, vPlrOrigin, vPlrMins);
+					AddVectors(vPlrMaxs, vPlrOrigin, vPlrMaxs);
+					
+					if(IsBoxIntersectingBox(vMins, vMaxs, vPlrMins, vPlrMaxs))
+					{
+						bShouldPlayerAvoid = true;
+						break;
+					}
+				}
+			}
+		}
+		
+		pThis.SetPlayerAvoidState(pThis.ShouldPlayerAvoid());
+		pThis.SetPerformAvoidance(bShouldPlayerAvoid);
+		
+		int iCollGroup = pThis.GetCollisionGroup();
+		if(iCollGroup == COLLISION_GROUP_NPC || iCollGroup == COLLISION_GROUP_NPC_ACTOR)
+		{
+			if(bShouldPlayerAvoid)
+			{
+				pThis.SetCollisionGroup(COLLISION_GROUP_NPC_ACTOR);
+			}
+			else
+			{
+				pThis.SetCollisionGroup(COLLISION_GROUP_NPC);
+			}
+		}
+	}
+	return MRES_Supercede;
+}
+
+//------------------------------------------------------
 // CAI_BaseNPC - npc_gargantua
 // fix the 'ChasePlayer' input by setting a target ent.
 //------------------------------------------------------
@@ -873,4 +940,23 @@ public MRESReturn Hook_CanSelectSchedule(Handle hReturn)
 	// ToDo: acutally check conditions as in original code
 	DHookSetReturn(hReturn, true);
 	return MRES_Supercede;
+}
+
+//------------------------------------------------------
+// item_weapon_snark
+// Once the snark nest has exploded, don't do it again. This used to cause chain reaction because we set zero item respawn time.
+//------------------------------------------------------
+public void Hook_OnItemSnarkDamagePost(int victim, int attacker, int inflictor, float damage, int damagetype)
+{
+	if (g_pCoopManager.IsCoopModeEnabled())
+	{
+		SDKHook(victim, SDKHook_OnTakeDamage, Hook_PreventItemSnarkDamage);
+		SDKUnhook(victim, SDKHook_OnTakeDamagePost, Hook_OnItemSnarkDamagePost);
+	}
+}
+
+public Action Hook_PreventItemSnarkDamage(int victim, int &attacker, int &inflictor, float &damage, int &damagetype, int &weapon,
+		float damageForce[3], float damagePosition[3], int damagecustom)
+{
+	return Plugin_Stop;
 }

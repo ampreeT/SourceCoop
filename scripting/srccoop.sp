@@ -121,7 +121,22 @@ void LoadGameData()
 	PrepSDKCall_AddParameter(SDKType_CBaseEntity, SDKPass_Pointer);
 	PrepSDKCall_SetReturnInfo(SDKType_Bool, SDKPass_Plain);
 	if (!(g_pUpdateEnemyMemory = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szUpdateEnemyMemory);
+	
+	char szShouldPlayerAvoid[] = "CAI_BaseNPC::ShouldPlayerAvoid";
+	StartPrepSDKCall(SDKCall_Entity);
+	if(!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Virtual, szShouldPlayerAvoid))
+		SetFailState("Could not obtain gamedata offset %s", szShouldPlayerAvoid);
+	PrepSDKCall_SetReturnInfo(SDKType_Bool, SDKPass_Plain);
+	if (!(g_pShouldPlayerAvoid = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szShouldPlayerAvoid);
 
+	char szGetSequenceLinearMotion[] = "CBaseAnimating::GetSequenceLinearMotion";
+	StartPrepSDKCall(SDKCall_Entity);
+	if(!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Signature, szGetSequenceLinearMotion))
+		SetFailState("Could not obtain gamedata signature %s", szGetSequenceLinearMotion);
+	PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
+	PrepSDKCall_AddParameter(SDKType_Vector, SDKPass_Pointer, _, VENCODE_FLAG_COPYBACK);
+	if (!(g_pGetSequenceLinearMotion = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szGetSequenceLinearMotion);
+	
 	LoadDHookVirtual(pGameConfig, hkFAllowFlashlight, "CMultiplayRules::FAllowFlashlight");
 	LoadDHookVirtual(pGameConfig, hkIsMultiplayer, "CMultiplayRules::IsMultiplayer");
 	LoadDHookVirtual(pGameConfig, hkIRelationType, "CBaseCombatCharacter::IRelationType");
@@ -138,6 +153,7 @@ void LoadGameData()
 	LoadDHookVirtual(pGameConfig, hkIchthyosaurIdleSound, "CNPC_Ichthyosaur::IdleSound");
 	LoadDHookVirtual(pGameConfig, hkHandleAnimEvent, "CBaseAnimating::HandleAnimEvent");
 	LoadDHookVirtual(pGameConfig, hkRunAI, "CAI_BaseNPC::RunAI");
+	LoadDHookVirtual(pGameConfig, hkSetPlayerAvoidState, "CAI_BaseNPC::SetPlayerAvoidState");
 	LoadDHookDetour(pGameConfig, hkUTIL_GetLocalPlayer, "UTIL_GetLocalPlayer", Hook_UTIL_GetLocalPlayer);
 	LoadDHookDetour(pGameConfig, hkSetSuitUpdate, "CBasePlayer::SetSuitUpdate", Hook_SetSuitUpdate, Hook_SetSuitUpdatePost);
 	LoadDHookDetour(pGameConfig, hkResolveNames, "CAI_GoalEntity::ResolveNames", Hook_ResolveNames, Hook_ResolveNamesPost);
@@ -259,6 +275,7 @@ public void OnClientPutInServer(int client)
 	SDKHook(client, SDKHook_PreThink, Hook_PlayerPreThink);
 	SDKHook(client, SDKHook_SpawnPost, Hook_PlayerSpawnPost);
 	SDKHook(client, SDKHook_TraceAttack, Hook_PlayerTraceAttack);
+	SDKHook(client, SDKHook_OnTakeDamage, Hook_PlayerTakeDamage);
 	DHookEntity(hkChangeTeam, false, client, _, Hook_PlayerChangeTeam);
 	DHookEntity(hkShouldCollide, false, client, _, Hook_PlayerShouldCollide);
 	
@@ -310,6 +327,7 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 		if(pEntity.IsClassNPC())
 		{
 			DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_BaseNPCAcceptInput);
+			DHookEntity(hkSetPlayerAvoidState, false, iEntIndex, _, Hook_SetPlayerAvoidState);
 		
 			if (strncmp(szClassname, "npc_human_scientist", 19) == 0)
 			{
@@ -356,6 +374,10 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 				{
 					SDKHook(iEntIndex, SDKHook_Spawn, Hook_ItemSpawnDelay);
 				}
+			}
+			if (strcmp(szClassname, "item_weapon_snark") == 0)
+			{
+				SDKHook(iEntIndex, SDKHook_OnTakeDamagePost, Hook_OnItemSnarkDamagePost);
 			}
 		}
 		else if (pEntity.IsClassWeapon())
@@ -560,36 +582,6 @@ public Action Hook_BroadcastTeamsound(Event hEvent, const char[] szName, bool bD
 		return Plugin_Changed;
 	}
 	return Plugin_Continue;
-}
-
-public MRESReturn Hook_FAllowFlashlight(Handle hReturn, Handle hParams)		// enable sp flashlight
-{
-	if (g_pCoopManager.IsFeaturePatchingEnabled())
-	{
-		DHookSetReturn(hReturn, true);
-		return MRES_Supercede;
-	}
-	return MRES_Ignored;
-}
-
-public void Hook_CameraDeathSpawn(int iEntIndex)
-{
-	if (g_pCoopManager.IsFeaturePatchingEnabled())
-	{
-		CBaseEntity pEntity = CBaseEntity(iEntIndex);
-		if (pEntity.IsValid())
-		{
-			CBlackMesaPlayer pOwner = view_as<CBlackMesaPlayer>(pEntity.GetOwner());
-			if (pOwner.IsValid() && pOwner.IsClassPlayer())
-			{
-				CBaseEntity pViewEntity = pOwner.GetViewEntity();
-				if (!pViewEntity.IsValid() || pViewEntity == pOwner)
-				{
-					pOwner.SetViewEntity(pEntity);
-				}
-			}
-		}
-	}
 }
 
 public MRESReturn Hook_IsMultiplayer(Handle hReturn, Handle hParams)

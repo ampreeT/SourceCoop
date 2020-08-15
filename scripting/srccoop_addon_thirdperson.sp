@@ -13,32 +13,41 @@ public Plugin myinfo =
 	url = "https://github.com/ampreeT/SourceCoop"
 };
 
-ConVar enabledCvar;
-ConVar sv_cheats;
-bool isInThirdperson[MAXPLAYERS+1];
-
 #define MENUITEM_TOGGLE "Toggle thirdperson"
+
+ConVar pEnabledCvar;
+ConVar pCheatsCvar;
+bool bIsInThirdperson[MAXPLAYERS+1];
 
 public void OnPluginStart()
 {
 	RegConsoleCmd("sm_thirdperson", Command_Thirdperson, "Type !thirdperson to go into thirdperson mode");
 	RegConsoleCmd("sm_firstperson", Command_Firstperson, "Type !firstperson to exit thirdperson mode");
-	enabledCvar = CreateConVar("sourcecoop_thirdperson_enabled", "1", "Is thirdperson enabled?");
-	sv_cheats = FindConVar("sv_cheats");
-	HookConVarChange(enabledCvar, CvarChanged);
+	pEnabledCvar = CreateConVar("sourcecoop_thirdperson_enabled", "1", "Is thirdperson enabled?");
+	pCheatsCvar = FindConVar("sv_cheats");
+	HookConVarChange(pEnabledCvar, CvarChanged);
+	
+	if (LibraryExists(SRCCOOP_LIBRARY))
+	{
+		OnSourceCoopStarted();
+	}
 }
 
-public void OnAllPluginsLoaded()
+public void OnLibraryAdded(const char[] name)
 {
-	TopMenu coopMenu;
-	if (LibraryExists(SRCCOOP_LIBRARY) && (coopMenu = GetCoopTopMenu()) != null)
+	if(StrEqual(name, SRCCOOP_LIBRARY))
 	{
-		TopMenuObject playerSettings = coopMenu.FindCategory(COOPMENU_CATEGORY_SETTINGS);
-		if(playerSettings == INVALID_TOPMENUOBJECT)
-		{
-			return;
-		}
-		coopMenu.AddItem(MENUITEM_TOGGLE, ThirdPersonMenuHandler, playerSettings);
+		OnSourceCoopStarted();
+	}
+}
+
+void OnSourceCoopStarted()
+{
+	TopMenu pCoopMenu = GetCoopTopMenu();
+	TopMenuObject pSettingsMenu = pCoopMenu.FindCategory(COOPMENU_CATEGORY_SETTINGS);
+	if(pSettingsMenu != INVALID_TOPMENUOBJECT)
+	{
+		pCoopMenu.AddItem(MENUITEM_TOGGLE, ThirdPersonMenuHandler, pSettingsMenu);
 	}
 }
 
@@ -50,7 +59,7 @@ public void ThirdPersonMenuHandler(TopMenu topmenu, TopMenuAction action, TopMen
 	}
 	else if (action == TopMenuAction_SelectOption)
 	{
-		FakeClientCommand(param, isInThirdperson[param]? "sm_firstperson" : "sm_thirdperson");
+		FakeClientCommand(param, bIsInThirdperson[param]? "sm_firstperson" : "sm_thirdperson");
 		topmenu.Display(param, TopMenuPosition_LastCategory);
 	}
 }
@@ -61,15 +70,15 @@ public void CvarChanged(ConVar convar, const char[] oldValue, const char[] newVa
 	{
 		if(IsClientInGame(i))
 		{
-			if(enabledCvar.BoolValue)
+			if(pEnabledCvar.BoolValue)
 			{
-				SendConVarValue(i, sv_cheats, "1");
+				SendConVarValue(i, pCheatsCvar, "1");
 			}
 			else
 			{
 				ClientCommand(i, "firstperson");
-				SendConVarValue(i, sv_cheats, "0");
-				isInThirdperson[i] = false;
+				SendConVarValue(i, pCheatsCvar, "0");
+				bIsInThirdperson[i] = false;
 			}
 		}
 	}
@@ -77,15 +86,15 @@ public void CvarChanged(ConVar convar, const char[] oldValue, const char[] newVa
 
 public void OnClientPutInServer(int client)
 {
-	isInThirdperson[client] = false;
-	if(enabledCvar.BoolValue) {
-		SendConVarValue(client, sv_cheats, "1");
+	bIsInThirdperson[client] = false;
+	if(pEnabledCvar.BoolValue) {
+		SendConVarValue(client, pCheatsCvar, "1");
 	}
 }
 
 public Action Command_Thirdperson(int client, int args)
 {
-	if(!enabledCvar.BoolValue)
+	if(!pEnabledCvar.BoolValue)
 	{
 		MsgReply(client, "Thirdperson mode is currently disabled");
 		return Plugin_Handled;
@@ -97,7 +106,7 @@ public Action Command_Thirdperson(int client, int args)
 
 public Action Command_Firstperson(int client, int args)
 {
-	if(!enabledCvar.BoolValue)
+	if(!pEnabledCvar.BoolValue)
 	{
 		MsgReply(client, "Thirdperson mode is currently disabled");
 		return Plugin_Handled;
@@ -111,13 +120,13 @@ void SetThirdperson(int client, bool enable)
 {
 	if(enable)
 	{
-		SendConVarValue(client, sv_cheats, "1");
+		SendConVarValue(client, pCheatsCvar, "1");
 		ClientCommand(client, "thirdperson");
-		isInThirdperson[client] = true;
+		bIsInThirdperson[client] = true;
 	}
 	else
 	{
 		ClientCommand(client, "firstperson");
-		isInThirdperson[client] = false;
+		bIsInThirdperson[client] = false;
 	}
 }

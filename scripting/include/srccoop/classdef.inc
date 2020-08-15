@@ -64,6 +64,8 @@ methodmap Array_t < ArrayList
 
 Handle g_pSetCollisionBounds;
 Handle g_pUpdateEnemyMemory;
+Handle g_pGetSequenceLinearMotion;
+Handle g_pShouldPlayerAvoid;
 
 public int InternalGetBaseEntity(const int iEntIndex)
 {
@@ -373,6 +375,14 @@ methodmap CBaseEntity
 	{
 		SetEntProp(this.GetEntIndex(), Prop_Send, "m_fEffects", iEffects); 
 	}
+	public int GetTakeDamage()
+	{
+		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_takedamage");
+	}
+	public void SetTakeDamage(const int m_takedamage)
+	{
+		SetEntProp(this.GetEntIndex(), Prop_Data, "m_takedamage", m_takedamage); 
+	}
 }
 
 methodmap CTraceRay
@@ -415,6 +425,18 @@ methodmap CBaseAnimating < CBaseEntity
 	public void SetModelScale(float flModelScale)
 	{
 		SetEntPropFloat(this.GetEntIndex(), Prop_Send, "m_flModelScale", flModelScale);
+	}
+	public int GetSequence()
+	{
+		return GetEntProp(this.GetEntIndex(), Prop_Send, "m_nSequence");
+	}
+	public void SetSequence(int iSequence)
+	{
+		SetEntProp(this.GetEntIndex(), Prop_Send, "m_nSequence", iSequence);
+	}
+	public void GetSequenceLinearMotion(int iSequence, float pVec[3])
+	{
+		SDKCall(g_pGetSequenceLinearMotion, this, iSequence, pVec);
 	}
 }
 
@@ -578,6 +600,31 @@ methodmap CAI_BaseNPC < CBaseCombatCharacter
 		Address pOffset = view_as<Address>(view_as<int>(pAddress) + iOffsetConditions + iOffsetIndex); 
 		int iConditionList = LoadFromAddress(pOffset, NumberType_Int8);	
 		return view_as<bool>(iConditionList & (1 << iBitIndex));
+	}
+	public bool IsMoving()
+	{
+		// CAI_BaseNPC::IsMoving( void ) ==> GetNavigator()->IsGoalSet() ==> GetPath()->GoalType() != GOALTYPE_NONE
+		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_goalType") != GOALTYPE_NONE;
+	}
+	public bool ShouldPlayerAvoid()
+	{
+		return SDKCall(g_pShouldPlayerAvoid, this);
+	}
+	public bool GetPerformAvoidance()
+	{
+		return !!GetEntProp(this.GetEntIndex(), Prop_Data, "m_bPerformAvoidance");
+	}
+	public void SetPerformAvoidance(bool bPerformAvoidance)
+	{
+		SetEntProp(this.GetEntIndex(), Prop_Data, "m_bPerformAvoidance", bPerformAvoidance);
+	}
+	public bool GetPlayerAvoidState()
+	{
+		return !!GetEntProp(this.GetEntIndex(), Prop_Data, "m_bPlayerAvoidState");
+	}
+	public void SetPlayerAvoidState(bool bPlayerAvoidState)
+	{
+		SetEntProp(this.GetEntIndex(), Prop_Data, "m_bPlayerAvoidState", bPlayerAvoidState);
 	}
 }
 

@@ -254,6 +254,24 @@ stock void GetVectorDistanceVector(const float vecA[3], const float vecB[3], flo
 	vecResult[2] = FloatAbs(vecResult[2]);
 }
 
+stock bool VecEqual(const float vecA[3], const float vecB[3])
+{
+	return (vecA[0] == vecB[0] && vecA[1] == vecB[1] && vecA[2] == vecB[2]);
+}
+
+// returns true if there's an intersection between two boxes
+// borrowed from public/collisionutils.cpp
+stock bool IsBoxIntersectingBox(const float boxMin1[3], const float boxMax1[3], const float boxMin2[3], const float boxMax2[3])
+{
+	if ( (boxMin1[0] > boxMax2[0]) || (boxMax1[0] < boxMin2[0]) )
+		return false;
+	if ( (boxMin1[1] > boxMax2[1]) || (boxMax1[1] < boxMin2[1]) )
+		return false;
+	if ( (boxMin1[2] > boxMax2[2]) || (boxMax1[2] < boxMin2[2]) )
+		return false;
+	return true;
+}
+
 /**
  * Fades a client's screen to a specified color
  * Your adviced to read the FFADE_ Comments
@@ -333,3 +351,4 @@ stock bool IsDisableSynonym(const char[] str)
 {
 	return (strcmp(str, "disable", false) == 0 || strcmp(str, "turnoff", false) == 0 || strcmp(str, "off", false) == 0);
 }
+

@@ -47,8 +47,8 @@
 		}
 		"ceilingcollapse"
 		{
-			"origin"	"5425 -992 -435"
-			"angles"	"0 0 0"
+			"origin"	"5520 -1075 -407"
+			"angles"	"0 -90 0"
 			"triggerid" "1361215"
 			"output"	"OnTrigger"
 			"portal"	"5377 -415 -440"
