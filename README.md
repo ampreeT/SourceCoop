@@ -6,10 +6,13 @@ SourceCoop is a cooperative plugin for [Black Mesa](https://store.steampowered.c
 __If you are someone who is looking to play on a server__, you are already completely set up and ready to play! Cooperative servers can be found on the server browser just like any other server.
 
 __If you are a server operator who is looking to host your own cooperative server__, then follow the instructions below.
-- Install the latest development version of [Metamod Source](https://www.sourcemm.net/downloads.php?branch=dev)
-- Install the latest development version of [SourceMod](https://www.sourcemod.net/downloads.php?branch=dev)
+- Install a development version of [Metamod Source](https://www.sourcemm.net/downloads.php?branch=dev)
+	- latest tested working build is __1133__
+- Install a development version of [SourceMod](https://www.sourcemod.net/downloads.php?branch=dev)
+	- latest tested working build is __6608__ *(6609 and later are as of this writing broken)*
 - Install the latest release version of [DHooks with Detours support](https://github.com/peace-maker/DHooks2/releases)
-- Download and copy the latest release of SourceCoop and drop it into your sourcemod directory
+	- latest tested working build is __dhooks-2.2.0-detours14a-sm110__
+- Download the latest release of SourceCoop and drop it into your sourcemod directory
 ### Server Settings Recommendations
 - Setting convar __mp_teamplay__ to __1__ will provide lag-free noblock
 
