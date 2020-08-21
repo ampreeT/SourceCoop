@@ -4,6 +4,7 @@
 #define _srccoop_typedef_included
 
 #define CHAT_TAG "\x07eb6f28[SRCCOOP]\x07e69c12 "
+#define CONSOLE_TAG "[SRCCOOP] "
 #define CHAT_COLOR_PRI "\x07e69c12"
 #define CHAT_COLOR_SEC "\x07eb6f28"
 

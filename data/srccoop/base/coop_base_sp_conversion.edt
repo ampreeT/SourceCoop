@@ -4,7 +4,10 @@
 
 "config"
 {
-	"instance_items" "1"
+	"features"
+	{
+		"INSTANCE_ITEMS" "1"
+	}
 	"console"
 	{
 		"mp_falldamage" "1"

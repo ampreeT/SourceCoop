@@ -278,7 +278,6 @@ enum struct CGlobalLevelLump
 	Array_t m_pModifiedCvarList;
 	COutputHookLump m_pOutputHookList;
 	IntroType m_iIntroType;
-	bool m_bInstanceItems;
 	StringMap m_EdtDefinesMap;
 	
 	void Initialize()
@@ -377,7 +376,6 @@ enum struct CGlobalLevelLump
 		this.m_pNextMapList.Clear();
 		this.m_pOutputHookList.Clear();
 		this.m_iIntroType = INTRO_NONE;
-		this.m_bInstanceItems = false;
 		this.m_EdtDefinesMap.Clear();
 	}
 	void ParseConfigFile(KeyValues kv)
@@ -414,16 +412,16 @@ enum struct CGlobalLevelLump
 								this.m_iIntroType = INTRO_FREEZE;
 							}
 						}
-						else if (strcmp(szType, "instance_items", false) == 0)
-						{
-							this.m_bInstanceItems = view_as<bool>(KvGetNum(kv, NULL_STRING));
-						}
 					}
 					else
 					{
 						if (strcmp(szType, "define", false) == 0)
 						{
 							this.ParseDefines(kv);
+						}
+						else if (strcmp(szType, "features", false) == 0)
+						{
+							this.ParseFeatures(kv);
 						}
 						else if (strcmp(szType, "console", false) == 0  || StrContains(szType, "console_base") == 0)
 						{
@@ -460,11 +458,43 @@ enum struct CGlobalLevelLump
 						}
 						continue;
 					}
+					
 					if(kv.GetDataType(NULL_STRING) != KvData_None)
 					{
 						char szValue[MAX_FORMAT];
 						kv.GetString(NULL_STRING, szValue, sizeof(szValue));
 						this.m_EdtDefinesMap.SetString(szKey, szValue, true);
+					}
+				}
+			}
+			while (kv.GotoNextKey(false));
+			kv.GoBack();
+		}
+	}
+	
+	void ParseFeatures(KeyValues kv)
+	{
+		if (kv.GotoFirstSubKey(false))
+		{
+			do
+			{
+				char szKey[MAX_FORMAT];
+				if (kv.GetSectionName(szKey, sizeof(szKey)))
+				{
+					if(StrEqual(szKey, "#if", false))
+					{
+						if(ParseConditions(kv) && kv.JumpToKey("#then"))
+						{
+							this.ParseFeatures(kv);
+							kv.GoBack();
+						}
+						continue;
+					}
+					
+					if(kv.GetDataType(NULL_STRING) != KvData_None)
+					{
+						ReplaceString(szKey, sizeof(szKey), ";", "");
+						ServerCommand("sourcecoop_ft %s %d", szKey, kv.GetNum(NULL_STRING));
 					}
 				}
 			}

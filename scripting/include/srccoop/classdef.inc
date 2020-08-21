@@ -147,7 +147,6 @@ methodmap CBaseEntity
 		char szNetClass[32];
 		if(this.GetNetClassname(szNetClass, sizeof(szNetClass)))
 		{
-			//LogDebug(szNetClass);
 			return (strcmp(szNetClass, "CBasePickup") == 0 || strcmp(szNetClass, "CItem_Battery") == 0);
 		}
 		return false;
@@ -265,6 +264,14 @@ methodmap CBaseEntity
 	public void GetAbsAngles(float vecBuffer[3])
 	{
 		GetEntPropVector(this.GetEntIndex(), Prop_Data, "m_angAbsRotation", vecBuffer);
+	}
+	public void GetAngles(float vecBuffer[3])
+	{
+		GetEntPropVector(this.GetEntIndex(), Prop_Send, "m_angRotation", vecBuffer);
+	}
+	public void SetAngles(const float vecAngles[3])
+	{
+		SetEntPropVector(this.GetEntIndex(), Prop_Send, "m_angRotation", vecAngles);
 	}
 	public void HookOutput(const char[] szOutput, EntityOutput pCallback, const bool bOnce)
 	{
@@ -661,7 +668,7 @@ methodmap CBasePlayer < CBaseCombatCharacter
 	}
 }
 
-methodmap CBlackMesaPlayer < CBaseCombatCharacter
+methodmap CBlackMesaPlayer < CBasePlayer
 {
 	public CBlackMesaPlayer(const int iEntIndex = -1)
 	{
@@ -945,8 +952,6 @@ methodmap CBlackMesaPlayer < CBaseCombatCharacter
 	}
 	/**
 	 * Sets this player's score to the given value
-	 *    TODO:	figure out some way to update the outwards facing scoreboard
-	 *			that gametracker & steam server info dialog boxes use
 	 *
 	 * @param iScore		Value to set as the score for the player
 	 */

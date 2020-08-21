@@ -36,7 +36,7 @@ stock void MsgReply(int client, const char[] msg, any ...)
 	int len = strlen(msg) + 255;
 	char[] formatMsg = new char[len];
 	VFormat(formatMsg, len, msg, 3);
- 	ReplyToCommand(client, "%s%s", client && GetCmdReplySource() == SM_REPLY_TO_CHAT? CHAT_TAG : "", formatMsg);
+ 	ReplyToCommand(client, "%s%s", client && GetCmdReplySource() == SM_REPLY_TO_CHAT? CHAT_TAG : CONSOLE_TAG, formatMsg);
 }
 
 stock void MsgAll(const char[] msg, any ...)
@@ -113,6 +113,30 @@ stock int SplitNewline(const char[] szSource, const int nSize, char[] szBuffer)
 		i++;
 	strcopy(szBuffer, ((i + 1) < nSize) ? (i + 1) : nSize, szSource);	// strcopy inconvinently includes the null terminator
 	return (i < nSize) ? i : nSize;
+}
+
+stock void LowerCaseString(const char[] szInput, char[] szOutput, int iSize)
+{
+	iSize--;
+	int x = 0;
+	while (szInput[x] != '\0' && x < iSize)
+	{
+		szOutput[x] = CharToLower(szInput[x]);
+		x++;
+	}
+	szOutput[x] = '\0';
+}
+
+stock void UpperCaseString(const char[] szInput, char[] szOutput, int iSize)
+{
+	iSize--;
+	int x = 0;
+	while (szInput[x] != '\0' && x < iSize)
+	{
+		szOutput[x] = CharToUpper(szInput[x]);
+		x++;
+	}
+	szOutput[x] = '\0';
 }
 
 stock int FindEntityByHammerID(int iHammerID, const char[] szClassname = "*")

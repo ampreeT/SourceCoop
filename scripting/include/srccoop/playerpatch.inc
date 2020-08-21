@@ -8,7 +8,7 @@
 //------------------------------------------------------
 public MRESReturn Hook_FAllowFlashlight(Handle hReturn, Handle hParams)
 {
-	if (g_pCoopManager.IsFeaturePatchingEnabled())
+	if (g_pCoopManager.IsFeatureEnabled(FT_ALLOW_FLASHLIGHT))
 	{
 		DHookSetReturn(hReturn, true);
 		return MRES_Supercede;
@@ -21,7 +21,7 @@ public MRESReturn Hook_FAllowFlashlight(Handle hReturn, Handle hParams)
 //------------------------------------------------------
 public void Hook_CameraDeathSpawn(int iEntIndex)
 {
-	if (g_pCoopManager.IsFeaturePatchingEnabled())
+	if (g_pCoopManager.IsFeatureEnabled(FT_FIRSTPERSON_DEATHCAM))
 	{
 		CBaseEntity pEntity = CBaseEntity(iEntIndex);
 		if (pEntity.IsValid())
@@ -147,7 +147,7 @@ public void Hook_PlayerSpawnPost(int iClient)
 //------------------------------------------------------
 public Action Hook_PlayerTraceAttack(int victim, int &attacker, int &inflictor, float &damage, int &damagetype, int &ammotype, int hitbox, int hitgroup)
 {
-	if(g_pCoopManager.IsCoopModeEnabled())
+	if(g_pCoopManager.IsFeatureEnabled(FT_NO_FRIENDLYFIRE))
 	{
 		// Disable FF
 		if(attacker != victim && CBlackMesaPlayer(attacker).IsClassPlayer())
@@ -163,7 +163,7 @@ public Action Hook_PlayerTraceAttack(int victim, int &attacker, int &inflictor, 
 //------------------------------------------------------
 public Action Hook_PlayerTakeDamage(int victim, int &attacker, int &inflictor, float &damage, int &damagetype)
 {
-	if(g_pCoopManager.IsCoopModeEnabled())
+	if(g_pCoopManager.IsFeatureEnabled(FT_NO_TELEFRAGGING))
 	{
 		CBaseEntity pInflictor = CBaseEntity(inflictor);
 		
@@ -213,7 +213,7 @@ public MRESReturn Hook_PlayerChangeTeam(int _this, Handle hParams)
 //------------------------------------------------------
 public MRESReturn Hook_PlayerShouldCollide(int _this, Handle hReturn, Handle hParams)
 {
-	if(g_pCoopManager.IsCoopModeEnabled())
+	if(g_pCoopManager.IsFeatureEnabled(FT_NOBLOCK))
 	{
 		int iCollisionGroup = DHookGetParam(hParams, 1);
 		if(iCollisionGroup == COLLISION_GROUP_PLAYER || iCollisionGroup == COLLISION_GROUP_PLAYER_MOVEMENT)
@@ -231,34 +231,30 @@ public MRESReturn Hook_PlayerShouldCollide(int _this, Handle hReturn, Handle hPa
 //------------------------------------------------------
 public MRESReturn Hook_ForcePlayerToDropThisObject(Handle hParams)
 {
-	if (g_pCoopManager.IsBugPatchingEnabled())
+	if(!DHookIsNullParam(hParams, 1))
 	{
-		if(!DHookIsNullParam(hParams, 1))
+		// singleplayer doesn't care what's passed in so we have to check for both player or item
+		CBaseEntity pParam = CBaseEntity(DHookGetParam(hParams, 1));
+		if(pParam.IsClassPlayer())
 		{
-			// singleplayer doesn't care what's passed in so we have to check for both player or item
-			CBaseEntity pParam = CBaseEntity(DHookGetParam(hParams, 1));
-			if(pParam.IsClassPlayer())
+			view_as<CBlackMesaPlayer>(pParam).ForceDropOfCarriedPhysObjects();
+		}
+		else
+		{
+			for(int i = 1; i <= MaxClients; i++)
 			{
-				view_as<CBlackMesaPlayer>(pParam).ForceDropOfCarriedPhysObjects();
-			}
-			else
-			{
-				for(int i = 1; i <= MaxClients; i++)
+				if(IsClientInGame(i))
 				{
-					if(IsClientInGame(i))
+					// is this player carrying the required item?
+					CBlackMesaPlayer pPlayer = CBlackMesaPlayer(i);
+					if(pPlayer.GetCarriedObject() == pParam)
 					{
-						// is this player carrying the required item?
-						CBlackMesaPlayer pPlayer = CBlackMesaPlayer(i);
-						if(pPlayer.GetCarriedObject() == pParam)
-						{
-							pPlayer.ForceDropOfCarriedPhysObjects();
-							break;
-						}
+						pPlayer.ForceDropOfCarriedPhysObjects();
+						break;
 					}
 				}
 			}
 		}
-		return MRES_Supercede;
 	}
-	return MRES_Ignored;
+	return MRES_Supercede;
 }

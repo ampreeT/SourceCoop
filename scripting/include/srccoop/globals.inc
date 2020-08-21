@@ -63,6 +63,7 @@ char g_szPrevMapName[MAX_MAPNAME];
 bool g_bTempDontHookEnts;
 bool g_bMapStarted;
 OperatingSystem g_serverOS;
+FeatureMap g_pFeatureMap;
 
 ArrayList g_pPostponedSpawns;
 

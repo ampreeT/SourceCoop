@@ -153,12 +153,12 @@ void LoadGameData()
 	LoadDHookVirtual(pGameConfig, hkIchthyosaurIdleSound, "CNPC_Ichthyosaur::IdleSound");
 	LoadDHookVirtual(pGameConfig, hkHandleAnimEvent, "CBaseAnimating::HandleAnimEvent");
 	LoadDHookVirtual(pGameConfig, hkRunAI, "CAI_BaseNPC::RunAI");
-	LoadDHookVirtual(pGameConfig, hkSetPlayerAvoidState, "CAI_BaseNPC::SetPlayerAvoidState");
 	LoadDHookDetour(pGameConfig, hkUTIL_GetLocalPlayer, "UTIL_GetLocalPlayer", Hook_UTIL_GetLocalPlayer);
 	LoadDHookDetour(pGameConfig, hkSetSuitUpdate, "CBasePlayer::SetSuitUpdate", Hook_SetSuitUpdate, Hook_SetSuitUpdatePost);
 	LoadDHookDetour(pGameConfig, hkResolveNames, "CAI_GoalEntity::ResolveNames", Hook_ResolveNames, Hook_ResolveNamesPost);
 	LoadDHookDetour(pGameConfig, hkCanSelectSchedule, "CAI_LeadBehavior::CanSelectSchedule", Hook_CanSelectSchedule);
 	LoadDHookDetour(pGameConfig, hkPickup_ForcePlayerToDropThisObject, "Pickup_ForcePlayerToDropThisObject", Hook_ForcePlayerToDropThisObject);
+	LoadDHookDetour(pGameConfig, hkSetPlayerAvoidState, "CAI_BaseNPC::SetPlayerAvoidState", Hook_SetPlayerAvoidState);
 	
 	CloseHandle(pGameConfig);
 }
@@ -183,12 +183,14 @@ public void OnPluginStart()
 	g_pConvarWaitPeriod = CreateConVar("sourcecoop_start_wait_period", "15.0", "The max number of seconds to wait since first player spawned in to start the map. The timer is skipped when all players enter the game.", _, true, 0.0);
 	g_pConvarEndWaitPeriod = CreateConVar("sourcecoop_end_wait_period", "60.0", "The max number of seconds to wait since first player triggered a changelevel. The timer speed increases each time a new player finishes the level.", _, true, 0.0);
 	g_pConvarEndWaitFactor = CreateConVar("sourcecoop_end_wait_factor", "1.0", "Controls how much the number of finished players increases the changelevel timer speed. 1.0 means full, 0 means none (timer will run full length).", _, true, 0.0, true, 1.0);
+	RegAdminCmd("sourcecoop_ft", Command_SetFeature, ADMFLAG_ROOT, "Command for toggling plugin features on/off");
 	
 	g_pLevelLump.Initialize();
 	g_SpawnSystem.Initialize();
 	g_pCoopManager.Initialize();
 	g_pInstancingManager.Initialize();
 	g_pPostponedSpawns = CreateArray();
+	g_pFeatureMap = new FeatureMap();
 	InitializeMenus();
 	
 	if (GetEngineVersion() == Engine_BlackMesa)
@@ -327,8 +329,6 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 		if(pEntity.IsClassNPC())
 		{
 			DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_BaseNPCAcceptInput);
-			DHookEntity(hkSetPlayerAvoidState, false, iEntIndex, _, Hook_SetPlayerAvoidState);
-		
 			if (strncmp(szClassname, "npc_human_scientist", 19) == 0)
 			{
 				DHookEntity(hkIRelationType, true, iEntIndex, _, Hook_ScientistIRelationType);
@@ -368,7 +368,7 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 		}
 		else if (strncmp(szClassname, "item_", 5) == 0)
 		{
-			if (g_pLevelLump.m_bInstanceItems)
+			if (g_pCoopManager.IsFeatureEnabled(FT_INSTANCE_ITEMS))
 			{
 				if(pEntity.IsPickupItem())
 				{
@@ -419,6 +419,10 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 		else if (strcmp(szClassname, "ai_script_conditions") == 0)
 		{
 			DHookEntity(hkThink, false, iEntIndex, _, Hook_AIConditionsThink);
+		}
+		else if (strcmp(szClassname, "func_rotating") == 0)
+		{
+			CreateTimer(30.0, Timer_FixRotatingAngles, pEntity, TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT);
 		}
 		// if some explosions turn out to be damaging all players except one, this is the fix
 		//else if (strcmp(szClassname, "env_explosion") == 0)
@@ -482,24 +486,17 @@ public void SpawnPostponedItem(CBaseEntity pEntity)
 
 public void OnEntityDestroyed(int iEntIndex)
 {
-	if (g_pCoopManager.IsFeaturePatchingEnabled())
+	CBaseEntity pEntity = CBaseEntity(iEntIndex);
+	if (pEntity.IsValid())
 	{
-		CBaseEntity pEntity = CBaseEntity(iEntIndex);
-		if (pEntity.IsValid())
+		if (pEntity.IsClassname("camera_death"))
 		{
-			char szClassname[MAX_CLASSNAME];
-			if (pEntity.GetClassname(szClassname, sizeof(szClassname)))
+			CBlackMesaPlayer pOwner = view_as<CBlackMesaPlayer>(pEntity.GetOwner());
+			if (pOwner.IsValid() && pOwner.IsClassPlayer())
 			{
-				if (strcmp(szClassname, "camera_death") == 0)
+				if (pOwner.GetViewEntity() == pEntity)
 				{
-					CBlackMesaPlayer pOwner = view_as<CBlackMesaPlayer>(pEntity.GetOwner());
-					if (pOwner.IsValid() && pOwner.IsClassPlayer())
-					{
-						if (pOwner.GetViewEntity() == pEntity)
-						{
-							pOwner.SetViewEntity(pOwner);
-						}
-					}
+					pOwner.SetViewEntity(pOwner);
 				}
 			}
 		}
@@ -575,7 +572,7 @@ public Action Event_PlayerSpawnPost(Event hEvent, const char[] szName, bool bDon
 
 public Action Hook_BroadcastTeamsound(Event hEvent, const char[] szName, bool bDontBroadcast)
 {
-	if(g_pCoopManager.IsCoopModeEnabled())
+	if (g_pCoopManager.IsCoopModeEnabled())
 	{
 		// block multiplayer announcer
 		hEvent.BroadcastDisabled = true;
@@ -592,11 +589,48 @@ public MRESReturn Hook_IsMultiplayer(Handle hReturn, Handle hParams)
 
 void GreetPlayer(int client)
 {
-	if(g_pConvarShowWelcomeMessage.BoolValue)
+	if (g_pConvarShowWelcomeMessage.BoolValue)
 	{
 		Msg(client, "This server runs SourceCoop version %s.\nYou can press %s=%s or type %s/coopmenu%s for extra settings.", PLUGIN_VERSION, CHAT_COLOR_SEC, CHAT_COLOR_PRI, CHAT_COLOR_SEC, CHAT_COLOR_PRI);
 	}
 }
+
+public Action Command_SetFeature(int iClient, int iArgs)
+{
+	if(iArgs != 2)
+	{
+		MsgReply(iClient, "Format: sourcecoop_ft <FEATURE> <1/0>");
+		return Plugin_Handled;
+	}
+	
+	char szFeature[MAX_FORMAT];
+	GetCmdArg(1, szFeature, sizeof(szFeature));
+	
+	SourceCoopFeature feature;
+	if (g_pFeatureMap.GetFeature(szFeature, feature))
+	{
+		char szVal[MAX_FORMAT];
+		GetCmdArg(2, szVal, sizeof(szVal));
+		
+		if (StrEqual(szVal, "1") || IsEnableSynonym(szVal))
+		{
+			g_pCoopManager.EnableFeature(feature);
+			MsgReply(iClient, "Enabled feature %s", szFeature);
+		}
+		else if (StrEqual(szVal, "0") || IsDisableSynonym(szVal))
+		{
+			g_pCoopManager.DisableFeature(feature);
+			MsgReply(iClient, "Disabled feature %s", szFeature);
+		}
+	}
+	else
+	{
+		MsgReply(iClient, "Unknown feature: %s", szFeature);
+	}
+	return Plugin_Handled;
+}
+
+
 
 // todo read this later
 // http://cdn.akamai.steamstatic.com/steam/apps/362890/manuals/bms_workshop_guide.pdf?t=1431372141

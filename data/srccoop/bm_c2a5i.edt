@@ -75,6 +75,23 @@
 				}
 			}
 		}
+		// this wheel button can get easily stuck in start position on linux, we can apply a workaround with following output
+		// TODO move to baseclass if this happens elsewhere?
+		"modify"
+		{
+			"targetname" "c2a5g_exit_wheel"
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnFullyOpen"
+					"target" "!self"
+					"input" "SetPositionImmediately"
+					"parameter" "0.0001"
+					"timestofire" "-1"
+				}
+			}
+		}
 		// setup changelevel timer
 		"modify"
 		{

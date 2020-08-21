@@ -62,33 +62,30 @@ public MRESReturn Hook_IsPlayerAlly(int _this, Handle hReturn, Handle hParams)
 //------------------------------------------------------
 public MRESReturn Hook_BaseNPCAcceptInput(int _this, Handle hReturn, Handle hParams)
 {
-	if (g_pCoopManager.IsBugPatchingEnabled())
+	if (!DHookIsNullParam(hParams, 1))
 	{
-		if (!DHookIsNullParam(hParams, 1))
+		char szInputType[MAX_FORMAT];
+		DHookGetParamString(hParams, 1, szInputType, sizeof(szInputType));
+		if (strcmp(szInputType, "UpdateEnemyMemory", false) == 0)
 		{
-			char szInputType[MAX_FORMAT];
-			DHookGetParamString(hParams, 1, szInputType, sizeof(szInputType));
-			if (strcmp(szInputType, "UpdateEnemyMemory", false) == 0)
+			char szParam[32];
+			DHookGetParamObjectPtrString(hParams, 4, 0, ObjectValueType_String, szParam, sizeof(szParam));
+			if(StrEqual(szParam, "!player", false) || StrEqual(szParam, "!pvsplayer", false))
 			{
-				char szParam[32];
-				DHookGetParamObjectPtrString(hParams, 4, 0, ObjectValueType_String, szParam, sizeof(szParam));
-				if(StrEqual(szParam, "!player", false) || StrEqual(szParam, "!pvsplayer", false))
+				CAI_BaseNPC pThis = CAI_BaseNPC(_this);
+				CBlackMesaPlayer pPlayer;
+				float vecAbsOrigin[3];
+				for(int i = 1; i <= MaxClients; i++)
 				{
-					CAI_BaseNPC pThis = CAI_BaseNPC(_this);
-					CBlackMesaPlayer pPlayer;
-					float vecAbsOrigin[3];
-					for(int i = 1; i <= MaxClients; i++)
+					if(IsClientInGame(i))
 					{
-						if(IsClientInGame(i))
-						{
-							pPlayer = CBlackMesaPlayer(i);
-							pPlayer.GetAbsOrigin(vecAbsOrigin);
-							pThis.UpdateEnemyMemory(pPlayer, vecAbsOrigin, pThis);
-						}
+						pPlayer = CBlackMesaPlayer(i);
+						pPlayer.GetAbsOrigin(vecAbsOrigin);
+						pThis.UpdateEnemyMemory(pPlayer, vecAbsOrigin, pThis);
 					}
-					DHookSetReturn(hReturn, true);
-					return MRES_Supercede;
 				}
+				DHookSetReturn(hReturn, true);
+				return MRES_Supercede;
 			}
 		}
 	}
@@ -96,67 +93,62 @@ public MRESReturn Hook_BaseNPCAcceptInput(int _this, Handle hReturn, Handle hPar
 }
 
 //------------------------------------------------------
-// CAI_BaseNPC
-// Recreation of SetPlayerAvoidState for MP compatibility
+// CAI_BaseNPC - Recreation of SetPlayerAvoidState for MP compatibility
 // From https://github.com/ValveSoftware/source-sdk-2013/blob/0d8dceea4310fde5706b3ce1c70609d72a38efdf/mp/src/game/server/ai_basenpc.cpp#L3822
 //------------------------------------------------------
 public MRESReturn Hook_SetPlayerAvoidState(int _this)
 {
-	if (g_pCoopManager.IsBugPatchingEnabled())
+	CAI_BaseNPC pThis = CAI_BaseNPC(_this);
+	
+	bool bShouldPlayerAvoid;
+	float vNothing[3];
+	
+	pThis.GetSequenceLinearMotion(pThis.GetSequence(), vNothing);
+	bool bIsMoving = (pThis.IsMoving() || !VecEqual(vNothing, vec3_origin));
+	
+	//If we are coming out of a script, check if we are stuck inside the player.
+	if (pThis.GetPerformAvoidance() || (pThis.ShouldPlayerAvoid() && bIsMoving))
 	{
-		LogDebug("Hook_SetPlayerAvoidState");
-		CAI_BaseNPC pThis = CAI_BaseNPC(_this);
+		float vMins[3], vMaxs[3], vOrigin[3], vPlrMins[3], vPlrMaxs[3], vPlrOrigin[3];
+		pThis.GetMins(vMins);
+		pThis.GetMaxs(vMaxs);
+		pThis.GetAbsOrigin(vOrigin);
+		AddVectors(vMins, vOrigin, vMins);
+		AddVectors(vMaxs, vOrigin, vMaxs);
 		
-		bool bShouldPlayerAvoid;
-		float vNothing[3];
-		
-		pThis.GetSequenceLinearMotion(pThis.GetSequence(), vNothing);
-		bool bIsMoving = (pThis.IsMoving() || !VecEqual(vNothing, vec3_origin));
-		
-		//If we are coming out of a script, check if we are stuck inside the player.
-		if (pThis.GetPerformAvoidance() || (pThis.ShouldPlayerAvoid() && bIsMoving))
+		for(int i = 1; i <= MaxClients; i++)
 		{
-			float vMins[3], vMaxs[3], vOrigin[3], vPlrMins[3], vPlrMaxs[3], vPlrOrigin[3];
-			pThis.GetMins(vMins);
-			pThis.GetMaxs(vMaxs);
-			pThis.GetAbsOrigin(vOrigin);
-			AddVectors(vMins, vOrigin, vMins);
-			AddVectors(vMaxs, vOrigin, vMaxs);
-			
-			for(int i = 1; i <= MaxClients; i++)
+			if(IsClientInGame(i) && IsPlayerAlive(i))
 			{
-				if(IsClientInGame(i) && IsPlayerAlive(i))
+				CBlackMesaPlayer pPlayer = CBlackMesaPlayer(i);
+				pPlayer.GetMins(vPlrMins);
+				pPlayer.GetMaxs(vPlrMaxs);
+				pPlayer.GetAbsOrigin(vPlrOrigin);
+				AddVectors(vPlrMins, vPlrOrigin, vPlrMins);
+				AddVectors(vPlrMaxs, vPlrOrigin, vPlrMaxs);
+				
+				if(IsBoxIntersectingBox(vMins, vMaxs, vPlrMins, vPlrMaxs))
 				{
-					CBlackMesaPlayer pPlayer = CBlackMesaPlayer(i);
-					pPlayer.GetMins(vPlrMins);
-					pPlayer.GetMaxs(vPlrMaxs);
-					pPlayer.GetAbsOrigin(vPlrOrigin);
-					AddVectors(vPlrMins, vPlrOrigin, vPlrMins);
-					AddVectors(vPlrMaxs, vPlrOrigin, vPlrMaxs);
-					
-					if(IsBoxIntersectingBox(vMins, vMaxs, vPlrMins, vPlrMaxs))
-					{
-						bShouldPlayerAvoid = true;
-						break;
-					}
+					bShouldPlayerAvoid = true;
+					break;
 				}
 			}
 		}
-		
-		pThis.SetPlayerAvoidState(pThis.ShouldPlayerAvoid());
-		pThis.SetPerformAvoidance(bShouldPlayerAvoid);
-		
-		int iCollGroup = pThis.GetCollisionGroup();
-		if(iCollGroup == COLLISION_GROUP_NPC || iCollGroup == COLLISION_GROUP_NPC_ACTOR)
+	}
+	
+	pThis.SetPlayerAvoidState(pThis.ShouldPlayerAvoid());
+	pThis.SetPerformAvoidance(bShouldPlayerAvoid);
+	
+	int iCollGroup = pThis.GetCollisionGroup();
+	if(iCollGroup == COLLISION_GROUP_NPC || iCollGroup == COLLISION_GROUP_NPC_ACTOR)
+	{
+		if(bShouldPlayerAvoid)
 		{
-			if(bShouldPlayerAvoid)
-			{
-				pThis.SetCollisionGroup(COLLISION_GROUP_NPC_ACTOR);
-			}
-			else
-			{
-				pThis.SetCollisionGroup(COLLISION_GROUP_NPC);
-			}
+			pThis.SetCollisionGroup(COLLISION_GROUP_NPC_ACTOR);
+		}
+		else
+		{
+			pThis.SetCollisionGroup(COLLISION_GROUP_NPC);
 		}
 	}
 	return MRES_Supercede;
@@ -168,21 +160,18 @@ public MRESReturn Hook_SetPlayerAvoidState(int _this)
 //------------------------------------------------------
 public MRESReturn Hook_GargAcceptInputPost(int _this, Handle hReturn, Handle hParams)
 {
-	if (g_pCoopManager.IsBugPatchingEnabled())
+	if (!DHookIsNullParam(hParams, 1))
 	{
-		if (!DHookIsNullParam(hParams, 1))
+		char szInputType[MAX_FORMAT];
+		DHookGetParamString(hParams, 1, szInputType, sizeof(szInputType));
+		if (strcmp(szInputType, "chaseplayer", false) == 0)
 		{
-			char szInputType[MAX_FORMAT];
-			DHookGetParamString(hParams, 1, szInputType, sizeof(szInputType));
-			if (strcmp(szInputType, "chaseplayer", false) == 0)
-			{
-				SDKHook(_this, SDKHook_ThinkPost, GargantuaChaseThink);
-				GargantuaChaseThink(_this);
-			}
-			else if (strcmp(szInputType, "chaseend", false) == 0)
-			{
-				SDKUnhook(_this, SDKHook_ThinkPost, GargantuaChaseThink);
-			}
+			SDKHook(_this, SDKHook_ThinkPost, GargantuaChaseThink);
+			GargantuaChaseThink(_this);
+		}
+		else if (strcmp(szInputType, "chaseend", false) == 0)
+		{
+			SDKUnhook(_this, SDKHook_ThinkPost, GargantuaChaseThink);
 		}
 	}
 	return MRES_Ignored;
@@ -444,32 +433,29 @@ public void Hook_ChangelevelOnTouch(int _this, int iOther)
 //------------------------------------------------------
 public MRESReturn Hook_PointTeleportAcceptInput(int _this, Handle hReturn, Handle hParams)
 {
-	if (g_pCoopManager.IsBugPatchingEnabled())
+	if (!DHookIsNullParam(hParams, 1))
 	{
-		if (!DHookIsNullParam(hParams, 1))
+		char szInputType[MAX_FORMAT];
+		DHookGetParamString(hParams, 1, szInputType, sizeof(szInputType));
+		if (strcmp(szInputType, "Teleport", false) == 0)
 		{
-			char szInputType[MAX_FORMAT];
-			DHookGetParamString(hParams, 1, szInputType, sizeof(szInputType));
-			if (strcmp(szInputType, "Teleport", false) == 0)
+			char szTarget[MAX_FORMAT];
+			CBaseEntity pTeleport = CBaseEntity(_this);
+			pTeleport.GetTarget(szTarget, sizeof(szTarget));
+			if(strcmp(szTarget, "!player", false) == 0)
 			{
-				char szTarget[MAX_FORMAT];
-				CBaseEntity pTeleport = CBaseEntity(_this);
-				pTeleport.GetTarget(szTarget, sizeof(szTarget));
-				if(strcmp(szTarget, "!player", false) == 0)
+				float origin[3], angles[3];
+				GetEntPropVector(_this, Prop_Data, "m_vSaveOrigin", origin);
+				GetEntPropVector(_this, Prop_Data, "m_vSaveAngles", angles);
+				for(int i = 1; i <= MaxClients; i++)
 				{
-					float origin[3], angles[3];
-					GetEntPropVector(_this, Prop_Data, "m_vSaveOrigin", origin);
-					GetEntPropVector(_this, Prop_Data, "m_vSaveAngles", angles);
-					for(int i = 1; i <= MaxClients; i++)
+					if(IsClientInGame(i) && IsPlayerAlive(i))
 					{
-						if(IsClientInGame(i) && IsPlayerAlive(i))
-						{
-							TeleportEntity(i, origin, angles, NULL_VECTOR);
-						}
+						TeleportEntity(i, origin, angles, NULL_VECTOR);
 					}
-					DHookSetReturn(hReturn, true);
-					return MRES_Supercede;
 				}
+				DHookSetReturn(hReturn, true);
+				return MRES_Supercede;
 			}
 		}
 	}
@@ -484,7 +470,7 @@ public MRESReturn Hook_PointViewcontrolAcceptInput(int _this, Handle hReturn, Ha
 {
 	static bool bHookSkip = false;
 	LogDebug("Hook_PointViewcontrolAcceptInput ent=%d", _this);
-	if (!bHookSkip && g_pCoopManager.IsBugPatchingEnabled())
+	if (!bHookSkip)
 	{
 		if (!DHookIsNullParam(hParams, 1))
 		{
@@ -576,7 +562,7 @@ public Action OnEndFollowBlocker(const char[] output, int caller, int activator,
 public MRESReturn Hook_SpeedmodAcceptInput(int _this, Handle hReturn, Handle hParams)
 {
 	static bool bHookSkip = false;
-	if (!bHookSkip && g_pCoopManager.IsBugPatchingEnabled())
+	if (!bHookSkip)
 	{
 		if (!DHookIsNullParam(hParams, 1))
 		{
@@ -614,7 +600,7 @@ public MRESReturn Hook_SpeedmodAcceptInput(int _this, Handle hReturn, Handle hPa
 public MRESReturn Hook_ClientCommandAcceptInput(int _this, Handle hReturn, Handle hParams)
 {
 	static bool bHookSkip = false;
-	if (!bHookSkip && g_pCoopManager.IsBugPatchingEnabled())
+	if (!bHookSkip)
 	{
 		if (!DHookIsNullParam(hParams, 1))
 		{
@@ -704,54 +690,51 @@ public MRESReturn Hook_ServerCommandAcceptInput(int _this, Handle hReturn, Handl
 //------------------------------------------------------
 public MRESReturn Hook_EnvCreditsAcceptInput(int _this, Handle hReturn, Handle hParams)
 {
-	if (g_pCoopManager.IsBugPatchingEnabled())
+	if (!DHookIsNullParam(hParams, 1))
 	{
-		if (!DHookIsNullParam(hParams, 1))
+		char szInputType[MAX_FORMAT];
+		DHookGetParamString(hParams, 1, szInputType, sizeof(szInputType));
+		if (strcmp(szInputType, "ShowLogo", false) == 0)
 		{
-			char szInputType[MAX_FORMAT];
-			DHookGetParamString(hParams, 1, szInputType, sizeof(szInputType));
-			if (strcmp(szInputType, "ShowLogo", false) == 0)
+			float flLogoLength = GetEntPropFloat(_this, Prop_Data, "m_flLogoLength");
+			if(flLogoLength)
 			{
-				float flLogoLength = GetEntPropFloat(_this, Prop_Data, "m_flLogoLength");
-				if(flLogoLength)
-				{
-					Handle pMsg = StartMessageAll("LogoTimeMsg", USERMSG_RELIABLE);
-					if(pMsg != null) {
-						BfWriteFloat(pMsg, flLogoLength);
-						EndMessage();
-					}
+				Handle pMsg = StartMessageAll("LogoTimeMsg", USERMSG_RELIABLE);
+				if(pMsg != null) {
+					BfWriteFloat(pMsg, flLogoLength);
+					EndMessage();
 				}
-				else
-				{
-					Handle pMsg = StartMessageAll("CreditsMsg", USERMSG_RELIABLE);
-					if(pMsg != null) {
-						BfWriteByte(pMsg, 1);
-						EndMessage();
-					}
-				}
-				DHookSetReturn(hReturn, true);
-				return MRES_Supercede;
 			}
-			if(strcmp(szInputType, "RollCredits", false) == 0)
+			else
 			{
 				Handle pMsg = StartMessageAll("CreditsMsg", USERMSG_RELIABLE);
 				if(pMsg != null) {
-					BfWriteByte(pMsg, 2);
+					BfWriteByte(pMsg, 1);
 					EndMessage();
 				}
-				DHookSetReturn(hReturn, true);
-				return MRES_Supercede;
 			}
-			if(strcmp(szInputType, "RollOutroCredits", false) == 0)
-			{
-				Handle pMsg = StartMessageAll("CreditsMsg", USERMSG_RELIABLE);
-				if(pMsg != null) {
-					BfWriteByte(pMsg, 3);
-					EndMessage();
-				}
-				DHookSetReturn(hReturn, true);
-				return MRES_Supercede;
+			DHookSetReturn(hReturn, true);
+			return MRES_Supercede;
+		}
+		if(strcmp(szInputType, "RollCredits", false) == 0)
+		{
+			Handle pMsg = StartMessageAll("CreditsMsg", USERMSG_RELIABLE);
+			if(pMsg != null) {
+				BfWriteByte(pMsg, 2);
+				EndMessage();
 			}
+			DHookSetReturn(hReturn, true);
+			return MRES_Supercede;
+		}
+		if(strcmp(szInputType, "RollOutroCredits", false) == 0)
+		{
+			Handle pMsg = StartMessageAll("CreditsMsg", USERMSG_RELIABLE);
+			if(pMsg != null) {
+				BfWriteByte(pMsg, 3);
+				EndMessage();
+			}
+			DHookSetReturn(hReturn, true);
+			return MRES_Supercede;
 		}
 	}
 	return MRES_Ignored;
@@ -814,15 +797,12 @@ public Action IntroCreditsMsgRepeater(Handle timer, DataPack dp)
 //------------------------------------------------------
 public void Hook_ExplosionSpawn(int iEntIndex)
 {
-	if (g_pCoopManager.IsBugPatchingEnabled())
+	char buffer[MAX_VALUE];
+	GetEntPropString(iEntIndex, Prop_Data, "m_strEntityNameToIgnore", buffer, sizeof(buffer)); // this is entity handle m_hEntityIgnore in other games
+	if(StrEqual(buffer, "!player", false))
 	{
-		char buffer[MAX_VALUE];
-		GetEntPropString(iEntIndex, Prop_Data, "m_strEntityNameToIgnore", buffer, sizeof(buffer)); // this is entity handle m_hEntityIgnore in other games
-		if(StrEqual(buffer, "!player", false))
-		{
-			SetEntPropString(iEntIndex, Prop_Data, "m_strEntityNameToIgnore", "");
-			SetEntProp(iEntIndex, Prop_Data, "m_iClassIgnore", CLASS_PLAYER);
-		}
+		SetEntPropString(iEntIndex, Prop_Data, "m_strEntityNameToIgnore", "");
+		SetEntProp(iEntIndex, Prop_Data, "m_iClassIgnore", CLASS_PLAYER);
 	}
 }
 
@@ -958,5 +938,27 @@ public void Hook_OnItemSnarkDamagePost(int victim, int attacker, int inflictor, 
 public Action Hook_PreventItemSnarkDamage(int victim, int &attacker, int &inflictor, float &damage, int &damagetype, int &weapon,
 		float damageForce[3], float damagePosition[3], int damagecustom)
 {
+	return Plugin_Stop;
+}
+
+//------------------------------------------------------
+// func_rotating
+// Fix the "Bad SetLocalAngles" error where the rotating entity stops after its angles have reached a limit
+//------------------------------------------------------
+public Action Timer_FixRotatingAngles(Handle timer, CBaseEntity pEntity)
+{
+	if(pEntity.IsValid())
+	{
+		float vecAngles[3];
+		pEntity.GetAngles(vecAngles);
+		
+		for(int i = 0; i < 3; i++)
+		{
+			vecAngles[i] = FloatFraction(vecAngles[i]) + RoundToFloor(vecAngles[i]) % 360;
+		}
+		pEntity.SetAngles(vecAngles);
+		
+		return Plugin_Continue;
+	}
 	return Plugin_Stop;
 }
