@@ -133,13 +133,16 @@ public void Hook_PlayerSpawnPost(int iClient)
 		return;
 	
 	CBlackMesaPlayer pPlayer = CBlackMesaPlayer(iClient);
-	// Correct the 'damages' from the prethink hook hack
-	pPlayer.SetSuit(false);
-	pPlayer.SetMaxSpeed(190.0);
-	pPlayer.SetIsSprinting(false);
-	pPlayer.SetSolidFlags(pPlayer.GetSolidFlags() & ~FSOLID_NOT_SOLID);
-	// Stop HEV sounds
-	StopSound(iClient, SNDCHAN_STATIC, szLastSuitSound[iClient]);
+	if(pPlayer.IsValid() && pPlayer.IsAlive())
+	{
+		// Correct the 'damages' from the prethink hook hack
+		pPlayer.SetSuit(false);
+		pPlayer.SetMaxSpeed(190.0);
+		pPlayer.SetIsSprinting(false);
+		pPlayer.SetSolidFlags(pPlayer.GetSolidFlags() & ~FSOLID_NOT_SOLID);
+		// Stop HEV sounds
+		StopSound(iClient, SNDCHAN_STATIC, szLastSuitSound[iClient]);
+	}
 }
 
 //------------------------------------------------------
