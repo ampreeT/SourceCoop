@@ -177,7 +177,6 @@ public void OnPluginStart()
 	InitDebugLog("sourcecoop_debug", "SRCCOOP", ADMFLAG_ROOT);
 	CreateConVar("sourcecoop_version", PLUGIN_VERSION, _, FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
 	g_pConvarCoopEnabled = CreateConVar("sourcecoop_enabled", "1", "Sets if coop is enabled on coop maps", _, true, 0.0, true, 1.0);
-	g_pConvarShowWelcomeMessage = CreateConVar("sourcecoop_show_welcome_msg", "1.0", "Should the plugin greet players?", _, true, 0.0, true, 1.0);
 	g_pConvarCoopTeam = CreateConVar("sourcecoop_team", "scientist", "Sets which team to use in TDM mode. Valid values are [marines] or [scientist]. Setting anything else will not manage teams.");
 	g_pConvarCoopRespawnTime = CreateConVar("sourcecoop_respawntime", "2.0", "Sets player respawn time in seconds. (This can only be used for making respawn times quicker, not longer)", _, true, 0.1);
 	g_pConvarWaitPeriod = CreateConVar("sourcecoop_start_wait_period", "15.0", "The max number of seconds to wait since first player spawned in to start the map. The timer is skipped when all players enter the game.", _, true, 0.0);
@@ -589,7 +588,7 @@ public MRESReturn Hook_IsMultiplayer(Handle hReturn, Handle hParams)
 
 void GreetPlayer(int client)
 {
-	if (g_pConvarShowWelcomeMessage.BoolValue)
+	if (g_pCoopManager.IsFeatureEnabled(FT_SHOW_WELCOME_MESSAGE))
 	{
 		Msg(client, "This server runs SourceCoop version %s.\nYou can press %s=%s or type %s/coopmenu%s for extra settings.", PLUGIN_VERSION, CHAT_COLOR_SEC, CHAT_COLOR_PRI, CHAT_COLOR_SEC, CHAT_COLOR_PRI);
 	}

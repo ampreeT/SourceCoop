@@ -111,7 +111,7 @@ public Action PlayerSoundListener(int clients[MAXPLAYERS], int &numClients, char
 
 public MRESReturn Hook_SetSuitUpdate(int _this, Handle hParams)
 {
-	if (g_pCoopManager.IsCoopModeEnabled())
+	if (g_pCoopManager.IsFeatureEnabled(FT_HEV_SOUNDS))
 	{
 		g_bIsMultiplayerOverride = false;
 	}

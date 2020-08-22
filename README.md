@@ -18,7 +18,6 @@ __If you are a server operator who is looking to host your own cooperative serve
 
 ## Server Convars
 - __sourcecoop_enabled__ - Enables cooperative functionality on maps.
-- __sourcecoop_show_welcome_msg__ - Enables plugin greeting players with a message. Valid values are true or false.
 - __sourcecoop_team__ - Sets which team to use in TDM mode. Valid values are "marines" or "scientist". Any other values will assume the server will handle it (not recommended).
 - __sourcecoop_respawntime__ - Set player respawn time in seconds. (Cannot be used to extend respawn time).
 - __sourcecoop_start_wait_period__ - The max number of seconds to wait since first player spawned in to start the map. The timer is skipped when all players enter the game.

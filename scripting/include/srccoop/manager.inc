@@ -24,6 +24,10 @@
 #define SND_CHANGELEVEL_TICK "bms_objects/clickbeep/click1.wav"
 #define SND_CHANGELEVEL_TICK_VOL 0.2
 
+//------------------------------------------------------
+// Changelevel manager
+//------------------------------------------------------
+
 enum struct ChangeLevelVoteLump
 {
 	CChangelevel m_pChangeLevel;
@@ -135,6 +139,10 @@ public int ChangeLvlLumpSortFunc(int index1, int index2, ArrayList array, Handle
 }
 
 public int ChangeLevelStatusPanelCallback(Menu menu, MenuAction action, int param1, int param2) {}
+
+//------------------------------------------------------
+// Coop manager
+//------------------------------------------------------
 
 enum struct CoopManager
 {
