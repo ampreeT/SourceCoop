@@ -13,7 +13,10 @@
 #define SRCCOOP_LIBRARY "SRCCOOP"
 
 /* Predefined TopMenu category for player settings */
-#define COOPMENU_CATEGORY_SETTINGS "Settings"
+#define COOPMENU_CATEGORY_SETTINGS "Player settings"
+
+/* Predefined TopMenu category for player settings */
+#define COOPMENU_CATEGORY_SOUND_SETTINGS "Sound settings"
 
 /**
  * Retrieves the handle to the coop TopMenu.

@@ -5,6 +5,7 @@
 
 TopMenu g_pCoopTopMenu;
 TopMenuObject g_pCoopPlayerSettingsMenu;
+TopMenuObject g_pCoopSoundSettingsMenu;
 
 public any Native_GetCoopTopMenu(Handle plugin, int numParams)
 {
@@ -19,6 +20,7 @@ void InitializeMenus()
 	
 	g_pCoopTopMenu = new TopMenu(CoopTopMenuHandler);
 	g_pCoopPlayerSettingsMenu = g_pCoopTopMenu.AddCategory(COOPMENU_CATEGORY_SETTINGS, CoopTopMenuHandler);
+	g_pCoopSoundSettingsMenu = g_pCoopTopMenu.AddCategory(COOPMENU_CATEGORY_SOUND_SETTINGS, CoopTopMenuHandler);
 }
 
 public void CoopTopMenuHandler(TopMenu topmenu, TopMenuAction action, TopMenuObject topobj_id, int param, char[] buffer, int maxlength)
@@ -32,6 +34,10 @@ public void CoopTopMenuHandler(TopMenu topmenu, TopMenuAction action, TopMenuObj
 		if (topobj_id == g_pCoopPlayerSettingsMenu)
 		{
 			Format(buffer, maxlength, COOPMENU_CATEGORY_SETTINGS);
+		}
+		else if (topobj_id == g_pCoopSoundSettingsMenu)
+		{
+			Format(buffer, maxlength, COOPMENU_CATEGORY_SOUND_SETTINGS);
 		}
 	}
 }

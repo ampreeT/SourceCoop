@@ -96,7 +96,7 @@ public Action Command_Thirdperson(int client, int args)
 {
 	if(!pEnabledCvar.BoolValue)
 	{
-		MsgReply(client, "Thirdperson mode is currently disabled");
+		MsgReply(client, "Thirdperson mode is currently disabled.");
 		return Plugin_Handled;
 	}
 	SetThirdperson(client, true);
