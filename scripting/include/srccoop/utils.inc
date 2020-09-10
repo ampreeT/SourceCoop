@@ -211,13 +211,14 @@ stock CBlackMesaPlayer GetNearestPlayer(CBaseEntity pOriginEntity, bool bOnlyAli
 	return pBestPlayer;
 }
 
-stock int GetRealClientCount(bool bInGameOnly, bool bAlive = false, bool bNoSpectators = false)
+stock int GetRealClientCount(bool bInGameOnly, bool bAliveOnly = false, bool bNoSpectators = false)
 {
 	int clients;
 	for(int i = 1; i <= MaxClients; i++)
 	{
-		if( (bInGameOnly? IsClientInGame(i) : IsClientConnected(i)) && !IsFakeClient(i)
-			&& (!bAlive || IsPlayerAlive(i))
+		if((bInGameOnly? IsClientInGame(i) : IsClientConnected(i))
+			&& !IsFakeClient(i)
+			&& (!bAliveOnly || IsPlayerAlive(i))
 			&& (!bNoSpectators || GetClientTeam(i) != TEAM_SPECTATOR)
 		) {
  			clients++;

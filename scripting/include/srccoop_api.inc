@@ -15,7 +15,7 @@
 /* Predefined TopMenu category for player settings */
 #define COOPMENU_CATEGORY_SETTINGS "Player settings"
 
-/* Predefined TopMenu category for player settings */
+/* Predefined TopMenu category for sound settings */
 #define COOPMENU_CATEGORY_SOUND_SETTINGS "Sound settings"
 
 /**
