@@ -1,6 +1,7 @@
 #include <sourcemod>
 #include <srccoop_api>
 #include <regex>
+#include <sdkhooks>
 
 #define COLOR_MURDER		 "\x07CC00FF"
 #define COLOR_MURDER_VICTIM  "\x0700B1AF"
@@ -12,6 +13,10 @@
 #pragma semicolon 1
 
 static Handle hTrie = INVALID_HANDLE;
+static Handle hDmgTimer;
+static Handle hDmgTrie = INVALID_HANDLE;
+static Handle hComboTimeTrie = INVALID_HANDLE;
+static ArrayList lNpcDamageTracker;
 
 public Plugin myinfo =
 {
@@ -25,6 +30,7 @@ public Plugin myinfo =
 public void OnPluginStart()
 {
 	PopulateEntityNameMap();
+	InitComboTracker();
 	HookEvent("entity_killed", Event_EntKilled, EventHookMode_Pre);
 }
 
@@ -45,8 +51,11 @@ public void PopulateEntityNameMap() {
 		SetTrieString(hTrie, "weapon_mp5", "MP5");
 		SetTrieString(hTrie, "weapon_glock", "Glock");
 		SetTrieString(hTrie, "weapon_tau", "Tau Cannon");
-		SetTrieString(hTrie, "grenade_hornet", "Hive Hand");
 		SetTrieString(hTrie, "weapon_gluon", "Gluon Gun");
+		SetTrieString(hTrie, "weapon_assassin_glock", "Silenced Glock");
+
+		// Projectiles & Grenades
+		SetTrieString(hTrie, "grenade_hornet", "Hive Hand");
 		SetTrieString(hTrie, "grenade_mp5_contact", "MP5 Grenade");
 		SetTrieString(hTrie, "grenade_tripmine", "Tripmine");
 		SetTrieString(hTrie, "grenade_frag", "Frag Grenade");
@@ -54,7 +63,7 @@ public void PopulateEntityNameMap() {
 		SetTrieString(hTrie, "grenade_satchel", "Satchel Charge");
 		SetTrieString(hTrie, "grenade_rpg", "Rocket Launcher");
 		SetTrieString(hTrie, "grenade_tow", "Mounted Rocket Launcher");
-		SetTrieString(hTrie, "func_50cal", "50 Cal Mounted Gun");
+		SetTrieString(hTrie, "grenade_spit", "Toxic Spit");
 
 		// NPCS
 		SetTrieString(hTrie, "npc_human_scientist", "a Friendly Scientist");
@@ -96,11 +105,11 @@ public void PopulateEntityNameMap() {
 		SetTrieString(hTrie, "npc_alien_controller", "Alien Controller");
 		SetTrieString(hTrie, "npc_xontroller", "Alien Controller");
 		SetTrieString(hTrie, "npc_gargantua", "Gargantua");
-
-		
+		SetTrieString(hTrie, "npc_tentacle", "Outer-Space Octopus");
 
 		// misc
 		SetTrieString(hTrie, "prop_physics", "a physics prop");
+		SetTrieString(hTrie, "func_50cal", "50 Cal Mounted Gun");
 	}
 }
 
@@ -181,9 +190,47 @@ public Action Event_EntKilled(Event event, const char[] name, bool dontBroadcast
 					}
 				}
 
-
 				PrintToChatAll(szMessage, COLOR_KILL_SCORE_ENT, szAttackerName, COLOR_WHITE, COLOR_KILL_SCORE_ENT, szKilledName, COLOR_WHITE, COLOR_KILL_SCORE_ENT, szInflictorClass, COLOR_MURDER, szSavedNameColor, szSavedName);
 				pClient.ModifyScore(iPointsToAward);
+
+				// Loop through clients, printing in chat the amount of damage each player inflicted to this NPC.
+				float[] attackers = new float[MaxClients];
+				float fTotalDamage = 0.0;
+				lNpcDamageTracker.GetArray(pKilled.GetEntIndex(), attackers);
+
+				// Gotta calculate the damage total first to see if it's worthy of being broadcast in chat...
+				for(int iClientIndex = 0; iClientIndex <= MaxClients; iClientIndex++) {
+					float fDamageInflicted = attackers[iClientIndex];
+					CBlackMesaPlayer pDamagerDealer = CBlackMesaPlayer(iClientIndex);
+					if(!pDamagerDealer.IsValid() || fDamageInflicted <= 0) continue;
+					fTotalDamage += fDamageInflicted;
+				}
+				for(int iClientIndex = 0; iClientIndex <= MaxClients; iClientIndex++) {
+					float fDamageInflicted = attackers[iClientIndex];
+					CBlackMesaPlayer pDamagerDealer = CBlackMesaPlayer(iClientIndex);
+					if(!pDamagerDealer.IsValid() || fDamageInflicted <= 0) continue;
+				
+					char szDmgDealerName[32];
+					pDamagerDealer.GetName(szDmgDealerName, sizeof(szDmgDealerName));
+					
+					// Damage combo
+					
+					float fPlrDmgLast;
+
+					if(!GetTrieValue(hDmgTrie, szDmgDealerName, fPlrDmgLast))
+					{
+						fPlrDmgLast = 0.0;
+					}
+
+					float fNewDmgCombo = fPlrDmgLast + fDamageInflicted;
+					PrintCenterText(iClientIndex, "COMBO +%.0f (%.0f)", fDamageInflicted, fNewDmgCombo);
+					if(fTotalDamage >= 100)
+						PrintToChatAll("%s%s%s dealt %s%.0f%s damage.", COLOR_KILL_SCORE_ENT, szDmgDealerName, COLOR_WHITE, COLOR_MURDER, fDamageInflicted, COLOR_MURDER_VICTIM);
+
+					// Add damage to combo, reset combo counter to 6000 ms
+					SetTrieValue(hDmgTrie, szDmgDealerName, fNewDmgCombo);
+					SetTrieValue(hComboTimeTrie, szDmgDealerName, 6000);
+				}
 			}
 		}
 	}
@@ -205,6 +252,115 @@ public Action Event_EntKilled(Event event, const char[] name, bool dontBroadcast
 			
 			PrintToChatAll(szMessage, COLOR_CRIMSON, szKilledName, COLOR_WHITE, COLOR_CRIMSON, szAttackerName, COLOR_WHITE, COLOR_CRIMSON, szInflictorClass);
 		}
+	}
+
+	return Plugin_Continue;
+}
+
+// Taken from basechat.sp
+void SendDialogToOne(int iClientIndex, int iRed, int iGreen, int iBlue, const char[] szText, any ...)
+{
+	char szMessage[100];
+	VFormat(szMessage, sizeof(szMessage), szText, 6);	
+	
+	KeyValues kv = new KeyValues("Stuff", "title", szMessage);
+	kv.SetColor("color", iRed, iGreen, iBlue, 255);
+	kv.SetNum("level", 1);
+	kv.SetNum("time", 10);
+	
+	CreateDialog(iClientIndex, kv, DialogType_Msg);
+
+	delete kv;
+}
+
+public void OnEntityCreated(int iEntIndex, const char[] szClassname)
+{
+	CBaseEntity pEntity = CBaseEntity(iEntIndex);
+	if(pEntity.IsClassNPC())
+	{
+		float[] clients = new float[MaxClients];
+		for(int iClientIndex = 0; iClientIndex <= MaxClients; iClientIndex++) {
+			clients[iClientIndex] = 0.0;
+		}
+
+		// Each NPC needs an array of damage that clients have done to them
+		lNpcDamageTracker.SetArray(iEntIndex, clients);
+
+		// Hook NPC damage
+		SDKHook(iEntIndex, SDKHook_OnTakeDamage, Hook_OnNpcTakeDamage);
+	}
+}
+
+
+public void InitComboTracker()
+{
+	if(hDmgTimer == INVALID_HANDLE)
+	{
+		lNpcDamageTracker = CreateArray(MaxClients, GetMaxEntities());
+		hDmgTimer = CreateTimer(0.1, Timer_DamageUpdate, _, TIMER_REPEAT);
+		hDmgTrie = CreateTrie();
+		hComboTimeTrie = CreateTrie();
+	}
+}
+
+public Action Timer_DamageUpdate(Handle hTimer) {
+	for(int iClientIndex = 0; iClientIndex <= MaxClients; iClientIndex++)
+	{
+		CBlackMesaPlayer pPlayer = CBlackMesaPlayer(iClientIndex);
+		if(!pPlayer.IsValid()) continue;
+		char szPlayerName[32];
+		pPlayer.GetName(szPlayerName, sizeof(szPlayerName));
+		
+		int iComboMsLeft = 0;
+		float fDamageDone = 0.0;
+
+		bool bPlayerHasCombo = GetTrieValue(hDmgTrie, szPlayerName, fDamageDone) &&
+							   GetTrieValue(hComboTimeTrie, szPlayerName, iComboMsLeft);
+		
+		if(bPlayerHasCombo) {
+			// subtract 100ms from timer
+			iComboMsLeft -= 100;
+			SetTrieValue(hComboTimeTrie, szPlayerName, iComboMsLeft);
+			if(fDamageDone <= 0) continue;
+
+			// Timer is up!
+			if(iComboMsLeft <= 0) {
+				// Reset combo back to zero and notify player of their final combo
+				SetTrieValue(hDmgTrie, szPlayerName, 0.0);
+				
+
+				// Calculate bonus score for combo
+				float fDmgMinus100Clamped = fDamageDone - 100.0 > 0.0 ? fDamageDone - 100.0 : 0.0;
+				int iScoreToGive = RoundFloat(Pow(fDmgMinus100Clamped/60.0,1.25));
+
+				if(iScoreToGive > 0) {
+					SendDialogToOne(iClientIndex, 255, 50, 50, "Bonus Points +%d", iScoreToGive);
+					PrintToChat(iClientIndex, "%sFinal Combo: %s(%.0f Dmg for +%d Points)%s!",COLOR_WHITE,COLOR_KILL_SCORE_ENT,fDamageDone, iScoreToGive,COLOR_WHITE);
+					PrintCenterText(iClientIndex, "COMBO COMPLETE");
+				} else {
+					PrintCenterText(iClientIndex, "COMBO OVER");
+				}
+
+				pPlayer.ModifyScore(iScoreToGive);
+
+				if(fDamageDone >= 400)
+					PrintToChatAll("%s%s%s GOT A %s%.0f%s DAMAGE COMBO! GRANTING THEM A SCORE BONUS OF %s%d",COLOR_KILL_SCORE_ENT,szPlayerName,COLOR_MURDER,COLOR_KILL_SCORE_ENT,fDamageDone,COLOR_MURDER,COLOR_KILL_SCORE_ENT,iScoreToGive);
+			}
+		}		
+	}
+	return Plugin_Continue;
+}
+
+public Action Hook_OnNpcTakeDamage(int iVictim, int &iAttacker, int &iInflictor, float &fDamage, int &iDamageType, int &iWeapon, float vfDamageForce[3], float vfDamagePosition[3])
+{
+	CBaseEntity pAttacker = CBaseEntity(iAttacker);
+
+	// If the damage was done by a player, add it to the NPC's damage list
+	if(pAttacker.IsClassPlayer()) {
+		float[] attackers = new float[MaxClients];
+		lNpcDamageTracker.GetArray(iVictim, attackers);
+		attackers[iAttacker] += fDamage;
+		lNpcDamageTracker.SetArray(iVictim, attackers);
 	}
 
 	return Plugin_Continue;
