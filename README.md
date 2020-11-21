@@ -13,10 +13,15 @@ __If you are a server operator who is looking to host your own cooperative serve
 - Install the latest release version of [DHooks with Detours support](https://github.com/peace-maker/DHooks2/releases)
 	- latest tested working build is __dhooks-2.2.0-detours14a-sm110__
 - Download the latest release of SourceCoop and drop it into your sourcemod directory
-### Server Settings Recommendations
+
+A step-by-step guide is also available on [Steam](https://steamcommunity.com/sharedfiles/filedetails/?id=2200247356).
+
+## Server configuration
+
+### Recommendations
 - Setting convar __mp_teamplay__ to __1__ will provide lag-free noblock
 
-## Server Convars
+### Plugin Convars
 - __sourcecoop_enabled__ - Enables cooperative functionality on maps.
 - __sourcecoop_team__ - Sets which team to use in TDM mode. Valid values are "marines" or "scientist". Any other values will assume the server will handle it (not recommended).
 - __sourcecoop_respawntime__ - Set player respawn time in seconds. (Cannot be used to extend respawn time).
@@ -24,6 +29,9 @@ __If you are a server operator who is looking to host your own cooperative serve
 -  __sourcecoop_end_wait_period__ - The max number of seconds to wait since first player triggered a changelevel. The timer speed increases each time a new player finishes the level.
 -  __sourcecoop_end_wait_factor__ - Controls how much the number of finished players increases the changelevel timer speed. 1.0 means full, 0 means none (timer will run full length).
 -  __sourcecoop_debug__ - Sets debug logging options
+
+__Additional configuration can be found on the [wiki page](https://github.com/ampreeT/SourceCoop/wiki/Features-&-Configuration).__
+
 ## Other Information
 __If you are looking to help with the development of the project__, we are always looking for more help! Heres some ways you can help:
 - Debugging and tracking down crashes
@@ -31,7 +39,7 @@ __If you are looking to help with the development of the project__, we are alway
 - Adding new campaigns or levels to the plugin
 - Simply playing on a server to help us test
 
-If you are interested in helping us, create a pull request above or contact __ampreeT__ or __AlienMario__ below.
+If you are interested in helping us, create a pull request above or contact __ampreeT__ or __Alienmario__ below.
 ## Credits
 - __ampreeT__ | programming, reverse engineering, map editing
 	- [Steam](https://steamcommunity.com/id/ampreeT) | [GitHub](https://github.com/ampreeT)
