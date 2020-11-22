@@ -286,6 +286,7 @@ enum struct CoopManager
 		if((this.m_bGetReadyTimer = bGetReadyTimer))
 		{
 			this.m_iSecondsToStart = 3;
+			EmitSoundToAll(SND_3, .volume = SND_TICK_VOL);
 			CBM_MP_GameRules.SetStateEndTime(STATE_WARMUP, GetGameTime() + 60 * 60 * 24 * 7);
 			CBM_MP_GameRules.SetCurrentState(STATE_ROUND);
 			CBM_MP_GameRules.SetStateEndTime(STATE_ROUND, GetGameTime() + this.m_iSecondsToStart + 1);
@@ -472,7 +473,6 @@ public Action StartTimerCallback(Handle pTimer)
 		else
 		{
 			g_pCoopManager.StartCountdown(true);
-			EmitSoundToAll(SND_3, .volume = SND_TICK_VOL);
 		}
 		return Plugin_Stop;
 	}
