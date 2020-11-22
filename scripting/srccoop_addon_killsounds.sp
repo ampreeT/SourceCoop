@@ -1,5 +1,6 @@
 #include <sourcemod>
 #include <clientprefs>
+
 #include <srccoop_api>
 
 #pragma newdecls required
@@ -15,10 +16,9 @@ public Plugin myinfo =
 };
 
 #define SND_KILLNPC "buttons/button10.wav"
-#define MENUITEM_TOGGLE "Toggle killsounds"
+#define MENUITEM_TOGGLE_KILLSOUNDS "ToggleKillsounds"
 
 Cookie pEnabledCookie;
-char g_szBuffer[2];
 
 public void OnPluginStart()
 {
@@ -42,10 +42,10 @@ public void OnLibraryAdded(const char[] name)
 void OnSourceCoopStarted()
 {
 	TopMenu pCoopMenu = GetCoopTopMenu();
-	TopMenuObject pMenuCategory = pCoopMenu.FindCategory(COOPMENU_CATEGORY_SOUND_SETTINGS);
+	TopMenuObject pMenuCategory = pCoopMenu.FindCategory(COOPMENU_CATEGORY_SOUNDS);
 	if(pMenuCategory != INVALID_TOPMENUOBJECT)
 	{
-		pCoopMenu.AddItem(MENUITEM_TOGGLE, MyMenuHandler, pMenuCategory);
+		pCoopMenu.AddItem(MENUITEM_TOGGLE_KILLSOUNDS, MyMenuHandler, pMenuCategory);
 	}
 }
 
@@ -53,22 +53,21 @@ public void MyMenuHandler(TopMenu topmenu, TopMenuAction action, TopMenuObject o
 {
 	if (action == TopMenuAction_DisplayOption)
 	{
-		Format(buffer, maxlength, MENUITEM_TOGGLE);
+		Format(buffer, maxlength, GetCookieBool(pEnabledCookie, param) ? "Disable killsounds" : "Enable killsounds");
 	}
 	else if (action == TopMenuAction_SelectOption)
 	{
 		if(AreClientCookiesCached(param))
 		{
-			pEnabledCookie.Get(param, g_szBuffer, sizeof(g_szBuffer));
-			if(StringToInt(g_szBuffer))
+			if(GetCookieBool(pEnabledCookie, param))
 			{
-				pEnabledCookie.Set(param, "0");
-				Msg(param, "NPC killsounds disabled.");
+				SetCookieBool(pEnabledCookie, param, false);
+				Msg(param, "Kill confirm sounds disabled.");
 			}
 			else
 			{
-				pEnabledCookie.Set(param, "1");
-				Msg(param, "NPC killsounds enabled.");
+				SetCookieBool(pEnabledCookie, param, true);
+				Msg(param, "Kill confirm sounds enabled.");
 			}
 		}
 		topmenu.Display(param, TopMenuPosition_LastCategory);
@@ -82,11 +81,10 @@ public void OnConfigsExecuted()
 
 public void OnClientCookiesCached(int client)
 {
-	pEnabledCookie.Get(client, g_szBuffer, sizeof(g_szBuffer));
-	if(!strlen(g_szBuffer))
+	if(!IsCookieSet(pEnabledCookie, client))
 	{
 		// new player - default to ON
-		pEnabledCookie.Set(client, "1");
+		SetCookieBool(pEnabledCookie, client, true);
 	}
 }
 
@@ -97,8 +95,7 @@ public void Event_EntityKilled(Event hEvent, const char[] szName, bool bDontBroa
 	
 	if(pAttacker.IsClassPlayer() && pKilled.IsClassNPC())
 	{
-		pEnabledCookie.Get(pAttacker.GetEntIndex(), g_szBuffer, sizeof(g_szBuffer));
-		if(StringToInt(g_szBuffer))
+		if(GetCookieBool(pEnabledCookie, pAttacker.GetEntIndex()))
 		{
 			// double the sound, double the fun (actualy just to hear it over gunfire..)
 			EmitSoundToClient(pAttacker.GetEntIndex(), SND_KILLNPC);

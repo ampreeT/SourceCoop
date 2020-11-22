@@ -4,6 +4,7 @@
 #define _srccoop_api_included
 
 #include <srccoop/typedef.inc>
+#include <srccoop/typedef_game.inc>
 #include <srccoop/classdef.inc>
 #include <srccoop/utils.inc>
 
@@ -13,10 +14,13 @@
 #define SRCCOOP_LIBRARY "SRCCOOP"
 
 /* Predefined TopMenu category for player settings */
-#define COOPMENU_CATEGORY_SETTINGS "Player settings"
+#define COOPMENU_CATEGORY_PLAYER "PlayerSettings"
 
 /* Predefined TopMenu category for sound settings */
-#define COOPMENU_CATEGORY_SOUND_SETTINGS "Sound settings"
+#define COOPMENU_CATEGORY_SOUNDS "SoundSettings"
+
+/* Predefined TopMenu category for other settings */
+#define COOPMENU_CATEGORY_OTHER "Other"
 
 /**
  * Retrieves the handle to the coop TopMenu.

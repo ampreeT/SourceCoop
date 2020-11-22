@@ -1,5 +1,4 @@
-//Uncomment to disable debugging
-//#define NO_DEBUG
+//#define NO_DEBUG   /* Uncomment to disable debugging */
 
 #include <srccoop>
 
@@ -318,9 +317,12 @@ public void OnPluginEnd()
 
 public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 {
-	CBaseEntity pEntity = CBaseEntity(iEntIndex);
+	if(g_bTempDontHookEnts) {
+		return;
+	}
 	
-	if (!g_bTempDontHookEnts && pEntity.IsValid())
+	CBaseEntity pEntity = CBaseEntity(iEntIndex);
+	if (pEntity.IsValid())
 	{
 		SDKHook(iEntIndex, SDKHook_Spawn, Hook_FixupBrushModels);
 		SDKHook(iEntIndex, SDKHook_SpawnPost, Hook_SpawnPost);
@@ -628,9 +630,3 @@ public Action Command_SetFeature(int iClient, int iArgs)
 	}
 	return Plugin_Handled;
 }
-
-
-
-// todo read this later
-// http://cdn.akamai.steamstatic.com/steam/apps/362890/manuals/bms_workshop_guide.pdf?t=1431372141
-// https://forums.alliedmods.net/showthread.php?t=314271

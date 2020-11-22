@@ -44,7 +44,7 @@ public void OnLibraryAdded(const char[] name)
 void OnSourceCoopStarted()
 {
 	TopMenu pCoopMenu = GetCoopTopMenu();
-	TopMenuObject pSettingsMenu = pCoopMenu.FindCategory(COOPMENU_CATEGORY_SETTINGS);
+	TopMenuObject pSettingsMenu = pCoopMenu.FindCategory(COOPMENU_CATEGORY_PLAYER);
 	if(pSettingsMenu != INVALID_TOPMENUOBJECT)
 	{
 		pCoopMenu.AddItem(MENUITEM_TOGGLE, ThirdPersonMenuHandler, pSettingsMenu);

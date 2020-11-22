@@ -37,10 +37,10 @@
 				"delay_output" "OnNewGame"
 			}
 		}
-		// dont close controlroom door
+		// dont close controlroom door (except when pressed the rocket fire button)
 		"modify"
 		{
-			"targetname" "c1a4c_controlroom_exit_door_button"
+			"targetname" "/^(c1a4c_controlroom_exit_door_button|c1a4c_controlroom_entry_door_button)$/"
 			"outputs"
 			{
 				"remove"

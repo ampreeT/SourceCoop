@@ -1,7 +1,11 @@
 #include <sourcemod>
-#include <srccoop_api>
-#include <regex>
 #include <sdkhooks>
+#include <clientprefs>
+
+#include <srccoop_api>
+
+#pragma newdecls required
+#pragma semicolon 1
 
 #define COLOR_MURDER		 "\x07CC00FF"
 #define COLOR_MURDER_VICTIM  "\x0700B1AF"
@@ -9,14 +13,15 @@
 #define COLOR_CRIMSON		 "\x07E31919"
 #define COLOR_WHITE			 "\x07FFFFFF"
 
-#pragma newdecls required
-#pragma semicolon 1
+#define MENUITEM_TOGGLE_KILLFEED "ToggleKillfeed"
 
-static Handle hTrie = INVALID_HANDLE;
-static Handle hDmgTimer;
-static Handle hDmgTrie = INVALID_HANDLE;
-static Handle hComboTimeTrie = INVALID_HANDLE;
-static ArrayList lNpcDamageTracker;
+StringMap hTrie;
+Handle hDmgTimer;
+StringMap hDmgTrie;
+StringMap hComboTimeTrie;
+ArrayList lNpcDamageTracker;
+
+Cookie pKillfeedEnabledCookie;
 
 public Plugin myinfo =
 {
@@ -31,17 +36,68 @@ public void OnPluginStart()
 {
 	PopulateEntityNameMap();
 	InitComboTracker();
-	HookEvent("entity_killed", Event_EntKilled, EventHookMode_Pre);
+	HookEvent("entity_killed", Event_EntKilled);
+	pKillfeedEnabledCookie = new Cookie("sourcecoop_killfeed_enabled", "Killfeed", CookieAccess_Protected);
+	
+	if (LibraryExists(SRCCOOP_LIBRARY))
+	{
+		OnSourceCoopStarted();
+	}
+}
+
+public void OnLibraryAdded(const char[] name)
+{
+	if(StrEqual(name, SRCCOOP_LIBRARY))
+	{
+		OnSourceCoopStarted();
+	}
+}
+
+void OnSourceCoopStarted()
+{
+	TopMenu pCoopMenu = GetCoopTopMenu();
+	TopMenuObject pMenuCategory = pCoopMenu.FindCategory(COOPMENU_CATEGORY_OTHER);
+	if(pMenuCategory != INVALID_TOPMENUOBJECT)
+	{
+		pCoopMenu.AddItem(MENUITEM_TOGGLE_KILLFEED, MyMenuHandler, pMenuCategory);
+	}
+}
+
+public void MyMenuHandler(TopMenu topmenu, TopMenuAction action, TopMenuObject topobj_id, int param, char[] buffer, int maxlength)
+{
+	if (action == TopMenuAction_DisplayOption)
+	{
+		Format(buffer, maxlength, GetCookieBool(pKillfeedEnabledCookie, param) ? "Disable killfeed" : "Enable killfeed");
+	}
+	else if (action == TopMenuAction_SelectOption)
+	{
+		if(AreClientCookiesCached(param))
+		{
+			if(GetCookieBool(pKillfeedEnabledCookie, param))
+			{
+				SetCookieBool(pKillfeedEnabledCookie, param, false);
+				Msg(param, "Killfeed disabled.");
+			}
+			else
+			{
+				SetCookieBool(pKillfeedEnabledCookie, param, true);
+				Msg(param, "Killfeed enabled.");
+			}
+		}
+		topmenu.Display(param, TopMenuPosition_LastCategory);
+	}
 }
 
 // name fix copied from Alienmario's HL2MP deathnotices
-public void EntityNameFix(char[] szName) {
+public void EntityNameFix(char[] szName)
+{
 	GetTrieString(hTrie, szName, szName, 32);
 }
 
-public void PopulateEntityNameMap() {
-	if(hTrie == INVALID_HANDLE){
-		hTrie = CreateTrie();
+public void PopulateEntityNameMap()
+{
+	if(hTrie == null) {
+		hTrie = new StringMap();
 
 		// Weapons
 		SetTrieString(hTrie, "weapon_crowbar", "Crowbar");
@@ -113,7 +169,7 @@ public void PopulateEntityNameMap() {
 	}
 }
 
-public Action Event_EntKilled(Event event, const char[] name, bool dontBroadcast)
+public void Event_EntKilled(Event event, const char[] name, bool dontBroadcast)
 {
 	CBaseEntity pKilled = CBaseEntity(event.GetInt("entindex_killed"));
 	CBaseEntity pAttacker = CBaseEntity(event.GetInt("entindex_attacker"));
@@ -142,7 +198,7 @@ public Action Event_EntKilled(Event event, const char[] name, bool dontBroadcast
 				(StrContains(szKilledName, "human_security", false) > -1))
 			{
 				EntityNameFix(szKilledName);
-				PrintToChatAll("%s%s%s brutally murdered %s%s%s in cold blood with %s%s", COLOR_MURDER, szAttackerName, COLOR_CRIMSON, COLOR_MURDER_VICTIM, szKilledName, COLOR_CRIMSON, COLOR_MURDER, szInflictorClass);
+				PrintToChatKillfeed("%s%s%s brutally murdered %s%s%s in cold blood with %s%s", COLOR_MURDER, szAttackerName, COLOR_CRIMSON, COLOR_MURDER_VICTIM, szKilledName, COLOR_CRIMSON, COLOR_MURDER, szInflictorClass);
 				pClient.ModifyScore(-10);
 			}
 			// Monsters should reward points tho
@@ -190,7 +246,7 @@ public Action Event_EntKilled(Event event, const char[] name, bool dontBroadcast
 					}
 				}
 
-				PrintToChatAll(szMessage, COLOR_KILL_SCORE_ENT, szAttackerName, COLOR_WHITE, COLOR_KILL_SCORE_ENT, szKilledName, COLOR_WHITE, COLOR_KILL_SCORE_ENT, szInflictorClass, COLOR_MURDER, szSavedNameColor, szSavedName);
+				PrintToChatKillfeed(szMessage, COLOR_KILL_SCORE_ENT, szAttackerName, COLOR_WHITE, COLOR_KILL_SCORE_ENT, szKilledName, COLOR_WHITE, COLOR_KILL_SCORE_ENT, szInflictorClass, COLOR_MURDER, szSavedNameColor, szSavedName);
 				pClient.ModifyScore(iPointsToAward);
 
 				// Loop through clients, printing in chat the amount of damage each player inflicted to this NPC.
@@ -223,9 +279,13 @@ public Action Event_EntKilled(Event event, const char[] name, bool dontBroadcast
 					}
 
 					float fNewDmgCombo = fPlrDmgLast + fDamageInflicted;
-					PrintCenterText(iClientIndex, "COMBO +%.0f (%.0f)", fDamageInflicted, fNewDmgCombo);
+					
+					if(GetCookieBool(pKillfeedEnabledCookie, iClientIndex)) {
+						PrintCenterText(iClientIndex, "COMBO +%.0f (%.0f)", fDamageInflicted, fNewDmgCombo);
+					}
+					
 					if(fTotalDamage >= 100)
-						PrintToChatAll("%s%s%s dealt %s%.0f%s damage.", COLOR_KILL_SCORE_ENT, szDmgDealerName, COLOR_WHITE, COLOR_MURDER, fDamageInflicted, COLOR_MURDER_VICTIM);
+						PrintToChatKillfeed("%s%s%s dealt %s%.0f%s damage.", COLOR_KILL_SCORE_ENT, szDmgDealerName, COLOR_WHITE, COLOR_MURDER, fDamageInflicted, COLOR_MURDER_VICTIM);
 
 					// Add damage to combo, reset combo counter to 6000 ms
 					SetTrieValue(hDmgTrie, szDmgDealerName, fNewDmgCombo);
@@ -250,11 +310,9 @@ public Action Event_EntKilled(Event event, const char[] name, bool dontBroadcast
 				StrCat(szMessage, sizeof(szMessage), "%s with %s%s");
 			
 			
-			PrintToChatAll(szMessage, COLOR_CRIMSON, szKilledName, COLOR_WHITE, COLOR_CRIMSON, szAttackerName, COLOR_WHITE, COLOR_CRIMSON, szInflictorClass);
+			PrintToChatKillfeed(szMessage, COLOR_CRIMSON, szKilledName, COLOR_WHITE, COLOR_CRIMSON, szAttackerName, COLOR_WHITE, COLOR_CRIMSON, szInflictorClass);
 		}
 	}
-
-	return Plugin_Continue;
 }
 
 // Taken from basechat.sp
@@ -271,6 +329,22 @@ void SendDialogToOne(int iClientIndex, int iRed, int iGreen, int iBlue, const ch
 	CreateDialog(iClientIndex, kv, DialogType_Msg);
 
 	delete kv;
+}
+
+// Adaptation of PrintToChatAll with killfeed enable check
+void PrintToChatKillfeed(const char[] format, any ...)
+{
+	char buffer[254];
+
+	for (int i = 1; i <= MaxClients; i++)
+	{
+		if (IsClientInGame(i) && GetCookieBool(pKillfeedEnabledCookie, i))
+		{
+			SetGlobalTransTarget(i);
+			VFormat(buffer, sizeof(buffer), format, 2);
+			PrintToChat(i, "%s", buffer);
+		}
+	}
 }
 
 public void OnEntityCreated(int iEntIndex, const char[] szClassname)
@@ -291,19 +365,19 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 	}
 }
 
-
 public void InitComboTracker()
 {
-	if(hDmgTimer == INVALID_HANDLE)
+	if(hDmgTimer == null)
 	{
 		lNpcDamageTracker = CreateArray(MaxClients, GetMaxEntities());
 		hDmgTimer = CreateTimer(0.1, Timer_DamageUpdate, _, TIMER_REPEAT);
-		hDmgTrie = CreateTrie();
-		hComboTimeTrie = CreateTrie();
+		hDmgTrie = new StringMap();
+		hComboTimeTrie = new StringMap();
 	}
 }
 
-public Action Timer_DamageUpdate(Handle hTimer) {
+public Action Timer_DamageUpdate(Handle hTimer)
+{
 	for(int iClientIndex = 0; iClientIndex <= MaxClients; iClientIndex++)
 	{
 		CBlackMesaPlayer pPlayer = CBlackMesaPlayer(iClientIndex);
@@ -333,20 +407,24 @@ public Action Timer_DamageUpdate(Handle hTimer) {
 				float fDmgMinus100Clamped = fDamageDone - 100.0 > 0.0 ? fDamageDone - 100.0 : 0.0;
 				int iScoreToGive = RoundFloat(Pow(fDmgMinus100Clamped/60.0,1.25));
 
-				if(iScoreToGive > 0) {
-					SendDialogToOne(iClientIndex, 255, 50, 50, "Bonus Points +%d", iScoreToGive);
-					PrintToChat(iClientIndex, "%sFinal Combo: %s(%.0f Dmg for +%d Points)%s!",COLOR_WHITE,COLOR_KILL_SCORE_ENT,fDamageDone, iScoreToGive,COLOR_WHITE);
-					PrintCenterText(iClientIndex, "COMBO COMPLETE");
-				} else {
-					PrintCenterText(iClientIndex, "COMBO OVER");
+				if(GetCookieBool(pKillfeedEnabledCookie, iClientIndex)) {
+					if(iScoreToGive > 0) {
+						SendDialogToOne(iClientIndex, 255, 50, 50, "Bonus Points +%d", iScoreToGive);
+						PrintToChat(iClientIndex, "%sFinal Combo: %s(%.0f Dmg for +%d Points)%s!",
+							COLOR_WHITE, COLOR_KILL_SCORE_ENT, fDamageDone, iScoreToGive, COLOR_WHITE);
+						PrintCenterText(iClientIndex, "COMBO COMPLETE");
+					} else {
+						PrintCenterText(iClientIndex, "COMBO OVER");
+					}
 				}
 
 				pPlayer.ModifyScore(iScoreToGive);
 
 				if(fDamageDone >= 400)
-					PrintToChatAll("%s%s%s GOT A %s%.0f%s DAMAGE COMBO! GRANTING THEM A SCORE BONUS OF %s%d",COLOR_KILL_SCORE_ENT,szPlayerName,COLOR_MURDER,COLOR_KILL_SCORE_ENT,fDamageDone,COLOR_MURDER,COLOR_KILL_SCORE_ENT,iScoreToGive);
+					PrintToChatKillfeed("%s%s%s GOT A %s%.0f%s DAMAGE COMBO! GRANTING THEM A SCORE BONUS OF %s%d",
+						COLOR_KILL_SCORE_ENT, szPlayerName, COLOR_MURDER, COLOR_KILL_SCORE_ENT, fDamageDone, COLOR_MURDER, COLOR_KILL_SCORE_ENT, iScoreToGive);
 			}
-		}		
+		}
 	}
 	return Plugin_Continue;
 }

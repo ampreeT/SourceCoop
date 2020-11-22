@@ -23,6 +23,27 @@ stock void LoadDHookVirtual(const Handle pGameConfig, Handle& pHandle, const cha
 }
 #endif
 
+#if defined _clientprefs_included
+stock bool GetCookieBool(Cookie cookie, int client)
+{
+	static char szBuffer[2];
+	cookie.Get(client, szBuffer, sizeof(szBuffer));
+	return StringToInt(szBuffer) == 1;
+}
+
+stock void SetCookieBool(Cookie cookie, int client, bool val)
+{
+	cookie.Set(client, val? "1" : "0");
+}
+
+stock bool IsCookieSet(Cookie cookie, int client)
+{
+	static char szBuffer[2];
+	cookie.Get(client, szBuffer, sizeof(szBuffer));
+	return szBuffer[0] != '\0';
+}
+#endif
+
 stock void Msg(int client, const char[] msg, any ...)
 {
 	int len = strlen(msg) + 255;

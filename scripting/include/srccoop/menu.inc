@@ -6,6 +6,7 @@
 TopMenu g_pCoopTopMenu;
 TopMenuObject g_pCoopPlayerSettingsMenu;
 TopMenuObject g_pCoopSoundSettingsMenu;
+TopMenuObject g_pCoopOthersMenu;
 
 public any Native_GetCoopTopMenu(Handle plugin, int numParams)
 {
@@ -19,8 +20,19 @@ void InitializeMenus()
 	RegConsoleCmd("sizeup", Command_CoopMenu, "Displays the coop menu");
 	
 	g_pCoopTopMenu = new TopMenu(CoopTopMenuHandler);
-	g_pCoopPlayerSettingsMenu = g_pCoopTopMenu.AddCategory(COOPMENU_CATEGORY_SETTINGS, CoopTopMenuHandler);
-	g_pCoopSoundSettingsMenu = g_pCoopTopMenu.AddCategory(COOPMENU_CATEGORY_SOUND_SETTINGS, CoopTopMenuHandler);
+	g_pCoopPlayerSettingsMenu = g_pCoopTopMenu.AddCategory(COOPMENU_CATEGORY_PLAYER, CoopTopMenuHandler);
+	g_pCoopSoundSettingsMenu = g_pCoopTopMenu.AddCategory(COOPMENU_CATEGORY_SOUNDS, CoopTopMenuHandler);
+	g_pCoopOthersMenu = g_pCoopTopMenu.AddCategory(COOPMENU_CATEGORY_OTHER, CoopTopMenuHandler);
+	
+	char path[PLATFORM_MAX_PATH];
+	char error[256];
+	
+	BuildPath(Path_SM, path, sizeof(path), "configs/sourcecoop/menu_sorting.txt");
+	
+	if (!g_pCoopTopMenu.LoadConfig(path, error, sizeof(error)))
+	{
+		LogError("Could not load SourceCoop menu config (file \"%s\": %s)", path, error);
+	}
 }
 
 public void CoopTopMenuHandler(TopMenu topmenu, TopMenuAction action, TopMenuObject topobj_id, int param, char[] buffer, int maxlength)
@@ -33,11 +45,15 @@ public void CoopTopMenuHandler(TopMenu topmenu, TopMenuAction action, TopMenuObj
 	{
 		if (topobj_id == g_pCoopPlayerSettingsMenu)
 		{
-			Format(buffer, maxlength, COOPMENU_CATEGORY_SETTINGS);
+			Format(buffer, maxlength, "Player settings");
 		}
 		else if (topobj_id == g_pCoopSoundSettingsMenu)
 		{
-			Format(buffer, maxlength, COOPMENU_CATEGORY_SOUND_SETTINGS);
+			Format(buffer, maxlength, "Sound settings");
+		}
+		else if (topobj_id == g_pCoopOthersMenu)
+		{
+			Format(buffer, maxlength, "Other");
 		}
 	}
 }

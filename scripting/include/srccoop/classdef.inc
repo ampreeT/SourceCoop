@@ -5,9 +5,13 @@
 
 #include <sdktools>
 
-#define STATE_WARMUP "m_StateWarmup"
-#define STATE_ROUND "m_StateRound"
-#define STATE_INTERMISSION "m_StateIntermission"
+Handle g_pGlobalEntityGetIndex;
+Handle g_pGlobalEntityGetState;
+Handle g_pGameShutdown;
+Handle g_pSetCollisionBounds;
+Handle g_pUpdateEnemyMemory;
+Handle g_pGetSequenceLinearMotion;
+Handle g_pShouldPlayerAvoid;
 
 enum struct FireOutputData
 {
@@ -16,32 +20,6 @@ enum struct FireOutputData
 	CBaseEntity m_pActivator;
 	float m_flDelay;
 }
-
-enum
-{
-	STATE_WARMUP_INDEX = 0,
-	STATE_INTERMISSION_INDEX,
-	STATE_ROUND_INDEX
-}
-
-enum
-{
-	STATE_ELEMENT_DONE_TIME = 0,
-	STATE_ELEMENT_NEXT_STATE,
-	STATE_ELEMENT_IS_IN_INTERMISSION
-}
-
-enum GLOBALESTATE
-{
-	GLOBAL_OFF = 0,
-	GLOBAL_ON = 1,
-	GLOBAL_DEAD = 2
-};
-
-Handle g_pGlobalEntityGetIndex;
-Handle g_pGlobalEntityGetState;
-
-Handle g_pGameShutdown;
 
 methodmap Array_t < ArrayList
 {
@@ -61,11 +39,6 @@ methodmap Array_t < ArrayList
 		}
 	}
 }
-
-Handle g_pSetCollisionBounds;
-Handle g_pUpdateEnemyMemory;
-Handle g_pGetSequenceLinearMotion;
-Handle g_pShouldPlayerAvoid;
 
 public int InternalGetBaseEntity(const int iEntIndex)
 {

@@ -16,6 +16,7 @@
 #include <logdebug>
 
 #include <srccoop/typedef.inc>
+#include <srccoop/typedef_game.inc>
 #include <srccoop/features.inc>
 #include <srccoop/classdef.inc>
 #include <srccoop/utils.inc>
