@@ -30,3 +30,25 @@
 #include <srccoop/playerpatch.inc>
 #include <srccoop/instancing.inc>
 #include <srccoop/menu.inc>
+
+
+//------------------------------------------------------
+// Natives
+//------------------------------------------------------
+public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
+{
+	CreateNative("GetCoopTopMenu", Native_GetCoopTopMenu);
+	CreateNative("IsCurrentMapCoop", Native_IsCurrentMapCoop);
+	RegPluginLibrary(SRCCOOP_LIBRARY);
+	return APLRes_Success;
+}
+
+public any Native_GetCoopTopMenu(Handle plugin, int numParams)
+{
+	return g_pCoopTopMenu;
+}
+
+public any Native_IsCurrentMapCoop(Handle plugin, int numParams)
+{
+	return g_pCoopManager.m_bIsCoopMap;
+}

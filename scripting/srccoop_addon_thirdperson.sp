@@ -13,7 +13,7 @@ public Plugin myinfo =
 	url = "https://github.com/ampreeT/SourceCoop"
 };
 
-#define MENUITEM_TOGGLE "Toggle thirdperson"
+#define MENUITEM_TOGGLE "ToggleThirdperson"
 
 ConVar pEnabledCvar;
 ConVar pCheatsCvar;
@@ -25,7 +25,7 @@ public void OnPluginStart()
 	RegConsoleCmd("sm_firstperson", Command_Firstperson, "Type !firstperson to exit thirdperson mode");
 	pEnabledCvar = CreateConVar("sourcecoop_thirdperson_enabled", "1", "Is thirdperson enabled?");
 	pCheatsCvar = FindConVar("sv_cheats");
-	HookConVarChange(pEnabledCvar, CvarChanged);
+	HookConVarChange(pEnabledCvar, EnabledCvarChanged);
 	
 	if (LibraryExists(SRCCOOP_LIBRARY))
 	{
@@ -55,7 +55,7 @@ public void ThirdPersonMenuHandler(TopMenu topmenu, TopMenuAction action, TopMen
 {
 	if (action == TopMenuAction_DisplayOption)
 	{
-		Format(buffer, maxlength, MENUITEM_TOGGLE);
+		Format(buffer, maxlength, "Toggle thirdperson");
 	}
 	else if (action == TopMenuAction_SelectOption)
 	{
@@ -64,13 +64,14 @@ public void ThirdPersonMenuHandler(TopMenu topmenu, TopMenuAction action, TopMen
 	}
 }
 
-public void CvarChanged(ConVar convar, const char[] oldValue, const char[] newValue)
+public void EnabledCvarChanged(ConVar convar, const char[] oldValue, const char[] newValue)
 {
+	bool enable = pEnabledCvar.BoolValue && IsCurrentMapCoop();
 	for(int i = 1; i <= MaxClients; i++)
 	{
 		if(IsClientInGame(i))
 		{
-			if(pEnabledCvar.BoolValue)
+			if(enable)
 			{
 				SendConVarValue(i, pCheatsCvar, "1");
 			}
@@ -87,14 +88,14 @@ public void CvarChanged(ConVar convar, const char[] oldValue, const char[] newVa
 public void OnClientPutInServer(int client)
 {
 	bIsInThirdperson[client] = false;
-	if(pEnabledCvar.BoolValue) {
+	if(pEnabledCvar.BoolValue && IsCurrentMapCoop()) {
 		SendConVarValue(client, pCheatsCvar, "1");
 	}
 }
 
 public Action Command_Thirdperson(int client, int args)
 {
-	if(!pEnabledCvar.BoolValue)
+	if(!pEnabledCvar.BoolValue || !IsCurrentMapCoop())
 	{
 		MsgReply(client, "Thirdperson mode is currently disabled.");
 		return Plugin_Handled;
@@ -106,7 +107,7 @@ public Action Command_Thirdperson(int client, int args)
 
 public Action Command_Firstperson(int client, int args)
 {
-	if(!pEnabledCvar.BoolValue)
+	if(!pEnabledCvar.BoolValue || !IsCurrentMapCoop())
 	{
 		MsgReply(client, "Thirdperson mode is currently disabled");
 		return Plugin_Handled;

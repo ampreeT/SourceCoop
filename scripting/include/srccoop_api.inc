@@ -19,12 +19,21 @@
 /* Predefined TopMenu category for sound settings */
 #define COOPMENU_CATEGORY_SOUNDS "SoundSettings"
 
+/* Predefined TopMenu category for voting actions */
+#define COOPMENU_CATEGORY_VOTING "Voting"
+
 /* Predefined TopMenu category for other settings */
 #define COOPMENU_CATEGORY_OTHER "Other"
 
 /**
  * Retrieves the handle to the coop TopMenu.
  *
- * @return              Handle to the TopMenu,
+ * @return              Handle to the TopMenu
  */
 native TopMenu GetCoopTopMenu();
+
+/**
+ * Returns whether current map is a coop map.
+ *
+ */
+native bool IsCurrentMapCoop();

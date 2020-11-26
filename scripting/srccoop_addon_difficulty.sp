@@ -28,6 +28,7 @@ StringMap g_pMapIgnoredTo;
 StringMap g_pMapIgnoredFrom;
 
 int g_iDifficulty;
+bool bEnabled;
 
 public void OnPluginStart()
 {
@@ -53,10 +54,15 @@ public void OnPluginStart()
 	HookEvent("player_team", Event_PlayerChangeTeam, EventHookMode_PostNoCopy);
 }
 
+public void OnMapStart()
+{
+	bEnabled = IsCurrentMapCoop();
+}
+
 void OnDifficultyChanged(ConVar convar, const char[] oldValue, const char[] newValue)
 {
 	g_iDifficulty = convar.IntValue;
-	if(g_pConvarDifficultyAnnounce.BoolValue)
+	if(bEnabled && g_pConvarDifficultyAnnounce.BoolValue)
 	{
 		MsgAll("Difficulty has changed to %d", g_iDifficulty);
 	}
@@ -126,7 +132,7 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 
 public Action Hook_OnPlayerTakeDamage(int victim, int &attacker, int &inflictor, float &damage, int &damagetype, int &weapon, float damageForce[3], float damagePosition[3])
 {
-	if(g_iDifficulty)
+	if(g_iDifficulty && bEnabled)
 	{
 		CBaseEntity pAttacker = CBaseEntity(attacker);
 		
@@ -141,7 +147,7 @@ public Action Hook_OnPlayerTakeDamage(int victim, int &attacker, int &inflictor,
 
 public Action Hook_OnNpcTakeDamage(int victim, int &attacker, int &inflictor, float &damage, int &damagetype, int &weapon, float damageForce[3], float damagePosition[3])
 {
-	if(g_iDifficulty)
+	if(g_iDifficulty && bEnabled)
 	{
 		CBaseEntity pAttacker = CBaseEntity(attacker);
 		

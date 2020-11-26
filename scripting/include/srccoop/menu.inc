@@ -6,12 +6,8 @@
 TopMenu g_pCoopTopMenu;
 TopMenuObject g_pCoopPlayerSettingsMenu;
 TopMenuObject g_pCoopSoundSettingsMenu;
+TopMenuObject g_pCoopVotingMenu;
 TopMenuObject g_pCoopOthersMenu;
-
-public any Native_GetCoopTopMenu(Handle plugin, int numParams)
-{
-	return g_pCoopTopMenu;
-}
 
 void InitializeMenus()
 {
@@ -22,6 +18,7 @@ void InitializeMenus()
 	g_pCoopTopMenu = new TopMenu(CoopTopMenuHandler);
 	g_pCoopPlayerSettingsMenu = g_pCoopTopMenu.AddCategory(COOPMENU_CATEGORY_PLAYER, CoopTopMenuHandler);
 	g_pCoopSoundSettingsMenu = g_pCoopTopMenu.AddCategory(COOPMENU_CATEGORY_SOUNDS, CoopTopMenuHandler);
+	g_pCoopVotingMenu = g_pCoopTopMenu.AddCategory(COOPMENU_CATEGORY_VOTING, CoopTopMenuHandler);
 	g_pCoopOthersMenu = g_pCoopTopMenu.AddCategory(COOPMENU_CATEGORY_OTHER, CoopTopMenuHandler);
 	
 	char path[PLATFORM_MAX_PATH];
@@ -51,6 +48,10 @@ public void CoopTopMenuHandler(TopMenu topmenu, TopMenuAction action, TopMenuObj
 		{
 			Format(buffer, maxlength, "Sound settings");
 		}
+		else if (topobj_id == g_pCoopVotingMenu)
+		{
+			Format(buffer, maxlength, "Votes");
+		}
 		else if (topobj_id == g_pCoopOthersMenu)
 		{
 			Format(buffer, maxlength, "Other");
@@ -62,6 +63,11 @@ public Action Command_CoopMenu(int client, int args)
 {
 	if (!client)
 	{
+		return Plugin_Handled;
+	}
+	if(!g_pCoopManager.IsCoopModeEnabled())
+	{
+		MsgReply(client, "Coop menu is currently unavailable.");
 		return Plugin_Handled;
 	}
 	g_pCoopTopMenu.Display(client, TopMenuPosition_Start);

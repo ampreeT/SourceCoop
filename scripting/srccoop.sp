@@ -162,13 +162,6 @@ void LoadGameData()
 	CloseHandle(pGameConfig);
 }
 
-public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
-{
-	CreateNative("GetCoopTopMenu", Native_GetCoopTopMenu);
-	RegPluginLibrary(SRCCOOP_LIBRARY);
-	return APLRes_Success;
-}
-
 public void OnPluginStart()
 {
 	LoadGameData();

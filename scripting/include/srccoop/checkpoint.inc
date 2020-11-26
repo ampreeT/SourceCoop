@@ -59,7 +59,7 @@ enum struct CCoopSpawnEntry
 		CanTeleportResult res;
 		if((res = CanTeleportPlayer(pPlayer, vecPosition)) || bForceTeleport)
 		{
-			if(res == YES_MUSTDUCK)
+			if(res == CAN_TP_MUSTDUCK)
 			{
 				pPlayer.StartDucking();
 			}

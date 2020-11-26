@@ -3,6 +3,11 @@
 #endif
 #define _srccoop_utils_included
 
+//------------------------------------------------------
+//------------------------------------------------------
+// DHooks utils
+//------------------------------------------------------
+//------------------------------------------------------
 #if defined _dhooks_included
 stock void LoadDHookDetour(const Handle pGameConfig, Handle& pHandle, const char[] szFuncName, DHookCallback pCallbackPre = INVALID_FUNCTION, DHookCallback pCallbackPost = INVALID_FUNCTION)
 {
@@ -23,6 +28,11 @@ stock void LoadDHookVirtual(const Handle pGameConfig, Handle& pHandle, const cha
 }
 #endif
 
+//------------------------------------------------------
+//------------------------------------------------------
+// Cookie utils
+//------------------------------------------------------
+//------------------------------------------------------
 #if defined _clientprefs_included
 stock bool GetCookieBool(Cookie cookie, int client)
 {
@@ -44,6 +54,11 @@ stock bool IsCookieSet(Cookie cookie, int client)
 }
 #endif
 
+//------------------------------------------------------
+//------------------------------------------------------
+// Text utils
+//------------------------------------------------------
+//------------------------------------------------------
 stock void Msg(int client, const char[] msg, any ...)
 {
 	int len = strlen(msg) + 255;
@@ -160,6 +175,41 @@ stock void UpperCaseString(const char[] szInput, char[] szOutput, int iSize)
 	szOutput[x] = '\0';
 }
 
+stock bool IsAddSynonym(const char[] str)
+{
+	return (strcmp(str, "add", false) == 0 || strcmp(str, "create", false) == 0);
+}
+
+stock bool IsRemoveSynonym(const char[] str)
+{
+	return (strcmp(str, "remove", false) == 0 || strcmp(str, "delete", false) == 0);
+}
+
+stock bool IsModifySynonym(const char[] str)
+{
+	return (strcmp(str, "modify", false) == 0 || strcmp(str, "edit", false) == 0);
+}
+
+stock bool IsReplaceSynonym(const char[] str)
+{
+	return (strcmp(str, "replace", false) == 0 || strcmp(str, "set", false) == 0);
+}
+
+stock bool IsEnableSynonym(const char[] str)
+{
+	return (strcmp(str, "enable", false) == 0 || strcmp(str, "turnon", false) == 0 || strcmp(str, "on", false) == 0);
+}
+
+stock bool IsDisableSynonym(const char[] str)
+{
+	return (strcmp(str, "disable", false) == 0 || strcmp(str, "turnoff", false) == 0 || strcmp(str, "off", false) == 0);
+}
+
+//------------------------------------------------------
+//------------------------------------------------------
+// Entity utils
+//------------------------------------------------------
+//------------------------------------------------------
 stock int FindEntityByHammerID(int iHammerID, const char[] szClassname = "*")
 {
 	int startEnt = -1;
@@ -206,6 +256,11 @@ stock CBaseEntity CreateByClassname(const char[] szClassname)
 	return CBaseEntity(CreateEntityByName(szClassname));
 }
 
+//------------------------------------------------------
+//------------------------------------------------------
+// Player utils
+//------------------------------------------------------
+//------------------------------------------------------
 stock CBlackMesaPlayer GetNearestPlayer(CBaseEntity pOriginEntity, bool bOnlyAlive = true)
 {
 	float vecEntityPosition[3];
@@ -250,24 +305,68 @@ stock int GetRealClientCount(bool bInGameOnly, bool bAliveOnly = false, bool bNo
 
 enum CanTeleportResult
 {
-	NO,
-	YES,
-	YES_MUSTDUCK		//🦆//
+	CAN_TP_NO,
+	CAN_TP_YES,
+	CAN_TP_MUSTDUCK		//🦆//
 }
 
-stock CanTeleportResult CanTeleportPlayer(CBlackMesaPlayer pPlayer, float vecOrigin[3])
+stock CanTeleportResult CanTeleportPlayer(CBlackMesaPlayer pPlayer, float vecOrigin[3], bool bExact = false)
 {
 	bool bDidHit;
 
 	TR_TraceHullFilter(vecOrigin, vecOrigin, view_as<float>(VEC_HULL_MIN), view_as<float>(VEC_HULL_MAX), MASK_PLAYERSOLID|CONTENTS_HITBOX, CanTeleportPlayer_TraceFilter);
 	bDidHit = TR_DidHit();
-	if(!bDidHit) return YES;
+	if(!bDidHit) return CAN_TP_YES;
 	
 	TR_TraceHullFilter(vecOrigin, vecOrigin, view_as<float>(VEC_DUCK_HULL_MIN), view_as<float>(VEC_DUCK_HULL_MAX), MASK_PLAYERSOLID|CONTENTS_HITBOX, CanTeleportPlayer_TraceFilter);
 	bDidHit = TR_DidHit();
-	if(!bDidHit) return YES_MUSTDUCK;
+	if(!bDidHit) return CAN_TP_MUSTDUCK;
 	
-	return NO;
+	if(!bExact)
+	{
+		// try varying the positions in a radius
+		static const float yaw[] = {0.0, 45.0, 90.0, 135.0, 180.0, 225.0, 270.0, 315.0};
+		static const float distance[] = {25.0, 50.0};
+		static const float zDistance[] = {0.0, 25.0, 50.0};
+		
+		for(int z = 0; z < sizeof(zDistance); z++)
+		{
+			for(int d = 0; d < sizeof(distance); d++)
+			{
+				for(int y = 0; y < sizeof(yaw); y++)
+				{
+					if(CanTeleportPlayer_Offset(vecOrigin, yaw[y], distance[d], zDistance[z]))
+					{
+						return CAN_TP_YES;
+					}
+				}
+			}
+		}
+	}
+	
+	return CAN_TP_NO;
+}
+
+stock bool CanTeleportPlayer_Offset(float vecOrigin[3], float yaw, float distance, float z)
+{
+	float newPos[3], angles[3];
+	newPos = vecOrigin; angles[1] = yaw;
+	
+	GetAngleVectors(angles, angles, NULL_VECTOR, NULL_VECTOR);
+	newPos[0] += angles[0] * distance;
+	newPos[1] += angles[1] * distance;
+	newPos[2] += z;
+	
+	//TE_SetupGlowSprite(newPos, PrecacheModel("sprites/orangeglow1.vmt"), 60.0, 0.1, 255); TE_SendToAll();
+	
+	TR_TraceHullFilter(newPos, newPos, view_as<float>(VEC_HULL_MIN), view_as<float>(VEC_HULL_MAX), MASK_PLAYERSOLID|CONTENTS_HITBOX, CanTeleportPlayer_TraceFilter);
+	if(!TR_DidHit())
+	{
+		vecOrigin = newPos;
+		return true;
+	}
+
+  	return false;
 }
 
 public bool CanTeleportPlayer_TraceFilter(int entity, int mask, any data) {
@@ -278,6 +377,64 @@ public bool CanTeleportPlayer_TraceFilter(int entity, int mask, any data) {
 	return true;
 }
 
+/**
+ * Fades a client's screen to a specified color
+ * Your adviced to read the FFADE_ Comments
+ *
+ * @param client		Player for which to fade the screen
+ * @param duration		duration in milliseconds the effect stays
+ * @param mode			fade mode, see FFADE_ defines
+ * @param holdtime		holdtime in milliseconds
+ * @param r				red amount
+ * @param g				green amount
+ * @param b				blue amount
+ * @param a				transparency
+ * @return				True on success, false otherwise
+ */
+stock bool Client_ScreenFade(int client, int duration, int mode, int holdtime=-1, int r=0, int g=0, int b=0, int a=255, bool reliable=true)
+{
+	Handle userMessage = StartMessageOne("Fade", client, (reliable?USERMSG_RELIABLE:0));
+
+	if (userMessage == INVALID_HANDLE)
+	{
+		return false;
+	}
+
+	if (GetFeatureStatus(FeatureType_Native, "GetUserMessageType") == FeatureStatus_Available &&
+		GetUserMessageType() == UM_Protobuf)
+	{
+
+		int color[4];
+		color[0] = r;
+		color[1] = g;
+		color[2] = b;
+		color[3] = a;
+
+		PbSetInt(userMessage,   "duration",   duration);
+		PbSetInt(userMessage,   "hold_time",  holdtime);
+		PbSetInt(userMessage,   "flags",      mode);
+		PbSetColor(userMessage, "clr",        color);
+	}
+	else
+	{
+		BfWriteShort(userMessage,	duration);	// Fade duration
+		BfWriteShort(userMessage,	holdtime);	// Fade hold time
+		BfWriteShort(userMessage,	mode);		// What to do
+		BfWriteByte(userMessage,	r);			// Color R
+		BfWriteByte(userMessage,	g);			// Color G
+		BfWriteByte(userMessage,	b);			// Color B
+		BfWriteByte(userMessage,	a);			// Color Alpha
+	}
+	EndMessage();
+
+	return true;
+}
+
+//------------------------------------------------------
+//------------------------------------------------------
+// Math utils
+//------------------------------------------------------
+//------------------------------------------------------
 stock void ScaleVectors(const float vecA[3], const float vecB[3], float vecResult[3])
 {
 	vecResult[0] = vecA[0] * vecB[0];
@@ -317,84 +474,3 @@ stock bool IsBoxIntersectingBox(const float boxMin1[3], const float boxMax1[3], 
 		return false;
 	return true;
 }
-
-/**
- * Fades a client's screen to a specified color
- * Your adviced to read the FFADE_ Comments
- *
- * @param client		Player for which to fade the screen
- * @param duration		duration in milliseconds the effect stays
- * @param mode			fade mode, see FFADE_ defines
- * @param holdtime		holdtime in milliseconds
- * @param r				red amount
- * @param g				green amount
- * @param b				blue amount
- * @param a				transparency
- * @return				True on success, false otherwise
- */
-stock bool Client_ScreenFade(int client, int duration, int mode, int holdtime=-1, int r=0, int g=0, int b=0, int a=255, bool reliable=true)
-{
-	Handle userMessage = StartMessageOne("Fade", client, (reliable?USERMSG_RELIABLE:0));
-
-	if (userMessage == INVALID_HANDLE) {
-		return false;
-	}
-
-	if (GetFeatureStatus(FeatureType_Native, "GetUserMessageType") == FeatureStatus_Available &&
-		GetUserMessageType() == UM_Protobuf) {
-
-		int color[4];
-		color[0] = r;
-		color[1] = g;
-		color[2] = b;
-		color[3] = a;
-
-		PbSetInt(userMessage,   "duration",   duration);
-		PbSetInt(userMessage,   "hold_time",  holdtime);
-		PbSetInt(userMessage,   "flags",      mode);
-		PbSetColor(userMessage, "clr",        color);
-	}
-	else {
-		BfWriteShort(userMessage,	duration);	// Fade duration
-		BfWriteShort(userMessage,	holdtime);	// Fade hold time
-		BfWriteShort(userMessage,	mode);		// What to do
-		BfWriteByte(userMessage,	r);			// Color R
-		BfWriteByte(userMessage,	g);			// Color G
-		BfWriteByte(userMessage,	b);			// Color B
-		BfWriteByte(userMessage,	a);			// Color Alpha
-	}
-	EndMessage();
-
-	return true;
-}
-
-stock bool IsAddSynonym(const char[] str)
-{
-	return (strcmp(str, "add", false) == 0 || strcmp(str, "create", false) == 0);
-}
-
-stock bool IsRemoveSynonym(const char[] str)
-{
-	return (strcmp(str, "remove", false) == 0 || strcmp(str, "delete", false) == 0);
-}
-
-stock bool IsModifySynonym(const char[] str)
-{
-	return (strcmp(str, "modify", false) == 0 || strcmp(str, "edit", false) == 0);
-}
-
-stock bool IsReplaceSynonym(const char[] str)
-{
-	return (strcmp(str, "replace", false) == 0 || strcmp(str, "set", false) == 0);
-}
-
-stock bool IsEnableSynonym(const char[] str)
-{
-	return (strcmp(str, "enable", false) == 0 || strcmp(str, "turnon", false) == 0 || strcmp(str, "on", false) == 0);
-}
-
-stock bool IsDisableSynonym(const char[] str)
-{
-	return (strcmp(str, "disable", false) == 0 || strcmp(str, "turnoff", false) == 0 || strcmp(str, "off", false) == 0);
-}
-
