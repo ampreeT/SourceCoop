@@ -6,7 +6,11 @@
 	"intro_type"	"none"
 	"equipment"
 	{
-		"item"	"weapon_crowbar"
+		"lookup"
+		{
+			"targetname" "suit"
+		}
+		"item" "item_weapon_crowbar"
 	}
 	"entity"
 	{
@@ -27,19 +31,6 @@
 			"functions"
 			{
 				"delay_output" "OnMapSpawn"
-			}
-		}
-		// spawn items
-		"modify"
-		{
-			"targetname" "suit"
-			"flags"
-			{
-				"spawnflags"
-				{
-					"add" "2" // motion disabled
-					"add" "8" // silent pickup
-				}
 			}
 		}
 		// remove trigger which calls spawn elevator up and closes doors
@@ -134,7 +125,7 @@
 				"add"
 				{
 					"output" "OnTrigger"
-					"target" "_coop_servercommand"
+					"target" "__srccoop_servercommand"
 					"input" "Command"
 					"parameter" "changelevel bm_c1a0b"
 					"delay" "12"
@@ -144,7 +135,7 @@
 		"create"
 		{
 			"classname" "point_servercommand"
-			"targetname" "_coop_servercommand"
+			"targetname" "__srccoop_servercommand"
 		}
 		"create"
 		{

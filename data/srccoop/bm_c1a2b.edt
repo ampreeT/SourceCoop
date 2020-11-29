@@ -2,9 +2,13 @@
 
 "config"
 {
-	"nextmap"	"bm_c1a2c"
+	"nextmap" "bm_c1a2c"
 	"equipment"
 	{
+		"lookup"
+		{
+			"targetname" "items_at_start"
+		}
 	}
 	"entity"
 	{
@@ -19,20 +23,7 @@
 				"rendermode" "10" // dont render
 			}
 		}
-		// spawn items
-		"modify"
-		{
-			"targetname" "items_at_start"
-			"flags"
-			{
-				"spawnflags"
-				{
-					"add" "2" // motion disabled
-					"add" "8" // silent pickup
-				}
-			}
-		}
-		// hc dont spawn immediately
+		// hc: dont spawn immediately
 		"modify"
 		{
 			"targetname" "StairwayHeadcrabSpawn"
@@ -68,6 +59,7 @@
 				}
 			}
 		}
+		// Set up NPC persistance
 		"add"
 		{
 			"classname" "env_global"
@@ -86,7 +78,6 @@
 			"targetname" "grd02_following_c1a2b_global"
 			"globalstate" "grd02_following_c1a2b"
 		}
-		// Set up NPC persistance
 		"modify"
 		{
 			"targetname" "GRD02"

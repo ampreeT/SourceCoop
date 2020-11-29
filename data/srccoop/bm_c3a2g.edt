@@ -2,29 +2,16 @@
 
 "config"
 {
-	"nextmap"	"bm_c3a2h"
+	"nextmap" "bm_c3a2h"
 	"equipment"
 	{
+		"lookup"
+		{
+			"targetname" "/^(ammo|suit|weapons)$/"
+		}
 	}
 	"entity"
 	{
-		// spawn items
-		"modify"
-		{
-			"targetname" "/^(ammo|suit|weapons)$/"
-			"flags"
-			{
-				"spawnflags"
-				{
-					"add" "2" // motion disabled
-					"add" "8" // silent pickup
-				}
-			}
-			"add"
-			{
-				"origin"	"836 2376 540" // ensure all items are inside player
-			}
-		}
 		// First CP trigger
 		"create"
 		{

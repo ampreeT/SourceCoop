@@ -714,7 +714,11 @@ methodmap CBlackMesaPlayer < CBasePlayer
 	}
 	public CBaseAnimating GiveItem(const char[] szItemName)
 	{
-		return CBaseAnimating(GivePlayerItem(this.GetEntIndex(), szItemName));
+		CBaseAnimating pItem = CBaseAnimating(GivePlayerItem(this.GetEntIndex(), szItemName));
+		// this would drop on the ground if player cant pick up any more
+		pItem.OutputAdd("OnUser1", "!self", "kill", _, 0.1);
+		pItem.AcceptInputStr("FireUser1");
+		return pItem;
 	}
 	public CBaseCombatWeapon GiveWeapon(const char[] szWeaponName)
 	{

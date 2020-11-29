@@ -3,12 +3,9 @@
 "config"
 {
 	"nextmap"	"bm_c1a0a"
-	"console"
-	{
-	}
 	"equipment"
 	{
-		"item"	"weapon_crowbar"
+		"item" "item_weapon_crowbar"
 	}
 	"entity"
 	{

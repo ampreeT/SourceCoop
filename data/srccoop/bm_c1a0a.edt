@@ -6,7 +6,7 @@
 	"intro_type"	"none"
 	"equipment"
 	{
-		"item"	"weapon_crowbar"
+		"item" "item_weapon_crowbar"
 	}
 	"entity"
 	{
@@ -54,6 +54,7 @@
 		"modify"
 		{
 			"targetname" "bm_c1a0a_bm_c1a0b"
+			"classname" "trigger_changelevel"
 			"add"
 			{
 				"StartDisabled" "1"

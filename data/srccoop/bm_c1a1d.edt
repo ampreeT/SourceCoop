@@ -2,9 +2,13 @@
 
 "config"
 {
-	"nextmap"	"bm_c1a1e"
+	"nextmap" "bm_c1a1e"
 	"equipment"
 	{
+		"lookup"
+		{
+			"targetname" "/^(suit|weapons)$/"
+		}
 	}
 	"entity"
 	{
@@ -17,19 +21,6 @@
 			{
 				"classname" "func_brush"
 				"rendermode" "10" // dont render
-			}
-		}
-		// spawn items
-		"modify"
-		{
-			"targetname" "/^(suit|weapons)$/"
-			"flags"
-			{
-				"spawnflags"
-				{
-					"add" "2" // motion disabled
-					"add" "8" // silent pickup
-				}
 			}
 		}
 		// door closing trigger

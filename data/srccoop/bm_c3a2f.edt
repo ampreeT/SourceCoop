@@ -2,30 +2,16 @@
 
 "config"
 {
-	"nextmap"	"bm_c3a2g"
+	"nextmap" "bm_c3a2g"
 	"equipment"
 	{
+		"lookup"
+		{
+			"targetname" "/^(ammo|suit|weapons)$/"
+		}
 	}
 	"entity"
 	{
-		
-		// spawn items
-		"modify"
-		{
-			"targetname" "/^(ammo|suit|weapons)$/"
-			"flags"
-			{
-				"spawnflags"
-				{
-					"add" "2" // motion disabled
-					"add" "8" // silent pickup
-				}
-			}
-			"add"
-			{
-				"origin"	"-952 -144 -780" // ensure all items are inside player
-			}
-		}
 		// Block prev changlevel
 		"modify"
 		{

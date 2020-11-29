@@ -2,25 +2,16 @@
 
 "config"
 {
-	"nextmap"	"bm_c3a2a"
+	"nextmap" "bm_c3a2a"
 	"equipment"
 	{
+		"lookup"
+		{
+			"targetname" "c3a1a_equipment"
+		}
 	}
 	"entity"
 	{
-		// spawn items
-		"modify"
-		{
-			"targetname" "c3a1a_equipment"
-			"flags"
-			{
-				"spawnflags"
-				{
-					"add" "2" // motion disabled
-					"add" "8" // silent pickup
-				}
-			}
-		}
 	}
 	"checkpoint"
 	{

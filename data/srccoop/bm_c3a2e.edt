@@ -2,29 +2,16 @@
 
 "config"
 {
-	"nextmap"	"bm_c3a2c"
+	"nextmap" "bm_c3a2c"
 	"equipment"
 	{
+		"lookup"
+		{
+			"targetname" "/^(ammo|suit|weapons)$/"
+		}
 	}
 	"entity"
 	{
-		// spawn items
-		"modify"
-		{
-			"targetname" "/^(ammo|suit|weapons)$/"
-			"flags"
-			{
-				"spawnflags"
-				{
-					"add" "2" // motion disabled
-					"add" "8" // silent pickup
-				}
-			}
-			"set"
-			{
-				"origin" "-1056 -240 440"
-			}
-		}
 		// fix logic_auto not firing
 		"modify"
 		{

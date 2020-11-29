@@ -29,3 +29,10 @@ enum OperatingSystem
     OS_Linux,
     OS_Mac
 }
+
+enum IntroType
+{
+	INTRO_NONE = 0,
+	INTRO_FADE,
+	INTRO_FREEZE
+}

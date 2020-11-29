@@ -84,7 +84,6 @@ enum struct CCoopWeaponEntry
 enum struct CCoopEquipment
 {
 	Array_t m_pWeaponList;
-	bool m_bHasSuit;
 	int m_iHealth;
 	int m_iArmor;
 	int m_iAmmoCount[MAX_AMMO_TYPES];
@@ -97,7 +96,6 @@ enum struct CCoopEquipment
 	void Clear()
 	{
 		this.m_pWeaponList.Clear();
-		this.m_bHasSuit = false;
 		this.m_iHealth = -1;
 		this.m_iArmor = -1;
 		
@@ -123,6 +121,7 @@ enum struct CCoopSpawn
 		this.m_pCheckpointList.Clear();
 		this.m_pDefaultEquipment.Clear();
 	}
+	
 	void Initialize()
 	{
 		PrecacheScriptSound(SND_BRINGALL);
@@ -130,6 +129,7 @@ enum struct CCoopSpawn
 		this.m_pCheckpointList = new Array_t(CreateArray(sizeof(CCoopSpawnEntry)));
 		this.m_pDefaultEquipment.Initialize();
 	}
+	
 	bool GetCheckpointByIndex(int iIndex, CCoopSpawnEntry pCheckpoint)
 	{
 		if(this.m_pCheckpointList.Length > iIndex)
@@ -139,10 +139,12 @@ enum struct CCoopSpawn
 		}
 		return false;
 	}
+	
 	bool GetCurrentCheckpoint(CCoopSpawnEntry pCheckpoint)
 	{
 		return this.GetCheckpointByIndex(this.m_iCurrentCheckpoint, pCheckpoint);
 	}
+	
 	int FindCheckpointByOutput(CBaseEntity pCaller, const char[] szOutput, CCoopSpawnEntry pCheckpoint)
 	{
 		CCoopSpawnEntry pEntry;
@@ -157,6 +159,7 @@ enum struct CCoopSpawn
 		}
 		return -1;
 	}
+	
 	void AddCheckpoint(CCoopSpawnEntry pCheckpoint)
 	{
 		int iIndex = this.m_pCheckpointList.PushArray(pCheckpoint);
@@ -169,6 +172,7 @@ enum struct CCoopSpawn
 			this.ActivateCheckpoint(iIndex);
 		}
 	}
+	
 	bool ActivateCheckpoint(int iIndex)
 	{
 		if(this.m_iCurrentCheckpoint < iIndex < this.m_pCheckpointList.Length)
@@ -186,7 +190,8 @@ enum struct CCoopSpawn
 					this.m_iCurrentCheckpoint = i;
 					if(pCheckpoint.m_bBringAllPlayers)
 					{
-						for (int pp = 0; pp <= MaxClients; pp++) {
+						for (int pp = 0; pp <= MaxClients; pp++)
+						{
 							CBlackMesaPlayer pPlayer = CBlackMesaPlayer(pp);
 							if(pPlayer.IsValid() && pPlayer.IsAlive())
 							{
@@ -201,6 +206,7 @@ enum struct CCoopSpawn
 		}
 		return false;
 	}
+	
 	void SpawnPlayerEquipment(CBlackMesaPlayer pPlayer)
 	{
 		if(this.m_pDefaultEquipment.m_iHealth > 0)
@@ -220,11 +226,8 @@ enum struct CCoopSpawn
 				pPlayer.GiveItem(pWeaponEntry.m_szClassname);
 			}
 		}
-		if (this.m_pDefaultEquipment.m_bHasSuit)
-		{
-			pPlayer.SetSuit(true);
-		}
 	}
+	
 	void SpawnPlayer(CBlackMesaPlayer pPlayer, bool bSpawnEquipment = true)
 	{
 		CCoopSpawnEntry pCheckpoint;
@@ -234,8 +237,13 @@ enum struct CCoopSpawn
 			pCheckpoint.TeleportPlayer(pPlayer, true);
 		}
 		RequestFrame(RequestSpawnPlayer, pPlayer);
-		this.m_bSpawnEquipmentFlag[pPlayer.GetEntIndex()] = bSpawnEquipment;
+		if(bSpawnEquipment)
+		{
+			this.SpawnPlayerEquipment(pPlayer);
+		}
+		//this.m_bSpawnEquipmentFlag[pPlayer.GetEntIndex()] = bSpawnEquipment;
 	}
+	
 	void CreatePortal(const float vecPosition[3])
 	{
 		CBaseEntity pParticle = CBaseEntity(CreateEntityByName("info_particle_system"));
@@ -257,8 +265,9 @@ enum struct CCoopSpawn
 			SDKHook(pParticle.GetEntIndex(), SDKHook_StartTouchPost, Hook_TouchPortal);
 		}
 	}
+	
 	void ParseConfigFile(KeyValues kv)
-	{	
+	{
 		if (kv.GotoFirstSubKey(false))
 		{
 			do
@@ -283,7 +292,7 @@ enum struct CCoopSpawn
 			kv.GoBack();
 		}
 	}
-	
+
 	void ParseCheckpoint(KeyValues kv)
 	{
 		if (kv.GotoFirstSubKey(true))
@@ -293,16 +302,7 @@ enum struct CCoopSpawn
 				char szSectionName[MAX_KEY];
 				if (kv.GetSectionName(szSectionName, sizeof(szSectionName)))
 				{
-					if(StrEqual(szSectionName, "#if", false))
-					{
-						if(ParseConditions(kv) && kv.JumpToKey("#then"))
-						{
-							this.ParseCheckpoint(kv);
-							kv.GoBack();
-						}
-						continue;
-					}
-					
+					EVAL_CONDITIONS(szSectionName, kv, this.ParseCheckpoint(kv))
 					CCoopSpawnEntry pEntry;
 					pEntry.Initialize();
 					
@@ -408,39 +408,12 @@ enum struct CCoopSpawn
 				char szValue[MAX_VALUE];
 				if (kv.GetSectionName(szKey, sizeof(szKey)))
 				{
-					if(StrEqual(szKey, "#if", false))
-					{
-						if(ParseConditions(kv) && kv.JumpToKey("#then"))
-						{
-							this.ParseEquipment(kv);
-							kv.GoBack();
-						}
-						continue;
-					}
+					EVAL_CONDITIONS(szKey, kv, this.ParseEquipment(kv))
 					
 					if (kv.GetDataType(NULL_STRING) != KvData_None)
 					{
 						kv.GetString(NULL_STRING, szValue, sizeof(szValue));
-						if (strcmp(szKey, "suit", false) == 0)
-						{
-							int iValue = 0;
-							bool bIsTrue = strcmp(szValue, "true", false) == 0;
-							bool bIsFalse = strcmp(szValue, "false", false) == 0;
-							
-							if (bIsTrue || bIsFalse)
-							{
-								this.m_pDefaultEquipment.m_bHasSuit = bIsTrue;
-							}
-							else if (StringToIntEx(szValue, iValue))
-							{
-								this.m_pDefaultEquipment.m_bHasSuit = view_as<bool>(iValue);
-							}
-							else
-							{
-								ThrowError("Suit parameter is not a string or integer");
-							}
-						}
-						else if (strcmp(szKey, "health", false) == 0)
+						if (strcmp(szKey, "health", false) == 0)
 						{
 							if (!StringToIntEx(szValue, this.m_pDefaultEquipment.m_iHealth))
 								ThrowError("Health parameter is not a integer");
@@ -546,10 +519,6 @@ enum struct CCoopSpawn
 								while (kv.GotoNextKey(false));
 								kv.GoBack();
 							}
-						}
-						else
-						{
-							ThrowError("Could not find parameter type %s", szKey);
 						}
 					}
 				}

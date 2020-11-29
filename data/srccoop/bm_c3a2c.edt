@@ -2,32 +2,19 @@
 
 "config"
 {
-	"nextmap"	"bm_c3a2d"
-	"nextmap"	"bm_c3a2e"
-	"nextmap"	"bm_c3a2f"
-	"intro_type"	"none"
+	"nextmap" "bm_c3a2d"
+	"nextmap" "bm_c3a2e"
+	"nextmap" "bm_c3a2f"
+	"intro_type" "none"
 	"equipment"
 	{
+		"lookup"
+		{
+			"targetname" "/^(ammo|suit|weapons)$/"
+		}
 	}
 	"entity"
 	{
-		// spawn items
-		"modify"
-		{
-			"targetname" "/^(ammo|suit|weapons)$/"
-			"flags"
-			{
-				"spawnflags"
-				{
-					"add" "2" // motion disabled
-					"add" "8" // silent pickup
-				}
-			}
-			"set"
-			{
-				"origin" "92 1296 1007.51"
-			}
-		}
 		// delay map start
 		"modify"
 		{
@@ -140,10 +127,10 @@
 		
 		// Globalstate stuff
 		// -----------------
-		"#if"
+		#if
 		{
 			"globalstate" "blue_pump_on"
-			"#then"
+			#then
 			{
 				"remove"
 				{
@@ -167,10 +154,10 @@
 				}
 			}
 		}
-		"#if"
+		#if
 		{
 			"globalstate" "orange_pump_on"
-			"#then"
+			#then
 			{
 				"remove"
 				{
@@ -194,14 +181,14 @@
 				}
 			}
 		}
-		"#if"
+		#if
 		{
-			"#any"
+			#any
 			{
 				"globalstate" "blue_pump_on"
 				"globalstate" "orange_pump_on"
 			}
-			"#then"
+			#then
 			{
 				"remove"
 				{
@@ -229,10 +216,10 @@
 			"followid"	"transition_elevator"
 		}
 		
-		"#if"
+		#if
 		{
 			"prevmap"	"bm_c3a2d"
-			"#then"
+			#then
 			{
 				"return_c3a2d"
 				{
@@ -242,10 +229,10 @@
 			}
 		}
 		
-		"#if"
+		#if
 		{
 			"prevmap"	"bm_c3a2e"
-			"#then"
+			#then
 			{
 				"return_c3a2e"
 				{

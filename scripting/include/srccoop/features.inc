@@ -14,7 +14,9 @@ enum SourceCoopFeature
 	FT_NO_FRIENDLYFIRE			=	(1 << 4),
 	FT_NOBLOCK					=	(1 << 5),
 	FT_SHOW_WELCOME_MESSAGE		=	(1 << 6),
-	FT_HEV_SOUNDS				=	(1 << 7)
+	FT_HEV_SOUNDS				=	(1 << 7),
+	FT_STRIP_DEFAULT_EQUIPMENT	=	(1 << 8),
+	FT_DISABLE_CANISTER_DROPS	=	(1 << 9)
 }
 
 methodmap FeatureMap < StringMap
@@ -31,6 +33,8 @@ methodmap FeatureMap < StringMap
 		pMap.SetValue("NOBLOCK", FT_NOBLOCK);
 		pMap.SetValue("SHOW_WELCOME_MESSAGE", FT_SHOW_WELCOME_MESSAGE);
 		pMap.SetValue("HEV_SOUNDS", FT_HEV_SOUNDS);
+		pMap.SetValue("STRIP_DEFAULT_EQUIPMENT", FT_STRIP_DEFAULT_EQUIPMENT);
+		pMap.SetValue("DISABLE_CANISTER_DROPS", FT_DISABLE_CANISTER_DROPS);
 		
 		return view_as<FeatureMap>(pMap);
 	}

@@ -2,25 +2,16 @@
 
 "config"
 {
-	"nextmap"	"bm_c1a2a"
+	"nextmap" "bm_c1a2a"
 	"equipment"
 	{
+		"lookup"
+		{
+			"targetname" "/^(suit|weapons)$/"
+		}
 	}
 	"entity"
 	{
-		// spawn items
-		"modify"
-		{
-			"targetname" "/^(suit|weapons)$/"
-			"flags"
-			{
-				"spawnflags"
-				{
-					"add" "2" // motion disabled
-					"add" "8" // silent pickup
-				}
-			}
-		}
 		// enable fall killtrig
 		"modify"
 		{

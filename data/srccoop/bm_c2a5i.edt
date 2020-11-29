@@ -2,25 +2,16 @@
 
 "config"
 {
-	// TODO: Mortar target picker does not work
-	"nextmap"	"bm_c3a1a"
+	"nextmap" "bm_c3a1a"
 	"equipment"
 	{
+		"lookup"
+		{
+			"targetname" "/^(c2a5i_equipment_weapons|c2a5i_equipment_ammo|c2a5i_equipment_misc)$/"
+		}
 	}
 	"entity"
 	{
-		"modify"
-		{
-			"targetname" "/^(c2a5i_equipment_weapons|c2a5i_equipment_ammo|c2a5i_equipment_misc)$/"
-			"flags"
-			{
-				"spawnflags"
-				{
-					"add" "2" // motion disabled
-					"add" "8" // silent pickup
-				}
-			}
-		}
 		// merge these triggers for edge case
 		"delete"
 		{

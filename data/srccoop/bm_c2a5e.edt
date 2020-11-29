@@ -2,24 +2,16 @@
 
 "config"
 {
-	"nextmap"	"bm_c2a5f"
+	"nextmap" "bm_c2a5f"
 	"equipment"
 	{
+		"lookup"
+		{
+			"targetname" "/^(c2a5e_equipment_weapons|c2a5e_equipment_ammo|c2a5e_equipment_misc)$/"
+		}
 	}
 	"entity"
 	{
-		"modify"
-		{
-			"targetname" "/^(c2a5e_equipment_weapons|c2a5e_equipment_ammo|c2a5e_equipment_misc)$/"
-			"flags"
-			{
-				"spawnflags"
-				{
-					"add" "2" // motion disabled
-					"add" "8" // silent pickup
-				}
-			}
-		}
 		// Kill the end game condition for triggering the tripmines...
 		// TODO: How should we *actually* handle this?
 		"delete"

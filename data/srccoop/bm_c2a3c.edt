@@ -2,29 +2,16 @@
 
 "config"
 {
-	"nextmap"	"bm_c2a4a"
+	"nextmap" "bm_c2a4a"
 	"equipment"
 	{
+		"lookup"
+		{
+			"targetname" "/^(player_spawn_weapon|player_spawn_ammo|player_spawn_suit|player_spawn_battery)$/"
+		}
 	}
 	"entity"
 	{
-		"modify"
-		{
-			"targetname" "/^(player_spawn_weapon|player_spawn_ammo|player_spawn_suit|player_spawn_battery)$/"
-			"flags"
-			{
-				"spawnflags"
-				{
-					"add" "2" // motion disabled
-					"add" "8" // silent pickup
-				}
-			}
-			// Move equipment to new spawn location
-			"add"
-			{
-				"origin" "800 128 90"
-			}
-		}
 		// Change level instead of activating the teleport
 		"modify"
 		{

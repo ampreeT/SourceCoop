@@ -4,19 +4,16 @@
 {
 	"nextmap"		"bm_c0a0b"
 	"intro_type"	"fade"
-	"console"
-	{
-	}
 	"equipment"
 	{
-		"item"	"weapon_crowbar"
+		"item" "item_weapon_crowbar"
 	}
 	"entity"
 	{
 		// delay map start
 		"modify"
 		{
-			"classname"	"logic_auto"
+			"classname" "logic_auto"
 			"hammerid" "612340"
 			"functions"
 			{

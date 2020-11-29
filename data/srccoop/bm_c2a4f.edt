@@ -2,26 +2,46 @@
 
 "config"
 {
-	"nextmap"	"bm_c2a4g"
-	"nextmap"	"bm_c2a4h"
+	"nextmap" "bm_c2a4g"
+	"nextmap" "bm_c2a4h"
 	"equipment"
 	{
-	}
-	"entity"
-	{
-		// spawn items
-		"modify"
+		#if
 		{
-			"targetname" "/^(weapons|suit)$/"
-			"flags"
+			// Return from c2a4g
+			"globalstate" "c2a4g_pl_fired"
+			#then
 			{
-				"spawnflags"
+				"item" "item_suit"
+				"item" "item_weapon_357"
+				"item" "item_weapon_crowbar"
+				"item" "item_weapon_frag"
+				"item" "item_weapon_glock"
+				"item" "item_weapon_satchel"
+				"item" "item_weapon_glock"
+				"item" "item_weapon_frag"
+				"item" "item_weapon_crossbow"
+				"item" "item_weapon_mp5"
+				"item" "item_ammo_mp5"
+				"item" "item_ammo_mp5"
+				"item" "item_weapon_shotgun"
+				"item" "item_ammo_shotgun"
+				"item" "item_ammo_357"
+				"item" "item_weapon_tau"
+				"item" "item_ammo_energy"
+				"item" "item_ammo_energy"
+			}
+			#else
+			{
+				"lookup"
 				{
-					"add" "2" // motion disabled
-					"add" "8" // silent pickup
+					"targetname" "/^(suit|weapons)$/"
 				}
 			}
 		}
+	}
+	"entity"
+	{
 		// Allow tests to kill players too
 		"modify"
 		{
@@ -157,149 +177,13 @@
 				}
 			}
 		}
-		// Return from c2a4g
-		"#if"
-		{
-			"globalstate" "c2a4g_pl_fired"
-			"#then"
-			{
-				// Equipment for return from c2a4g spawnflags 10 (2 and 8) for disable motion & silent pickup
-				"create"
-				{
-					"origin" "384 2560 -400"
-					"spawnflags" "10"
-					"angles"	"0 270 0"
-					"classname" "item_suit"
-				}
-				"create"
-				{
-					"origin" "384 2560 -400"
-					"spawnflags" "10"
-					"angles"	"0 270 0"
-					"classname" "item_weapon_357"
-				}
-				"create"
-				{
-					"origin" "384 2560 -400"
-					"spawnflags" "10"
-					"angles"	"0 270 0"
-					"classname" "item_weapon_crowbar"
-				}
-				"create"
-				{
-					"origin" "384 2560 -400"
-					"spawnflags" "10"
-					"angles"	"0 270 0"
-					"classname" "item_weapon_frag"
-				}
-				"create"
-				{
-					"origin" "384 2560 -400"
-					"spawnflags" "10"
-					"angles"	"0 270 0"
-					"classname" "item_weapon_glock"
-				}
-				"create"
-				{
-					"origin" "384 2560 -400"
-					"spawnflags" "10"
-					"angles"	"0 270 0"
-					"classname" "item_weapon_satchel"
-				}
-				"create"
-				{
-					"origin" "384 2560 -400"
-					"spawnflags" "10"
-					"angles"	"0 270 0"
-					"classname" "item_weapon_glock"
-				}
-				"create"
-				{
-					"origin" "384 2560 -400"
-					"spawnflags" "10"
-					"angles"	"0 270 0"
-					"classname" "item_weapon_frag"
-				}
-				"create"
-				{
-					"origin" "384 2560 -400"
-					"spawnflags" "10"
-					"angles"	"0 270 0"
-					"classname" "item_weapon_crossbow"
-				}
-				"create"
-				{
-					"classname" "item_weapon_mp5"
-					"origin" "384 2560 -400"
-					"spawnflags" "10"
-					"angles"	"0 270 0"
-				}
-				"create"
-				{
-					"classname" "item_ammo_mp5"
-					"origin" "384 2560 -400"
-					"spawnflags" "10"
-					"angles"	"0 270 0"
-				}
-				"create"
-				{
-					"classname" "item_ammo_mp5"
-					"origin" "384 2560 -400"
-					"spawnflags" "10"
-					"angles"	"0 270 0"
-				}
-				"create"
-				{
-					"classname" "item_weapon_shotgun"
-					"origin" "384 2560 -400"
-					"spawnflags" "10"
-					"angles"	"0 270 0"
-				}
-				"create"
-				{
-					"classname" "item_ammo_shotgun"
-					"origin" "384 2560 -400"
-					"spawnflags" "10"
-					"angles"	"0 270 0"
-				}
-				"create"
-				{
-					"classname" "item_ammo_357"
-					"origin" "384 2560 -400"
-					"spawnflags" "10"
-					"angles"	"0 270 0"
-				}
-				"create"
-				{
-					"classname" "item_weapon_tau"
-					"origin" "384 2560 -400"
-					"spawnflags" "10"
-					"angles"	"0 270 0"
-				}
-				"create"
-				{
-					"classname" "item_ammo_energy"
-					"origin" "384 2560 -400"
-					"spawnflags" "10"
-					"angles"	"0 270 0"
-				}
-				"create"
-				{
-					"classname" "item_ammo_energy"
-					"origin" "384 2560 -400"
-					"spawnflags" "10"
-					"angles"	"0 270 0"
-				}
-			}
-		}
 	}
 	"checkpoint"
 	{
-		// Coming from c2a4e (QE map 1)
-		"#if"
+		#if
 		{
-			"!globalstate" "c2a4g_pl_fired"
-			"#then"
+			"!globalstate" "c2a4g_pl_fired" 
+			#then // Coming from c2a4e (QE map 1)
 			{
 				"spawn"
 				{
@@ -321,12 +205,7 @@
 					"output"	"OnTrigger"
 				}
 			}
-		}
-		// Return from c2a4g
-		"#if"
-		{
-			"globalstate" "c2a4g_pl_fired"
-			"#then"
+			#else // Return from c2a4g
 			{
 				"spawn2"
 				{

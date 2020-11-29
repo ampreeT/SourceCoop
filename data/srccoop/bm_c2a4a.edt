@@ -2,26 +2,17 @@
 
 "config"
 {
-	"nextmap"	"bm_c2a4b"
+	"nextmap" "bm_c2a4b"
 	"equipment"
 	{
 		"health" "45"
+		"lookup"
+		{
+			"targetname" "suit"
+		}
 	}
 	"entity"
 	{
-		// spawn items
-		"modify"
-		{
-			"targetname" "suit"
-			"flags"
-			{
-				"spawnflags"
-				{
-					"add" "2" // motion disabled
-					"add" "8" // silent pickup
-				}
-			}
-		}
 		// delay map start
 		"modify"
 		{

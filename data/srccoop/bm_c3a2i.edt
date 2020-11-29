@@ -2,13 +2,13 @@
 
 "config"
 {
-	"nextmap"	"bm_c4a1a"
+	"nextmap" "bm_c4a1a"
+	"intro_type" "none"
 	"equipment"
 	{
 		// Players are meant to have all weapons,
 		// full health, suit, and ammo at this point
-		// TODO: players respawning at checkpoints don't get any equipment
-		"suit"	"1"
+		"item" "item_suit"
 		// Full suit battery
 		"item" "item_battery"
 		"item" "item_battery"
@@ -87,6 +87,16 @@
 	}
 	"entity"
 	{
+		// Delay map start
+		"modify"
+		{
+			"classname" "logic_auto"
+			"OnMapSpawn" "/^airlock_door1SetAnimation/"
+			"functions"
+			{
+				"delay_output" "OnMapSpawn"
+			}
+		}
 		// Don't delete all the prop_dynamics in the airlock lmao
 		"delete"
 		{
@@ -103,18 +113,30 @@
 					"target"	"airlock_door2_portal1"
 					"input"	"Close"
 				}
-
-				// prevent the entrance door from closing until
-				// checkpoint equipment bug is fixed
-				"remove"
+			}
+		}
+		// Reload map when timer runs out
+		"modify"
+		{
+			"outputs"
+			{
+				"modify"
 				{
-					"target"	"airlock_door2"
-				}
-				"remove"
-				{
-					"target"	"tele_door_block"
+					"target" "load_save"
+					"input" "Reload"
+					"replace"
+					{
+						"target" "__srccoop_servercommand"
+						"input" "Command"
+						"parameter" "changelevel bm_c3a2i"
+					}
 				}
 			}
+		}
+		"create"
+		{
+			"classname" "point_servercommand"
+			"targetname" "__srccoop_servercommand"
 		}
 	}
 	"checkpoint"
@@ -124,14 +146,13 @@
 			"origin"	"2240 -320 32"
 			"angles"	"0 90 0"
 		}
-		// disabled until equipment bug is fixed
-		// "arena"
-		// {
-		// 	"origin"	"893 0 8"
-		// 	"angles"	"0 180 0"
-		// 	"triggerid"	"sci11_beginwalk"
-		// 	"output"	"OnTrigger"
-		// 	"portal"	"1144 0 40"
-		// }
+		"arena"
+		{
+			"origin"	"893 0 8"
+			"angles"	"0 180 0"
+			"triggerid"	"sci11_beginwalk"
+			"output"	"OnTrigger"
+			"portal"	"1144 0 40"
+		}
 	}
 }

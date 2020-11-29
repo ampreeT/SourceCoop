@@ -2,25 +2,16 @@
 
 "config"
 {
-	"nextmap"	"bm_c2a5a"
+	"nextmap" "bm_c2a5a"
 	"equipment"
 	{
+		"lookup"
+		{
+			"targetname" "/^(c2a4h_suit|c2a4h_weapons|c2a4h_ammo)$/"
+		}
 	}
 	"entity"
 	{
-		// spawn items
-		"modify"
-		{
-			"targetname" "/^(c2a4h_suit|c2a4h_weapons|c2a4h_ammo)$/"
-			"flags"
-			{
-				"spawnflags"
-				{
-					"add" "2" // motion disabled
-					"add" "8" // silent pickup
-				}
-			}
-		}
 		// create sci from last map
 		"create"
 		{

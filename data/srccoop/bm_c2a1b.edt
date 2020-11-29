@@ -2,10 +2,10 @@
 
 "config"
 {
-	"nextmap"	"bm_c2a1a"
+	"nextmap" "bm_c2a1a"
 	"equipment"
 	{
-		"suit" "1"
+		"item" "item_suit"
 		"item" "item_weapon_shotgun"
 		"item" "item_weapon_mp5"
 		"item" "item_weapon_357"

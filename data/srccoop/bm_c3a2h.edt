@@ -2,29 +2,16 @@
 
 "config"
 {
-	"nextmap"	"bm_c3a2i"
+	"nextmap" "bm_c3a2i"
 	"equipment"
 	{
+		"lookup"
+		{
+			"targetname" "/^(ammo|suit|weapons)$/"
+		}
 	}
 	"entity"
 	{
-		// spawn items
-		"modify"
-		{
-			"targetname" "/^(ammo|suit|weapons)$/"
-			"flags"
-			{
-				"spawnflags"
-				{
-					"add" "2" // motion disabled
-					"add" "8" // silent pickup
-				}
-			}
-			"add"
-			{
-				"origin"	"0 -1680 -1010" // ensure all items are inside player
-			}
-		}
 		// this portal should never close
 		"modify"
 		{

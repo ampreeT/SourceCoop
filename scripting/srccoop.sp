@@ -157,7 +157,9 @@ void LoadGameData()
 	LoadDHookDetour(pGameConfig, hkResolveNames, "CAI_GoalEntity::ResolveNames", Hook_ResolveNames, Hook_ResolveNamesPost);
 	LoadDHookDetour(pGameConfig, hkCanSelectSchedule, "CAI_LeadBehavior::CanSelectSchedule", Hook_CanSelectSchedule);
 	LoadDHookDetour(pGameConfig, hkPickup_ForcePlayerToDropThisObject, "Pickup_ForcePlayerToDropThisObject", Hook_ForcePlayerToDropThisObject);
-	LoadDHookDetour(pGameConfig, hkSetPlayerAvoidState, "CAI_BaseNPC::SetPlayerAvoidState", Hook_SetPlayerAvoidState);
+	
+	// Disabled until we can avoid the annoying physics mayhem bug this causes
+	//LoadDHookDetour(pGameConfig, hkSetPlayerAvoidState, "CAI_BaseNPC::SetPlayerAvoidState", Hook_SetPlayerAvoidState);
 	
 	CloseHandle(pGameConfig);
 }
@@ -240,7 +242,7 @@ public void OnConfigsExecuted()
 
 public void OnConfigsExecutedPost()
 {
-	if (g_pCoopManager.IsCoopModeEnabled())
+	if (g_pCoopManager.IsFeatureEnabled(FT_STRIP_DEFAULT_EQUIPMENT))
 	{
 		CBaseEntity pGameEquip = CreateByClassname("game_player_equip");	// will spawn players with nothing if it exists
 		if (pGameEquip.IsValid())
@@ -248,6 +250,9 @@ public void OnConfigsExecutedPost()
 			pGameEquip.SetSpawnFlags(SF_PLAYER_EQUIP_STRIP_SUIT);
 			pGameEquip.Spawn();
 		}
+	}
+	if (g_pCoopManager.IsFeatureEnabled(FT_DISABLE_CANISTER_DROPS))
+	{
 		CBaseEntity pGameGamerules = CreateByClassname("game_mp_gamerules");
 		if (pGameGamerules.IsValid())
 		{

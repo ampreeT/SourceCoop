@@ -2,25 +2,16 @@
 
 "config"
 {
-	"nextmap"	"bm_c1a3c"
+	"nextmap" "bm_c1a3c"
 	"equipment"
 	{
+		"lookup"
+		{
+			"targetname" "/^(suit|weapons|ammo)$/"
+		}
 	}
 	"entity"
 	{
-		// spawn items
-		"modify"
-		{
-			"targetname" "/^(suit|weapons|ammo)$/"
-			"flags"
-			{
-				"spawnflags"
-				{
-					"add" "2" // motion disabled
-					"add" "8" // silent pickup
-				}
-			}
-		}
 		// delay map start
 		"modify"
 		{
@@ -31,10 +22,22 @@
 				"delay_output" "OnMapSpawn"
 			}
 		}
-		// cannot use this as intended in mp
-		"delete"
+		// conveyor sounds
+		"modify"
 		{
-			"targetname" "conveyor_sounds"
+			"targetname" "/^snds_conveyors/"
+			"classname" "ambient_generic"
+			"flags"
+			{
+				"spawnflags"
+				{
+					"remove" "16" // start silent
+				}
+			}
+			"set"
+			{
+				"targetname" ""
+			}
 		}
 		// prepare changelevel for touch trigger
 		"modify"

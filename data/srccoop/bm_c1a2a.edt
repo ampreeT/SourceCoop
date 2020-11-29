@@ -2,10 +2,14 @@
 
 "config"
 {
-	"nextmap"	"bm_c1a2b"
+	"nextmap" "bm_c1a2b"
 	"intro_type" "none"
 	"equipment"
 	{
+		"lookup"
+		{
+			"targetname" "items_at_start"
+		}
 	}
 	"entity"
 	{
@@ -16,19 +20,6 @@
 			"functions"
 			{
 				"delay_output" "OnMapSpawn"
-			}
-		}
-		// spawn items
-		"modify"
-		{
-			"targetname" "items_at_start"
-			"flags"
-			{
-				"spawnflags"
-				{
-					"add" "2" // motion disabled
-					"add" "8" // silent pickup
-				}
 			}
 		}
 		// remove blockers
@@ -98,48 +89,49 @@
 			}
 		}
 		// Set up NPC persistance
-		"add"
-		{
-			"classname" "env_global"
-			"targetname" "grd01_following_c1a2a_global"
-			"globalstate" "grd01_following_c1a2a"
-		}
-		"modify"
-		{
-			"targetname" "Grd01_storage"
-			"outputs"
-			{
-				"add"
-				{
-					"target" "grd01_following_c1a2a_global"
-					"output" "OnDeath"
-					"input"	"TurnOff"
-				}
-			}
-		}
-		"add"
-		{
-			"classname" "trigger_once"
-			"targetname" "grd01_following_c1a2a_global_trig"
-			"filtername" "grd01_filter"
-			"spawnflags" "2"
-			"functions"
-			{
-				"copy_model"
-				{
-					"hammerid" "1257106"
-				}
-			}
-			"outputs"
-			{
-				"add"
-				{
-					"target" "grd01_following_c1a2a_global"
-					"output" "OnTrigger"
-					"input"	"TurnOn"
-				}
-			}
-		}
+		// TODO fix
+//		"add"
+//		{
+//			"classname" "env_global"
+//			"targetname" "grd01_following_c1a2a_global"
+//			"globalstate" "grd01_following_c1a2a"
+//		}
+//		"modify"
+//		{
+//			"targetname" "Grd01_storage"
+//			"outputs"
+//			{
+//				"add"
+//				{
+//					"target" "grd01_following_c1a2a_global"
+//					"output" "OnDeath"
+//					"input"	"TurnOff"
+//				}
+//			}
+//		}
+//		"add"
+//		{
+//			"classname" "trigger_once"
+//			"targetname" "grd01_following_c1a2a_global_trig"
+//			"filtername" "grd01_filter"
+//			"spawnflags" "2"
+//			"functions"
+//			{
+//				"copy_model"
+//				{
+//					"hammerid" "1257106"
+//				}
+//			}
+//			"outputs"
+//			{
+//				"add"
+//				{
+//					"target" "grd01_following_c1a2a_global"
+//					"output" "OnTrigger"
+//					"input"	"TurnOn"
+//				}
+//			}
+//		}
 	}
 	"checkpoint"
 	{

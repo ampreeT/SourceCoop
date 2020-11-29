@@ -2,9 +2,13 @@
 
 "config"
 {
-	"nextmap"	"bm_c1a3a"
+	"nextmap" "bm_c1a3a"
 	"equipment"
 	{
+		"lookup"
+		{
+			"targetname" "items_at_start"
+		}
 	}
 	"entity"
 	{
@@ -17,19 +21,6 @@
 			{
 				"classname" "func_brush"
 				"rendermode" "10" // dont render
-			}
-		}
-		// spawn items
-		"modify"
-		{
-			"targetname" "items_at_start"
-			"flags"
-			{
-				"spawnflags"
-				{
-					"add" "2" // motion disabled
-					"add" "8" // silent pickup
-				}
 			}
 		}
 		// prepare changelevel for touch trigger

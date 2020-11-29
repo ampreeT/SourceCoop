@@ -63,6 +63,7 @@ bool g_bTempDontHookEnts;
 bool g_bMapStarted;
 OperatingSystem g_serverOS;
 FeatureMap g_pFeatureMap;
+int g_iEnabledFeatures;
 
 ArrayList g_pPostponedSpawns;
 

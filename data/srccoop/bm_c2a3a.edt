@@ -2,30 +2,16 @@
 
 "config"
 {
-	"nextmap"	"bm_c2a3b"
+	"nextmap" "bm_c2a3b"
 	"equipment"
 	{
+		"lookup"
+		{
+			"targetname" "/^(player_spawn_weapon|player_spawn_ammo|player_spawn_suit)$/"
+		}
 	}
 	"entity"
 	{
-		// spawn items
-		"modify"
-		{
-			"targetname" "/^(player_spawn_weapon|player_spawn_ammo|player_spawn_suit)$/"
-			"flags"
-			{
-				"spawnflags"
-				{
-					"add" "2" // motion disabled
-					"add" "8" // silent pickup
-				}
-			}
-			// Move equipment to new spawn location
-			"add"
-			{
-				"origin" "-1465 89 65"
-			}
-		}
 		// prepare changelevel for touch trigger
 		"modify"
 		{

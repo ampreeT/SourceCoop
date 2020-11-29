@@ -2,31 +2,18 @@
 
 "config"
 {
-	"nextmap"	"bm_c1a4c"
-	"nextmap"	"bm_c1a4d"
-	"nextmap"	"bm_c1a4e"
+	"nextmap" "bm_c1a4c"
+	"nextmap" "bm_c1a4d"
+	"nextmap" "bm_c1a4e"
 	"equipment"
 	{
+		"lookup"
+		{
+			"targetname" "c1a4b_equipment"
+		}
 	}
 	"entity"
 	{
-		// spawn items
-		"modify"
-		{
-			"targetname" "c1a4b_equipment"
-			"flags"
-			{
-				"spawnflags"
-				{
-					"add" "2" // motion disabled
-					"add" "8" // silent pickup
-				}
-			}
-			"add"
-			{
-				"parentname" "c1a4a_elevatorprop"
-			}
-		}
 		// delay map start
 		"modify"
 		{
@@ -330,12 +317,12 @@
 			}
 		}
 		// Oxy/fuel (c1a4c) finished
-		"#if"
+		#if
 		{
 			"globalstate" "c1a4_objective_fuel"
 			"globalstate" "c1a4_objective_oxy"
 			
-			"#then"
+			#then
 			{
 				"delete"
 				{
@@ -353,11 +340,11 @@
 			}
 		}
 		// Power (c1a4d) finished
-		"#if"
+		#if
 		{
 			"globalstate" "c1a4_objective_power"
 			
-			"#then"
+			#then
 			{
 				"delete"
 				{
@@ -381,15 +368,15 @@
 			}
 		}
 		// At least one finished
-		"#if"
+		#if
 		{
-			"#any"
+			#any
 			{
 				"globalstate" "c1a4_objective_fuel"
 				"globalstate" "c1a4_objective_oxy"
 				"globalstate" "c1a4_objective_power"
 			}
-			"#then"
+			#then
 			{
 				"delete" // Be quiet
 				{
@@ -442,10 +429,12 @@
 			}
 		}
 		// if returned from oxy
-		"#if"
+		#if
 		{
 			"prevmap"	"bm_c1a4c"
-			"#then"
+			"globalstate" "c1a4_objective_fuel"
+			"globalstate" "c1a4_objective_oxy"
+			#then
 			{
 				"add"
 				{
@@ -464,10 +453,11 @@
 			}
 		}
 		// if returned from power
-		"#if"
+		#if
 		{
+			"globalstate" "c1a4_objective_power"
 			"prevmap"	"bm_c1a4d"
-			"#then"
+			#then
 			{
 				"add"
 				{
@@ -494,10 +484,22 @@
 			"angles"	"0 180 0"
 			"followid"	"c1a4a_elevatorprop"
 		}
-		"#if"
+		"silo_entry_tp"
+		{
+			"origin"	"-1536 -2048 1548"
+			"angles"	"0 270 0"
+			"triggerid" "c1a4b_entry_cycle_relay"
+			"output"	"OnTrigger"
+			"delay"		"2"
+			"portal" 	"623 0 1572"
+		}
+		
+		#if
 		{
 			"prevmap"	"bm_c1a4c"
-			"#then"
+			"globalstate" "c1a4_objective_fuel"
+			"globalstate" "c1a4_objective_oxy"
+			#then
 			{
 				"oxyreturn"
 				{
@@ -513,10 +515,11 @@
 				}
 			}
 		}
-		"#if"
+		#if
 		{
 			"prevmap"	"bm_c1a4d"
-			"#then"
+			"globalstate" "c1a4_objective_power"
+			#then
 			{
 				"powerreturn"
 				{
@@ -533,15 +536,6 @@
 			}
 		}
 		
-		"silo_entry_tp"
-		{
-			"origin"	"-1536 -2048 1548"
-			"angles"	"0 270 0"
-			"triggerid" "c1a4b_entry_cycle_relay"
-			"output"	"OnTrigger"
-			"delay"		"2"
-			"portal" 	"623 0 1572"
-		}
 		"burn_scene"
 		{
 			"origin"	"-2564 -2048 1612"

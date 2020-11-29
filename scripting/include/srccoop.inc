@@ -23,8 +23,7 @@
 #include <srccoop_api>
 
 #include <srccoop/globals.inc>
-#include <srccoop/levellump.inc>
-#include <srccoop/checkpoint.inc>
+#include <srccoop/kv_shared.inc>
 #include <srccoop/manager.inc>
 #include <srccoop/entitypatch.inc>
 #include <srccoop/playerpatch.inc>

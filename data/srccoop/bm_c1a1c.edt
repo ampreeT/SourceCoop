@@ -2,25 +2,16 @@
 
 "config"
 {
-	"nextmap"	"bm_c1a1d"
+	"nextmap" "bm_c1a1d"
 	"equipment"
 	{
+		"lookup"
+		{
+			"targetname" "/^(suit|weapons)$/"
+		}
 	}
 	"entity"
 	{
-		// spawn items
-		"modify"
-		{
-			"targetname" "/^(suit|weapons)$/"
-			"flags"
-			{
-				"spawnflags"
-				{
-					"add" "2" // motion disabled
-					"add" "8" // silent pickup
-				}
-			}
-		}
 		// entity killer relays
 		"delete"
 		{

@@ -2,12 +2,28 @@
 
 "config"
 {
-	"nextmap"	"bm_c1a3b"
-	"nextmap"	"bm_c1a4a"
+	"nextmap" "bm_c1a3b"
+	"nextmap" "bm_c1a4a"
 	"intro_type" "none"
-	
+
 	"equipment"
 	{
+		"lookup"
+		{
+			"targetname" "/^(suit|weapons|ammo)$/"
+		}
+		#if
+		{
+			// add extra items when returning from c1a3c
+			"globalstate" "c1a3c_c1a3a"
+			#then
+			{
+				"item" "item_weapon_mp5"
+				"item" "item_weapon_mp5"
+				"item" "item_grenade_mp5"
+				"item" "item_weapon_frag"
+			}
+		}
 	}
 	"entity"
 	{
@@ -18,19 +34,6 @@
 			"functions"
 			{
 				"delay_output" "OnTrigger"
-			}
-		}
-		// spawn items
-		"modify"
-		{
-			"targetname" "/^(suit|weapons|ammo)$/"
-			"flags"
-			{
-				"spawnflags"
-				{
-					"add" "2" // motion disabled
-					"add" "8" // silent pickup
-				}
 			}
 		}
 		// delete elevator door close trigger
@@ -54,7 +57,7 @@
 			"targetname" "p2"
 			"add"
 			{
-				"origin" "768 -2400 246"
+				"origin" "1130 -2400 230"
 			}
 			"outputs"
 			{
@@ -66,7 +69,12 @@
 				}
 			}
 		}
-		// turn changelevel trig into invisible wall
+
+		// ********************
+		// Part 2
+		// ********************
+		
+		// turn backtracking changelevel trig into invisible wall
 		"modify"
 		{
 			"classname" "trigger_changelevel"
@@ -77,80 +85,17 @@
 				"rendermode" "10" // dont render
 			}
 		}
-		// add items and weapons to equip when returning from c1a3c
-		"create"
-		{
-			"classname" "item_suit"
-			"origin"	"-2984 -877 32"
-			"spawnflags" "2"
-		}
-		"create"
-		{
-			"classname" "item_weapon_crowbar"
-			"origin"	"-2984 -877 32"
-			"spawnflags" "2"
-		}
-		"create"
-		{
-			"classname" "item_weapon_shotgun"
-			"origin"	"-2984 -877 32"
-			"spawnflags" "2"
-		}
-		"create"
-		{
-			"classname" "item_weapon_mp5"
-			"origin"	"-2984 -877 32"
-			"spawnflags" "2"
-		}
-		"create"
-		{
-			"classname" "item_weapon_mp5"
-			"origin"	"-2984 -877 32"
-			"spawnflags" "2"
-		}
-		"create"
-		{
-			"classname" "item_ammo_mp5"
-			"origin"	"-2984 -877 32"
-			"spawnflags" "2"
-		}
-		"create"
-		{
-			"classname" "item_grenade_mp5"
-			"origin"	"-2984 -877 32"
-			"spawnflags" "2"
-		}
-		"create"
-		{
-			"classname" "item_weapon_glock"
-			"origin"	"-2984 -877 32"
-			"spawnflags" "2"
-		}
-		"create"
-		{
-			"classname" "item_ammo_glock"
-			"origin"	"-2984 -877 32"
-			"spawnflags" "2"
-		}
-		"create"
-		{
-			"classname" "item_ammo_glock"
-			"origin"	"-2984 -877 32"
-			"spawnflags" "2"
-		}
-		"create"
-		{
-			"classname" "item_weapon_frag"
-			"origin"	"-2984 -877 32"
-			"spawnflags" "2"
-		}
 		// delete relay on map start, which the map deletes on player spawn, which is too late for us
-		"create"
+		#if
 		{
-			"classname" "logic_auto"
-			"spawnflags" "1"
 			"globalstate" "c1a3c_c1a3a"
-			"OnMapSpawn" "transition_dooropenKill0-1"
+			#then
+			{
+				"remove"
+				{
+					"targetname" "transition_dooropen"
+				}
+			}
 		}
 		// block going past changelevel area
 		"modify"
@@ -164,10 +109,10 @@
 	}
 	"checkpoint"
 	{
-		"#if"
+		#if
 		{
 			"!globalstate" "c1a3c_c1a3a"
-			"#then"
+			#then
 			{
 				"spawn"
 				{
@@ -185,12 +130,12 @@
 				{
 					"origin"	"256 -1247 -312"
 					"angles"	"0 0 0"
-					"triggerid" "83365"
-					"output"	"OnTrigger"
+					"triggerid" "sscape_storagearea3"
+					"output"	"OnPlay"
 				}
 				"RescuedAtLast"
 				{
-					"origin"	"1250 -1678 -39"
+					"origin"	"1250 -1543 -12"
 					"angles"	"0 270 0"
 					"triggerid" "RescuedAtLast_trig03"
 					"output"	"OnTrigger"
@@ -206,13 +151,7 @@
 					"delay"		"3"
 				}
 			}
-		}
-		
-		// return from bm_c1a3c
-		"#if"
-		{
-			"globalstate" "c1a3c_c1a3a"
-			"#then"
+			#else
 			{
 				"spawn2"
 				{

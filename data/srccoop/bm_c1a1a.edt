@@ -7,7 +7,11 @@
 	"equipment"
 	{
 		"health" "70"
-		"item"	"weapon_crowbar"
+		"item" "item_weapon_crowbar"
+		"lookup"
+		{
+			"targetname" "global_newgame_spawner_suit"
+		}
 	}
 	"entity"
 	{
@@ -19,19 +23,6 @@
 			"functions"
 			{
 				"delay_output" "OnMapSpawn"
-			}
-		}
-		// spawn items
-		"modify"
-		{
-			"targetname" "global_newgame_spawner_suit"
-			"flags"
-			{
-				"spawnflags"
-				{
-					"add" "2" // motion disabled
-					"add" "8" // silent pickup
-				}
 			}
 		}
 		// prepare changelevel touch trigger

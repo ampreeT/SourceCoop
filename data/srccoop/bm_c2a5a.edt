@@ -2,25 +2,16 @@
 
 "config"
 {
-	"nextmap"	"bm_c2a5b"
+	"nextmap" "bm_c2a5b"
 	"equipment"
 	{
+		"lookup"
+		{
+			"targetname" "c2a5a_equipment"
+		}
 	}
 	"entity"
 	{
-		// spawn items
-		"modify"
-		{
-			"targetname" "c2a5a_equipment"
-			"flags"
-			{
-				"spawnflags"
-				{
-					"add" "2" // motion disabled
-					"add" "8" // silent pickup
-				}
-			}
-		}
 		// Change the trigger_reloadgame at the bottom of the dam
 		// into a trigger_hurt that kills people
 		"modify"

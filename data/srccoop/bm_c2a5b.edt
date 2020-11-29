@@ -2,25 +2,16 @@
 
 "config"
 {
-	"nextmap"	"bm_c2a5c"
+	"nextmap" "bm_c2a5c"
 	"equipment"
 	{
+		"lookup"
+		{
+			"targetname" "c2a5b_equipment"
+		}
 	}
 	"entity"
 	{
-		// spawn items
-		"modify"
-		{
-			"targetname" "c2a5b_equipment"
-			"flags"
-			{
-				"spawnflags"
-				{
-					"add" "2" // motion disabled
-					"add" "8" // silent pickup
-				}
-			}
-		}
 		// block return
 		"modify"
 		{

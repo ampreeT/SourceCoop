@@ -2,11 +2,15 @@
 
 "config"
 {
-	"nextmap"	"bm_c1a1c"
+	"nextmap" "bm_c1a1c"
 	"equipment"
 	{
 		"health" "95"
-		"item"	"weapon_crowbar"
+		"item" "item_weapon_crowbar"
+		"lookup"
+		{
+			"targetname" "global_newgame_spawner_suit"
+		}
 	}
 	"entity"
 	{
@@ -18,19 +22,6 @@
 			{
 				"delay_output" "OnMapSpawn"
 				"delay_output" "OnNewGame"
-			}
-		}
-		// spawn items
-		"modify"
-		{
-			"targetname" "global_newgame_spawner_suit"
-			"flags"
-			{
-				"spawnflags"
-				{
-					"add" "2" // motion disabled
-					"add" "8" // silent pickup
-				}
 			}
 		}
 		// door close trigger

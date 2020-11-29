@@ -2,25 +2,17 @@
 
 "config"
 {
-	"nextmap"	"bm_c2a5g"
+	"nextmap" "bm_c2a5g"
 	"equipment"
 	{
+		"lookup"
+		{
+			"targetname" "/^(c2a5f_equipment_weapons|c2a5f_equipment_ammo|c2a5f_equipment_misc)$/"
+		}
 	}
 	// TODO: look into playerhashivehand globalstate
 	"entity"
 	{
-		"modify"
-		{
-			"targetname" "/^(c2a5f_equipment_weapons|c2a5f_equipment_ammo|c2a5f_equipment_misc)$/"
-			"flags"
-			{
-				"spawnflags"
-				{
-					"add" "2" // motion disabled
-					"add" "8" // silent pickup
-				}
-			}
-		}
 		// block prev changelevel
 		"modify"
 		{

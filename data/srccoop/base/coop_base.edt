@@ -18,5 +18,18 @@
 		{
 			"classname" "player_loadsaved"
 		}
+		
+		// crashes linux since BM1.5
+		#if
+		{
+			"os" "linux"
+			#then
+			{
+				"remove"
+				{
+					"classname" "music_track"
+				}
+			}
+		}
 	}
 }

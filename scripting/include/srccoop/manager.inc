@@ -146,7 +146,6 @@ public int ChangeLevelStatusPanelCallback(Menu menu, MenuAction action, int para
 
 enum struct CoopManager
 {
-	int m_iEnabledFeatures;
 	bool m_bIsCoopMap;
 	bool m_bStarted;
 	bool m_bPlayerSpawned;
@@ -174,11 +173,12 @@ enum struct CoopManager
 		this.m_bStarted = false;
 		this.m_bPlayerSpawned = false;
 		this.m_pChangeLevelMgr.Clear();
-		this.m_iEnabledFeatures = view_as<int>(FEATURES_DEFAULT);
+		g_iEnabledFeatures = view_as<int>(FEATURES_DEFAULT);
 		for(int i = 0; i <= MaxClients; i++)
 		{
 			this.m_iClientChangeLvlIndicies[i] = -1;
 		}
+		g_SpawnSystem.Clear();
 		g_pLevelLump.Clear();
 		
 		KeyValues kv = this.LoadMapConfig(szMapName);
@@ -205,7 +205,6 @@ enum struct CoopManager
 		PrecacheSound(SND_CHANGELEVEL);
 		PrecacheSound(SND_CHANGELEVEL_TICK);
 
-		g_SpawnSystem.Clear();
 		if (this.m_bIsCoopMap) // cvars are not configured yet
 		{
 			CBM_MP_GameRules.SetStateIsInIntermission(STATE_WARMUP, false);
@@ -415,17 +414,17 @@ enum struct CoopManager
 		
 	void EnableFeature(SourceCoopFeature iFeatureBits)
 	{
-		this.m_iEnabledFeatures |= view_as<int>(iFeatureBits);
+		g_iEnabledFeatures |= view_as<int>(iFeatureBits);
 	}
 	
 	void DisableFeature(SourceCoopFeature iFeatureBits)
 	{
-		this.m_iEnabledFeatures &= ~view_as<int>(iFeatureBits);
+		g_iEnabledFeatures &= ~view_as<int>(iFeatureBits);
 	}
 	
 	bool IsFeatureEnabled(SourceCoopFeature iFeatureBits)
 	{
-		return this.IsCoopModeEnabled() && this.m_iEnabledFeatures & view_as<int>(iFeatureBits);
+		return this.IsCoopModeEnabled() && g_iEnabledFeatures & view_as<int>(iFeatureBits);
 	}
 
 	bool IsCoopModeEnabled()
