@@ -52,6 +52,7 @@ public void OnPluginStart()
 	RefreshIgnoreMap(g_pMapIgnoredFrom, g_pConvarDifficultyIgnoreDamageFrom);
 	
 	HookEvent("player_team", Event_PlayerChangeTeam, EventHookMode_PostNoCopy);
+	InitSourceCoopAddon();
 }
 
 public void OnMapStart()

@@ -26,8 +26,8 @@
 #include <srccoop/kv_shared.inc>
 #include <srccoop/manager.inc>
 #include <srccoop/entitypatch.inc>
-#include <srccoop/playerpatch.inc>
 #include <srccoop/instancing.inc>
+#include <srccoop/playerpatch.inc>
 #include <srccoop/menu.inc>
 
 

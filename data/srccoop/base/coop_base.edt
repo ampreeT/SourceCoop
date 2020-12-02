@@ -2,6 +2,17 @@
 
 "config"
 {
+	"features"
+	{
+		"ALLOW_FLASHLIGHT" "1"
+		"FIRSTPERSON_DEATHCAM" "1"
+		"NO_TELEFRAGGING" "1"
+		"NO_FRIENDLYFIRE" "1"
+		"NOBLOCK" "1"
+		"SHOW_WELCOME_MESSAGE" "1"
+		"HEV_SOUNDS" "1"
+	}
+	
 	"console"
 	{
 		// fix for breakmodels not appearing

@@ -7,7 +7,7 @@
 public Plugin myinfo =
 {
 	name = "SourceCoop",
-	author = "ampreeT",
+	author = "ampreeT, Alienmario",
 	description = "SourceCoop",
 	version = PLUGIN_VERSION,
 	url = "https://github.com/ampreeT/SourceCoop"
@@ -25,154 +25,92 @@ public Address GetEngineInterface(const char[] szInterface)
 
 void LoadGameData()
 {
-	char szConfigName[] = "srccoop.games";
-	GameData pGameConfig = LoadGameConfigFile(szConfigName);
+	GameData pGameConfig = LoadGameConfigFile(SRCCOOP_GAMEDATA_NAME);
 	if (pGameConfig == null)
-		SetFailState("Couldn't load game config %s", szConfigName);
+		SetFailState("Couldn't load game config %s", SRCCOOP_GAMEDATA_NAME);
 	
-	g_serverOS = view_as<OperatingSystem>(pGameConfig.GetOffset("_OS_Detector_"));
-
-	char szCreateEngineInterface[] = "CreateEngineInterface";
-	StartPrepSDKCall(SDKCall_Static);
-	if (!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Signature, szCreateEngineInterface))
-		SetFailState("Could not obtain game offset %s", szCreateEngineInterface);
-	PrepSDKCall_AddParameter(SDKType_String, SDKPass_Pointer);
-	PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Pointer, VDECODE_FLAG_ALLOWNULL);
-	PrepSDKCall_SetReturnInfo(SDKType_PlainOldData, SDKPass_Plain);
-	if (!(g_pCreateEngineInterface = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szCreateEngineInterface);
+	// Init SDKCalls for classdef
+	InitClassdef(pGameConfig);
 	
-	char szCreateServerInterface[] = "CreateServerInterface";
-	StartPrepSDKCall(SDKCall_Static);
-	if (!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Signature, szCreateServerInterface))
-		SetFailState("Could not obtain game offset %s", szCreateServerInterface);
-	PrepSDKCall_AddParameter(SDKType_String, SDKPass_Pointer);
-	PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Pointer, VDECODE_FLAG_ALLOWNULL);
-	PrepSDKCall_SetReturnInfo(SDKType_PlainOldData, SDKPass_Plain);
-	if (!(g_pCreateServerInterface = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szCreateServerInterface);
+	// ALL Games
+	{
+		g_serverOS = view_as<OperatingSystem>(pGameConfig.GetOffset("_OS_Detector_"));
 	
-	/*
-	char szInterfaceEngine[64];
-	if (!GameConfGetKeyValue(pGameConfig, "IVEngineServer", szInterfaceEngine, sizeof(szInterfaceEngine)))
-		SetFailState("Could not get interface verison for %s", "IVEngineServer");
-	if (!(g_VEngineServer = GetEngineInterface(szInterfaceEngine)))
-		SetFailState("Could not get interface for %s", "g_ServerGameDLL");
-	*/
-	
-	char szInterfaceGame[64];
-	if (!GameConfGetKeyValue(pGameConfig, "IServerGameDLL", szInterfaceGame, sizeof(szInterfaceGame)))
-		SetFailState("Could not get interface verison for %s", "IServerGameDLL");
-	if (!(g_ServerGameDLL = IServerGameDLL(GetServerInterface(szInterfaceGame))))
-		SetFailState("Could not get interface for %s", "g_ServerGameDLL");
-	
-	/*
-	char szPickupObject[] = "CBlackMesaPlayer::PickupObject";
-	StartPrepSDKCall(SDKCall_Player);
-	if (!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Virtual, szPickupObject))
-		SetFailState("Could not obtain gamedata offset %s", szPickupObject);
-	PrepSDKCall_AddParameter(SDKType_CBaseEntity, SDKPass_Pointer);
-	PrepSDKCall_AddParameter(SDKType_Bool, SDKPass_Plain);
-	if (!(g_pPickupObject = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szPickupObject);
-	*/
-	char szSendWeaponAnim[] = "CBaseCombatWeapon::SendWeaponAnim";
-	StartPrepSDKCall(SDKCall_Entity);
-	if (!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Virtual, szSendWeaponAnim))
-		SetFailState("Could not obtain gamedata offset %s", szSendWeaponAnim);
-	PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
-	if (!(g_pSendWeaponAnim = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szSendWeaponAnim);
-	
+		char szCreateEngineInterface[] = "CreateEngineInterface";
+		StartPrepSDKCall(SDKCall_Static);
+		if (!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Signature, szCreateEngineInterface))
+			SetFailState("Could not obtain game offset %s", szCreateEngineInterface);
+		PrepSDKCall_AddParameter(SDKType_String, SDKPass_Pointer);
+		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Pointer, VDECODE_FLAG_ALLOWNULL);
+		PrepSDKCall_SetReturnInfo(SDKType_PlainOldData, SDKPass_Plain);
+		if (!(g_pCreateEngineInterface = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szCreateEngineInterface);
 		
-	char szGameShutdown[] = "CServerGameDLL::GameShutdown";
-	StartPrepSDKCall(SDKCall_Raw);
-	if(!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Virtual, szGameShutdown))
-		SetFailState("Could not obtain gamedata offset %s", szGameShutdown);
-	if (!(g_pGameShutdown = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szGameShutdown);
-
-	char szGlobalEntity_GetIndex[] = "GlobalEntity_GetIndex";
-	StartPrepSDKCall(SDKCall_Static);
-	if(!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Signature, szGlobalEntity_GetIndex))
-		SetFailState("Could not obtain gamedata signature %s", szGlobalEntity_GetIndex);
-	PrepSDKCall_AddParameter(SDKType_String, SDKPass_Pointer);
-	PrepSDKCall_SetReturnInfo(SDKType_PlainOldData, SDKPass_Plain);
-	if (!(g_pGlobalEntityGetIndex = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szGlobalEntity_GetIndex);
-
-	char szGlobalEntity_GetState[] = "GlobalEntity_GetState";
-	StartPrepSDKCall(SDKCall_Static);
-	if(!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Signature, szGlobalEntity_GetState))
-		SetFailState("Could not obtain gamedata signature %s", szGlobalEntity_GetState);
-	PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
-	PrepSDKCall_SetReturnInfo(SDKType_PlainOldData, SDKPass_Plain);
-	if (!(g_pGlobalEntityGetState = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szGlobalEntity_GetState);
-
-	char szSetCollisionBounds[] = "CBaseEntity::SetCollisionBounds";
-	StartPrepSDKCall(SDKCall_Entity);
-	if(!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Signature, szSetCollisionBounds))
-		SetFailState("Could not obtain gamedata signature %s", szSetCollisionBounds);
-	PrepSDKCall_AddParameter(SDKType_Vector, SDKPass_ByRef);
-	PrepSDKCall_AddParameter(SDKType_Vector, SDKPass_ByRef);
-	if (!(g_pSetCollisionBounds = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szSetCollisionBounds);
+		char szCreateServerInterface[] = "CreateServerInterface";
+		StartPrepSDKCall(SDKCall_Static);
+		if (!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Signature, szCreateServerInterface))
+			SetFailState("Could not obtain game offset %s", szCreateServerInterface);
+		PrepSDKCall_AddParameter(SDKType_String, SDKPass_Pointer);
+		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Pointer, VDECODE_FLAG_ALLOWNULL);
+		PrepSDKCall_SetReturnInfo(SDKType_PlainOldData, SDKPass_Plain);
+		if (!(g_pCreateServerInterface = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szCreateServerInterface);
+		
+		/*
+		char szInterfaceEngine[64];
+		if (!GameConfGetKeyValue(pGameConfig, "IVEngineServer", szInterfaceEngine, sizeof(szInterfaceEngine)))
+			SetFailState("Could not get interface verison for %s", "IVEngineServer");
+		if (!(g_VEngineServer = GetEngineInterface(szInterfaceEngine)))
+			SetFailState("Could not get interface for %s", "g_ServerGameDLL");
+		*/
+		
+		char szInterfaceGame[64];
+		if (!GameConfGetKeyValue(pGameConfig, "IServerGameDLL", szInterfaceGame, sizeof(szInterfaceGame)))
+			SetFailState("Could not get interface verison for %s", "IServerGameDLL");
+		if (!(g_ServerGameDLL = IServerGameDLL(GetServerInterface(szInterfaceGame))))
+			SetFailState("Could not get interface for %s", "g_ServerGameDLL");
 	
-	char szUpdateEnemyMemory[] = "CAI_BaseNPC::UpdateEnemyMemory";
-	StartPrepSDKCall(SDKCall_Entity);
-	if(!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Virtual, szUpdateEnemyMemory))
-		SetFailState("Could not obtain gamedata offset %s", szUpdateEnemyMemory);
-	PrepSDKCall_AddParameter(SDKType_CBaseEntity, SDKPass_Pointer);
-	PrepSDKCall_AddParameter(SDKType_Vector, SDKPass_ByRef);
-	PrepSDKCall_AddParameter(SDKType_CBaseEntity, SDKPass_Pointer);
-	PrepSDKCall_SetReturnInfo(SDKType_Bool, SDKPass_Plain);
-	if (!(g_pUpdateEnemyMemory = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szUpdateEnemyMemory);
-	
-	char szShouldPlayerAvoid[] = "CAI_BaseNPC::ShouldPlayerAvoid";
-	StartPrepSDKCall(SDKCall_Entity);
-	if(!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Virtual, szShouldPlayerAvoid))
-		SetFailState("Could not obtain gamedata offset %s", szShouldPlayerAvoid);
-	PrepSDKCall_SetReturnInfo(SDKType_Bool, SDKPass_Plain);
-	if (!(g_pShouldPlayerAvoid = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szShouldPlayerAvoid);
-
-	char szGetSequenceLinearMotion[] = "CBaseAnimating::GetSequenceLinearMotion";
-	StartPrepSDKCall(SDKCall_Entity);
-	if(!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Signature, szGetSequenceLinearMotion))
-		SetFailState("Could not obtain gamedata signature %s", szGetSequenceLinearMotion);
-	PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
-	PrepSDKCall_AddParameter(SDKType_Vector, SDKPass_Pointer, _, VENCODE_FLAG_COPYBACK);
-	if (!(g_pGetSequenceLinearMotion = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szGetSequenceLinearMotion);
-	
-	LoadDHookVirtual(pGameConfig, hkFAllowFlashlight, "CMultiplayRules::FAllowFlashlight");
-	LoadDHookVirtual(pGameConfig, hkIsMultiplayer, "CMultiplayRules::IsMultiplayer");
-	LoadDHookVirtual(pGameConfig, hkIRelationType, "CBaseCombatCharacter::IRelationType");
-	LoadDHookVirtual(pGameConfig, hkIsPlayerAlly, "CAI_BaseNPC::IsPlayerAlly");
-	LoadDHookVirtual(pGameConfig, hkProtoSniperSelectSchedule, "CProtoSniper::SelectSchedule");
-	LoadDHookVirtual(pGameConfig, hkFindNamedEntity, "CSceneEntity::FindNamedEntity");
-	LoadDHookVirtual(pGameConfig, hkFindNamedEntityClosest, "CSceneEntity::FindNamedEntityClosest");
-	LoadDHookVirtual(pGameConfig, hkSetModel, "CBaseEntity::SetModel");
-	LoadDHookVirtual(pGameConfig, hkAcceptInput, "CBaseEntity::AcceptInput");
-	LoadDHookVirtual(pGameConfig, hkOnTryPickUp, "CBasePickup::OnTryPickUp");
-	LoadDHookVirtual(pGameConfig, hkThink, "CBaseEntity::Think");
-	LoadDHookVirtual(pGameConfig, hkChangeTeam, "CBlackMesaPlayer::ChangeTeam");
-	LoadDHookVirtual(pGameConfig, hkShouldCollide, "CBlackMesaPlayer::ShouldCollide");
-	LoadDHookVirtual(pGameConfig, hkIchthyosaurIdleSound, "CNPC_Ichthyosaur::IdleSound");
-	LoadDHookVirtual(pGameConfig, hkHandleAnimEvent, "CBaseAnimating::HandleAnimEvent");
-	LoadDHookVirtual(pGameConfig, hkRunAI, "CAI_BaseNPC::RunAI");
-	LoadDHookDetour(pGameConfig, hkUTIL_GetLocalPlayer, "UTIL_GetLocalPlayer", Hook_UTIL_GetLocalPlayer);
-	LoadDHookDetour(pGameConfig, hkSetSuitUpdate, "CBasePlayer::SetSuitUpdate", Hook_SetSuitUpdate, Hook_SetSuitUpdatePost);
-	LoadDHookDetour(pGameConfig, hkResolveNames, "CAI_GoalEntity::ResolveNames", Hook_ResolveNames, Hook_ResolveNamesPost);
-	LoadDHookDetour(pGameConfig, hkCanSelectSchedule, "CAI_LeadBehavior::CanSelectSchedule", Hook_CanSelectSchedule);
-	LoadDHookDetour(pGameConfig, hkPickup_ForcePlayerToDropThisObject, "Pickup_ForcePlayerToDropThisObject", Hook_ForcePlayerToDropThisObject);
-	
-	// Disabled until we can avoid the annoying physics mayhem bug this causes
-	//LoadDHookDetour(pGameConfig, hkSetPlayerAvoidState, "CAI_BaseNPC::SetPlayerAvoidState", Hook_SetPlayerAvoidState);
+		LoadDHookVirtual(pGameConfig, hkChangeTeam, "CBasePlayer::ChangeTeam");
+		LoadDHookVirtual(pGameConfig, hkShouldCollide, "CBaseEntity::ShouldCollide");
+	}
+		
+	if (g_Engine == Engine_BlackMesa)
+	{
+		LoadDHookVirtual(pGameConfig, hkFAllowFlashlight, "CMultiplayRules::FAllowFlashlight");
+		LoadDHookVirtual(pGameConfig, hkIsMultiplayer, "CMultiplayRules::IsMultiplayer");
+		LoadDHookVirtual(pGameConfig, hkIRelationType, "CBaseCombatCharacter::IRelationType");
+		LoadDHookVirtual(pGameConfig, hkIsPlayerAlly, "CAI_BaseNPC::IsPlayerAlly");
+		LoadDHookVirtual(pGameConfig, hkProtoSniperSelectSchedule, "CProtoSniper::SelectSchedule");
+		LoadDHookVirtual(pGameConfig, hkFindNamedEntity, "CSceneEntity::FindNamedEntity");
+		LoadDHookVirtual(pGameConfig, hkFindNamedEntityClosest, "CSceneEntity::FindNamedEntityClosest");
+		LoadDHookVirtual(pGameConfig, hkSetModel, "CBaseEntity::SetModel");
+		LoadDHookVirtual(pGameConfig, hkAcceptInput, "CBaseEntity::AcceptInput");
+		LoadDHookVirtual(pGameConfig, hkOnTryPickUp, "CBasePickup::OnTryPickUp");
+		LoadDHookVirtual(pGameConfig, hkThink, "CBaseEntity::Think");
+		LoadDHookVirtual(pGameConfig, hkIchthyosaurIdleSound, "CNPC_Ichthyosaur::IdleSound");
+		LoadDHookVirtual(pGameConfig, hkHandleAnimEvent, "CBaseAnimating::HandleAnimEvent");
+		LoadDHookVirtual(pGameConfig, hkRunAI, "CAI_BaseNPC::RunAI");
+		LoadDHookDetour(pGameConfig, hkUTIL_GetLocalPlayer, "UTIL_GetLocalPlayer", Hook_UTIL_GetLocalPlayer);
+		LoadDHookDetour(pGameConfig, hkSetSuitUpdate, "CBasePlayer::SetSuitUpdate", Hook_SetSuitUpdate, Hook_SetSuitUpdatePost);
+		LoadDHookDetour(pGameConfig, hkResolveNames, "CAI_GoalEntity::ResolveNames", Hook_ResolveNames, Hook_ResolveNamesPost);
+		LoadDHookDetour(pGameConfig, hkCanSelectSchedule, "CAI_LeadBehavior::CanSelectSchedule", Hook_CanSelectSchedule);
+		LoadDHookDetour(pGameConfig, hkPickup_ForcePlayerToDropThisObject, "Pickup_ForcePlayerToDropThisObject", Hook_ForcePlayerToDropThisObject);
+		
+		// Disabled until we can avoid the annoying physics mayhem bug this causes
+		//LoadDHookDetour(pGameConfig, hkSetPlayerAvoidState, "CAI_BaseNPC::SetPlayerAvoidState", Hook_SetPlayerAvoidState);
+	}
 	
 	CloseHandle(pGameConfig);
 }
 
 public void OnPluginStart()
 {
+	g_Engine = GetEngineVersion();
 	LoadGameData();
 	
 	InitDebugLog("sourcecoop_debug", "SRCCOOP", ADMFLAG_ROOT);
 	CreateConVar("sourcecoop_version", PLUGIN_VERSION, _, FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
 	g_pConvarCoopEnabled = CreateConVar("sourcecoop_enabled", "1", "Sets if coop is enabled on coop maps", _, true, 0.0, true, 1.0);
 	g_pConvarCoopTeam = CreateConVar("sourcecoop_team", "scientist", "Sets which team to use in TDM mode. Valid values are [marines] or [scientist]. Setting anything else will not manage teams.");
-	g_pConvarCoopRespawnTime = CreateConVar("sourcecoop_respawntime", "2.0", "Sets player respawn time in seconds. (This can only be used for making respawn times quicker, not longer)", _, true, 0.1);
+	g_pConvarCoopRespawnTime = CreateConVar("sourcecoop_respawntime", "2.0", "Sets player respawn time in seconds. (This can only be used for making respawn times quicker, not longer). Set to 0 to disable.", _, true, 0.0);
 	g_pConvarWaitPeriod = CreateConVar("sourcecoop_start_wait_period", "15.0", "The max number of seconds to wait since first player spawned in to start the map. The timer is skipped when all players enter the game.", _, true, 0.0);
 	g_pConvarEndWaitPeriod = CreateConVar("sourcecoop_end_wait_period", "60.0", "The max number of seconds to wait since first player triggered a changelevel. The timer speed increases each time a new player finishes the level.", _, true, 0.0);
 	g_pConvarEndWaitFactor = CreateConVar("sourcecoop_end_wait_factor", "1.0", "Controls how much the number of finished players increases the changelevel timer speed. 1.0 means full, 0 means none (timer will run full length).", _, true, 0.0, true, 1.0);
@@ -186,17 +124,15 @@ public void OnPluginStart()
 	g_pFeatureMap = new FeatureMap();
 	InitializeMenus();
 	
-	if (GetEngineVersion() == Engine_BlackMesa)
+	if (g_Engine == Engine_BlackMesa)
 	{
 		HookEvent("broadcast_teamsound", Hook_BroadcastTeamsound, EventHookMode_Pre);
 		UserMsg iIntroCredits = GetUserMessageId("IntroCredits");
 		if(iIntroCredits != INVALID_MESSAGE_ID)
 			HookUserMessage(iIntroCredits, Hook_IntroCreditsMsg, true);
 		AddTempEntHook("BlackMesa Shot", BlackMesaFireBulletsTEHook);
+		AddNormalSoundHook(PlayerSoundListener);
 	}
-	
-	HookEvent("player_spawn", Event_PlayerSpawnPost, EventHookMode_Post);
-	AddNormalSoundHook(PlayerSoundListener);
 	
 	for (int i = 1; i <= MaxClients; i++)
 	{
@@ -222,8 +158,11 @@ public void OnMapStart()
 {
 	g_pCoopManager.OnMapStart();
 	
-	DHookGamerules(hkIsMultiplayer, false, _, Hook_IsMultiplayer);
-	DHookGamerules(hkFAllowFlashlight, false, _, Hook_FAllowFlashlight);
+	if (g_Engine == Engine_BlackMesa)
+	{
+		DHookGamerules(hkIsMultiplayer, false, _, Hook_IsMultiplayer);
+		DHookGamerules(hkFAllowFlashlight, false, _, Hook_FAllowFlashlight);
+	}
 	
 	for (int i = 0; i < g_pPostponedSpawns.Length; i++)
 	{
@@ -242,15 +181,6 @@ public void OnConfigsExecuted()
 
 public void OnConfigsExecutedPost()
 {
-	if (g_pCoopManager.IsFeatureEnabled(FT_STRIP_DEFAULT_EQUIPMENT))
-	{
-		CBaseEntity pGameEquip = CreateByClassname("game_player_equip");	// will spawn players with nothing if it exists
-		if (pGameEquip.IsValid())
-		{
-			pGameEquip.SetSpawnFlags(SF_PLAYER_EQUIP_STRIP_SUIT);
-			pGameEquip.Spawn();
-		}
-	}
 	if (g_pCoopManager.IsFeatureEnabled(FT_DISABLE_CANISTER_DROPS))
 	{
 		CBaseEntity pGameGamerules = CreateByClassname("game_mp_gamerules");
@@ -276,7 +206,7 @@ public void OnClientPutInServer(int client)
 	SDKHook(client, SDKHook_OnTakeDamage, Hook_PlayerTakeDamage);
 	DHookEntity(hkChangeTeam, false, client, _, Hook_PlayerChangeTeam);
 	DHookEntity(hkShouldCollide, false, client, _, Hook_PlayerShouldCollide);
-	
+
 	GreetPlayer(client);
 }
 
@@ -325,109 +255,112 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 		SDKHook(iEntIndex, SDKHook_Spawn, Hook_FixupBrushModels);
 		SDKHook(iEntIndex, SDKHook_SpawnPost, Hook_SpawnPost);
 		
-		if(pEntity.IsClassNPC())
+		if (g_Engine == Engine_BlackMesa)
 		{
-			DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_BaseNPCAcceptInput);
-			if (strncmp(szClassname, "npc_human_scientist", 19) == 0)
+			if(pEntity.IsClassNPC())
 			{
-				DHookEntity(hkIRelationType, true, iEntIndex, _, Hook_ScientistIRelationType);
-				DHookEntity(hkIsPlayerAlly, true, iEntIndex, _, Hook_IsPlayerAlly);
-			}
-			else if (strcmp(szClassname, "npc_human_security") == 0)
-			{
-				DHookEntity(hkIsPlayerAlly, true, iEntIndex, _, Hook_IsPlayerAlly);
-			}
-			else if (strcmp(szClassname, "npc_sniper", false) == 0)
-			{
-				DHookEntity(hkProtoSniperSelectSchedule, false, iEntIndex, _, Hook_ProtoSniperSelectSchedule);
-			}
-			else if (strcmp(szClassname, "npc_xenturret", false) == 0)
-			{
-				DHookEntity(hkProtoSniperSelectSchedule, false, iEntIndex, _, Hook_XenTurretSelectSchedule);
-				DHookEntity(hkHandleAnimEvent, false, iEntIndex, _, Hook_XenTurretHandleAnimEvent);
-				DHookEntity(hkHandleAnimEvent, true, iEntIndex, _, Hook_XenTurretHandleAnimEventPost);
-				DHookEntity(hkRunAI, false, iEntIndex, _, Hook_XenTurretRunAI);
-				DHookEntity(hkRunAI, true, iEntIndex, _, Hook_XenTurretRunAIPost);
-			}
-			else if (strcmp(szClassname, "npc_ichthyosaur") == 0)
-			{
-				DHookEntity(hkIchthyosaurIdleSound, false, iEntIndex, _, Hook_IchthyosaurIdleSound);
-			}
-			else if (strcmp(szClassname, "npc_gargantua") == 0)
-			{
-				DHookEntity(hkAcceptInput, true, iEntIndex, _, Hook_GargAcceptInputPost);
-			}
-		}
-		else if ((strcmp(szClassname, "instanced_scripted_scene", false) == 0) ||
-				(strcmp(szClassname, "logic_choreographed_scene", false) == 0) ||
-				(strcmp(szClassname, "scripted_scene", false) == 0))
-		{
-			DHookEntity(hkFindNamedEntity, true, iEntIndex, _, Hook_FindNamedEntity);
-			DHookEntity(hkFindNamedEntityClosest, true, iEntIndex, _, Hook_FindNamedEntity);
-		}
-		else if (strncmp(szClassname, "item_", 5) == 0)
-		{
-			if (g_pCoopManager.IsFeatureEnabled(FT_INSTANCE_ITEMS))
-			{
-				if(pEntity.IsPickupItem())
+				DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_BaseNPCAcceptInput);
+				if (strncmp(szClassname, "npc_human_scientist", 19) == 0)
 				{
-					SDKHook(iEntIndex, SDKHook_Spawn, Hook_ItemSpawnDelay);
+					DHookEntity(hkIRelationType, true, iEntIndex, _, Hook_ScientistIRelationType);
+					DHookEntity(hkIsPlayerAlly, true, iEntIndex, _, Hook_IsPlayerAlly);
+				}
+				else if (strcmp(szClassname, "npc_human_security") == 0)
+				{
+					DHookEntity(hkIsPlayerAlly, true, iEntIndex, _, Hook_IsPlayerAlly);
+				}
+				else if (strcmp(szClassname, "npc_sniper", false) == 0)
+				{
+					DHookEntity(hkProtoSniperSelectSchedule, false, iEntIndex, _, Hook_ProtoSniperSelectSchedule);
+				}
+				else if (strcmp(szClassname, "npc_xenturret", false) == 0)
+				{
+					DHookEntity(hkProtoSniperSelectSchedule, false, iEntIndex, _, Hook_XenTurretSelectSchedule);
+					DHookEntity(hkHandleAnimEvent, false, iEntIndex, _, Hook_XenTurretHandleAnimEvent);
+					DHookEntity(hkHandleAnimEvent, true, iEntIndex, _, Hook_XenTurretHandleAnimEventPost);
+					DHookEntity(hkRunAI, false, iEntIndex, _, Hook_XenTurretRunAI);
+					DHookEntity(hkRunAI, true, iEntIndex, _, Hook_XenTurretRunAIPost);
+				}
+				else if (strcmp(szClassname, "npc_ichthyosaur") == 0)
+				{
+					DHookEntity(hkIchthyosaurIdleSound, false, iEntIndex, _, Hook_IchthyosaurIdleSound);
+				}
+				else if (strcmp(szClassname, "npc_gargantua") == 0)
+				{
+					DHookEntity(hkAcceptInput, true, iEntIndex, _, Hook_GargAcceptInputPost);
 				}
 			}
-			if (strcmp(szClassname, "item_weapon_snark") == 0)
+			else if ((strcmp(szClassname, "instanced_scripted_scene", false) == 0) ||
+					(strcmp(szClassname, "logic_choreographed_scene", false) == 0) ||
+					(strcmp(szClassname, "scripted_scene", false) == 0))
 			{
-				SDKHook(iEntIndex, SDKHook_OnTakeDamagePost, Hook_OnItemSnarkDamagePost);
+				DHookEntity(hkFindNamedEntity, true, iEntIndex, _, Hook_FindNamedEntity);
+				DHookEntity(hkFindNamedEntityClosest, true, iEntIndex, _, Hook_FindNamedEntity);
 			}
+			else if (strncmp(szClassname, "item_", 5) == 0)
+			{
+				if (g_pCoopManager.IsFeatureEnabled(FT_INSTANCE_ITEMS))
+				{
+					if(pEntity.IsPickupItem())
+					{
+						SDKHook(iEntIndex, SDKHook_Spawn, Hook_ItemSpawnDelay);
+					}
+				}
+				if (strcmp(szClassname, "item_weapon_snark") == 0)
+				{
+					SDKHook(iEntIndex, SDKHook_OnTakeDamagePost, Hook_OnItemSnarkDamagePost);
+				}
+			}
+			else if (pEntity.IsClassWeapon())
+			{
+				DHookEntity(hkSetModel, false, iEntIndex, _, Hook_WeaponSetModel);
+			}
+			else if (strcmp(szClassname, "trigger_changelevel") == 0)
+			{
+				SDKHook(iEntIndex, SDKHook_SpawnPost, Hook_ChangelevelSpawn);
+			}
+			else if (strcmp(szClassname, "camera_death") == 0)
+			{
+				SDKHook(iEntIndex, SDKHook_SpawnPost, Hook_CameraDeathSpawn);
+			}
+			else if (strcmp(szClassname, "point_teleport") == 0)
+			{
+				DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_PointTeleportAcceptInput);
+			}
+			else if (strcmp(szClassname, "point_viewcontrol") == 0)
+			{
+				DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_PointViewcontrolAcceptInput);
+			}
+			else if (strcmp(szClassname, "player_speedmod") == 0)
+			{
+				DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_SpeedmodAcceptInput);
+			}
+			else if (strcmp(szClassname, "point_clientcommand") == 0)
+			{
+				DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_ClientCommandAcceptInput);
+			}
+			else if (strcmp(szClassname, "point_servercommand") == 0)
+			{
+				DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_ServerCommandAcceptInput);
+			}
+			else if (strcmp(szClassname, "env_credits") == 0)
+			{
+				DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_EnvCreditsAcceptInput);
+			}
+			else if (strcmp(szClassname, "ai_script_conditions") == 0)
+			{
+				DHookEntity(hkThink, false, iEntIndex, _, Hook_AIConditionsThink);
+			}
+			else if (strcmp(szClassname, "func_rotating") == 0)
+			{
+				CreateTimer(30.0, Timer_FixRotatingAngles, pEntity, TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT);
+			}
+			// if some explosions turn out to be damaging all players except one, this is the fix
+			//else if (strcmp(szClassname, "env_explosion") == 0)
+			//{
+			//	SDKHook(iEntIndex, SDKHook_SpawnPost, Hook_ExplosionSpawn);
+			//}
 		}
-		else if (pEntity.IsClassWeapon())
-		{
-			DHookEntity(hkSetModel, false, iEntIndex, _, Hook_WeaponSetModel);
-		}
-		else if (strcmp(szClassname, "trigger_changelevel") == 0)
-		{			
-			SDKHook(iEntIndex, SDKHook_SpawnPost, Hook_ChangelevelSpawn);
-		}
-		else if (strcmp(szClassname, "camera_death") == 0)
-		{
-			SDKHook(iEntIndex, SDKHook_SpawnPost, Hook_CameraDeathSpawn);
-		}
-		else if (strcmp(szClassname, "point_teleport") == 0)
-		{
-			DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_PointTeleportAcceptInput);
-		}
-		else if (strcmp(szClassname, "point_viewcontrol") == 0)
-		{
-			DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_PointViewcontrolAcceptInput);
-		}
-		else if (strcmp(szClassname, "player_speedmod") == 0)
-		{
-			DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_SpeedmodAcceptInput);
-		}
-		else if (strcmp(szClassname, "point_clientcommand") == 0)
-		{
-			DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_ClientCommandAcceptInput);
-		}
-		else if (strcmp(szClassname, "point_servercommand") == 0)
-		{
-			DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_ServerCommandAcceptInput);
-		}
-		else if (strcmp(szClassname, "env_credits") == 0)
-		{
-			DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_EnvCreditsAcceptInput);
-		}
-		else if (strcmp(szClassname, "ai_script_conditions") == 0)
-		{
-			DHookEntity(hkThink, false, iEntIndex, _, Hook_AIConditionsThink);
-		}
-		else if (strcmp(szClassname, "func_rotating") == 0)
-		{
-			CreateTimer(30.0, Timer_FixRotatingAngles, pEntity, TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT);
-		}
-		// if some explosions turn out to be damaging all players except one, this is the fix
-		//else if (strcmp(szClassname, "env_explosion") == 0)
-		//{
-		//	SDKHook(iEntIndex, SDKHook_SpawnPost, Hook_ExplosionSpawn);
-		//}
 	}
 }
 
@@ -466,9 +399,13 @@ public Action Hook_ItemSpawnDelay(int iEntIndex)
 	
 	CBaseEntity pEnt = CBaseEntity(iEntIndex);
 	if(g_bMapStarted)
+	{
 		RequestFrame(SpawnPostponedItem, pEnt);
+	}
 	else
+	{
 		g_pPostponedSpawns.Push(pEnt);
+	}
 	return Plugin_Stop;
 }
 
@@ -555,17 +492,6 @@ public void RequestStopThink(CBaseEntity pEntity)
 	if(pEntity.IsValid())
 	{
 		pEntity.SetNextThinkTick(0);
-	}
-}
-
-public Action Event_PlayerSpawnPost(Event hEvent, const char[] szName, bool bDontBroadcast)
-{
-	int iUserId = GetEventInt(hEvent, "userid");
-	CBlackMesaPlayer pPlayer = CBlackMesaPlayer(GetClientOfUserId(iUserId));
-	if (pPlayer.IsValid())
-	{
-		g_pCoopManager.OnPlayerSpawned(pPlayer);
-		g_pInstancingManager.OnPlayerSpawned(pPlayer);
 	}
 }
 

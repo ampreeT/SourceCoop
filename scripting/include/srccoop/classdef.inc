@@ -12,6 +12,104 @@ Handle g_pSetCollisionBounds;
 Handle g_pUpdateEnemyMemory;
 Handle g_pGetSequenceLinearMotion;
 Handle g_pShouldPlayerAvoid;
+Handle g_pRemoveAllItems;
+Handle g_pIsNPC;
+
+void InitClassdef(GameData pGameConfig)
+{
+	// ALL Games
+	{
+		char szSetCollisionBounds[] = "CBaseEntity::SetCollisionBounds";
+		StartPrepSDKCall(SDKCall_Entity);
+		if(!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Signature, szSetCollisionBounds))
+			SetFailState("Could not obtain gamedata signature %s", szSetCollisionBounds);
+		PrepSDKCall_AddParameter(SDKType_Vector, SDKPass_ByRef);
+		PrepSDKCall_AddParameter(SDKType_Vector, SDKPass_ByRef);
+		if (!(g_pSetCollisionBounds = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szSetCollisionBounds);
+			
+		char szIsNpc[] = "CBaseEntity::IsNPC";
+		StartPrepSDKCall(SDKCall_Entity);
+		if(!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Virtual, szIsNpc))
+			SetFailState("Could not obtain gamedata offset %s", szIsNpc);
+		PrepSDKCall_SetReturnInfo(SDKType_Bool, SDKPass_Plain);
+		if (!(g_pIsNPC = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szIsNpc);
+		
+		char szRemoveAllItems[] = "CBasePlayer::RemoveAllItems";
+		StartPrepSDKCall(SDKCall_Player);
+		if(!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Virtual, szRemoveAllItems))
+			SetFailState("Could not obtain gamedata offset %s", szRemoveAllItems);
+		PrepSDKCall_AddParameter(SDKType_Bool, SDKPass_Plain);
+		if (!(g_pRemoveAllItems = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szRemoveAllItems);
+	}
+		
+	if (GetEngineVersion() == Engine_BlackMesa)
+	{
+		/*
+		char szPickupObject[] = "CBlackMesaPlayer::PickupObject";
+		StartPrepSDKCall(SDKCall_Player);
+		if (!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Virtual, szPickupObject))
+			SetFailState("Could not obtain gamedata offset %s", szPickupObject);
+		PrepSDKCall_AddParameter(SDKType_CBaseEntity, SDKPass_Pointer);
+		PrepSDKCall_AddParameter(SDKType_Bool, SDKPass_Plain);
+		if (!(g_pPickupObject = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szPickupObject);
+		
+		
+		char szSendWeaponAnim[] = "CBaseCombatWeapon::SendWeaponAnim";
+		StartPrepSDKCall(SDKCall_Entity);
+		if (!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Virtual, szSendWeaponAnim))
+			SetFailState("Could not obtain gamedata offset %s", szSendWeaponAnim);
+		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
+		if (!(g_pSendWeaponAnim = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szSendWeaponAnim);
+		*/
+		
+		char szGameShutdown[] = "CServerGameDLL::GameShutdown";
+		StartPrepSDKCall(SDKCall_Raw);
+		if(!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Virtual, szGameShutdown))
+			SetFailState("Could not obtain gamedata offset %s", szGameShutdown);
+		if (!(g_pGameShutdown = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szGameShutdown);
+	
+		char szGlobalEntity_GetIndex[] = "GlobalEntity_GetIndex";
+		StartPrepSDKCall(SDKCall_Static);
+		if(!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Signature, szGlobalEntity_GetIndex))
+			SetFailState("Could not obtain gamedata signature %s", szGlobalEntity_GetIndex);
+		PrepSDKCall_AddParameter(SDKType_String, SDKPass_Pointer);
+		PrepSDKCall_SetReturnInfo(SDKType_PlainOldData, SDKPass_Plain);
+		if (!(g_pGlobalEntityGetIndex = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szGlobalEntity_GetIndex);
+	
+		char szGlobalEntity_GetState[] = "GlobalEntity_GetState";
+		StartPrepSDKCall(SDKCall_Static);
+		if(!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Signature, szGlobalEntity_GetState))
+			SetFailState("Could not obtain gamedata signature %s", szGlobalEntity_GetState);
+		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
+		PrepSDKCall_SetReturnInfo(SDKType_PlainOldData, SDKPass_Plain);
+		if (!(g_pGlobalEntityGetState = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szGlobalEntity_GetState);
+	
+		char szUpdateEnemyMemory[] = "CAI_BaseNPC::UpdateEnemyMemory";
+		StartPrepSDKCall(SDKCall_Entity);
+		if(!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Virtual, szUpdateEnemyMemory))
+			SetFailState("Could not obtain gamedata offset %s", szUpdateEnemyMemory);
+		PrepSDKCall_AddParameter(SDKType_CBaseEntity, SDKPass_Pointer);
+		PrepSDKCall_AddParameter(SDKType_Vector, SDKPass_ByRef);
+		PrepSDKCall_AddParameter(SDKType_CBaseEntity, SDKPass_Pointer);
+		PrepSDKCall_SetReturnInfo(SDKType_Bool, SDKPass_Plain);
+		if (!(g_pUpdateEnemyMemory = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szUpdateEnemyMemory);
+		
+		char szShouldPlayerAvoid[] = "CAI_BaseNPC::ShouldPlayerAvoid";
+		StartPrepSDKCall(SDKCall_Entity);
+		if(!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Virtual, szShouldPlayerAvoid))
+			SetFailState("Could not obtain gamedata offset %s", szShouldPlayerAvoid);
+		PrepSDKCall_SetReturnInfo(SDKType_Bool, SDKPass_Plain);
+		if (!(g_pShouldPlayerAvoid = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szShouldPlayerAvoid);
+	
+		char szGetSequenceLinearMotion[] = "CBaseAnimating::GetSequenceLinearMotion";
+		StartPrepSDKCall(SDKCall_Entity);
+		if(!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Signature, szGetSequenceLinearMotion))
+			SetFailState("Could not obtain gamedata signature %s", szGetSequenceLinearMotion);
+		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
+		PrepSDKCall_AddParameter(SDKType_Vector, SDKPass_Pointer, _, VENCODE_FLAG_COPYBACK);
+		if (!(g_pGetSequenceLinearMotion = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szGetSequenceLinearMotion);
+	}
+}
 
 enum struct FireOutputData
 {
@@ -102,63 +200,6 @@ methodmap CBaseEntity
 		this.GetClassname(szBuffer, sizeof(szBuffer));
 		return StrEqual(szClassname, szBuffer);
 	}
-	public bool IsClassPlayer()
-	{
-		int index = this.GetEntIndex();
-		return view_as<bool>((index > 0) && (index < (MaxClients + 1)));
-	}
-	public bool IsClassWeapon()
-	{
-		char szTitle[] = "weapon_";
-		char szClassname[sizeof(szTitle)];
-		if (this.GetClassname(szClassname, sizeof(szClassname)))
-			return view_as<bool>(strcmp(szClassname, szTitle, false) == 0);
-		return false;
-	}
-	public bool IsPickupItem()
-	{
-		char szNetClass[32];
-		if(this.GetNetClassname(szNetClass, sizeof(szNetClass)))
-		{
-			return (strcmp(szNetClass, "CBasePickup") == 0 || strcmp(szNetClass, "CItem_Battery") == 0);
-		}
-		return false;
-	}
-	// needs better implementation
-	public bool IsClassNPC()
-	{
-		if (GetEntSendPropOffs(this.GetEntIndex(), "m_iMaxHealth", true) != -1)
-		{
-			char szTitle[] = "npc_";
-			char szClassname[sizeof(szTitle)];
-			if (this.GetClassname(szClassname, sizeof(szClassname)))
-				return view_as<bool>(strcmp(szClassname, szTitle, false) == 0);
-		}
-		
-		return false;
-	}
-	public bool IsClassScientist()
-	{
-		char szTitle[] = "npc_human_scientist";
-		char szClassname[sizeof(szTitle)];
-		if (this.GetClassname(szClassname, sizeof(szClassname)))
-			return view_as<bool>(strcmp(szClassname, szTitle, false) == 0);
-		return false;
-	}
-	// incorrect implementation
-	/*
-	public bool IsClassScene()
-	{
-		char szClassname[MAX_CLASSNAME];
-		if (this.GetClassname(szClassname, sizeof(szClassname)))
-		{
-			return view_as<bool>((strcmp(szClassname, "instanced_scripted_scene", false) == 0) ||
-			(strcmp(szClassname, "logic_choreographed_scene", false) == 0) ||
-			(strcmp(szClassname, "scripted_scene", false) == 0));
-		}
-		return false;
-	}
-	*/
 	public bool Spawn()
 	{
 		return DispatchSpawn(this.GetEntIndex());
@@ -229,6 +270,22 @@ methodmap CBaseEntity
 	public void Teleport(const float vecOrigin[3] = NULL_VECTOR, const float vecAngles[3] = NULL_VECTOR, const float vecVelocity[3] = NULL_VECTOR)
 	{
 		TeleportEntity(this.GetEntIndex(), vecOrigin, vecAngles, vecVelocity);
+	}
+	public CBaseEntity GetParent()
+	{
+		return CBaseEntity(GetEntPropEnt(this.GetEntIndex(), Prop_Data, "m_hMoveParent"));
+	}
+	public void SetParent(CBaseEntity pParent)
+	{
+		this.AcceptInputStr("SetParent", "!activator", pParent);
+	}
+	public void SetParentAttachment(const char[] szParentAttachment)
+	{
+		this.AcceptInputStr("SetParentAttachment", szParentAttachment);
+	}
+	public void SetParentAttachmentMaintainOffset(const char[] szParentAttachment)
+	{
+		this.AcceptInputStr("SetParentAttachmentMaintainOffset", szParentAttachment);
 	}
 	public void GetAbsOrigin(float vecBuffer[3])
 	{
@@ -363,6 +420,54 @@ methodmap CBaseEntity
 	{
 		SetEntProp(this.GetEntIndex(), Prop_Data, "m_takedamage", m_takedamage); 
 	}
+	public bool IsClassPlayer()
+	{
+		int index = this.GetEntIndex();
+		return view_as<bool>((index > 0) && (index < (MaxClients + 1)));
+	}
+	public bool IsClassWeapon()
+	{
+		char szTitle[] = "weapon_";
+		char szClassname[sizeof(szTitle)];
+		if (this.GetClassname(szClassname, sizeof(szClassname)))
+			return view_as<bool>(strcmp(szClassname, szTitle, false) == 0);
+		return false;
+	}
+	public bool IsPickupItem()
+	{
+		char szNetClass[32];
+		if(this.GetNetClassname(szNetClass, sizeof(szNetClass)))
+		{
+			return (strcmp(szNetClass, "CBasePickup") == 0 || strcmp(szNetClass, "CItem_Battery") == 0);
+		}
+		return false;
+	}
+	public bool IsClassNPC()
+	{
+		return SDKCall(g_pIsNPC, this);
+	}
+	public bool IsClassScientist()
+	{
+		char szTitle[] = "npc_human_scientist";
+		char szClassname[sizeof(szTitle)];
+		if (this.GetClassname(szClassname, sizeof(szClassname)))
+			return view_as<bool>(strcmp(szClassname, szTitle, false) == 0);
+		return false;
+	}
+	// incorrect implementation
+	/*
+	public bool IsClassScene()
+	{
+		char szClassname[MAX_CLASSNAME];
+		if (this.GetClassname(szClassname, sizeof(szClassname)))
+		{
+			return view_as<bool>((strcmp(szClassname, "instanced_scripted_scene", false) == 0) ||
+			(strcmp(szClassname, "logic_choreographed_scene", false) == 0) ||
+			(strcmp(szClassname, "scripted_scene", false) == 0));
+		}
+		return false;
+	}
+	*/
 }
 
 methodmap CTraceRay
@@ -715,9 +820,12 @@ methodmap CBlackMesaPlayer < CBasePlayer
 	public CBaseAnimating GiveItem(const char[] szItemName)
 	{
 		CBaseAnimating pItem = CBaseAnimating(GivePlayerItem(this.GetEntIndex(), szItemName));
-		// this would drop on the ground if player cant pick up any more
-		pItem.OutputAdd("OnUser1", "!self", "kill", _, 0.1);
-		pItem.AcceptInputStr("FireUser1");
+		if(!pItem.GetOwner().IsValid())
+		{
+			// this would drop on the ground if player cant pick up any more
+			pItem.OutputAdd("OnUser1", "!self", "kill", _, 0.1);
+			pItem.AcceptInputStr("FireUser1");
+		}
 		return pItem;
 	}
 	public CBaseCombatWeapon GiveWeapon(const char[] szWeaponName)
@@ -727,6 +835,10 @@ methodmap CBlackMesaPlayer < CBasePlayer
 	public void RemoveWeapon(CBaseCombatWeapon pWeapon)
 	{
 		RemovePlayerItem(this.GetEntIndex(), pWeapon.GetEntIndex());
+	}
+	public void RemoveAllItems(bool bRemoveSuit)
+	{
+		SDKCall(g_pRemoveAllItems, this.GetEntIndex(), bRemoveSuit);
 	}
 	public bool HasWeapon(const char[] szWeaponName)
 	{

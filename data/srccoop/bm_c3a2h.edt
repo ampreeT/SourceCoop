@@ -21,6 +21,20 @@
 				"targetname" ""
 			}
 		}
+		// make killer doors
+		"delete"
+		{
+			"targetname" "DepotDoorBlock"
+		}
+		"modify"
+		{
+			"targetname" "/^(DepotDoorLeftFUNC|DepotDoorRIGHTFUNC)$/"
+			"add"
+			{
+				"dmg" "999"
+				"forceclosed" "1"
+			}
+		}
 	}
 	"checkpoint"
 	{

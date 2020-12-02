@@ -57,61 +57,6 @@
 				}
 			}
 		}
-		// the crane gets stuck if the buttons are pressed too quickly
-		"modify"
-		{
-			"targetname" "/^(c1a4f_reactor_power_button_d_relay|c1a4f_reactor_power_button_g_relay)$/"
-			"outputs"
-			{
-				"add"
-				{
-					"output" "OnTrigger"
-					"target" "c1a4f_reactor_power_button_g"
-					"input"	"Lock"
-				}
-				"add"
-				{
-					"output" "OnTrigger"
-					"target" "c1a4f_reactor_power_button_d"
-					"input"	"Lock"
-				}
-			}
-		}
-		"modify"
-		{
-			"targetname" "/^(c1a4f_reactor_power_button_g|c1a4f_reactor_power_button_d)$/"
-			"outputs"
-			{
-				"modify"
-				{
-					"output" "OnPressed"
-					"input" "Lock"
-					"replace"
-					{
-						"input" "kill"
-					}
-				}
-			}
-		}
-		"modify"
-		{
-			"targetname" "c1a4f_reactor_stop_02"
-			"outputs"
-			{
-				"add"
-				{
-					"output" "OnPass"
-					"target" "c1a4f_reactor_power_button_g"
-					"input" "Unlock"
-				}
-				"add"
-				{
-					"output" "OnPass"
-					"target" "c1a4f_reactor_power_button_d"
-					"input" "Unlock"
-				}
-			}
-		}
 	}
 	"checkpoint"
 	{

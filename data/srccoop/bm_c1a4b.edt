@@ -24,19 +24,6 @@
 				"delay_output" "OnNewGame"
 			}
 		}
-		// dont close controlroom door (except when pressed the rocket fire button)
-		"modify"
-		{
-			"targetname" "/^(c1a4c_controlroom_exit_door_button|c1a4c_controlroom_entry_door_button)$/"
-			"outputs"
-			{
-				"remove"
-				{
-					"target" "c1a4c_controlroom_entry_door"
-					"input" "Close"
-				}
-			}
-		}
 		// turn reload trigger into kill trig
 		"modify"
 		{
@@ -392,37 +379,37 @@
 				{
 					"classname" "npc_houndeye"
 				}
-				"add"
+				"modify"
 				{
-					"classname" "logic_auto"
-					"spawnflags" "1"
+					"targetname" "c1a4c_breakscript_relay"
 					"outputs"
 					{
+						"modify"
+						{
+							"output" "OnTrigger"
+							"replace"
+							{
+								"output" "OnSpawn"
+							}
+						}
 						// lock control room entrance door
 						"add"
 						{
-							"output" "OnMapSpawn"
+							"output" "OnSpawn"
 							"target" "c1a4c_controlroom_entry_door_button"
 							"input" "Lock"
 						}
 						"add"
 						{
-							"output" "OnMapSpawn"
+							"output" "OnSpawn"
 							"target" "c1a4c_controlroom_entry_door_button_sprite_green"
 							"input" "HideSprite"
 						}
 						"add"
 						{
-							"output" "OnMapSpawn"
+							"output" "OnSpawn"
 							"target" "c1a4c_controlroom_entry_door_button_sprite_red"
 							"input" "ShowSprite"
-						}
-						// start window broken
-						"add"
-						{
-							"output" "OnMapSpawn"
-							"target" "c1a4c_breakscript_relay"
-							"input" "Trigger"
 						}
 					}
 				}
@@ -492,6 +479,14 @@
 			"output"	"OnTrigger"
 			"delay"		"2"
 			"portal" 	"623 0 1572"
+		}
+		"controlroom"
+		{
+			"origin"	"-2544 -2224 1637"
+			"angles"	"0 90 0"
+			"triggerid" "c1a4c_breakscript_relay"
+			"output"	"OnTrigger"
+			"portal"	"-2494 -2285 1632"
 		}
 		
 		#if

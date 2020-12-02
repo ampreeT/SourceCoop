@@ -1,6 +1,6 @@
 "Games"
 {
-	"bms"
+	"#default"
 	{
 		"Keys"
 		{
@@ -15,58 +15,16 @@
 				"linux"		"ServerGameDLL010"
 			}
 		}
+		"Offsets"
+		{
+			"_OS_Detector_"
+			{
+				"windows"	"0"
+				"linux"		"1"
+			}
+		}
 		"Signatures"
 		{
-			"CBasePlayer::SetSuitUpdate"	// CBasePlayer::SetSuitUpdate(CBasePlayer*, const char*, int, int)
-			{
-				"windows"		"\x55\x8B\xEC\x56\x8B\xF1\x57\x83\xCF\xFF"
-				"linux"			"@_ZN11CBasePlayer13SetSuitUpdateEPKcii"
-			}
-			"CBaseEntity::SetCollisionBounds"	//  void CBaseEntity::SetCollisionBounds(Vector  const&,Vector  const&)
-			{
-				"windows"		"\x55\x8B\xEC\x81\xC1\x4C\x01\x00\x00"
-				"linux"			"@_ZN11CBaseEntity18SetCollisionBoundsERK6VectorS2_"
-			}
-			"UTIL_GetLocalPlayer"	// CBasePlayer UTIL_GetLocalPlayer(void)
-			{
-				"windows"	"\xA1\x2A\x2A\x2A\x2A\x8B\x40\x14\x83\xF8\x01\x7E\x2A\xA1\x2A\x2A\x2A\x2A"
-				"linux" 	"@_Z19UTIL_GetLocalPlayerv"
-			}
-			"CAI_GoalEntity::ResolveNames"	// void CAI_GoalEntity::ResolveNames()
-			{
-				"windows"	"\x55\x8B\xEC\x83\xEC\x08\x53\x56\x57\x8D\xB9\x60\x03\x00\x00"
-				"linux" 	"@_ZN14CAI_GoalEntity12ResolveNamesEv"
-			}
-			"CAI_LeadBehavior::CanSelectSchedule"	// bool CAI_LeadBehavior::CanSelectSchedule()
-			{
-				"windows"	"\xA1\x2A\x2A\x2A\x2A\x56\x8B\xF1\x83\x78\x14\x01\x0F\x8F\x2A\x2A\x2A\x2A"
-				"linux" 	"@_ZN16CAI_LeadBehavior17CanSelectScheduleEv"
-			}
-			"GlobalEntity_GetIndex" // int GlobalEntity_GetIndex( const char *pGlobalname );
-			{
-				"windows"	"\x55\x8B\xEC\x51\xFF\x75\x08\x8D\x45\xFC"
-				"linux" 	"@_Z21GlobalEntity_GetIndexPKc"
-			}
-			"GlobalEntity_GetState" // GLOBALESTATE GlobalEntity_GetState( int globalIndex );
-			{
-				"windows"	"\x55\x8B\xEC\x8B\x45\x08\x85\xC0\x78\x2A\x3B\x05\x2A\x2A\x2A\x2A\x7D\x2A\x8D\x0C\x40\xA1\x2A\x2A\x2A\x2A\x8B\x44\x88\x04"
-				"linux" 	"@_Z21GlobalEntity_GetStatei"
-			}
-			"Pickup_ForcePlayerToDropThisObject" // void Pickup_ForcePlayerToDropThisObject(CBaseEntity *)
-			{
-				"windows"	"\x55\x8B\xEC\x56\x8B\x75\x08\x85\xF6\x74\x2A\x8B\x8E\xE4\x01\x00\x00"
-				"linux" 	"@_Z34Pickup_ForcePlayerToDropThisObjectP11CBaseEntity"
-			}
-			"CBaseAnimating::GetSequenceLinearMotion" // void CBaseAnimating::GetSequenceLinearMotion(int,Vector *)
-			{
-				"windows"	"\x55\x8B\xEC\x56\x8B\xF1\x80\xBE\x31\x03\x00\x00\x00\x75\x2A\x83\xBE\x74\x04\x00\x00\x00\x75\x2A\xE8\x2A\x2A\x2A\x2A\x85\xC0\x74\x2A\x8B\xCE\xE8\x2A\x2A\x2A\x2A\x8B\x8E\x74\x04\x00\x00\x85\xC9\x74\x2A\x83\x39\x00\x75\x2A\x33\xC9\xFF\x75\x0C"
-				"linux" 	"@_ZN14CBaseAnimating23GetSequenceLinearMotionEiP6Vector"
-			}
-			"CAI_BaseNPC::SetPlayerAvoidState" // void CAI_BaseNPC::SetPlayerAvoidState()
-			{
-				"windows"	"\x55\x8B\xEC\x83\xEC\x5C\x53\x57\x8B\xF9"
-				"linux" 	"@_ZN11CAI_BaseNPC19SetPlayerAvoidStateEv"
-			}
 			"CreateEngineInterface"
 			{
 				"library"		"engine"
@@ -78,124 +36,6 @@
 				"library"		"server"
 				"windows"		"@CreateInterface"
 				"linux"			"@CreateInterface"
-			}
-		}
-		"Offsets"
-		{
-			"_OS_Detector_"
-			{
-				"windows"	"0"
-				"linux"		"1"
-			}
-			"CBlackMesaPlayer::PickupObject"			// CBlackMesaPlayer::PickupObject(CBaseEntity*, bool)
-			{
-				"windows"	"433"
-				"linux" 	"434"
-			}
-			"CBaseCombatWeapon::SendWeaponAnim"		// CBaseCombatWeapon::SendWeaponAnim(int)
-			{
-				"windows"	"256"
-				"linux"		"257"
-			}
-			"CServerGameDLL::GameShutdown"		// CServerGameDLL::GameShutdown()
-			{
-				"windows"	"8"
-				"linux"		"8"
-			}
-			"CMultiplayRules::FAllowFlashlight"		// CMultiplayRules::FAllowFlashlight()
-			{
-				"windows"	"56"
-				"linux"		"57"
-			}
-			"CMultiplayRules::IsMultiplayer"		// CMultiplayRules::IsMultiplayer()
-			{
-				"windows"	"34"
-				"linux"		"35"
-			}
-			"CMultiplayRules::IsDeathmatch"		// CMultiplayRules::IsDeathmatch()
-			{
-				"windows"	"58"
-				"linux"		"59"
-			}
-			"CBaseCombatCharacter::IRelationType"	// CBaseCombatCharacter::IRelationType(CBaseEntity*)
-			{
-				"windows"	"318"
-				"linux"		"319"
-			}
-			"CAI_BaseNPC::IsPlayerAlly"		// CAI_BaseNPC::IsPlayerAlly(CBasePlayer*)
-			{
-				"windows"	"445"
-				"linux"		"446"
-			}
-			"CProtoSniper::SelectSchedule"			// CProtoSniper::SelectSchedule()
-			{
-				"windows"	"364"
-				"linux"		"365"
-			}
-			"CSceneEntity::FindNamedEntity"			// CSceneEntity::FindNamedEntity(char const*, CBaseEntity*, bool, bool)
-			{
-				"windows"	"248"
-				"linux"		"253"
-			}
-			"CSceneEntity::FindNamedEntityClosest"			// CSceneEntity::FindNamedEntityClosest(char const*, CBaseEntity*, bool, bool, char const*)
-			{
-				"windows"	"249"
-				"linux"		"254"
-			}
-			"CBaseEntity::SetModel"				// CBaseEntity::SetModel(char const*)
-			{
-				"windows"	"26"
-				"linux"		"27"
-			}
-			"CBasePickup::OnTryPickUp"				// CBasePickup::OnTryPickUp(CBaseEntity*)
-			{
-				"windows"	"236"
-				"linux"		"237"
-			}
-			"CBaseEntity::AcceptInput"				// CBaseEntity::AcceptInput(char const*, CBaseEntity*, CBaseEntity*, variant_t, int)
-			{
-				"windows"	"39"
-				"linux"		"40"
-			}
-			"CBaseEntity::Think"				// CBaseEntity::Think
-			{
-				"windows"	"50"
-				"linux"		"51"
-			}
-			"CBlackMesaPlayer::ChangeTeam"				// CBlackMesaPlayer::ChangeTeam(int, bool, bool)
-			{
-				"windows"	"444"
-				"linux"		"445"
-			}
-			"CBlackMesaPlayer::ShouldCollide"				// CBlackMesaPlayer::ShouldCollide(int, int)
-			{
-				"windows"	"18"
-				"linux"		"19"
-			}
-			"CNPC_Ichthyosaur::IdleSound"				// CNPC_Ichthyosaur::IdleSound()
-			{
-				"windows"	"468"
-				"linux"		"469"
-			}
-			"CAI_BaseNPC::UpdateEnemyMemory"				// CAI_BaseNPC::UpdateEnemyMemory(CBaseEntity*, Vector const&, CBaseEntity*)
-			{
-				"windows"	"529"
-				"linux"		"533"
-			}
-			"CBaseAnimating::HandleAnimEvent"				// CBaseAnimating::HandleAnimEvent(animevent_t*)
-			{
-				"windows"	"221"
-				"linux"		"222"
-			}
-			"CAI_BaseNPC::RunAI"				// CAI_BaseNPC::RunAI()
-			{
-				"windows"	"358"
-				"linux"		"359"
-			}
-			"CAI_BaseNPC::ShouldPlayerAvoid" // CAI_BaseNPC::ShouldPlayerAvoid()
-			{
-				"windows"	"371"
-				"linux"		"372"
 			}
 		}
 		"Functions"
@@ -382,9 +222,9 @@
 				"return"	"void"
 				"this"		"entity"
 			}
-			"CBlackMesaPlayer::ChangeTeam"
+			"CBasePlayer::ChangeTeam"
 			{
-				"offset"	"CBlackMesaPlayer::ChangeTeam"
+				"offset"	"CBasePlayer::ChangeTeam"
 				"hooktype"	"entity"
 				"return"	"void"
 				"this"		"entity"
@@ -404,9 +244,9 @@
 					}
 				}
 			}
-			"CBlackMesaPlayer::ShouldCollide"
+			"CBaseEntity::ShouldCollide"
 			{
-				"offset"	"CBlackMesaPlayer::ShouldCollide"
+				"offset"	"CBaseEntity::ShouldCollide"
 				"hooktype"	"entity"
 				"return"	"bool"
 				"this"		"entity"
@@ -451,7 +291,7 @@
 				"this"		"entity"
 			}
 			
-			//Detours
+			// Detours
 			
 			"CBasePlayer::SetSuitUpdate"
 			{
@@ -514,6 +354,219 @@
 				"callconv"	"thiscall"
 				"return"	"void"
 				"this"		"entity"
+			}
+		}
+	}
+	"bms"
+	{
+		"Signatures"
+		{
+			"CBasePlayer::SetSuitUpdate"	// CBasePlayer::SetSuitUpdate(CBasePlayer*, const char*, int, int)
+			{
+				"windows"		"\x55\x8B\xEC\x56\x8B\xF1\x57\x83\xCF\xFF"
+				"linux"			"@_ZN11CBasePlayer13SetSuitUpdateEPKcii"
+			}
+			"CBaseEntity::SetCollisionBounds"	//  void CBaseEntity::SetCollisionBounds(Vector  const&,Vector  const&)
+			{
+				"windows"		"\x55\x8B\xEC\x81\xC1\x4C\x01\x00\x00"
+				"linux"			"@_ZN11CBaseEntity18SetCollisionBoundsERK6VectorS2_"
+			}
+			"UTIL_GetLocalPlayer"	// CBasePlayer UTIL_GetLocalPlayer(void)
+			{
+				"windows"	"\xA1\x2A\x2A\x2A\x2A\x8B\x40\x14\x83\xF8\x01\x7E\x2A\xA1\x2A\x2A\x2A\x2A"
+				"linux" 	"@_Z19UTIL_GetLocalPlayerv"
+			}
+			"CAI_GoalEntity::ResolveNames"	// void CAI_GoalEntity::ResolveNames()
+			{
+				"windows"	"\x55\x8B\xEC\x83\xEC\x08\x53\x56\x57\x8D\xB9\x60\x03\x00\x00"
+				"linux" 	"@_ZN14CAI_GoalEntity12ResolveNamesEv"
+			}
+			"CAI_LeadBehavior::CanSelectSchedule"	// bool CAI_LeadBehavior::CanSelectSchedule()
+			{
+				"windows"	"\xA1\x2A\x2A\x2A\x2A\x56\x8B\xF1\x83\x78\x14\x01\x0F\x8F\x2A\x2A\x2A\x2A"
+				"linux" 	"@_ZN16CAI_LeadBehavior17CanSelectScheduleEv"
+			}
+			"GlobalEntity_GetIndex" // int GlobalEntity_GetIndex( const char *pGlobalname );
+			{
+				"windows"	"\x55\x8B\xEC\x51\xFF\x75\x08\x8D\x45\xFC"
+				"linux" 	"@_Z21GlobalEntity_GetIndexPKc"
+			}
+			"GlobalEntity_GetState" // GLOBALESTATE GlobalEntity_GetState( int globalIndex );
+			{
+				"windows"	"\x55\x8B\xEC\x8B\x45\x08\x85\xC0\x78\x2A\x3B\x05\x2A\x2A\x2A\x2A\x7D\x2A\x8D\x0C\x40\xA1\x2A\x2A\x2A\x2A\x8B\x44\x88\x04"
+				"linux" 	"@_Z21GlobalEntity_GetStatei"
+			}
+			"Pickup_ForcePlayerToDropThisObject" // void Pickup_ForcePlayerToDropThisObject(CBaseEntity *)
+			{
+				"windows"	"\x55\x8B\xEC\x56\x8B\x75\x08\x85\xF6\x74\x2A\x8B\x8E\xE4\x01\x00\x00"
+				"linux" 	"@_Z34Pickup_ForcePlayerToDropThisObjectP11CBaseEntity"
+			}
+			"CBaseAnimating::GetSequenceLinearMotion" // void CBaseAnimating::GetSequenceLinearMotion(int,Vector *)
+			{
+				"windows"	"\x55\x8B\xEC\x56\x8B\xF1\x80\xBE\x31\x03\x00\x00\x00\x75\x2A\x83\xBE\x74\x04\x00\x00\x00\x75\x2A\xE8\x2A\x2A\x2A\x2A\x85\xC0\x74\x2A\x8B\xCE\xE8\x2A\x2A\x2A\x2A\x8B\x8E\x74\x04\x00\x00\x85\xC9\x74\x2A\x83\x39\x00\x75\x2A\x33\xC9\xFF\x75\x0C"
+				"linux" 	"@_ZN14CBaseAnimating23GetSequenceLinearMotionEiP6Vector"
+			}
+			"CAI_BaseNPC::SetPlayerAvoidState" // void CAI_BaseNPC::SetPlayerAvoidState()
+			{
+				"windows"	"\x55\x8B\xEC\x83\xEC\x5C\x53\x57\x8B\xF9"
+				"linux" 	"@_ZN11CAI_BaseNPC19SetPlayerAvoidStateEv"
+			}
+		}
+		"Offsets"
+		{
+			"CBlackMesaPlayer::PickupObject"			// CBlackMesaPlayer::PickupObject(CBaseEntity*, bool)
+			{
+				"windows"	"433"
+				"linux" 	"434"
+			}
+			"CBaseCombatWeapon::SendWeaponAnim"		// CBaseCombatWeapon::SendWeaponAnim(int)
+			{
+				"windows"	"256"
+				"linux"		"257"
+			}
+			"CServerGameDLL::GameShutdown"		// CServerGameDLL::GameShutdown()
+			{
+				"windows"	"8"
+				"linux"		"8"
+			}
+			"CMultiplayRules::FAllowFlashlight"		// CMultiplayRules::FAllowFlashlight()
+			{
+				"windows"	"56"
+				"linux"		"57"
+			}
+			"CMultiplayRules::IsMultiplayer"		// CMultiplayRules::IsMultiplayer()
+			{
+				"windows"	"34"
+				"linux"		"35"
+			}
+			"CMultiplayRules::IsDeathmatch"		// CMultiplayRules::IsDeathmatch()
+			{
+				"windows"	"58"
+				"linux"		"59"
+			}
+			"CBaseCombatCharacter::IRelationType"	// CBaseCombatCharacter::IRelationType(CBaseEntity*)
+			{
+				"windows"	"318"
+				"linux"		"319"
+			}
+			"CAI_BaseNPC::IsPlayerAlly"		// CAI_BaseNPC::IsPlayerAlly(CBasePlayer*)
+			{
+				"windows"	"445"
+				"linux"		"446"
+			}
+			"CProtoSniper::SelectSchedule"			// CProtoSniper::SelectSchedule()
+			{
+				"windows"	"364"
+				"linux"		"365"
+			}
+			"CSceneEntity::FindNamedEntity"			// CSceneEntity::FindNamedEntity(char const*, CBaseEntity*, bool, bool)
+			{
+				"windows"	"248"
+				"linux"		"253"
+			}
+			"CSceneEntity::FindNamedEntityClosest"			// CSceneEntity::FindNamedEntityClosest(char const*, CBaseEntity*, bool, bool, char const*)
+			{
+				"windows"	"249"
+				"linux"		"254"
+			}
+			"CBaseEntity::SetModel"				// CBaseEntity::SetModel(char const*)
+			{
+				"windows"	"26"
+				"linux"		"27"
+			}
+			"CBasePickup::OnTryPickUp"				// CBasePickup::OnTryPickUp(CBaseEntity*)
+			{
+				"windows"	"236"
+				"linux"		"237"
+			}
+			"CBaseEntity::AcceptInput"				// CBaseEntity::AcceptInput(char const*, CBaseEntity*, CBaseEntity*, variant_t, int)
+			{
+				"windows"	"39"
+				"linux"		"40"
+			}
+			"CBaseEntity::Think"				// CBaseEntity::Think
+			{
+				"windows"	"50"
+				"linux"		"51"
+			}
+			"CBasePlayer::ChangeTeam"				// CBlackMesaPlayer::ChangeTeam(int, bool, bool)
+			{
+				"windows"	"444"
+				"linux"		"445"
+			}
+			"CBaseEntity::ShouldCollide"				// CBlackMesaPlayer::ShouldCollide(int, int)
+			{
+				"windows"	"18"
+				"linux"		"19"
+			}
+			"CNPC_Ichthyosaur::IdleSound"				// CNPC_Ichthyosaur::IdleSound()
+			{
+				"windows"	"468"
+				"linux"		"469"
+			}
+			"CAI_BaseNPC::UpdateEnemyMemory"				// CAI_BaseNPC::UpdateEnemyMemory(CBaseEntity*, Vector const&, CBaseEntity*)
+			{
+				"windows"	"529"
+				"linux"		"533"
+			}
+			"CBaseAnimating::HandleAnimEvent"				// CBaseAnimating::HandleAnimEvent(animevent_t*)
+			{
+				"windows"	"221"
+				"linux"		"222"
+			}
+			"CAI_BaseNPC::RunAI"				// CAI_BaseNPC::RunAI()
+			{
+				"windows"	"358"
+				"linux"		"359"
+			}
+			"CAI_BaseNPC::ShouldPlayerAvoid" // CAI_BaseNPC::ShouldPlayerAvoid()
+			{
+				"windows"	"371"
+				"linux"		"372"
+			}
+			"CBasePlayer::RemoveAllItems" // CBlackMesaPlayer::RemoveAllItems(bool)
+			{
+				"windows"	"365"
+				"linux"		"366"
+			}
+			"CBaseEntity::IsNPC" // CBaseEntity::IsNPC() const
+			{
+				"windows"	"77"
+				"linux"		"78"
+			}
+		}
+	}
+	"hl2mp"
+	{
+		"Offsets"
+		{
+			"CBasePlayer::ChangeTeam" // CBasePlayer::ChangeTeam(int, bool, bool)
+			{
+				"windows"	"419"
+				"linux"		"420"
+			}
+			"CBaseEntity::ShouldCollide" // CBaseEntity::ShouldCollide
+			{
+				"windows"	"16"
+				"linux"		"17"
+			}
+			"CBasePlayer::RemoveAllItems" // CBasePlayer::RemoveAllItems(bool)
+			{
+				"windows"	"342"
+				"linux"		"343"
+			}
+			"CBaseEntity::IsNPC" // CBaseEntity::IsNPC() const
+			{
+				"windows"	"70"
+				"linux"		"71"
+			}
+		}
+		"Signatures"
+		{
+			"CBaseEntity::SetCollisionBounds" // void CBaseEntity::SetCollisionBounds(Vector  const&,Vector  const&)
+			{
+				"windows"		"\x55\x8B\xEC\x81\xC1\x4C\x01\x00\x00"
+				"linux"			"@_ZN11CBaseEntity18SetCollisionBoundsERK6VectorS2_"
 			}
 		}
 	}

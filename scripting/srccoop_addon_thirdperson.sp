@@ -27,6 +27,7 @@ public void OnPluginStart()
 	pCheatsCvar = FindConVar("sv_cheats");
 	HookConVarChange(pEnabledCvar, EnabledCvarChanged);
 	
+	InitSourceCoopAddon();
 	if (LibraryExists(SRCCOOP_LIBRARY))
 	{
 		OnSourceCoopStarted();

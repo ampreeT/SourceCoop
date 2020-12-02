@@ -20,7 +20,7 @@ Handle g_pCreateEngineInterface;
 Handle g_pCreateServerInterface;
 
 //Handle g_pPickupObject;
-Handle g_pSendWeaponAnim;
+//Handle g_pSendWeaponAnim;
 
 // ----------------------------
 // DHooks
@@ -61,6 +61,7 @@ char g_szMapName[MAX_MAPNAME];
 char g_szPrevMapName[MAX_MAPNAME];
 bool g_bTempDontHookEnts;
 bool g_bMapStarted;
+EngineVersion g_Engine;
 OperatingSystem g_serverOS;
 FeatureMap g_pFeatureMap;
 int g_iEnabledFeatures;

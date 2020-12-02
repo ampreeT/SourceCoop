@@ -39,9 +39,29 @@
 			{
 				"add"
 				{
-					"target" "c2a3a_icedoor"
 					"output" "OnDeath"
+					"target" "c2a3a_icedoor"
 					"input"	"Open"
+				}
+				"add"
+				{
+					"output" "OnDeath"
+					"target" "icedoor"
+					"input"	"Open"
+				}
+			}
+		}
+		// block changelevel void
+		"add"
+		{
+			"classname" "func_brush"
+			"rendermode" "10" // dont render
+			"functions"
+			{
+				"copy_model"
+				{
+					"classname" "trigger_changelevel"
+					"map" "bm_c2a3c"
 				}
 			}
 		}

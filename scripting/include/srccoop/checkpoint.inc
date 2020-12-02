@@ -113,7 +113,6 @@ enum struct CCoopSpawn
 	Array_t m_pCheckpointList;
 	int m_iCurrentCheckpoint;
 	CCoopEquipment m_pDefaultEquipment;
-	bool m_bSpawnEquipmentFlag[MAXPLAYERS+1];
 	
 	void Clear()
 	{
@@ -145,10 +144,10 @@ enum struct CCoopSpawn
 		return this.GetCheckpointByIndex(this.m_iCurrentCheckpoint, pCheckpoint);
 	}
 	
-	int FindCheckpointByOutput(CBaseEntity pCaller, const char[] szOutput, CCoopSpawnEntry pCheckpoint)
+	int FindCheckpointByOutput(CBaseEntity pCaller, const char[] szOutput, CCoopSpawnEntry pCheckpoint, int iStartIndex = 0)
 	{
 		CCoopSpawnEntry pEntry;
-		for (int i = this.m_iCurrentCheckpoint+1; i < this.m_pCheckpointList.Length; i++)
+		for (int i = iStartIndex; i < this.m_pCheckpointList.Length; i++)
 		{
 			this.m_pCheckpointList.GetArray(i, pEntry);
 			if (pCaller == pEntry.m_pTriggerEnt && StrEqual(szOutput, pEntry.m_szOutputName))
@@ -207,6 +206,14 @@ enum struct CCoopSpawn
 		return false;
 	}
 	
+	void StripPlayer(CBlackMesaPlayer pPlayer)
+	{
+		if (IsFeatureEnabled(FT_STRIP_DEFAULT_EQUIPMENT))
+		{
+			pPlayer.RemoveAllItems(!IsFeatureEnabled(FT_STRIP_DEFAULT_EQUIPMENT_KEEPSUIT));
+		}
+	}
+	
 	void SpawnPlayerEquipment(CBlackMesaPlayer pPlayer)
 	{
 		if(this.m_pDefaultEquipment.m_iHealth > 0)
@@ -236,12 +243,12 @@ enum struct CCoopSpawn
 		{
 			pCheckpoint.TeleportPlayer(pPlayer, true);
 		}
-		RequestFrame(RequestSpawnPlayer, pPlayer);
 		if(bSpawnEquipment)
 		{
+			this.StripPlayer(pPlayer);
 			this.SpawnPlayerEquipment(pPlayer);
 		}
-		//this.m_bSpawnEquipmentFlag[pPlayer.GetEntIndex()] = bSpawnEquipment;
+		RequestFrame(RequestSpawnPlayer, pPlayer);
 	}
 	
 	void CreatePortal(const float vecPosition[3])
@@ -571,19 +578,18 @@ public void RequestSpawnPlayer2(CBlackMesaPlayer pPlayer)
 		{
 			pCheckpoint.TeleportPlayer(pPlayer);
 		}
-		if(g_SpawnSystem.m_bSpawnEquipmentFlag[pPlayer.GetEntIndex()])
-		{
-			g_SpawnSystem.SpawnPlayerEquipment(pPlayer);
-		}
 	}
 }
 
 public void Callback_Checkpoint(const char[] szName, int iCaller, int iActivator, float flDelay)
 {
-	CCoopSpawnEntry pCheckpoint; int iIndex;
-	if ((iIndex = g_SpawnSystem.FindCheckpointByOutput(CBaseEntity(iCaller), szName, pCheckpoint)) != -1)
+	CCoopSpawnEntry pCheckpoint;
+	int iIndex = g_SpawnSystem.m_iCurrentCheckpoint + 1;
+	
+	while ((iIndex = g_SpawnSystem.FindCheckpointByOutput(CBaseEntity(iCaller), szName, pCheckpoint, iIndex)) != -1)
 	{
 		CreateTimer(pCheckpoint.m_flDelay, Callback_CheckpointTimer, iIndex, TIMER_FLAG_NO_MAPCHANGE);
+		iIndex++;
 	}
 }
 

@@ -17,12 +17,11 @@
 		{
 			"targetname" "c2a2a_sentry_trigger"
 		}
-		// delete door blocker
+		// delete door blocker, door kill instead
 		"delete"
 		{
 			"targetname" "c2a2b_blastdoor_block"
 		}
-		// use door kill instead
 		"modify"
 		{
 			"targetname" "c2a2b_blastdoor"
@@ -32,48 +31,138 @@
 				"dmg" "50"
 			}
 		}
-		// dont close last door
+		// fix player counter trigger for multiplayer
+		"modify"
+		{
+			"classname" "trigger_multiple"
+			"hammerid" "3064758"
+			"outputs"
+			{
+				"modify"
+				{
+					"output" "OnStartTouch"
+					"replace"
+					{
+						"output" "OnStartTouchAll"
+					}
+				}
+				"modify"
+				{
+					"output" "OnEndTouch"
+					"replace"
+					{
+						"output" "OnEndTouchAll"
+					}
+				}
+			}
+		}
+		// delete door blocker, door kill instead
 		"delete"
 		{
-			"targetname" "c2a2b_fog_trigger"
+			"targetname" "b_silo_door_a_clip"
+		}
+		"modify"
+		{
+			"targetname" "/^(b_silo_door_a_02|b_silo_door_a_01)$/"
+			"set"
+			{
+				"forceclosed" "1"
+				"dmg" "50"
+			}
+		}
+		// dont close last exit door
+		"modify"
+		{
+			"outputs"
+			{
+				"delete"
+				{
+					"target" "c2a2c_blastdoor"
+					"input" "Close"
+				}
+			}
 		}
 	}
 	"checkpoint"
 	{
-		"spawn"
-		{
-			"origin" "-420 -3818 188"
-			"angles" "0 90 0"
-		}
 		"train"
 		{
 			"origin" "0 0 30"
 			"angles" "0 0 0"
 			"followid" "c2a2a_tram_a_base"
 		}
-		"silo"
+		"train-doorportal1"
 		{
-			"origin" "1521 -72 173"
-			"angles" "0 315 0"
-			"triggerid" "c2a2b_blastdoor"
-			"output" "OnOpen"
-		}
-		"silo-doorclosed"
-		{
-			"origin" "1521 -72 173"
-			"angles" "0 315 0"
+			"origin" "0 0 30"
+			"angles" "0 0 0"
+			"followid" "c2a2a_tram_a_base"
 			"triggerid" "c2a2b_blastdoor"
 			"output" "OnFullyClosed"
 			"portal" "1376 0 189"
 		}
-		"silo-raiserocket"
+		"train-doorportal2"
 		{
-			"origin" "2342 2 1324"
-			"angles" "0 180 0"
-			"triggerid" "raise_button"
+			"origin" "0 0 30"
+			"angles" "0 0 0"
+			"followid" "c2a2a_tram_a_base"
+			"triggerid" "lvl0_ascent_trigger"
+			"output" "OnTrigger"
+			"portal" "1681 0 189"
+		}
+		"train-doorportal3"
+		{
+			"origin" "0 0 30"
+			"angles" "0 0 0"
+			"followid" "c2a2a_tram_a_base"
+			"triggerid" "lvl0_ascent_trigger"
+			"output" "OnTrigger"
+			"portal" "2721 0 189"
+			"delay" "4"
+		}
+		"platform1"
+		{
+			"origin" "2314 -222 1397"
+			"angles" "0 90 0"
+			"triggerid" "level1_platbutton"
 			"output" "OnPressed"
 			"bringall" "1"
-			"bringall_radius" "200"
+			"bringall_radius" "50"
+		}
+		"platform2"
+		{
+			"origin" "2464 72 949"
+			"angles" "0 180 0"
+			"triggerid" "level2_platbutton"
+			"output" "OnPressed"
+			"bringall" "1"
+			"bringall_radius" "50"
+		}
+		"platform3"
+		{
+			"origin" "2312 -216 597"
+			"angles" "0 90 0"
+			"triggerid" "level3_platbutton"
+			"output" "OnPressed"
+			"bringall" "1"
+			"bringall_radius" "50"
+		}
+		"elevator"
+		{
+			"origin" "0 0 -32"
+			"angles" "0 90 0"
+			"followid" "lvl4_lift_cage"
+			"triggerid" "lvl4_lift_button_button"
+			"output" "OnPressed"
+			"bringall" "1"
+			"bringall_radius" "50"
+		}
+		"train-exit"
+		{
+			"origin" "0 0 30"
+			"angles" "0 0 0"
+			"followid" "c2a2a_tram_a_base"
+			"triggerid" "raise_button"
+			"output" "OnPressed"
 		}
 	}
 }

@@ -39,6 +39,7 @@ public void OnPluginStart()
 	HookEvent("entity_killed", Event_EntKilled);
 	pKillfeedEnabledCookie = new Cookie("sourcecoop_killfeed_enabled", "Killfeed", CookieAccess_Protected);
 	
+	InitSourceCoopAddon();
 	if (LibraryExists(SRCCOOP_LIBRARY))
 	{
 		OnSourceCoopStarted();

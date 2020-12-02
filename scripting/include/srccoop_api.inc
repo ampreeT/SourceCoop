@@ -3,12 +3,12 @@
 #endif
 #define _srccoop_api_included
 
+#include <topmenus>
+
 #include <srccoop/typedef.inc>
 #include <srccoop/typedef_game.inc>
 #include <srccoop/classdef.inc>
 #include <srccoop/utils.inc>
-
-#include <topmenus>
 
 /* The library name registered by the core plugin */
 #define SRCCOOP_LIBRARY "SRCCOOP"
@@ -24,6 +24,17 @@
 
 /* Predefined TopMenu category for other settings */
 #define COOPMENU_CATEGORY_OTHER "Other"
+
+stock void InitSourceCoopAddon()
+{
+	GameData pGameConfig = LoadGameConfigFile(SRCCOOP_GAMEDATA_NAME);
+	if (pGameConfig == null)
+	{
+		SetFailState("Couldn't load game config %s", SRCCOOP_GAMEDATA_NAME);
+	}
+	InitClassdef(pGameConfig);
+	CloseHandle(pGameConfig);
+}
 
 /**
  * Retrieves the handle to the coop TopMenu.

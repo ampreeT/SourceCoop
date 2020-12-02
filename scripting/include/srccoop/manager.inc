@@ -173,7 +173,7 @@ enum struct CoopManager
 		this.m_bStarted = false;
 		this.m_bPlayerSpawned = false;
 		this.m_pChangeLevelMgr.Clear();
-		g_iEnabledFeatures = view_as<int>(FEATURES_DEFAULT);
+		g_iEnabledFeatures = 0;
 		for(int i = 0; i <= MaxClients; i++)
 		{
 			this.m_iClientChangeLvlIndicies[i] = -1;
@@ -207,8 +207,11 @@ enum struct CoopManager
 
 		if (this.m_bIsCoopMap) // cvars are not configured yet
 		{
-			CBM_MP_GameRules.SetStateIsInIntermission(STATE_WARMUP, false);
-			CBM_MP_GameRules.SetStateEndTime(STATE_WARMUP, GetGameTime() + 60 * 60 * 24 * 7);
+			if (g_Engine == Engine_BlackMesa)
+			{
+				CBM_MP_GameRules.SetStateIsInIntermission(STATE_WARMUP, false);
+				CBM_MP_GameRules.SetStateEndTime(STATE_WARMUP, GetGameTime() + 60 * 60 * 24 * 7);
+			}
 			KeyValues kv = this.LoadMapConfig(g_szMapName);
 			if(kv != null)
 			{
@@ -286,14 +289,20 @@ enum struct CoopManager
 		{
 			this.m_iSecondsToStart = 3;
 			EmitSoundToAll(SND_3, .volume = SND_TICK_VOL);
-			CBM_MP_GameRules.SetStateEndTime(STATE_WARMUP, GetGameTime() + 60 * 60 * 24 * 7);
-			CBM_MP_GameRules.SetCurrentState(STATE_ROUND);
-			CBM_MP_GameRules.SetStateEndTime(STATE_ROUND, GetGameTime() + this.m_iSecondsToStart + 1);
+			if (g_Engine == Engine_BlackMesa)
+			{
+				CBM_MP_GameRules.SetStateEndTime(STATE_WARMUP, GetGameTime() + 60 * 60 * 24 * 7);
+				CBM_MP_GameRules.SetCurrentState(STATE_ROUND);
+				CBM_MP_GameRules.SetStateEndTime(STATE_ROUND, GetGameTime() + this.m_iSecondsToStart + 1);
+			}
 		}
 		else
 		{
 			this.m_iSecondsToStart = g_pConvarWaitPeriod.IntValue;
-			CBM_MP_GameRules.SetStateEndTime(STATE_WARMUP, GetGameTime() + this.m_iSecondsToStart + 1.1);
+			if (g_Engine == Engine_BlackMesa)
+			{
+				CBM_MP_GameRules.SetStateEndTime(STATE_WARMUP, GetGameTime() + this.m_iSecondsToStart + 1.1);
+			}
 		}
 		this.m_pStartTimer = CreateTimer(1.0, StartTimerCallback, _, TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT);
 	}
@@ -310,17 +319,23 @@ enum struct CoopManager
 
 	void Start()
 	{
-		CBM_MP_GameRules.SetStateEndTime(STATE_WARMUP, GetGameTime() + 60 * 60 * 24 * 7); // STATE_WARMUP is what the server still counts with!
-
+		if (g_Engine == Engine_BlackMesa)
+		{
+			CBM_MP_GameRules.SetStateEndTime(STATE_WARMUP, GetGameTime() + 60 * 60 * 24 * 7); // STATE_WARMUP is what the server still counts with!
+		}
+		
 		if(!GetRealClientCount(true)) {
 			return;
 		}
 
-		ConVar timelimit = FindConVar("mp_timelimit");
-		CBM_MP_GameRules.SetCurrentState(STATE_ROUND); // doesnt actually restart, just switches the client hud
-		CBM_MP_GameRules.SetStateEndTime(STATE_ROUND, GetGameTime() + timelimit.FloatValue); // this is what is displayed on client, nothing happens when it runs out, we may have to handle that
-		delete timelimit;
-
+		if (g_Engine == Engine_BlackMesa)
+		{
+			ConVar timelimit = FindConVar("mp_timelimit");
+			CBM_MP_GameRules.SetCurrentState(STATE_ROUND); // doesnt actually restart, just switches the client hud
+			CBM_MP_GameRules.SetStateEndTime(STATE_ROUND, GetGameTime() + timelimit.FloatValue); // this is what is displayed on client, nothing happens when it runs out, we may have to handle that
+			delete timelimit;
+		}
+		
 		this.m_bStarted = true;
 		PrintToServer("Co-op map %s has begun", g_szMapName);
 
@@ -399,6 +414,10 @@ enum struct CoopManager
 
 	bool ShouldResetGlobalStates()
 	{
+		if(g_Engine != Engine_BlackMesa)
+		{
+			return false;
+		}
 		// Return false if map was changed naturally, true if externally
 		if(GetMapHistorySize() > 0)
 		{
@@ -459,6 +478,11 @@ enum struct CoopManager
 }
 
 CoopManager g_pCoopManager;
+
+bool IsFeatureEnabled(SourceCoopFeature iFeatureBits)
+{
+	return g_pCoopManager.IsFeatureEnabled(iFeatureBits);
+}
 
 public Action StartTimerCallback(Handle pTimer)
 {

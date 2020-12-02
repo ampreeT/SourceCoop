@@ -21,6 +21,15 @@
 				"StartDisabled" "1"
 				"spawnflags" "0"
 			}
+			// expand
+			"functions"
+			{
+				"set_model"
+				{
+					"from" "3880 312 -471"
+					"to" "3432 440 -224"
+				}
+			}
 		}
 		"modify"
 		{
@@ -35,6 +44,18 @@
 					{
 						"input" "Enable"
 					}
+				}
+			}
+		}
+		// dont kill grunts on top
+		"modify"
+		{
+			"outputs"
+			{
+				"remove"
+				{
+					"target" "/^silo_man/"
+					"input" "kill"
 				}
 			}
 		}

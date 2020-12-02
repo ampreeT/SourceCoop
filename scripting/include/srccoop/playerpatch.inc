@@ -68,7 +68,8 @@ public void Hook_PlayerPreThinkPost(int iClient)
 	}
 	else
 	{
-		if(pPlayer.GetTeam() != TEAM_SPECTATOR && GetGameTime() - pPlayer.GetDeathTime() > g_pConvarCoopRespawnTime.FloatValue)
+		if(pPlayer.GetTeam() != TEAM_SPECTATOR && g_pConvarCoopRespawnTime.FloatValue
+			&& GetGameTime() - pPlayer.GetDeathTime() > g_pConvarCoopRespawnTime.FloatValue)
 		{
 			int iPressed = pPlayer.GetPressedButtons();
 			if(iPressed != 0 && iPressed != IN_SCORE)
@@ -133,15 +134,24 @@ public void Hook_PlayerSpawnPost(int iClient)
 		return;
 	
 	CBlackMesaPlayer pPlayer = CBlackMesaPlayer(iClient);
-	if(pPlayer.IsValid() && pPlayer.IsAlive())
+	if(pPlayer.IsValid())
 	{
-		// Correct the 'damages' from the prethink hook hack
-		pPlayer.SetSuit(false);
-		pPlayer.SetMaxSpeed(190.0);
-		pPlayer.SetIsSprinting(false);
-		pPlayer.SetSolidFlags(pPlayer.GetSolidFlags() & ~FSOLID_NOT_SOLID);
-		// Stop HEV sounds
-		StopSound(iClient, SNDCHAN_STATIC, szLastSuitSound[iClient]);
+		g_pCoopManager.OnPlayerSpawned(pPlayer);
+		g_pInstancingManager.OnPlayerSpawned(pPlayer);
+		
+		if (g_Engine == Engine_BlackMesa)
+		{
+			if(pPlayer.IsAlive())
+			{
+				// Correct the 'damages' from the prethink hook hack
+				pPlayer.SetSuit(false);
+				pPlayer.SetMaxSpeed(190.0);
+				pPlayer.SetIsSprinting(false);
+				pPlayer.SetSolidFlags(pPlayer.GetSolidFlags() & ~FSOLID_NOT_SOLID);
+				// Stop HEV sounds
+				StopSound(iClient, SNDCHAN_STATIC, szLastSuitSound[iClient]);
+			}
+		}
 	}
 }
 

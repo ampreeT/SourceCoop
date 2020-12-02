@@ -24,7 +24,7 @@
 				"rendermode" "10"
 			}
 		}
-		// prepare changelevel for touch trigger
+		// prepare c2a1b changelevel for touch trigger
 		"modify"
 		{
 			"targetname" "c2a1a_c2a1b_changelevel"
@@ -61,7 +61,8 @@
 					"hammerid" "1977683"
 				}
 			}
-			#else // if returning
+			// if returning
+			#else
 			{
 				// no going back
 				"modify"
@@ -86,26 +87,37 @@
 				}
 				"modify"
 				{
-					"targetname" "relay_poweron_global"
+					"targetname" "c2a1_silodoor_01_light"
+					"set"
+					{
+						"LightColor" "191 0 0 1"
+						"targetname" ""
+					}
+				}
+				// trigger all previous events
+				"add"
+				{
+					"classname" "logic_auto"
+					"spawnflags" "1"
 					"outputs"
 					{
 						// trigger the big barrel explosion
 						"add"
 						{
-							"output" "OnTrigger"
+							"output" "OnMapSpawn"
 							"target" "c2a1a_heroes_relay"
 							"input" "Trigger"
 						}
 						// trigger bridge collapse
 						"add"
 						{
-							"output" "OnTrigger"
+							"output" "OnMapSpawn"
 							"target" "c2a1a_fall_spawn_relay"
 							"input" "Trigger"
 						}
 						"add"
 						{
-							"output" "OnTrigger"
+							"output" "OnMapSpawn"
 							"target" "c2a1a_fall_relay"
 							"input" "Trigger"
 							"delay" "0.5"
@@ -113,22 +125,28 @@
 						// trigger garg
 						"add"
 						{
-							"output" "OnTrigger"
+							"output" "OnMapSpawn"
 							"target" "c2a1a_garg_entrance_relay"
 							"input" "Trigger"
 						}
 						// trigger rubble collapse
 						"add"
 						{
-							"output" "OnTrigger"
+							"output" "OnMapSpawn"
 							"target" "c2a1a_collapse_relay"
+							"input" "Trigger"
+						}
+						"add"
+						{
+							"output" "OnMapSpawn"
+							"target" "c2a1a_collapse_relay2"
 							"input" "Trigger"
 						}
 					}
 				}
 				"modify"
 				{
-					"targetname" "/^(c2a1a_heroes_relay|c2a1a_garg_entrance_relay|c2a1a_collapse_relay)$/"
+					"targetname" "/^(c2a1a_heroes_relay|c2a1a_garg_entrance_relay|c2a1a_collapse_relay|c2a1a_collapse_relay2)$/"
 					"flags"
 					{
 						"spawnflags"
@@ -139,9 +157,23 @@
 				}
 				"delete"
 				{
+					"targetname" "elec_off"
+				}
+				// bridge collapse trigger
+				"delete"
+				{
 					"targetname" "c2a1a_fall_trigger"
 				}
-				// Remove headcrab vent cutscene
+				// remove table and vent
+				"delete"
+				{
+					"targetname" "fall_table_prop"
+				}
+				"delete"
+				{
+					"targetname" "fall_vent_02"
+				}
+				// remove headcrab vent cutscene
 				"delete"
 				{
 					"hammerid" "894404"
@@ -213,16 +245,16 @@
 	}
 	"checkpoint"
 	{
-		"spawn"
-		{
-			"origin"	"-513 -760 298"
-			"angles"	"0 270 0"
-		}
 		#if
 		{
 			"!globalstate" "c2a1_objective"
 			#then
 			{
+				"spawn"
+				{
+					"origin"	"-513 -760 298"
+					"angles"	"0 270 0"
+				}
 				"spawn_hallway"
 				{
 					"origin"	"888 -960 68"
@@ -230,13 +262,27 @@
 					"triggerid"	"sscape_a_entrancecor1"
 					"output"	"OnPlay"
 				}
+				"inner_corridors"
+				{
+					"origin" "-590 424 69"
+					"angles" "0 135 0"
+					"triggerid" "fall_vent_02"
+					"output" "OnBreak"
+				}
 			}
 			#else
 			{
 				"spawn-returned"
 				{
-					"origin"	"603 965 -155"
+					"origin"	"603 965 -219"
 					"angles"	"0 135 0"
+				}
+				"guard"
+				{
+					"origin"	"-727 221 133"
+					"angles"	"0 330 0"
+					"triggerid" "c2a1a_guard_trigger"
+					"output" "OnTrigger"
 				}
 			}
 		}

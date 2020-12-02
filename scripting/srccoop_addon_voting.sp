@@ -28,6 +28,7 @@ public void OnPluginStart()
 	RegConsoleCmd("sm_skipintro", VoteSkipIntroCmd, "Starts a skip intro vote");
 	RegConsoleCmd("sm_introskip", VoteSkipIntroCmd, "Starts a skip intro vote");
 	
+	InitSourceCoopAddon();
 	if (LibraryExists(SRCCOOP_LIBRARY))
 	{
 		OnSourceCoopStarted();

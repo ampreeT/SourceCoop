@@ -25,6 +25,7 @@ public void OnPluginStart()
 	HookEvent("entity_killed", Event_EntityKilled, EventHookMode_Post);
 	pEnabledCookie = new Cookie("sourcecoop_ks_enabled", "Killsounds", CookieAccess_Protected);
 	
+	InitSourceCoopAddon();
 	if (LibraryExists(SRCCOOP_LIBRARY))
 	{
 		OnSourceCoopStarted();
