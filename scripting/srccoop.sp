@@ -181,22 +181,43 @@ public void OnConfigsExecuted()
 
 public void OnConfigsExecutedPost()
 {
-	if (g_pCoopManager.IsFeatureEnabled(FT_DISABLE_CANISTER_DROPS))
+	if (g_Engine == Engine_BlackMesa)
 	{
-		CBaseEntity pGameGamerules = CreateByClassname("game_mp_gamerules");
-		if (pGameGamerules.IsValid())
+		if (g_pCoopManager.IsFeatureEnabled(FT_STRIP_DEFAULT_EQUIPMENT))
 		{
-			pGameGamerules.Spawn();
-			pGameGamerules.AcceptInputStr("DisableCanisterDrops");
-			pGameGamerules.Kill();
+			CBaseEntity pGameEquip = CreateByClassname("game_player_equip");	// will spawn players with nothing if it exists
+			if (pGameEquip.IsValid())
+			{
+				if(!g_pCoopManager.IsFeatureEnabled(FT_STRIP_DEFAULT_EQUIPMENT_KEEPSUIT))
+				{
+					pGameEquip.SetSpawnFlags(SF_PLAYER_EQUIP_STRIP_SUIT);	
+				}
+				pGameEquip.Spawn();
+			}
 		}
+		if (g_pCoopManager.IsFeatureEnabled(FT_DISABLE_CANISTER_DROPS))
+		{
+			CBaseEntity pGameGamerules = CreateByClassname("game_mp_gamerules");
+			if (pGameGamerules.IsValid())
+			{
+				pGameGamerules.Spawn();
+				pGameGamerules.AcceptInputStr("DisableCanisterDrops");
+				pGameGamerules.Kill();
+			}
+		}
+		PrecacheScriptSound("HL2Player.SprintStart");
 	}
-	PrecacheScriptSound("HL2Player.SprintStart");
 }
 
 public void OnClientPutInServer(int client)
 {
-	g_pCoopManager.OnClientPutInServer(client);
+	
+	CBlackMesaPlayer pPlayer = CBlackMesaPlayer(client);
+	
+	// fixes visual bug for players which had different view ent at mapchange
+	pPlayer.SetViewEntity(pPlayer);
+	
+	g_pCoopManager.OnClientPutInServer(pPlayer);
 	g_pInstancingManager.OnClientPutInServer(client);
 	
 	SDKHook(client, SDKHook_PreThinkPost, Hook_PlayerPreThinkPost);
@@ -219,28 +240,6 @@ public void OnMapEnd()
 {
 	g_pLevelLump.RevertConvars();
 	g_bMapStarted = false;
-	/*
-	PrintToServer("Hello????");
-	for (int i = 1; i <= MaxClients; i++)
-	{
-		PrintToServer("trying %d", i);
-		CBaseEntity pPlayer = CBaseEntity(i);
-		if (pPlayer.IsValid())
-		{
-			//CBaseEntity pViewEntity = pPlayer.GetViewEntity();
-			//if (pViewEntity.IsValid() && pViewEntity != pPlayer)
-			//{
-				PrintToServer("\n\n\nholla over at this boy %d\n\n\n\n\n", i);
-			//	pPlayer.SetViewEntity(pPlayer);
-			//}
-		}
-	}
-	*/
-}
-
-public void OnPluginEnd()
-{
-	
 }
 
 public void OnEntityCreated(int iEntIndex, const char[] szClassname)

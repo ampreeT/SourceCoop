@@ -85,18 +85,6 @@
 				"rendermode" "10" // dont render
 			}
 		}
-		// delete relay on map start, which the map deletes on player spawn, which is too late for us
-		#if
-		{
-			"globalstate" "c1a3c_c1a3a"
-			#then
-			{
-				"remove"
-				{
-					"targetname" "transition_dooropen"
-				}
-			}
-		}
 		// block going past changelevel area
 		"modify"
 		{
@@ -104,6 +92,23 @@
 			"add"
 			{
 				"minhealthdmg" "999999"
+			}
+		}
+		#if
+		{
+			"globalstate" "c1a3c_c1a3a"
+			#then
+			{
+				// delete relay on map start, which the map deletes on player spawn, which is too late for us
+				"remove"
+				{
+					"targetname" "transition_dooropen"
+				}
+				// delete trigger outside the elevator from first part
+				"remove"
+				{
+					"targetname" "OpenSiloDoors_trig"
+				}
 			}
 		}
 	}
@@ -145,7 +150,7 @@
 					"origin"	"0 0 20"
 					"angles"	"0 0 0"
 					"followid"	"AToBElev"
-					"portal"	"768 -2208 -284"
+					"portal"	"1130 -2209 -283"
 					"triggerid" "eb"
 					"output"	"OnPressed"
 					"delay"		"3"

@@ -221,7 +221,7 @@ enum struct CoopManager
 		}
 	}
 
-	void OnClientPutInServer(int client)
+	void OnClientPutInServer(CBlackMesaPlayer pPlayer)
 	{
 		if (this.IsCoopModeEnabled())
 		{

@@ -967,9 +967,7 @@ methodmap CBlackMesaPlayer < CBasePlayer
 	}
 	public void SetViewEntity(CBaseEntity pEntity)
 	{
-		bool bIsThisEntity = this.GetEntIndex() == pEntity.GetEntIndex();
-		SetEntPropEnt(this.GetEntIndex(), Prop_Data, "m_hViewEntity", bIsThisEntity ? -1 : pEntity.GetEntIndex());
-		SetEntPropEnt(this.GetEntIndex(), Prop_Send, "m_hViewEntity", bIsThisEntity ? -1 : pEntity.GetEntIndex());
+		SetEntPropEnt(this.GetEntIndex(), Prop_Data, "m_hViewEntity", (this == pEntity) ? -1 : pEntity.GetEntIndex());
 		SetClientViewEntity(this.GetEntIndex(), pEntity.GetEntIndex());
 	}
 	public CBaseEntity GetViewModel()

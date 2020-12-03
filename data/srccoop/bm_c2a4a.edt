@@ -39,9 +39,9 @@
 		// spawn with crowbar once it's picked up
 		"add"
 		{
-			"origin" "-5711.3 816 1185"
-			"classname" "item_weapon_crowbar"
+			"classname" "game_player_equip"
 			"targetname" "spawn_crowbar"
+			"weapon_crowbar" "1"
 		}
 		"add"
 		{
@@ -75,17 +75,43 @@
 				}
 			}
 		}
-		// block going past changelevel
+		// block off next map area
 		"add"
 		{
 			"classname" "func_brush"
 			"rendermode" "10" // dont render
 			"functions"
 			{
-				"copy_model"
+				"set_model"
 				{
-					"targetname" "bm_c2a4a_trigger"
-					"classname" "trigger_changelevel"
+					"origin" "-1896 2104 -320"
+					"size" "64 16 191"
+				}
+			}
+		}
+		"add"
+		{
+			"classname" "func_brush"
+			"rendermode" "10" // dont render
+			"functions"
+			{
+				"set_model"
+				{
+					"origin" "-1896 1832 -320"
+					"size" "64 16 191"
+				}
+			}
+		}
+		"add"
+		{
+			"classname" "func_brush"
+			"rendermode" "10" // dont render
+			"functions"
+			{
+				"set_model"
+				{
+					"origin" "-1940 1968 -320"
+					"size" "24 288 191"
 				}
 			}
 		}
@@ -94,7 +120,7 @@
 	{
 		"spawn"
 		{
-			"origin"	"-5712 816 1185"
+			"origin"	"-3114 155 816"
 			"angles"	"0 0 0"
 		}
 		"spawn_top"
@@ -110,7 +136,7 @@
 			"origin"	"-2162 -511 -184"
 			"angles"	"0 300 0"
 			"triggerid"	"west_trash_door"
-			"output"	"OnFullyClosed"
+			"output"	"OnClose"
 			"portal"	"-3011 192 817"
 		}
 		"facility"

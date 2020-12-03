@@ -842,25 +842,34 @@ enum struct CGlobalLevelLump
 				}
 				else if(StrEqual(szFunction, "set_model", false))
 				{
+					float vecFrom[3], vecTo[3];
 					if(kv.GetDataType("from") != KvData_None && kv.GetDataType("to") != KvData_None)
 					{
-						float vecFrom[3], vecTo[3];
 						kv.GetVector("from", vecFrom);
 						kv.GetVector("to", vecTo);
-						
-						CEntityKeyLump pModelKey;
-						pModelKey.m_szKey = "model";
-						Format(pModelKey.m_szValue, sizeof(pModelKey.m_szValue), "%s%f%s%f%s%f%s%f%s%f%s%f", BRUSH_FIXUP_IDENT,
-							vecFrom[0], BRUSH_FIXUP_SEPARATOR, vecFrom[1], BRUSH_FIXUP_SEPARATOR, vecFrom[2], BRUSH_FIXUP_SEPARATOR,
-							vecTo[0], BRUSH_FIXUP_SEPARATOR, vecTo[1], BRUSH_FIXUP_SEPARATOR, vecTo[2]);
-							
-						for (int k = 0; k < pTempEvaluatedList.Length; k++)
-						{
-							CEntityInfoLump pEnt = pTempEvaluatedList.Get(k);
-							pEnt.RemoveOrReplace(pModelKey, true);
-						}
 					}
-					else ThrowError("Function set_model without parameters 'from' and 'to'");
+					else if(kv.GetDataType("origin") != KvData_None && kv.GetDataType("size") != KvData_None)
+					{
+						float vecOrigin[3], vecSize[3];
+						kv.GetVector("origin", vecOrigin);
+						kv.GetVector("size", vecSize);
+						ScaleVector(vecSize, 0.5);
+						SubtractVectors(vecOrigin, vecSize, vecFrom);
+						AddVectors(vecOrigin, vecSize, vecTo);
+					}
+					else ThrowError("Function set_model requires parameters 'from' + 'to' OR 'origin' + 'size'");
+					
+					CEntityKeyLump pModelKey;
+					pModelKey.m_szKey = "model";
+					Format(pModelKey.m_szValue, sizeof(pModelKey.m_szValue), "%s%f%s%f%s%f%s%f%s%f%s%f", BRUSH_FIXUP_IDENT,
+						vecFrom[0], BRUSH_FIXUP_SEPARATOR, vecFrom[1], BRUSH_FIXUP_SEPARATOR, vecFrom[2], BRUSH_FIXUP_SEPARATOR,
+						vecTo[0], BRUSH_FIXUP_SEPARATOR, vecTo[1], BRUSH_FIXUP_SEPARATOR, vecTo[2]);
+						
+					for (int k = 0; k < pTempEvaluatedList.Length; k++)
+					{
+						CEntityInfoLump pEnt = pTempEvaluatedList.Get(k);
+						pEnt.RemoveOrReplace(pModelKey, true);
+					}
 				}
 				else bFound = false;
 			}

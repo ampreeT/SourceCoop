@@ -238,14 +238,17 @@ enum struct CCoopSpawn
 	void SpawnPlayer(CBlackMesaPlayer pPlayer, bool bSpawnEquipment = true)
 	{
 		CCoopSpawnEntry pCheckpoint;
-		// pickup possible spawn items and make sure player spawned in if second teleport is blocked
+		// pickup possible spawn items and make sure player spawned in if following teleport is blocked
 		if (this.GetCheckpointByIndex(0, pCheckpoint))
 		{
 			pCheckpoint.TeleportPlayer(pPlayer, true);
 		}
 		if(bSpawnEquipment)
 		{
-			this.StripPlayer(pPlayer);
+			if (g_Engine != Engine_BlackMesa) // bm uses game_player_equip
+			{
+				this.StripPlayer(pPlayer);
+			}
 			this.SpawnPlayerEquipment(pPlayer);
 		}
 		RequestFrame(RequestSpawnPlayer, pPlayer);
