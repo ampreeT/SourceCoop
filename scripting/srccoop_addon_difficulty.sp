@@ -89,6 +89,11 @@ public void OnClientPutInServer(int client)
 	SDKHook(client, SDKHook_OnTakeDamage, Hook_OnPlayerTakeDamage);
 }
 
+public void OnClientDisconnect_Post(int client)
+{
+	UpdateAutoDifficulty();
+}
+
 public void Event_PlayerChangeTeam(Event hEvent, const char[] szName, bool bDontBroadcast)
 {
 	RequestFrame(Frame_PlayerChangeTeamPost);

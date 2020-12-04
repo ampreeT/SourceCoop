@@ -164,7 +164,7 @@ enum struct CoopManager
 		this.m_pChangeLevelMgr = new ChangeLevelManager();
 	}
 
-	void OnLevelInit(const char[] szMapName, char szMapEntities[2097152])
+	void OnLevelInit(const char[] szMapName, char szMapEntities[ENTITYSTRING_LENGTH])
 	{
 		this.m_pDelayedOutputs.Clear();
 		this.m_pStartTimer = null;
@@ -458,7 +458,7 @@ enum struct CoopManager
 	
 	KeyValues LoadMapConfig(const char[] szMapName)
 	{
-		char szConfigPath[MAX_FORMAT];
+		char szConfigPath[PLATFORM_MAX_PATH];
 		BuildPath(Path_SM, szConfigPath, sizeof(szConfigPath), "data/srccoop/%s.edt", szMapName);
 		if (!FileExists(szConfigPath))
 		{

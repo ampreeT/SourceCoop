@@ -115,6 +115,9 @@ public void OnPluginStart()
 	g_pConvarEndWaitPeriod = CreateConVar("sourcecoop_end_wait_period", "60.0", "The max number of seconds to wait since first player triggered a changelevel. The timer speed increases each time a new player finishes the level.", _, true, 0.0);
 	g_pConvarEndWaitFactor = CreateConVar("sourcecoop_end_wait_factor", "1.0", "Controls how much the number of finished players increases the changelevel timer speed. 1.0 means full, 0 means none (timer will run full length).", _, true, 0.0, true, 1.0);
 	RegAdminCmd("sourcecoop_ft", Command_SetFeature, ADMFLAG_ROOT, "Command for toggling plugin features on/off");
+	RegAdminCmd("sc_ft", Command_SetFeature, ADMFLAG_ROOT, "Command for toggling plugin features on/off");
+	RegServerCmd("sourcecoop_dump", Command_DumpMapEntities, "Command for toggling plugin features on/off");
+	RegServerCmd("sc_dump", Command_DumpMapEntities, "Command for toggling plugin features on/off");
 	
 	g_pLevelLump.Initialize();
 	g_SpawnSystem.Initialize();
@@ -143,12 +146,13 @@ public void OnPluginStart()
 	}
 }
 
-#pragma dynamic 2097152
-public Action OnLevelInit(const char[] szMapName, char szMapEntities[2097152])		// you probably need to incease SlowScriptTimeout in core.cfg
+#pragma dynamic ENTITYSTRING_LENGTH
+public Action OnLevelInit(const char[] szMapName, char szMapEntities[ENTITYSTRING_LENGTH])
 {
 	OnMapEnd(); // this does not always get called, so call it here
 	strcopy(g_szPrevMapName, sizeof(g_szPrevMapName), g_szMapName);
 	strcopy(g_szMapName, sizeof(g_szMapName), szMapName);
+	g_szEntityString = szMapEntities;
 	g_pCoopManager.OnLevelInit(szMapName, szMapEntities);
 
 	return Plugin_Changed;
@@ -550,6 +554,35 @@ public Action Command_SetFeature(int iClient, int iArgs)
 	else
 	{
 		MsgReply(iClient, "Unknown feature: %s", szFeature);
+	}
+	return Plugin_Handled;
+}
+
+public Action Command_DumpMapEntities(int iArgs)
+{
+	if(g_szEntityString[0] == '\0')
+	{
+		PrintToServer("No entity data recorded for current map.");
+		return Plugin_Handled;
+	}
+	
+	char szDumpPath[PLATFORM_MAX_PATH];
+	char szTime[128];
+	FormatTime(szTime, sizeof(szTime), "%Y-%m-%d-%H%M%S");
+	BuildPath(Path_SM, szDumpPath, sizeof(szDumpPath), "data/srccoop/dumps");
+	CreateDirectory(szDumpPath, FPERM_U_READ|FPERM_U_WRITE|FPERM_U_EXEC|FPERM_G_READ|FPERM_G_WRITE|FPERM_G_EXEC|FPERM_O_READ|FPERM_O_EXEC);
+	Format(szDumpPath, sizeof(szDumpPath), "%s/%s-%s.txt", szDumpPath, g_szMapName, szTime);
+	
+	File pDumpFile = OpenFile(szDumpPath, "w");
+	if(pDumpFile != null)
+	{
+		pDumpFile.WriteString(g_szEntityString, false);
+		CloseHandle(pDumpFile);
+		PrintToServer("Dumped map entities in %s", szDumpPath);
+	}
+	else
+	{
+		PrintToServer("Failed opening file for writing: %s", szDumpPath);
 	}
 	return Plugin_Handled;
 }

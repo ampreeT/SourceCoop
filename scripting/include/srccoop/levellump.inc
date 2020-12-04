@@ -312,7 +312,7 @@ enum struct CGlobalLevelLump
 		this.m_EdtDefinesMap.Clear();
 	}
 	
-	void ParseMapEntities(const char szMapEntities[2097152])
+	void ParseMapEntities(const char szMapEntities[ENTITYSTRING_LENGTH])
 	{
 		this.m_pEntityList.Clear();
 		Regex pRegex = new Regex("\"(.*)\" \"(.*)\"");
@@ -362,7 +362,7 @@ enum struct CGlobalLevelLump
 		delete pRegex;
 	}
 	
-	int ToString(char szBuffer[2097152])	// absolutely do not care for bounds checking, this 2 mb buffer is big enough for everything
+	int ToString(char szBuffer[ENTITYSTRING_LENGTH])	// absolutely do not care for bounds checking, this 2 mb buffer is big enough for everything
 	{
 		int n = 0;
 		for (int i = 0; i < this.m_pEntityList.Length; i++)
