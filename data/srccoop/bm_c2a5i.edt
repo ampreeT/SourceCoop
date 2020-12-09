@@ -66,6 +66,21 @@
 				}
 			}
 		}
+		// start with satellite tower broken since the mortar launcher doesn't work
+		"add"
+		{
+			"classname" "logic_auto"
+			"spawnflags" "1"
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnMapSpawn"
+					"target" "c2a5h_cinephys_break"
+					"input" "break"
+				}
+			}
+		}
 		// this wheel button can get easily stuck in start position on linux, we can apply a workaround with following output
 		// TODO move to baseclass if this happens elsewhere?
 		"modify"

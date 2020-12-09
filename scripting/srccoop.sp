@@ -127,6 +127,8 @@ public void OnPluginStart()
 	g_pFeatureMap = new FeatureMap();
 	InitializeMenus();
 	
+	g_CoopMapStartFwd = new GlobalForward("OnCoopMapStart", ET_Ignore);
+	
 	if (g_Engine == Engine_BlackMesa)
 	{
 		HookEvent("broadcast_teamsound", Hook_BroadcastTeamsound, EventHookMode_Pre);
@@ -215,6 +217,10 @@ public void OnConfigsExecutedPost()
 
 public void OnClientPutInServer(int client)
 {
+	if(IsFakeClient(client))
+	{
+		return;
+	}
 	
 	CBlackMesaPlayer pPlayer = CBlackMesaPlayer(client);
 	
@@ -262,6 +268,7 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 		{
 			if(pEntity.IsClassNPC())
 			{
+				SDKHook(iEntIndex, SDKHook_SpawnPost, Hook_BaseNPCSpawnPost);
 				DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_BaseNPCAcceptInput);
 				if (strncmp(szClassname, "npc_human_scientist", 19) == 0)
 				{
@@ -372,6 +379,7 @@ public void Hook_SpawnPost(int iEntIndex)
 	if (g_pCoopManager.IsCoopModeEnabled())
 	{
 		CBaseEntity pEntity = CBaseEntity(iEntIndex);
+		
 		if(!g_pCoopManager.m_bStarted)
 		{
 			Array_t pOutputHookList = g_pLevelLump.GetOutputHooksForEntity(pEntity);

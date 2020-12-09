@@ -230,7 +230,7 @@ stock int FindEntityByTargetname(int startEnt, const char[] targetname, const ch
 	{
 		CBaseEntity pEntity = CBaseEntity(startEnt);
 		char szTargetname[MAX_CLASSNAME];
-		if (pEntity.GetTargetname(szTargetname, sizeof(szTargetname)) && strcmp(szTargetname, targetname) == 0)
+		if (pEntity.GetTargetname(szTargetname, sizeof(szTargetname)) && strcmp(szTargetname, targetname, false) == 0)
 		{
 			return startEnt;
 		}

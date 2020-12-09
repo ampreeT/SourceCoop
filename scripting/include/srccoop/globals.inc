@@ -46,7 +46,7 @@ Handle hkCanSelectSchedule;
 Handle hkPickup_ForcePlayerToDropThisObject;
 Handle hkHandleAnimEvent;
 Handle hkRunAI;
-Handle hkSetPlayerAvoidState;
+//Handle hkSetPlayerAvoidState;
 
 // ----------------------------
 // Adresses, Interfaces
@@ -74,3 +74,8 @@ bool g_bIsMultiplayerOverride = true;
 
 // the entity which UTIL_GetLocalPlayer hook will return the closest player to
 CBaseEntity g_pLocalPlayerCallingEntity = view_as<CBaseEntity>(-1);
+
+// ----------------------------
+// Plugin API
+// ----------------------------
+GlobalForward g_CoopMapStartFwd;

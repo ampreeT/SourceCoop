@@ -57,6 +57,24 @@ public MRESReturn Hook_IsPlayerAlly(int _this, Handle hReturn, Handle hParams)
 }
 
 //------------------------------------------------------
+// CAI_BaseNPC - Spawn
+//------------------------------------------------------
+public void Hook_BaseNPCSpawnPost(int iEntIndex)
+{
+	CBaseEntity pEntity = CBaseEntity(iEntIndex);
+	if(pEntity.IsClassname("npc_lav"))
+	{
+		// this is here for assist in fixing the client crash in bm_c2a5g related to lav npc
+		pEntity.SetEdictFlags(pEntity.GetEdictFlags() | FL_EDICT_CHANGED | FL_EDICT_ALWAYS);
+	}
+	else
+	{
+		// potentially fixes random, elusive, linux only crash
+		pEntity.SetEdictFlags(pEntity.GetEdictFlags() | FL_EDICT_CHANGED);
+	}
+}
+
+//------------------------------------------------------
 // CAI_BaseNPC
 // Fix UpdateEnemyMemory input when player string is passed as parameter
 //------------------------------------------------------

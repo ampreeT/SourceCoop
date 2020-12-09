@@ -31,7 +31,7 @@
 		// make end level guard invulnerable
 		"modify"
 		{
-			"targetname"	"GRD02_HiveHand"
+			"targetname" "GRD02_HiveHand"
 			"add"
 			{
 				"damagefilter" "__srccoop_damage_filter"
@@ -61,12 +61,12 @@
 		}
 		"hivehand"
 		{
-			"origin"	"-210 -391 69"
+			"origin"	"-192 -448 45"
 			"angles"	"0 90 0"
 			"triggerid"	"hivehand_pickup"
 			"output"	"OnPlayerPickup"
 			"bringall"	"1"
-			"bringall_radius" "200"
+			"bringall_radius" "125"
 		}
 		"elevator"
 		{

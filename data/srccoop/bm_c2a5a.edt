@@ -59,7 +59,6 @@
 		{
 			"origin"	"-2432 3008 1318"
 			"angles"	"0 270 0"
-			"portal"	"-2400 3120 1316"
 			"triggerid"	"intro_dam_trigger"
 			"output"	"OnTrigger"
 		}

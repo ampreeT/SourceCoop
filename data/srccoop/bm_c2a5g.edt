@@ -25,9 +25,53 @@
 				}
 			}
 		}
+		// player blockers
 		"delete"
 		{
 			"targetname"	"g_warehouse_noreturn" 
+		}
+		"delete"
+		{
+			"targetname"	"noreturn" 
+		}
+		// areaportals should stay open
+		"modify"
+		{
+			"targetname" "g_vent_areaportals"
+			"remove"
+			{
+				"targetname" ""
+			}
+		}
+		// attempt to fix client crash caused by lav npc
+		"modify"
+		{
+			"classname" "npc_lav"
+			"sleepstate" "3"
+			"set"
+			{
+				"sleepstate" "0"
+			}
+			"remove"
+			{
+				"target" ""
+			}
+		}
+		"modify"
+		{
+			"outputs"
+			{
+				"modify"
+				{
+					"target" "g_helipad_lav_tank"
+					"input" "Wake"
+					"replace"
+					{
+						"input" "ForcePathCorner"
+						"parameter" "g_helipad_lav_path_02"
+					}
+				}
+			}
 		}
 	}
 	"checkpoint"

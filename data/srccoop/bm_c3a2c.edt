@@ -204,21 +204,24 @@
 	}
 	"checkpoint"
 	{
-		"spawn"
+		#if
 		{
-			"origin"	"92 1296 1007.51"
-			"angles"	"0 0 0"
-		}
-		"elevator"
-		{
-			"origin"	"0 0 -60"
-			"angles"	"0 0 0"
-			"followid"	"transition_elevator"
+			"!prevmap" "bm_c3a2d"
+			"!prevmap" "bm_c3a2e"
+			#then
+			{
+				"elevator"
+				{
+					"origin"	"0 0 -60"
+					"angles"	"0 0 0"
+					"followid"	"transition_elevator"
+				}
+			}
 		}
 		
 		#if
 		{
-			"prevmap"	"bm_c3a2d"
+			"prevmap" "bm_c3a2d"
 			#then
 			{
 				"return_c3a2d"
@@ -231,7 +234,7 @@
 		
 		#if
 		{
-			"prevmap"	"bm_c3a2e"
+			"prevmap" "bm_c3a2e"
 			#then
 			{
 				"return_c3a2e"

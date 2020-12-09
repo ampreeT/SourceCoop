@@ -19,7 +19,8 @@
 			"map"		"bm_c3a2c"
 			"add"
 			{
-				"classname"	"func_brush"
+				"classname" "func_brush"
+				"rendermode" "10" // dont render
 			}
 		}
 		// create coolant exit cp trigger

@@ -369,6 +369,10 @@ enum struct CoopManager
 				}
 			}
 		}
+		
+		// Notify plugins via forward
+		Call_StartForward(g_CoopMapStartFwd);
+		Call_Finish();
 	}
 
 	void OnTouchChangeLevel(CChangelevel pChangelevel, CBlackMesaPlayer pActivator)

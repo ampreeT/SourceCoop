@@ -48,3 +48,9 @@ native TopMenu GetCoopTopMenu();
  *
  */
 native bool IsCurrentMapCoop();
+
+/**
+ * Global callback for when a coop map actually starts,
+ * that is potentially after the player wait timer completes.
+ */
+forward void OnCoopMapStart();

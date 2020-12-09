@@ -267,6 +267,22 @@ methodmap CBaseEntity
 	{
 		SetEntityFlags(this.GetEntIndex(), iFlags);
 	}
+	public int GetEFlags()
+	{
+		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_iEFlags");
+	}
+	public void SetEFlags(const int iEFlags)
+	{
+		SetEntProp(this.GetEntIndex(), Prop_Data, "m_iEFlags", iEFlags);
+	}
+	public int GetEdictFlags()
+	{
+		return GetEdictFlags(this.GetEntIndex());
+	}
+	public void SetEdictFlags(const int iEdictFlags)
+	{
+		SetEdictFlags(this.GetEntIndex(), iEdictFlags);
+	}
 	public void Teleport(const float vecOrigin[3] = NULL_VECTOR, const float vecAngles[3] = NULL_VECTOR, const float vecVelocity[3] = NULL_VECTOR)
 	{
 		TeleportEntity(this.GetEntIndex(), vecOrigin, vecAngles, vecVelocity);

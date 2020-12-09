@@ -61,6 +61,11 @@
 				}
 			}
 		}
+		// door crap
+		"delete"
+		{
+			"targetname" "/^(push_door|push_door_tm)$/"
+		}
 		// fix entry teleporter
 		// -------------------
 		// no going back
@@ -484,8 +489,8 @@
 		{
 			"origin"	"-2544 -2224 1637"
 			"angles"	"0 90 0"
-			"triggerid" "c1a4c_breakscript_relay"
-			"output"	"OnTrigger"
+			"triggerid" "c1a4c_controlroom_entry_door"
+			"output"	"OnFullyClosed"
 			"portal"	"-2494 -2285 1632"
 		}
 		
