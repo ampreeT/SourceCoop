@@ -22,6 +22,7 @@ StringMap hComboTimeTrie;
 ArrayList lNpcDamageTracker;
 
 Cookie pKillfeedEnabledCookie;
+ConVar pConvarKillfeedDefault;
 
 public Plugin myinfo =
 {
@@ -38,6 +39,7 @@ public void OnPluginStart()
 	InitComboTracker();
 	HookEvent("entity_killed", Event_EntKilled);
 	pKillfeedEnabledCookie = new Cookie("sourcecoop_killfeed_enabled", "Killfeed", CookieAccess_Protected);
+	pConvarKillfeedDefault = CreateConVar("sourcecoop_killfeed_default", "0", "Sets the default setting of the killfeed player preference.", _, true, 0.0, true, 1.0);
 	
 	InitSourceCoopAddon();
 	if (LibraryExists(SRCCOOP_LIBRARY))
@@ -86,6 +88,15 @@ public void MyMenuHandler(TopMenu topmenu, TopMenuAction action, TopMenuObject t
 			}
 		}
 		topmenu.Display(param, TopMenuPosition_LastCategory);
+	}
+}
+
+public void OnClientCookiesCached(int client)
+{
+	if(!IsCookieSet(pKillfeedEnabledCookie, client))
+	{
+		// new player - set the default
+		SetCookieBool(pKillfeedEnabledCookie, client, pConvarKillfeedDefault.BoolValue);
 	}
 }
 

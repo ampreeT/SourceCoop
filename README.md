@@ -20,6 +20,7 @@ A step-by-step guide is also available on [Steam](https://steamcommunity.com/sha
 
 ### Recommendations
 - Setting convar __mp_teamplay__ to __1__ will provide lag-free noblock
+- Setting convar __sv_always_run__ to __1__ is recommended to avoid glitchy sprinting weapon animations
 
 ### Plugin Convars
 - __sourcecoop_enabled__ - Enables cooperative functionality on maps.

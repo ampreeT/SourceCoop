@@ -27,6 +27,8 @@ Handle g_pCreateServerInterface;
 // ----------------------------
 Handle hkFAllowFlashlight;
 Handle hkIsMultiplayer;
+Handle hkRestoreWorld;
+Handle hkRespawnPlayers;
 Handle hkIRelationType;
 Handle hkIsPlayerAlly;
 Handle hkProtoSniperSelectSchedule;

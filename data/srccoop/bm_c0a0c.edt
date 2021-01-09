@@ -1,8 +1,10 @@
-#base "base\bm_sp_campaign.edt"
+#base "base/bm_sp_campaign.edt"
 
 "config"
 {
-	"nextmap"	"bm_c1a0a"
+	"chapter" "Black Mesa Inbound"
+	"nextmap" "bm_c1a0a"
+	"intro_type" "none"
 	"equipment"
 	{
 		"item" "item_weapon_crowbar"

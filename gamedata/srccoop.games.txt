@@ -61,6 +61,20 @@
 				"return"	"bool"
 				"this"		"ignore"
 			}
+			"CBM_MP_GameRules::RestoreWorld"
+			{
+				"offset"	"CBM_MP_GameRules::RestoreWorld"
+				"hooktype"	"gamerules"
+				"return"	"int"
+				"this"		"ignore"
+			}
+			"CBM_MP_GameRules::RespawnPlayers"
+			{
+				"offset"	"CBM_MP_GameRules::RespawnPlayers"
+				"hooktype"	"gamerules"
+				"return"	"int"
+				"this"		"ignore"
+			}
 			"CBaseCombatCharacter::IRelationType"
 			{
 				"offset"	"CBaseCombatCharacter::IRelationType"
@@ -290,6 +304,20 @@
 				"return"	"void"
 				"this"		"entity"
 			}
+//			"CBaseCombatWeapon::SendWeaponAnim"
+//			{
+//				"offset"	"CBaseCombatWeapon::SendWeaponAnim"
+//				"hooktype"	"entity"
+//				"return"	"bool"
+//				"this"		"entity"
+//				"arguments"
+//				{
+//					"anim"
+//					{
+//						"type"	"int"
+//					}
+//				}
+//			}
 			
 			// Detours
 			
@@ -443,6 +471,16 @@
 			{
 				"windows"	"58"
 				"linux"		"59"
+			}
+			"CBM_MP_GameRules::RestoreWorld"		// CBM_MP_GameRules::RestoreWorld()
+			{
+				"windows"	"159"
+				"linux"		"160"
+			}
+			"CBM_MP_GameRules::RespawnPlayers"		// CBM_MP_GameRules::RespawnPlayers()
+			{
+				"windows"	"167"
+				"linux"		"168"
 			}
 			"CBaseCombatCharacter::IRelationType"	// CBaseCombatCharacter::IRelationType(CBaseEntity*)
 			{

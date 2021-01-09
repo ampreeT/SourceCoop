@@ -4,6 +4,7 @@
 
 "config"
 {
+	"campaign" "Black Mesa Official"
 	"intro_type" "freeze"
 	"console"
 	{

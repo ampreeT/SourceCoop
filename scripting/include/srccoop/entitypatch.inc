@@ -70,7 +70,7 @@ public void Hook_BaseNPCSpawnPost(int iEntIndex)
 	else
 	{
 		// potentially fixes random, elusive, linux only crash
-		pEntity.SetEdictFlags(pEntity.GetEdictFlags() | FL_EDICT_CHANGED);
+		pEntity.SetEdictFlags(pEntity.GetEdictFlags() | FL_EDICT_ALWAYS | FL_EDICT_CHANGED);
 	}
 }
 
@@ -835,8 +835,8 @@ public MRESReturn Hook_WeaponSetModel(int _this, Handle hParams)
 		CBaseCombatWeapon pWeapon = CBaseCombatWeapon(_this);
 		if (pWeapon.IsValid())
 		{
-			//CBaseCombatCharacter pOwner = view_as<CBaseCombatCharacter>(pWeapon.GetOwner());
-			//if (pOwner.IsValid() && !pOwner.IsClassPlayer())
+			CBaseCombatCharacter pOwner = view_as<CBaseCombatCharacter>(pWeapon.GetOwner());
+			if (pOwner.IsValid() && !pOwner.IsClassPlayer())
 			{
 				static const char szWeaponModel[][][] =
 				{
@@ -979,4 +979,13 @@ public Action Timer_FixRotatingAngles(Handle timer, CBaseEntity pEntity)
 		return Plugin_Continue;
 	}
 	return Plugin_Stop;
+}
+
+//------------------------------------------------------
+// Gib props
+// Disable damage - which causes physics crash on linux with specific models
+//------------------------------------------------------
+public Action Hook_NoGibDmg(int victim, int &attacker, int &inflictor, float &damage, int &damagetype, int &weapon, float damageForce[3], float damagePosition[3])
+{
+	return Plugin_Handled;
 }

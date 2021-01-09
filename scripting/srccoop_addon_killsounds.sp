@@ -19,11 +19,13 @@ public Plugin myinfo =
 #define MENUITEM_TOGGLE_KILLSOUNDS "ToggleKillsounds"
 
 Cookie pEnabledCookie;
+ConVar pConvarDefault;
 
 public void OnPluginStart()
 {
 	HookEvent("entity_killed", Event_EntityKilled, EventHookMode_Post);
 	pEnabledCookie = new Cookie("sourcecoop_ks_enabled", "Killsounds", CookieAccess_Protected);
+	pConvarDefault = CreateConVar("sourcecoop_ks_default", "1", "Sets the default setting of the killsounds player preference.", _, true, 0.0, true, 1.0);
 	
 	InitSourceCoopAddon();
 	if (LibraryExists(SRCCOOP_LIBRARY))
@@ -84,8 +86,8 @@ public void OnClientCookiesCached(int client)
 {
 	if(!IsCookieSet(pEnabledCookie, client))
 	{
-		// new player - default to ON
-		SetCookieBool(pEnabledCookie, client, true);
+		// new player - set the default
+		SetCookieBool(pEnabledCookie, client, pConvarDefault.BoolValue);
 	}
 }
 

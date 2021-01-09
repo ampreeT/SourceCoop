@@ -2,7 +2,7 @@
 
 #include <srccoop>
 
-#define PLUGIN_VERSION "1.0.0"
+#define PLUGIN_VERSION "1.0.1"
 
 public Plugin myinfo =
 {
@@ -76,6 +76,8 @@ void LoadGameData()
 	{
 		LoadDHookVirtual(pGameConfig, hkFAllowFlashlight, "CMultiplayRules::FAllowFlashlight");
 		LoadDHookVirtual(pGameConfig, hkIsMultiplayer, "CMultiplayRules::IsMultiplayer");
+		LoadDHookVirtual(pGameConfig, hkRestoreWorld, "CBM_MP_GameRules::RestoreWorld");
+		LoadDHookVirtual(pGameConfig, hkRespawnPlayers, "CBM_MP_GameRules::RespawnPlayers");
 		LoadDHookVirtual(pGameConfig, hkIRelationType, "CBaseCombatCharacter::IRelationType");
 		LoadDHookVirtual(pGameConfig, hkIsPlayerAlly, "CAI_BaseNPC::IsPlayerAlly");
 		LoadDHookVirtual(pGameConfig, hkProtoSniperSelectSchedule, "CProtoSniper::SelectSchedule");
@@ -116,8 +118,8 @@ public void OnPluginStart()
 	g_pConvarEndWaitFactor = CreateConVar("sourcecoop_end_wait_factor", "1.0", "Controls how much the number of finished players increases the changelevel timer speed. 1.0 means full, 0 means none (timer will run full length).", _, true, 0.0, true, 1.0);
 	RegAdminCmd("sourcecoop_ft", Command_SetFeature, ADMFLAG_ROOT, "Command for toggling plugin features on/off");
 	RegAdminCmd("sc_ft", Command_SetFeature, ADMFLAG_ROOT, "Command for toggling plugin features on/off");
-	RegServerCmd("sourcecoop_dump", Command_DumpMapEntities, "Command for toggling plugin features on/off");
-	RegServerCmd("sc_dump", Command_DumpMapEntities, "Command for toggling plugin features on/off");
+	RegServerCmd("sourcecoop_dump", Command_DumpMapEntities, "Command for dumping map entities to a file");
+	RegServerCmd("sc_dump", Command_DumpMapEntities, "Command for dumping map entities to a file");
 	
 	g_pLevelLump.Initialize();
 	g_SpawnSystem.Initialize();
@@ -131,12 +133,14 @@ public void OnPluginStart()
 	
 	if (g_Engine == Engine_BlackMesa)
 	{
-		HookEvent("broadcast_teamsound", Hook_BroadcastTeamsound, EventHookMode_Pre);
-		UserMsg iIntroCredits = GetUserMessageId("IntroCredits");
-		if(iIntroCredits != INVALID_MESSAGE_ID)
-			HookUserMessage(iIntroCredits, Hook_IntroCreditsMsg, true);
+		HookEvent("broadcast_teamsound", Event_BroadcastTeamsound, EventHookMode_Pre);
 		AddTempEntHook("BlackMesa Shot", BlackMesaFireBulletsTEHook);
 		AddNormalSoundHook(PlayerSoundListener);
+		UserMsg iIntroCredits = GetUserMessageId("IntroCredits");
+		if(iIntroCredits != INVALID_MESSAGE_ID)
+		{
+			HookUserMessage(iIntroCredits, Hook_IntroCreditsMsg, true);
+		}
 	}
 	
 	for (int i = 1; i <= MaxClients; i++)
@@ -167,6 +171,8 @@ public void OnMapStart()
 	if (g_Engine == Engine_BlackMesa)
 	{
 		DHookGamerules(hkIsMultiplayer, false, _, Hook_IsMultiplayer);
+		DHookGamerules(hkRestoreWorld, false, _, Hook_RestoreWorld);
+		DHookGamerules(hkRespawnPlayers, false, _, Hook_RespawnPlayers);
 		DHookGamerules(hkFAllowFlashlight, false, _, Hook_FAllowFlashlight);
 	}
 	
@@ -217,11 +223,6 @@ public void OnConfigsExecutedPost()
 
 public void OnClientPutInServer(int client)
 {
-	if(IsFakeClient(client))
-	{
-		return;
-	}
-	
 	CBlackMesaPlayer pPlayer = CBlackMesaPlayer(client);
 	
 	// fixes visual bug for players which had different view ent at mapchange
@@ -380,6 +381,16 @@ public void Hook_SpawnPost(int iEntIndex)
 	{
 		CBaseEntity pEntity = CBaseEntity(iEntIndex);
 		
+		// fix linux physics crashes
+		if(g_serverOS == OS_Linux)
+		{
+			char szModel[PLATFORM_MAX_PATH];
+			if(pEntity.GetModel(szModel, sizeof(szModel)) && strncmp(szModel, "models/gibs/humans/", 19) == 0)
+			{
+				SDKHook(iEntIndex, SDKHook_OnTakeDamage, Hook_NoGibDmg);
+			}
+		}
+		
 		if(!g_pCoopManager.m_bStarted)
 		{
 			Array_t pOutputHookList = g_pLevelLump.GetOutputHooksForEntity(pEntity);
@@ -506,7 +517,7 @@ public void RequestStopThink(CBaseEntity pEntity)
 	}
 }
 
-public Action Hook_BroadcastTeamsound(Event hEvent, const char[] szName, bool bDontBroadcast)
+public Action Event_BroadcastTeamsound(Event hEvent, const char[] szName, bool bDontBroadcast)
 {
 	if (g_pCoopManager.IsCoopModeEnabled())
 	{
@@ -523,11 +534,33 @@ public MRESReturn Hook_IsMultiplayer(Handle hReturn, Handle hParams)
 	return MRES_Supercede;
 }
 
+public MRESReturn Hook_RestoreWorld(Handle hReturn)
+{
+	if (g_pCoopManager.IsCoopModeEnabled())
+	{
+		// disable gamerules resetting the world on 'round start', this caused crashes
+		DHookSetReturn(hReturn, 0);
+		return MRES_Supercede;
+	}
+	return MRES_Ignored;
+}
+
+public MRESReturn Hook_RespawnPlayers(Handle hReturn)
+{
+	if (g_pCoopManager.IsCoopModeEnabled())
+	{
+		// disable gamerules respawning players on 'round start'
+		DHookSetReturn(hReturn, 0);
+		return MRES_Supercede;
+	}
+	return MRES_Ignored;
+}
+
 void GreetPlayer(int client)
 {
 	if (g_pCoopManager.IsFeatureEnabled(FT_SHOW_WELCOME_MESSAGE))
 	{
-		Msg(client, "This server runs SourceCoop version %s.\nYou can press %s=%s or type %s/coopmenu%s for extra settings.", PLUGIN_VERSION, CHAT_COLOR_SEC, CHAT_COLOR_PRI, CHAT_COLOR_SEC, CHAT_COLOR_PRI);
+		Msg(client, "This server runs SourceCoop version %s.\nPress %s=%s or type %s/coopmenu%s for extra settings.", PLUGIN_VERSION, CHAT_COLOR_SEC, CHAT_COLOR_PRI, CHAT_COLOR_SEC, CHAT_COLOR_PRI);
 	}
 }
 

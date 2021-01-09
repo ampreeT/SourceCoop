@@ -33,9 +33,9 @@ bool bEnabled;
 public void OnPluginStart()
 {
 	g_pConvarDifficulty = CreateConVar("sourcecoop_difficulty", "0", "Sets the difficulty - from 0 (base difficulty) and infinitely up.", _, true, 0.0);
-	g_pConvarDifficultyAuto = CreateConVar("sourcecoop_difficulty_auto", "1", "Toggles dynamically changing difficulty level based on number of players.", _, true, 0.0, true, 1.0);
-	g_pConvarDifficultyAutoMin = CreateConVar("sourcecoop_difficulty_auto_min", "1", "When automatic difficulty is enabled, this is the difficulty at 1 player.", _, true, 0.0);
-	g_pConvarDifficultyAutoMax = CreateConVar("sourcecoop_difficulty_auto_max", "20", "When automatic difficulty is enabled, this is the difficulty at max players.", _, true, 0.0);
+	g_pConvarDifficultyAuto = CreateConVar("sourcecoop_difficulty_auto", "2", "Sets automatic difficulty mode. -1 disables. 0 balances difficulty between min and max convars. Values above 0 set the difficulty increment per player, ignoring the min and max cvars.", _, true, -1.0);
+	g_pConvarDifficultyAutoMin = CreateConVar("sourcecoop_difficulty_auto_min", "1", "When automatic difficulty mode is set to 0, this is the difficulty at 1 player.", _, true, 0.0);
+	g_pConvarDifficultyAutoMax = CreateConVar("sourcecoop_difficulty_auto_max", "20", "When automatic difficulty mode is set to 0, this is the difficulty at max players.", _, true, 0.0);
 	g_pConvarDifficultyAnnounce = CreateConVar("sourcecoop_difficulty_announce", "1", "Toggles announcing changes in difficulty.", _, true, 0.0, true, 1.0);
 	g_pConvarDifficultyIgnoreDamageTo = CreateConVar("sourcecoop_difficulty_ignoredmgto", "npc_headcrab;npc_barnacle", "List of classnames where player->npc damage is exempt from difficulty scaling. Separated by semicolon.");
 	g_pConvarDifficultyIgnoreDamageFrom = CreateConVar("sourcecoop_difficulty_ignoredmgfrom", "", "List of classnames where npc->player damage is exempt from difficulty scaling. Separated by semicolon.");
@@ -43,6 +43,7 @@ public void OnPluginStart()
 	g_pConvarDifficulty.AddChangeHook(OnDifficultyChanged);
 	g_pConvarDifficultyIgnoreDamageTo.AddChangeHook(OnIgnoreDmgToChanged);
 	g_pConvarDifficultyIgnoreDamageFrom.AddChangeHook(OnIgnoreDmgFromChanged);
+	g_pConvarDifficultyAuto.AddChangeHook(OnAutoMinMaxChanged);
 	g_pConvarDifficultyAutoMin.AddChangeHook(OnAutoMinMaxChanged);
 	g_pConvarDifficultyAutoMax.AddChangeHook(OnAutoMinMaxChanged);
 	
@@ -106,7 +107,7 @@ public void Frame_PlayerChangeTeamPost()
 
 void UpdateAutoDifficulty()
 {
-	if(g_pConvarDifficultyAuto.BoolValue)
+	if(g_pConvarDifficultyAuto.FloatValue == 0)
 	{
 		int min = g_pConvarDifficultyAutoMin.IntValue;
 		int max = g_pConvarDifficultyAutoMax.IntValue;
@@ -119,6 +120,10 @@ void UpdateAutoDifficulty()
 		
 		float ratio = (GetRealClientCount(true, false, true) - 1) / float(MaxClients - 1);
 		g_pConvarDifficulty.IntValue = RoundToFloor((max - min) * ratio + min);
+	}
+	else if(g_pConvarDifficultyAuto.FloatValue > 0.0)
+	{
+		g_pConvarDifficulty.IntValue = RoundFloat(g_pConvarDifficultyAuto.FloatValue * GetRealClientCount(true, false, true));
 	}
 }
 

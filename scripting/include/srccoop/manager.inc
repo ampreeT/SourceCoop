@@ -19,7 +19,7 @@
 #define SND_1 "vox/one.wav"
 
 // Changelevel sounds
-#define SND_CHANGELEVEL "hev_vox/bell.wav"
+#define SND_CHANGELEVEL "vox/doop.wav"
 #define SND_CHANGELEVEL_VOL 0.5
 #define SND_CHANGELEVEL_TICK "bms_objects/clickbeep/click1.wav"
 #define SND_CHANGELEVEL_TICK_VOL 0.2
@@ -209,7 +209,6 @@ enum struct CoopManager
 		{
 			if (g_Engine == Engine_BlackMesa)
 			{
-				CBM_MP_GameRules.SetStateIsInIntermission(STATE_WARMUP, false);
 				CBM_MP_GameRules.SetStateEndTime(STATE_WARMUP, GetGameTime() + 60 * 60 * 24 * 7);
 			}
 			KeyValues kv = this.LoadMapConfig(g_szMapName);
@@ -261,10 +260,13 @@ enum struct CoopManager
 	{
 		if(!this.m_bStarted && this.m_bPlayerSpawned)
 		{
+			// are we allowed to start or waiting for players?
 			if(this.IsAllowedToStart())
 			{
+				// is initial timer already running?
 				if(this.IsInCountDownPeriod())
 				{
+					// can start, but do a 3 sec readyup timer as we cancel the initial player wait timer
 					if(!this.m_bGetReadyTimer)
 					{
 						delete this.m_pStartTimer;
@@ -273,11 +275,13 @@ enum struct CoopManager
 				}
 				else
 				{
+					// we can just start if no previous timer is running
 					this.Start();
 				}
 			}
 			else if(!this.IsInCountDownPeriod())
 			{
+				// not allowed to start now and no timer is running, start the timer.
 				this.StartCountdown(false);
 			}
 		}
@@ -289,20 +293,14 @@ enum struct CoopManager
 		{
 			this.m_iSecondsToStart = 3;
 			EmitSoundToAll(SND_3, .volume = SND_TICK_VOL);
-			if (g_Engine == Engine_BlackMesa)
-			{
-				CBM_MP_GameRules.SetStateEndTime(STATE_WARMUP, GetGameTime() + 60 * 60 * 24 * 7);
-				CBM_MP_GameRules.SetCurrentState(STATE_ROUND);
-				CBM_MP_GameRules.SetStateEndTime(STATE_ROUND, GetGameTime() + this.m_iSecondsToStart + 1);
-			}
 		}
 		else
 		{
 			this.m_iSecondsToStart = g_pConvarWaitPeriod.IntValue;
-			if (g_Engine == Engine_BlackMesa)
-			{
-				CBM_MP_GameRules.SetStateEndTime(STATE_WARMUP, GetGameTime() + this.m_iSecondsToStart + 1.1);
-			}
+		}
+		if (g_Engine == Engine_BlackMesa)
+		{
+			CBM_MP_GameRules.SetStateEndTime(STATE_WARMUP, GetGameTime() + this.m_iSecondsToStart + 1.0);
 		}
 		this.m_pStartTimer = CreateTimer(1.0, StartTimerCallback, _, TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT);
 	}
@@ -319,21 +317,12 @@ enum struct CoopManager
 
 	void Start()
 	{
-		if (g_Engine == Engine_BlackMesa)
-		{
-			CBM_MP_GameRules.SetStateEndTime(STATE_WARMUP, GetGameTime() + 60 * 60 * 24 * 7); // STATE_WARMUP is what the server still counts with!
-		}
-		
 		if(!GetRealClientCount(true)) {
 			return;
 		}
-
 		if (g_Engine == Engine_BlackMesa)
 		{
-			ConVar timelimit = FindConVar("mp_timelimit");
-			CBM_MP_GameRules.SetCurrentState(STATE_ROUND); // doesnt actually restart, just switches the client hud
-			CBM_MP_GameRules.SetStateEndTime(STATE_ROUND, GetGameTime() + timelimit.FloatValue); // this is what is displayed on client, nothing happens when it runs out, we may have to handle that
-			delete timelimit;
+			CBM_MP_GameRules.SetStateEndTime(STATE_WARMUP, 0.0);
 		}
 		
 		this.m_bStarted = true;
@@ -492,21 +481,22 @@ public Action StartTimerCallback(Handle pTimer)
 {
 	if (!--g_pCoopManager.m_iSecondsToStart)
 	{
-		if (g_pCoopManager.m_bGetReadyTimer)
-		{
-			g_pCoopManager.m_pStartTimer = null;
-			g_pCoopManager.Start();
-		}
-		else
-		{
-			g_pCoopManager.StartCountdown(true);
-		}
+		g_pCoopManager.m_pStartTimer = null;
+		g_pCoopManager.Start();
 		return Plugin_Stop;
 	}
 	
-	if (g_pCoopManager.m_bGetReadyTimer)
+	if(g_pCoopManager.m_iSecondsToStart == 3)
 	{
-		EmitSoundToAll(g_pCoopManager.m_iSecondsToStart == 2? SND_2 : SND_1, .volume = SND_TICK_VOL);
+		EmitSoundToAll(SND_3, .volume = SND_TICK_VOL);
+	}
+	else if (g_pCoopManager.m_iSecondsToStart == 2)
+	{
+		EmitSoundToAll(SND_2, .volume = SND_TICK_VOL);
+	}
+	else if (g_pCoopManager.m_iSecondsToStart == 1)
+	{
+		EmitSoundToAll(SND_1, .volume = SND_TICK_VOL);
 	}
 	else
 	{

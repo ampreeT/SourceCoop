@@ -18,19 +18,22 @@
 		// fix for breakmodels not appearing
 		"breakable_multiplayer" "0"
 		
-		// disables statistics and also functions as a temp crashfix
+		// disables statistics and also functions as a temp crashfix (when a player drowns)
 		"sv_ranked" "0"
+		
+		// disable warmup intermission pause
+		"mp_warmup_intermission_time" "0"
 	}
 	
 	"entity_base_coop"
 	{
-		// Unwanted and bugs players
+		// unwanted and bugs players
 		"remove"
 		{
 			"classname" "player_loadsaved"
 		}
 		
-		// crashes (linux?) since BM1.5
+		// crashes since BM1.5
 		"remove"
 		{
 			"classname" "music_track"

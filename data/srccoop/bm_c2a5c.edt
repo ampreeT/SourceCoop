@@ -1,7 +1,8 @@
-#base "base\bm_sp_campaign.edt"
+#base "base/bm_sp_campaign.edt"
 
 "config"
 {
+	"chapter" "Surface Tension"
 	"nextmap" "bm_c2a5d"
 	"equipment"
 	{
