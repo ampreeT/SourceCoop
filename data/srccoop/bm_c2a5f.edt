@@ -64,16 +64,23 @@
 				}
 			}
 		}
-		"create"
+		// unlock armoury door if guard dies
+		"modify"
 		{
-			"classname"	"trigger_once"
-			"targetname" "armory_cp_trig"
-			"spawnflags" "1"
-			"functions"
+			"targetname" "c2a5f_barney"
+			"outputs"
 			{
-				"copy_model"
+				"add"
 				{
-					"hammerid" "3353372"
+					"output" "OnDeath"
+					"target" "c2a5f_armoury_door_12b"
+					"input" "Unlock"
+				}
+				"add"
+				{
+					"output" "OnDeath"
+					"target" "c2a5f_armoury_door_12a"
+					"input" "Unlock"
 				}
 			}
 		}
@@ -89,7 +96,7 @@
 		{
 			"origin"	"-480 -1468 420"
 			"angles"	"0 0 0"
-			"triggerid"	"armory_cp_trig"
+			"triggerid"	"3353372"
 			"output"	"OnTrigger"
 		}
 		"arena2"

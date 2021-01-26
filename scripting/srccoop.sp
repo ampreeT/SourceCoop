@@ -2,7 +2,7 @@
 
 #include <srccoop>
 
-#define PLUGIN_VERSION "1.0.1"
+#define PLUGIN_VERSION "1.0.2"
 
 public Plugin myinfo =
 {
@@ -76,6 +76,7 @@ void LoadGameData()
 	{
 		LoadDHookVirtual(pGameConfig, hkFAllowFlashlight, "CMultiplayRules::FAllowFlashlight");
 		LoadDHookVirtual(pGameConfig, hkIsMultiplayer, "CMultiplayRules::IsMultiplayer");
+		// LoadDHookVirtual(pGameConfig, hkIsDeathmatch, "CMultiplayRules::IsDeathmatch");
 		LoadDHookVirtual(pGameConfig, hkRestoreWorld, "CBM_MP_GameRules::RestoreWorld");
 		LoadDHookVirtual(pGameConfig, hkRespawnPlayers, "CBM_MP_GameRules::RespawnPlayers");
 		LoadDHookVirtual(pGameConfig, hkIRelationType, "CBaseCombatCharacter::IRelationType");
@@ -171,6 +172,7 @@ public void OnMapStart()
 	if (g_Engine == Engine_BlackMesa)
 	{
 		DHookGamerules(hkIsMultiplayer, false, _, Hook_IsMultiplayer);
+		//DHookGamerules(hkIsDeathmatch, false, _, Hook_IsDeathmatch);
 		DHookGamerules(hkRestoreWorld, false, _, Hook_RestoreWorld);
 		DHookGamerules(hkRespawnPlayers, false, _, Hook_RespawnPlayers);
 		DHookGamerules(hkFAllowFlashlight, false, _, Hook_FAllowFlashlight);
@@ -217,7 +219,14 @@ public void OnConfigsExecutedPost()
 				pGameGamerules.Kill();
 			}
 		}
+		
 		PrecacheScriptSound("HL2Player.SprintStart");
+		AddFileToDownloadsTable("models/props_xen/xen_turret_mpfix.dx80.vtx");
+		AddFileToDownloadsTable("models/props_xen/xen_turret_mpfix.dx90.vtx");
+		AddFileToDownloadsTable("models/props_xen/xen_turret_mpfix.mdl");
+		AddFileToDownloadsTable("models/props_xen/xen_turret_mpfix.phy");
+		AddFileToDownloadsTable("models/props_xen/xen_turret_mpfix.sw.vtx");
+		AddFileToDownloadsTable("models/props_xen/xen_turret_mpfix.vvd");
 	}
 }
 
@@ -227,6 +236,12 @@ public void OnClientPutInServer(int client)
 	
 	// fixes visual bug for players which had different view ent at mapchange
 	pPlayer.SetViewEntity(pPlayer);
+	
+	if(g_Engine == Engine_BlackMesa)
+	{
+		// fixes bugged trigger_teleport prediction (camera jerking around as if being teleported)
+		ClientCommand(client, "cl_predicttriggers 0");
+	}
 	
 	g_pCoopManager.OnClientPutInServer(pPlayer);
 	g_pInstancingManager.OnClientPutInServer(client);
@@ -238,7 +253,6 @@ public void OnClientPutInServer(int client)
 	SDKHook(client, SDKHook_OnTakeDamage, Hook_PlayerTakeDamage);
 	DHookEntity(hkChangeTeam, false, client, _, Hook_PlayerChangeTeam);
 	DHookEntity(hkShouldCollide, false, client, _, Hook_PlayerShouldCollide);
-
 	GreetPlayer(client);
 }
 
@@ -263,7 +277,7 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 	if (pEntity.IsValid())
 	{
 		SDKHook(iEntIndex, SDKHook_Spawn, Hook_FixupBrushModels);
-		SDKHook(iEntIndex, SDKHook_SpawnPost, Hook_SpawnPost);
+		SDKHook(iEntIndex, SDKHook_SpawnPost, Hook_EntitySpawnPost);
 		
 		if (g_Engine == Engine_BlackMesa)
 		{
@@ -286,6 +300,7 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 				}
 				else if (strcmp(szClassname, "npc_xenturret", false) == 0)
 				{
+					SDKHook(iEntIndex, SDKHook_SpawnPost, Hook_XenTurretSpawnPost);
 					DHookEntity(hkProtoSniperSelectSchedule, false, iEntIndex, _, Hook_XenTurretSelectSchedule);
 					DHookEntity(hkHandleAnimEvent, false, iEntIndex, _, Hook_XenTurretHandleAnimEvent);
 					DHookEntity(hkHandleAnimEvent, true, iEntIndex, _, Hook_XenTurretHandleAnimEventPost);
@@ -299,6 +314,11 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 				else if (strcmp(szClassname, "npc_gargantua") == 0)
 				{
 					DHookEntity(hkAcceptInput, true, iEntIndex, _, Hook_GargAcceptInputPost);
+				}
+				else if (strncmp(szClassname, "npc_houndeye", 12) == 0)
+				{
+					DHookEntity(hkThink, false, iEntIndex, _, Hook_HoundeyeThink);
+					DHookEntity(hkThink, true, iEntIndex, _, Hook_HoundeyeThinkPost);
 				}
 			}
 			else if ((strcmp(szClassname, "instanced_scripted_scene", false) == 0) ||
@@ -330,6 +350,10 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 			{
 				SDKHook(iEntIndex, SDKHook_SpawnPost, Hook_ChangelevelSpawn);
 			}
+			else if (strcmp(szClassname, "trigger_autosave") == 0)
+			{
+				SDKHook(iEntIndex, SDKHook_Spawn, Hook_AutosaveSpawn);
+			}
 			else if (strcmp(szClassname, "camera_death") == 0)
 			{
 				SDKHook(iEntIndex, SDKHook_SpawnPost, Hook_CameraDeathSpawn);
@@ -354,6 +378,10 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 			{
 				DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_ServerCommandAcceptInput);
 			}
+			else if (strcmp(szClassname, "env_zoom") == 0)
+			{
+				DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_EnvZoomAcceptInput);
+			}
 			else if (strcmp(szClassname, "env_credits") == 0)
 			{
 				DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_EnvCreditsAcceptInput);
@@ -366,6 +394,12 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 			{
 				CreateTimer(30.0, Timer_FixRotatingAngles, pEntity, TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT);
 			}
+			else if (strcmp(szClassname, "prop_hev_charger") == 0 || strcmp(szClassname, "prop_radiation_charger") == 0)
+			{
+				//DHookEntity(hkThink, false, iEntIndex, _, Hook_PropChargerThink);
+				//DHookEntity(hkThink, true, iEntIndex, _, Hook_PropChargerThinkPost);
+			}
+			
 			// if some explosions turn out to be damaging all players except one, this is the fix
 			//else if (strcmp(szClassname, "env_explosion") == 0)
 			//{
@@ -375,22 +409,23 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 	}
 }
 
-public void Hook_SpawnPost(int iEntIndex)
+public void Hook_EntitySpawnPost(int iEntIndex)
 {
 	if (g_pCoopManager.IsCoopModeEnabled())
 	{
 		CBaseEntity pEntity = CBaseEntity(iEntIndex);
 		
 		// fix linux physics crashes
-		if(g_serverOS == OS_Linux)
+		if(g_Engine == Engine_BlackMesa && g_serverOS == OS_Linux)
 		{
-			char szModel[PLATFORM_MAX_PATH];
+			static char szModel[PLATFORM_MAX_PATH];
 			if(pEntity.GetModel(szModel, sizeof(szModel)) && strncmp(szModel, "models/gibs/humans/", 19) == 0)
 			{
 				SDKHook(iEntIndex, SDKHook_OnTakeDamage, Hook_NoGibDmg);
 			}
 		}
 		
+		// find and hook output hooks for entity
 		if(!g_pCoopManager.m_bStarted)
 		{
 			Array_t pOutputHookList = g_pLevelLump.GetOutputHooksForEntity(pEntity);
@@ -449,12 +484,15 @@ public void OnEntityDestroyed(int iEntIndex)
 	{
 		if (pEntity.IsClassname("camera_death"))
 		{
-			CBlackMesaPlayer pOwner = view_as<CBlackMesaPlayer>(pEntity.GetOwner());
-			if (pOwner.IsValid() && pOwner.IsClassPlayer())
+			for (int i = 1; i <= MaxClients; i++)
 			{
-				if (pOwner.GetViewEntity() == pEntity)
+				if (IsClientInGame(i))
 				{
-					pOwner.SetViewEntity(pOwner);
+					CBlackMesaPlayer pPlayer = CBlackMesaPlayer(i);
+					if (pPlayer.GetViewEntity() == pEntity)
+					{
+						pPlayer.SetViewEntity(pPlayer);
+					}
 				}
 			}
 		}
@@ -526,12 +564,6 @@ public Action Event_BroadcastTeamsound(Event hEvent, const char[] szName, bool b
 		return Plugin_Changed;
 	}
 	return Plugin_Continue;
-}
-
-public MRESReturn Hook_IsMultiplayer(Handle hReturn, Handle hParams)
-{
-	DHookSetReturn(hReturn, g_bIsMultiplayerOverride);
-	return MRES_Supercede;
 }
 
 public MRESReturn Hook_RestoreWorld(Handle hReturn)

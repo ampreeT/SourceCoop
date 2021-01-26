@@ -17,19 +17,25 @@ public Plugin myinfo =
 #define VOTE_COOLDOWN 60
 
 #define MENUITEM_SKIPINTRO "SkipIntroVote"
+#define MENUITEM_RESTARTMAP "RestartMapVote"
 #define MENUITEM_MAPVOTE "MapVote"
 
 char INTROMAPS[][] = {"bm_c0a0a", "bm_c0a0b", "bm_c0a0c"};
 
 int nextVoteSkip;
+int nextVoteRestart;
 int nextVoteMap;
+
+ConVar pReloadMapsOnMapchange;
 
 public void OnPluginStart()
 {
 	LoadTranslations("common.phrases");
 	RegConsoleCmd("sm_skipintro", Command_VoteSkipIntro, "Starts a skip intro vote");
-	RegConsoleCmd("sm_introskip", Command_VoteSkipIntro, "Starts a skip intro vote");
+	RegConsoleCmd("sm_restartmap", Command_VoteRestartMap, "Starts a restart map vote");
 	RegConsoleCmd("sm_changemap", Command_ChangeMap, "Shows a menu for changing maps");
+	RegAdminCmd("sc_reload_maps", Command_ReloadMaps, ADMFLAG_ROOT, "Reloads all entries in the votemap menu from storage");
+	pReloadMapsOnMapchange = CreateConVar("sourcecoop_voting_autoreload", "0", "Sets whether to reload all votemap menu entries on mapchange, which can prolong map loading times.", _, true, 0.0, true, 1.0);
 	
 	InitSourceCoopAddon();
 	if (LibraryExists(SRCCOOP_LIBRARY))
@@ -54,8 +60,20 @@ public void OnLibraryAdded(const char[] name)
 }
 
 public void OnMapStart()
-{	
+{
+	static bool firstLoad = true;
+	if(firstLoad || pReloadMapsOnMapchange.BoolValue)
+	{
+		firstLoad = false;
+		BuildMaps();
+	}
+}
+
+public Action Command_ReloadMaps(int client, int args)
+{
+	MsgReply(client, "Reloading maps");
 	BuildMaps();
+	return Plugin_Handled;
 }
 
 void OnSourceCoopStarted()
@@ -65,6 +83,7 @@ void OnSourceCoopStarted()
 	if(pMenuCategory != INVALID_TOPMENUOBJECT)
 	{
 		pCoopMenu.AddItem(MENUITEM_SKIPINTRO, MyCoopMenuHandler, pMenuCategory);
+		pCoopMenu.AddItem(MENUITEM_RESTARTMAP, MyCoopMenuHandler, pMenuCategory);
 		pCoopMenu.AddItem(MENUITEM_MAPVOTE, MyCoopMenuHandler, pMenuCategory);
 	}
 }
@@ -89,6 +108,10 @@ public void MyCoopMenuHandler(TopMenu topmenu, TopMenuAction action, TopMenuObje
 		{
 			Format(buffer, maxlength, "Skip intro");
 		}
+		if(StrEqual(szItem, MENUITEM_RESTARTMAP))
+		{
+			Format(buffer, maxlength, "Restart current map");
+		}
 		else if(StrEqual(szItem, MENUITEM_MAPVOTE))
 		{
 			Format(buffer, maxlength, "Change map");
@@ -101,6 +124,13 @@ public void MyCoopMenuHandler(TopMenu topmenu, TopMenuAction action, TopMenuObje
 		if(StrEqual(szItem, MENUITEM_SKIPINTRO))
 		{
 			if(!StartVoteSkipIntro(param))
+			{
+				topmenu.Display(param, TopMenuPosition_LastCategory);
+			}
+		}
+		else if(StrEqual(szItem, MENUITEM_RESTARTMAP))
+		{
+			if(!StartVoteRestartMap(param))
 			{
 				topmenu.Display(param, TopMenuPosition_LastCategory);
 			}
@@ -148,7 +178,7 @@ bool StartVoteSkipIntro(int client)
 	{
 		char sTime[32];
 		FormatTimeLengthLong(nextVoteSkip - GetTime(), sTime, sizeof(sTime));
-		MsgReply(client, "Voteskip is not available for another %s", sTime);
+		MsgReply(client, "Skip intro vote is not available for another %s", sTime);
 		return false;
 	}
 	Menu menu = new Menu(VoteSkipHandler);
@@ -171,7 +201,7 @@ public int VoteSkipHandler(Menu menu, MenuAction action, int param1, int param2)
 	{
 		if (param1 == 0)
 		{
-			MsgAll("Vote successfull!");
+			MsgAll("Vote successful!");
 			ServerCommand("sm_map bm_c1a0a");
 		}
 		else
@@ -200,6 +230,71 @@ bool IsIntroMap(char szMap[MAX_MAPNAME])
 		}
 	}
 	return false;
+}
+
+//------------------------------------------------------
+// Restart map voting
+//------------------------------------------------------
+
+public Action Command_VoteRestartMap(int client, int args)
+{
+	StartVoteRestartMap(client);
+	return Plugin_Handled;
+}
+
+bool StartVoteRestartMap(int client)
+{
+	if (IsVoteInProgress())
+	{
+		MsgReply(client, "Another vote is already in progress");
+		return false;
+	}
+	if (GetTime() < nextVoteRestart)
+	{
+		char sTime[32];
+		FormatTimeLengthLong(nextVoteRestart - GetTime(), sTime, sizeof(sTime));
+		MsgReply(client, "Restart vote is not available for another %s", sTime);
+		return false;
+	}
+	Menu menu = new Menu(VoteRestartHandler);
+	menu.SetTitle("Restart current map?");
+	menu.AddItem("0", "Yes");
+	menu.AddItem("1", "No");
+	menu.ExitButton = false;
+	menu.DisplayVoteToAll(VOTE_DURATION);
+	if(client) MsgAll("%N started a map restart vote!", client);
+	return true;
+}
+
+public int VoteRestartHandler(Menu menu, MenuAction action, int param1, int param2)
+{
+	if (action == MenuAction_Select)
+	{
+		MsgAll("%N voted %s", param1, param2 == 0? "[YES]" : "[NO]");
+	}
+	if (action == MenuAction_VoteEnd)
+	{
+		if (param1 == 0)
+		{
+			MsgAll("Vote successful!");
+			char szCurrentMap[MAX_MAPNAME];
+			GetCurrentMap(szCurrentMap, sizeof(szCurrentMap));
+			ServerCommand("sm_map %s", szCurrentMap);
+		}
+		else
+		{
+			MsgAll("Vote failed!");
+		}
+	}
+	else if(action == MenuAction_VoteCancel)
+	{
+		MsgAll("Vote cancelled!");
+	}
+	else if (action == MenuAction_End)
+	{
+		nextVoteRestart = GetTime() + VOTE_COOLDOWN;
+		delete menu;
+	}
 }
 
 //------------------------------------------------------
@@ -455,7 +550,7 @@ public int VoteMapHandler(Menu menu, MenuAction action, int param1, int param2)
 	{
 		if (param1 == 0)
 		{
-			MsgAll("Vote successfull!");
+			MsgAll("Vote successful!");
 			ServerCommand("sm_map %s", szCurrentMapVote);
 		}
 		else

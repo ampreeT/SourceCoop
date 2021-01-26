@@ -1,0 +1,85 @@
+#base "base/bm_sp_campaign.edt"
+
+"config"
+{
+	"chapter" "Xen"
+	"nextmap" "bm_c4a1c"
+	"features"
+	{
+		"FIRSTPERSON_DEATHCAM" "0"
+	}	
+	"equipment"
+	{
+		"lookup"
+		{
+			"targetname" "xen_b_equipment"
+		}
+	}
+	"entity"
+	{
+		// no going back
+		"modify"
+		{
+			"classname" "trigger_changelevel"
+			"map" "bm_c4a1b"
+			"set"
+			{
+				"classname" "func_brush"
+				"rendermode" "10"
+			}
+		}
+		// zombify save reload trigs
+		"modify"
+		{
+			"classname" "trigger_once"
+			"OnTrigger" "/^Load_saveReload/"
+			"set"
+			{
+				"classname" "trigger_hurt"
+				"damage" "200"
+				"nodmgforce" "1"
+			}
+		}
+		// block off the void
+		"add"
+		{
+			"classname" "func_brush"
+			"rendermode" "10"
+			"functions"
+			{
+				"set_model"
+				{
+					"origin" "2144 14208 7552"
+					"size" "64 512 768"
+				}
+			}
+		}
+	}
+	"checkpoint"
+	{
+		"spawn"
+		{
+			"origin"	"-2544 624 5108"
+			"angles"	"0 90 0"
+		}
+		"tree"
+		{
+			"origin"	"-1915 -879 5435"
+			"angles"	"0 45 0"
+			"triggerid"	"sscape_b1_puffballcentral_MAINENTRANCE"
+			"output"	"OnPlay"
+		}
+		"autosave"
+		{
+			"touchid"	"98290"
+		}
+		"autosave"
+		{
+			"touchid"	"108005"
+		}
+		"autosave"
+		{
+			"touchid"	"204668"
+		}
+	}
+}

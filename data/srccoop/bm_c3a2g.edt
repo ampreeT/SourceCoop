@@ -57,29 +57,16 @@
 			}
 		}
 		// Keep the last door open
-		"modify"
+		"delete"
 		{
-			"targetname"	"LC_blastdoor_template_door_&i7"
-			"outputs"
-			{
-				"add"
-				{
-					"output"	"OnFullyOpen"
-					"target"	"!self"
-					"input"		"Lock"
-				}
-			}
+			"targetname" "relay_slamdoorwayshut"
 		}
 		"modify"
 		{
-			"targetname"	"relay_slamdoorwayshut"
-			"outputs"
+			"targetname" "LC_blastdoor_template_door_&i7"
+			"set"
 			{
-				"remove"
-				{
-					"target"	"LC_blastdoor_template_door_&i7"
-					"input"		"Close"
-				}
+				"wait" "-1"
 			}
 		}
 		// Block players from continuing past changelevel

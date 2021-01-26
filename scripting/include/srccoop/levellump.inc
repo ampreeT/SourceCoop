@@ -557,7 +557,14 @@ enum struct CGlobalLevelLump
 						SourceCoopFeature feature;
 						if (g_pFeatureMap.GetFeature(szKey, feature))
 						{
-							g_iEnabledFeatures |= view_as<int>(feature);
+							if(kv.GetNum(NULL_STRING))
+							{
+								EnableFeature(feature);
+							}
+							else
+							{
+								DisableFeature(feature);
+							}
 						}
 					}
 				}
@@ -1153,10 +1160,10 @@ public void FixupBrushModelsPost(DataPack pack)
 	CBaseEntity pThis = pack.ReadCell();
 	if(pThis.IsValid())
 	{
-		char szModelName[PLATFORM_MAX_PATH];
+		static char szModelName[PLATFORM_MAX_PATH];
 		pack.ReadString(szModelName, sizeof(szModelName));
 		
-		char buffers[6][128];
+		static char buffers[6][128];
 		ExplodeString(szModelName[BRUSH_FIXUP_IDENT_LEN], BRUSH_FIXUP_SEPARATOR, buffers, sizeof(buffers), sizeof(buffers[]));
 		float vecFrom[3], vecTo[3], vecOrigin[3], vecDistance[3], vecMins[3], vecMaxs[3];
 		vecFrom[0] = StringToFloat(buffers[0]); vecTo[0] = StringToFloat(buffers[3]);

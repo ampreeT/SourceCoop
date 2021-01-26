@@ -8,10 +8,13 @@
 
 enum struct CCoopSpawnEntry
 {
+	bool m_bHasPosition;
 	float m_vecPosition[3];
+	bool m_bHasAngles;
 	float m_vecAngles[3];
 	float m_flDelay;
 	CBaseEntity m_pTriggerEnt;
+	CBaseEntity m_pTouchEnt;
 	CBaseEntity m_pFollowEnt;
 	char m_szOutputName[MAX_FORMAT];
 	bool m_bHasPortal;
@@ -22,6 +25,7 @@ enum struct CCoopSpawnEntry
 	void Initialize()
 	{
 		this.m_pTriggerEnt = CBaseEntity();
+		this.m_pTouchEnt = CBaseEntity();
 		this.m_pFollowEnt = CBaseEntity();
 	}
 	
@@ -72,6 +76,43 @@ enum struct CCoopSpawnEntry
 		}
 		return false;
 	}
+	
+	bool ActivatePre(CBasePlayer pActivator)
+	{
+		bool bChanged;
+		if(!this.m_pFollowEnt.IsValid())
+		{
+			if(!this.m_bHasPosition)
+			{
+				pActivator.GetAbsOrigin(this.m_vecPosition);
+				this.m_bHasPosition = true;
+				bChanged = true;
+			}
+			if(!this.m_bHasAngles)
+			{
+				pActivator.GetAbsAngles(this.m_vecAngles);
+				this.m_bHasAngles = true;
+				bChanged = true;
+			}
+		}
+		return bChanged;
+	}
+	
+	void ActivatePost()
+	{
+		if(this.m_bBringAllPlayers)
+		{
+			for (int pp = 0; pp <= MaxClients; pp++)
+			{
+				CBlackMesaPlayer pPlayer = CBlackMesaPlayer(pp);
+				if(pPlayer.IsValid() && pPlayer.IsAlive())
+				{
+					if(this.TeleportPlayer(pPlayer, true, true))
+						pPlayer.PlayGameSound(SND_BRINGALL);
+				}
+			}
+		}
+	}
 }
 
 enum struct CCoopWeaponEntry
@@ -113,10 +154,11 @@ enum struct CCoopSpawn
 	Array_t m_pCheckpointList;
 	int m_iCurrentCheckpoint;
 	CCoopEquipment m_pDefaultEquipment;
+	bool m_bStrictOrder;
 	
 	void Clear()
 	{
-		this.m_iCurrentCheckpoint = 0;
+		this.m_iCurrentCheckpoint = -1;
 		this.m_pCheckpointList.Clear();
 		this.m_pDefaultEquipment.Clear();
 	}
@@ -131,7 +173,7 @@ enum struct CCoopSpawn
 	
 	bool GetCheckpointByIndex(int iIndex, CCoopSpawnEntry pCheckpoint)
 	{
-		if(this.m_pCheckpointList.Length > iIndex)
+		if(0 <= iIndex < this.m_pCheckpointList.Length)
 		{
 			this.m_pCheckpointList.GetArray(iIndex, pCheckpoint);
 			return true;
@@ -159,48 +201,80 @@ enum struct CCoopSpawn
 		return -1;
 	}
 	
-	void AddCheckpoint(CCoopSpawnEntry pCheckpoint)
+	int FindCheckpointByTouchEnt(CBaseEntity pTouchEnt, CCoopSpawnEntry pCheckpoint, int iStartIndex = 0)
+	{
+		CCoopSpawnEntry pEntry;
+		for (int i = iStartIndex; i < this.m_pCheckpointList.Length; i++)
+		{
+			this.m_pCheckpointList.GetArray(i, pEntry);
+			if (pTouchEnt == pEntry.m_pTouchEnt)
+			{
+				pCheckpoint = pEntry;
+				return i;
+			}
+		}
+		return -1;
+	}
+	
+	void AddCheckpoint(const CCoopSpawnEntry pCheckpoint)
 	{
 		int iIndex = this.m_pCheckpointList.PushArray(pCheckpoint);
+		bool bHasTrigger;
+		
 		if (pCheckpoint.m_pTriggerEnt.IsValid())
 		{
-			pCheckpoint.m_pTriggerEnt.HookOutput(pCheckpoint.m_szOutputName, Callback_Checkpoint, true);
+			pCheckpoint.m_pTriggerEnt.HookOutput(pCheckpoint.m_szOutputName, Hook_OutputCheckpoint, true);
+			bHasTrigger = true;
 		}
-		else
+		if (pCheckpoint.m_pTouchEnt.IsValid())
+		{
+			SDKHook(pCheckpoint.m_pTouchEnt.GetEntIndex(), SDKHook_StartTouchPost, Hook_TouchCheckpoint);
+			bHasTrigger = true;
+		}
+		
+		if(!bHasTrigger)
 		{
 			this.ActivateCheckpoint(iIndex);
 		}
 	}
 	
-	bool ActivateCheckpoint(int iIndex)
+	bool ActivateCheckpoint(int iIndex, CBasePlayer pActivator = view_as<CBasePlayer>(-1))
 	{
 		if(this.m_iCurrentCheckpoint < iIndex < this.m_pCheckpointList.Length)
 		{
-			for (int i = this.m_iCurrentCheckpoint+1; ; i++)
+			CCoopSpawnEntry pCheckpoint;
+			
+			if(this.m_bStrictOrder)
 			{
-				CCoopSpawnEntry pCheckpoint; this.m_pCheckpointList.GetArray(i, pCheckpoint);
+				for (int i = this.m_iCurrentCheckpoint+1; ; i++)
+				{
+					this.m_pCheckpointList.GetArray(i, pCheckpoint);
+					
+					if(pCheckpoint.m_bHasPortal)
+					{
+						this.CreatePortal(pCheckpoint.m_vecPortalPosition);
+					}
+					
+					if(i == iIndex)
+					{
+						this.m_iCurrentCheckpoint = i;
+						pCheckpoint.ActivatePost();
+						return true;
+					}
+				}
+			}
+			else
+			{
+				this.m_iCurrentCheckpoint++;
+				this.m_pCheckpointList.SwapAt(iIndex, this.m_iCurrentCheckpoint);
+				this.m_pCheckpointList.GetArray(this.m_iCurrentCheckpoint, pCheckpoint);
 				
 				if(pCheckpoint.m_bHasPortal)
 				{
 					this.CreatePortal(pCheckpoint.m_vecPortalPosition);
 				}
-				if(i == iIndex)
-				{
-					this.m_iCurrentCheckpoint = i;
-					if(pCheckpoint.m_bBringAllPlayers)
-					{
-						for (int pp = 0; pp <= MaxClients; pp++)
-						{
-							CBlackMesaPlayer pPlayer = CBlackMesaPlayer(pp);
-							if(pPlayer.IsValid() && pPlayer.IsAlive())
-							{
-								if(pCheckpoint.TeleportPlayer(pPlayer, true, true))
-									pPlayer.PlayGameSound(SND_BRINGALL);
-							}
-						}
-					}
-					return true;
-				}
+				pCheckpoint.ActivatePost();
+				return true;
 			}
 		}
 		return false;
@@ -305,11 +379,24 @@ enum struct CCoopSpawn
 
 	void ParseCheckpoint(KeyValues kv)
 	{
+		if(view_as<bool>(kv.GetNum("use_map_autosave")))
+		{
+			this.m_bStrictOrder = false;
+			this.AddCheckpointsFromMap();
+		}
+		else
+		{
+			this.m_bStrictOrder = view_as<bool>(kv.GetNum("strict_order", 1));
+		}
+		
 		if (kv.GotoFirstSubKey(true))
 		{
+			char szSectionName[MAX_KEY];
+			char szValue[MAX_VALUE];
+			char szKey[MAX_KEY];
+			
 			do
 			{
-				char szSectionName[MAX_KEY];
 				if (kv.GetSectionName(szSectionName, sizeof(szSectionName)))
 				{
 					EVAL_CONDITIONS(szSectionName, kv, this.ParseCheckpoint(kv))
@@ -320,9 +407,6 @@ enum struct CCoopSpawn
 					{
 						do
 						{
-							int iHammerID = 0;
-							char szKey[MAX_KEY];
-							char szValue[MAX_VALUE];
 							if (kv.GetSectionName(szKey, sizeof(szKey)) && kv.GetDataType(NULL_STRING) != KvData_None)
 							{
 								char szVector[3][MAX_FORMAT];
@@ -345,6 +429,7 @@ enum struct CCoopSpawn
 										ThrowError("Origin y parameter is not a float");
 									if (!StringToFloatEx(szVector[2], pEntry.m_vecPosition[2]))
 										ThrowError("Origin z parameter is not a float");
+									pEntry.m_bHasPosition = true;
 								}
 								else if (strcmp(szKey, "angles", false) == 0 && ExplodeString(szValue, " ", szVector, 3, MAX_FORMAT, false) == 3)
 								{
@@ -354,34 +439,32 @@ enum struct CCoopSpawn
 										ThrowError("Angles y parameter is not a float");
 									if (!StringToFloatEx(szVector[2], pEntry.m_vecAngles[2]))
 										ThrowError("Angles z parameter is not a float");
+									pEntry.m_bHasAngles = true;
 								}
-								else if (strcmp(szKey, "followid", false) == 0)		// accepts a int hammerid or a string targetname
+								else if (strcmp(szKey, "followid", false) == 0)
 								{
-									if (StringToIntEx(szValue, iHammerID))
-										pEntry.m_pFollowEnt = CBaseEntity(FindEntityByHammerID(iHammerID));
-									else
-										pEntry.m_pFollowEnt = CBaseEntity(FindEntityByTargetname(-1, szValue));
-									if (!pEntry.m_pFollowEnt.IsValid())
+									if (!(pEntry.m_pFollowEnt = this.FindEntity(szValue)).IsValid())
 										ThrowError("Couldn't find followid entity %s", szValue);
 								}
-								else if (strcmp(szKey, "triggerid", false) == 0)	// accepts a int hammerid or a string targetname
+								else if (strcmp(szKey, "triggerid", false) == 0)	
 								{
-									if (StringToIntEx(szValue, iHammerID))
-										pEntry.m_pTriggerEnt = CBaseEntity(FindEntityByHammerID(iHammerID));
-									else
-										pEntry.m_pTriggerEnt = CBaseEntity(FindEntityByTargetname(-1, szValue));
-									if (!pEntry.m_pTriggerEnt.IsValid())
+									if (!(pEntry.m_pTriggerEnt = this.FindEntity(szValue)).IsValid())
 										ThrowError("Couldn't find triggerid entity %s", szValue);
+								}
+								else if (strcmp(szKey, "touchid", false) == 0)
+								{
+									if (!(pEntry.m_pTouchEnt = this.FindEntity(szValue)).IsValid())
+										ThrowError("Couldn't find touchid entity %s", szValue);
 								}
 								else if (strcmp(szKey, "portal", false) == 0 && ExplodeString(szValue, " ", szVector, 3, MAX_FORMAT, false) == 3)
 								{
-									pEntry.m_bHasPortal = true;
 									if (!StringToFloatEx(szVector[0], pEntry.m_vecPortalPosition[0]))
 										ThrowError("Portal x parameter is not a float");
 									if (!StringToFloatEx(szVector[1], pEntry.m_vecPortalPosition[1]))
 										ThrowError("Portal y parameter is not a float");
 									if (!StringToFloatEx(szVector[2], pEntry.m_vecPortalPosition[2]))
 										ThrowError("Portal z parameter is not a float");
+									pEntry.m_bHasPortal = true;
 								}
 								else if (strcmp(szKey, "bringall", false) == 0)
 								{
@@ -405,6 +488,33 @@ enum struct CCoopSpawn
 			}
 			while (kv.GotoNextKey(true));
 			kv.GoBack();
+		}
+	}
+	
+	CBaseEntity FindEntity(const char szValue[MAX_VALUE]) // accepts a int hammerid or a string targetname
+	{
+		int iHammerID;
+		if (StringToIntEx(szValue, iHammerID))
+		{
+			CBaseEntity pEntity = CBaseEntity(FindEntityByHammerID(iHammerID));
+			if(pEntity.IsValid())
+			{
+				return pEntity;
+			}
+		}
+		return CBaseEntity(FindEntityByTargetname(-1, szValue));
+	}
+	
+	void AddCheckpointsFromMap()
+	{
+		CCoopSpawnEntry pEntry;
+		pEntry.Initialize();
+		
+		int ent = -1;
+		while ((ent = FindEntityByClassname(ent, "trigger_autosave")) != -1)
+		{
+			pEntry.m_pTouchEnt = CBaseEntity(ent);
+			this.AddCheckpoint(pEntry);
 		}
 	}
 	
@@ -584,21 +694,58 @@ public void RequestSpawnPlayer2(CBlackMesaPlayer pPlayer)
 	}
 }
 
-public void Callback_Checkpoint(const char[] szName, int iCaller, int iActivator, float flDelay)
+public void Hook_OutputCheckpoint(const char[] szName, int iCaller, int iActivator, float flDelay)
 {
+	CBaseEntity pCaller = CBaseEntity(iCaller);
+	CBaseEntity pActivator = CBaseEntity(iActivator);
 	CCoopSpawnEntry pCheckpoint;
 	int iIndex = g_SpawnSystem.m_iCurrentCheckpoint + 1;
 	
-	while ((iIndex = g_SpawnSystem.FindCheckpointByOutput(CBaseEntity(iCaller), szName, pCheckpoint, iIndex)) != -1)
+	while ((iIndex = g_SpawnSystem.FindCheckpointByOutput(pCaller, szName, pCheckpoint, iIndex)) != -1)
 	{
-		CreateTimer(pCheckpoint.m_flDelay, Callback_CheckpointTimer, iIndex, TIMER_FLAG_NO_MAPCHANGE);
+		if(pActivator.IsClassPlayer() && pCheckpoint.ActivatePre(view_as<CBasePlayer>(pActivator)))
+		{
+			g_SpawnSystem.m_pCheckpointList.SetArray(iIndex, pCheckpoint);
+		}
+		
+		DataPack dp; CreateDataTimer(pCheckpoint.m_flDelay, Timer_Checkpoint, dp, TIMER_FLAG_NO_MAPCHANGE);
+		dp.WriteCell(iIndex); dp.WriteCell(pActivator);
+		
 		iIndex++;
 	}
 }
 
-public Action Callback_CheckpointTimer(Handle timer, int iCheckpointIndex)
+public void Hook_TouchCheckpoint(int iEntity, int iOther)
 {
-	g_SpawnSystem.ActivateCheckpoint(iCheckpointIndex);
+	CBasePlayer pActivator = CBasePlayer(iOther);
+	if (pActivator.IsClassPlayer())
+	{
+		CBaseEntity pTouched = CBaseEntity(iEntity);
+		CCoopSpawnEntry pCheckpoint;
+		int iIndex = g_SpawnSystem.m_iCurrentCheckpoint + 1;
+		
+		while ((iIndex = g_SpawnSystem.FindCheckpointByTouchEnt(pTouched, pCheckpoint, iIndex)) != -1)
+		{
+			if(pCheckpoint.ActivatePre(pActivator))
+			{
+				g_SpawnSystem.m_pCheckpointList.SetArray(iIndex, pCheckpoint);
+			}
+			
+			DataPack dp; CreateDataTimer(pCheckpoint.m_flDelay, Timer_Checkpoint, dp, TIMER_FLAG_NO_MAPCHANGE);
+			dp.WriteCell(iIndex); dp.WriteCell(pActivator);
+			
+			iIndex++;
+		}
+		SDKUnhook(iEntity, SDKHook_StartTouchPost, Hook_TouchCheckpoint);
+	}
+}
+
+public Action Timer_Checkpoint(Handle timer, DataPack dp)
+{
+	dp.Reset();
+	int iCheckpointIndex = dp.ReadCell();
+	CBasePlayer pActivator = dp.ReadCell();
+	g_SpawnSystem.ActivateCheckpoint(iCheckpointIndex, pActivator);
 }
 
 public void Hook_TouchPortal(int iEntity, int iOther)

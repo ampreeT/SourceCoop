@@ -8,12 +8,14 @@
 //------------------------------------------------------
 public MRESReturn Hook_FAllowFlashlight(Handle hReturn, Handle hParams)
 {
-	if (g_pCoopManager.IsFeatureEnabled(FT_ALLOW_FLASHLIGHT))
+	static ConVar mp_flashlight = null;
+	if(mp_flashlight == null)
 	{
-		DHookSetReturn(hReturn, true);
-		return MRES_Supercede;
+		mp_flashlight = FindConVar("mp_flashlight");
 	}
-	return MRES_Ignored;
+
+	DHookSetReturn(hReturn, mp_flashlight.BoolValue);
+	return MRES_Supercede;
 }
 
 //------------------------------------------------------

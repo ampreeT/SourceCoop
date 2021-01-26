@@ -61,17 +61,30 @@
 				}
 			}
 		}
-		// block going past changelevel
+		// setup changelevel
+		"modify"
+		{
+			"classname" "trigger_changelevel"
+			"map" "bm_c2a4c"
+			"functions"
+			{
+				"set_model"
+				{
+					"origin" "-1088 -2304 -600"
+					"size" "80 256 80"
+				}
+			}
+		}
 		"add"
 		{
 			"classname" "func_brush"
 			"rendermode" "10" // dont render
 			"functions"
 			{
-				"copy_model"
+				"set_model"
 				{
-					"classname" "trigger_changelevel"
-					"map" "bm_c2a4c"
+					"origin" "-1088 -2450 -584"
+					"size" "80 36 48"
 				}
 			}
 		}

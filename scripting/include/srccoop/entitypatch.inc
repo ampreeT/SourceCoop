@@ -8,31 +8,58 @@
 //------------------------------------------------------
 public MRESReturn Hook_UTIL_GetLocalPlayer(Handle hReturn)
 {
-	if (g_pLocalPlayerCallingEntity.IsValid())
+	if (g_pLocalPlayerEntity.IsValid())
 	{
-		CBlackMesaPlayer pPlayer = GetNearestPlayer(g_pLocalPlayerCallingEntity, false);
-		if(pPlayer.IsValid())
+		CBasePlayer pPlayer;
+		if(g_pLocalPlayerEntity.IsClassPlayer())
 		{
-			LogDebug("Overriding UTIL_GetLocalPlayer");
-			DHookSetReturn(hReturn, pPlayer.GetEntIndex());
-			return MRES_Supercede;
+			pPlayer = view_as<CBasePlayer>(g_pLocalPlayerEntity);
 		}
+		else
+		{
+			pPlayer = GetNearestPlayer(g_pLocalPlayerEntity, false);
+			if(!pPlayer.IsValid())
+			{
+				return MRES_Ignored;
+			}
+		}
+		LogDebug("Overriding UTIL_GetLocalPlayer");
+		DHookSetReturn(hReturn, pPlayer.GetEntIndex());
+		return MRES_Supercede;
 	}
 	return MRES_Ignored;
 }
 
 void SetLocalPlayerCallingEntity(int iEntIndex)
 {
-	if(g_pLocalPlayerCallingEntity.IsValid())
+	if(g_pLocalPlayerEntity.IsValid())
 	{
-		LogDebug("WARN: SetLocalPlayerCallingEntity, but one has already been set");
+		LogDebug("WARN: SetLocalPlayerCallingEntity, but one has already been set (%d).", g_pLocalPlayerEntity.GetEntIndex());
 	}
-	g_pLocalPlayerCallingEntity = CBaseEntity(iEntIndex);
+	g_pLocalPlayerEntity = CBaseEntity(iEntIndex);
 }
 
 void ClearLocalPlayerCallingEntity()
 {
-	g_pLocalPlayerCallingEntity = CBaseEntity();
+	g_pLocalPlayerEntity = CBaseEntity();
+}
+
+//------------------------------------------------------
+// CMultiplayRules::IsMultiplayer
+//------------------------------------------------------
+public MRESReturn Hook_IsMultiplayer(Handle hReturn)
+{
+	DHookSetReturn(hReturn, g_bIsMultiplayerOverride);
+	return MRES_Supercede;
+}
+
+//------------------------------------------------------
+// CMultiplayRules::IsDeathmatch
+//------------------------------------------------------
+public MRESReturn Hook_IsDeathmatch(Handle hReturn)
+{
+	DHookSetReturn(hReturn, g_bIsDeathmatchOverride);
+	return MRES_Supercede;
 }
 
 //------------------------------------------------------
@@ -62,16 +89,9 @@ public MRESReturn Hook_IsPlayerAlly(int _this, Handle hReturn, Handle hParams)
 public void Hook_BaseNPCSpawnPost(int iEntIndex)
 {
 	CBaseEntity pEntity = CBaseEntity(iEntIndex);
-	if(pEntity.IsClassname("npc_lav"))
-	{
-		// this is here for assist in fixing the client crash in bm_c2a5g related to lav npc
-		pEntity.SetEdictFlags(pEntity.GetEdictFlags() | FL_EDICT_CHANGED | FL_EDICT_ALWAYS);
-	}
-	else
-	{
-		// potentially fixes random, elusive, linux only crash
-		pEntity.SetEdictFlags(pEntity.GetEdictFlags() | FL_EDICT_ALWAYS | FL_EDICT_CHANGED);
-	}
+	// reduces occurance of random, elusive, linux only crash
+	// also assists in fixing the client crash in bm_c2a5g related to lav npc
+	pEntity.SetEdictFlags(pEntity.GetEdictFlags() | FL_EDICT_ALWAYS | FL_EDICT_CHANGED);
 }
 
 //------------------------------------------------------
@@ -212,6 +232,38 @@ public MRESReturn Hook_IchthyosaurIdleSound(int _this)
 }
 
 //------------------------------------------------------
+// CNPC_Houndeye::NPCThink() - npc_houndeye*
+// multiplayer crashfix (fixes houndeyes with m_bEnableMemoryUpdateEveryFrame 1 / InputEnableMemUpdatePerFrame input)
+//------------------------------------------------------
+public MRESReturn Hook_HoundeyeThink(int _this)
+{
+	SetLocalPlayerCallingEntity(_this);
+	return MRES_Ignored;
+}
+public MRESReturn Hook_HoundeyeThinkPost(int _this)
+{
+	ClearLocalPlayerCallingEntity();
+	return MRES_Ignored;
+}
+
+//------------------------------------------------------
+// CPropRadiationCharger - prop_radiation_charger, CPropHevCharger - prop_hev_charger
+// ToDo: reimplement on serverside (avoid clientside effects)
+//------------------------------------------------------
+/**
+public MRESReturn Hook_PropChargerThink(int _this)
+{
+	SetLocalPlayerCallingEntity(_this);
+	return MRES_Ignored;
+}
+public MRESReturn Hook_PropChargerThinkPost(int _this)
+{
+	ClearLocalPlayerCallingEntity();
+	return MRES_Ignored;
+}
+**/
+
+//------------------------------------------------------
 // CProtoSniper - npc_sniper
 // crashed is called by a call to AI_GetSinglePlayer that doesn't check for nullptr
 // this function is remade from scratch
@@ -331,6 +383,10 @@ public MRESReturn Hook_XenTurretSelectSchedule(int _this, Handle hReturn)
 
 public MRESReturn Hook_XenTurretHandleAnimEvent(int _this, Handle hParams)
 {
+	if(!GetClientCount())
+	{
+		return MRES_Supercede;
+	}
 	SetLocalPlayerCallingEntity(_this);
 	return MRES_Ignored;
 }
@@ -342,6 +398,10 @@ public MRESReturn Hook_XenTurretHandleAnimEventPost(int _this, Handle hParams)
 
 public MRESReturn Hook_XenTurretRunAI(int _this)
 {
+	if(!GetClientCount())
+	{
+		return MRES_Supercede;
+	}
 	SetLocalPlayerCallingEntity(_this);
 	return MRES_Ignored;
 }
@@ -351,6 +411,15 @@ public MRESReturn Hook_XenTurretRunAIPost(int _this)
 	return MRES_Ignored;
 }
 
+public void Hook_XenTurretSpawnPost(int iEntIndex)
+{
+	// Use our fixed model, which doesn't have the clientside particles which affected everyone's screens even when they shouldn't.
+	static char szNewModel[] = "models/props_xen/xen_turret_mpfix.mdl";
+	if(PrecacheModel(szNewModel))
+	{
+		SetEntityModel(iEntIndex, szNewModel);
+	}
+}
 
 //------------------------------------------------------
 // Scene entities
@@ -443,6 +512,42 @@ public void Hook_ChangelevelOnTouch(int _this, int iOther)
 			ChangeLevelTriggered(pChangelevel, pPlayer);
 		}
 	}
+}
+
+//------------------------------------------------------
+// CTriggerSave - trigger_autosave
+// Allow spawning in MP so we can use them for checkpoints
+//------------------------------------------------------
+public Action Hook_AutosaveSpawn(int iEntIndex)
+{
+	CBaseEntity pTrigger = CBaseEntity(iEntIndex);
+	InitTrigger(pTrigger);
+	return Plugin_Stop;
+}
+
+// void CBaseTrigger::InitTrigger() from SDK
+void InitTrigger(CBaseEntity pTrigger)
+{
+	pTrigger.SetSolidType(pTrigger.GetParent().IsValid()? SOLID_VPHYSICS : SOLID_BSP);
+	int iSolidFlags = pTrigger.GetSolidFlags();
+	if(GetEntProp(pTrigger.GetEntIndex(), Prop_Data, "m_bDisabled"))
+	{
+		iSolidFlags &= ~FSOLID_TRIGGER;
+	}
+	else
+	{
+		iSolidFlags |= FSOLID_TRIGGER;
+	}
+	if(pTrigger.HasSpawnFlag(SF_TRIG_TOUCH_DEBRIS))
+	{
+		iSolidFlags |= FSOLID_TRIGGER_TOUCH_DEBRIS;
+	}
+	pTrigger.SetSolidFlags(iSolidFlags | FSOLID_NOT_SOLID);
+	pTrigger.SetMoveType(MOVETYPE_NONE);
+	static char szBuffer[PLATFORM_MAX_PATH];
+	pTrigger.GetModel(szBuffer, sizeof(szBuffer));
+	pTrigger.SetModel(szBuffer);
+	pTrigger.SetEffects(pTrigger.GetEffects() | EF_NODRAW);
 }
 
 //------------------------------------------------------
@@ -606,6 +711,77 @@ public MRESReturn Hook_SpeedmodAcceptInput(int _this, Handle hReturn, Handle hPa
 				DHookSetReturn(hReturn, true);
 				return MRES_Supercede;
 			}
+		}
+	}
+	return MRES_Ignored;
+}
+
+//------------------------------------------------------
+// CEnvZoom - env_zoom
+// multiplayer support
+//------------------------------------------------------
+public MRESReturn Hook_EnvZoomAcceptInput(int _this, Handle hReturn, Handle hParams)
+{
+	static bool bHookSkip = false;
+	if (!bHookSkip)
+	{
+		if (!DHookIsNullParam(hParams, 1))
+		{
+			char szInput[MAX_FORMAT];
+			DHookGetParamString(hParams, 1, szInput, sizeof(szInput));
+		
+			CBaseEntity pActivator;
+			if(!DHookIsNullParam(hParams, 2))
+			{
+				pActivator = CBaseEntity(DHookGetParam(hParams, 2));
+			}
+			
+			char szNewInput[8];
+			int iNewClient;
+			
+			if (strcmp(szInput, "Zoom", false) == 0)
+			{
+				szNewInput = "Zoom";
+				if(pActivator.IsClassPlayer())
+				{
+					iNewClient = pActivator.GetEntIndex();
+				}
+			}
+			else if(strcmp(szInput, "ZoomAll", false) == 0)
+			{
+				szNewInput = "Zoom";
+			}
+			else if(strcmp(szInput, "UnZoom", false) == 0)
+			{
+				szNewInput = "UnZoom";
+			}
+			else
+			{
+				return MRES_Ignored;
+			}
+			
+			bHookSkip = true;
+			if(iNewClient > 0)
+			{
+				SetLocalPlayerCallingEntity(iNewClient);
+				AcceptEntityInput(_this, szNewInput);
+				ClearLocalPlayerCallingEntity();
+			}
+			else
+			{
+				for(int i = 1; i <= MaxClients; i++)
+				{
+					if(IsClientInGame(i))
+					{
+						SetLocalPlayerCallingEntity(i);
+						AcceptEntityInput(_this, szNewInput);
+						ClearLocalPlayerCallingEntity();
+					}
+				}
+			}
+			bHookSkip = false;
+			DHookSetReturn(hReturn, true);
+			return MRES_Supercede;
 		}
 	}
 	return MRES_Ignored;

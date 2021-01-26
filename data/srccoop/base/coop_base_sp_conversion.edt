@@ -21,6 +21,8 @@
 		"viewcontrol_allplayers" "1"
 		"clientcommand_allplayers" "1"
 		"speedmod_allplayers" "1"
+		"vital_npcs_invulnerable" "1"
+		"never_close_areaportals" "1"
 	}
 	"entity_base_sp_conversion"
 	{
@@ -36,7 +38,7 @@
 		// !pvsplayer may search by visibility, activator, or use first index as fallback; although this depends on the entity
 		"modify"
 		{
-			"classname"	"aiscripted_schedule"
+			"classname" "aiscripted_schedule"
 			"goalent" "!player"
 			"add"
 			{
@@ -50,6 +52,16 @@
 			"add"
 			{
 				"WaitPointName" ""
+			}
+		}
+		// todo: check if this works
+		"modify"
+		{
+			"classname" "env_mortar_launcher"
+			"target" "!player"
+			"add"
+			{
+				"target" "!pvsplayer" 
 			}
 		}
 		"modify"
@@ -75,10 +87,10 @@
 			}
 		}
 		// point_viewcontrol normally accepts the activator. In maps made for SP, we want all players to be affected. New input EnableAll has been added for that purpose.
-		"#if"
+		#if
 		{
 			"viewcontrol_allplayers" "1"
-			"#then"
+			#then
 			{
 				"modify"
 				{
@@ -101,10 +113,10 @@
 			}
 		}
 		// player_speedmod normally accepts the activator. In maps made for SP, we want all players to be affected. New input ModifySpeedAll has been added for that purpose.
-		"#if"
+		#if
 		{
 			"speedmod_allplayers" "1"
-			"#then"
+			#then
 			{
 				"modify"
 				{
@@ -123,10 +135,10 @@
 			}
 		}
 		// point_clientcommand normally accepts the activator. In maps made for SP, we want all players to be affected. New input CommandAll has been added for that purpose.
-		"#if"
+		#if
 		{
 			"clientcommand_allplayers" "1"
-			"#then"
+			#then
 			{
 				"modify"
 				{
@@ -148,22 +160,12 @@
 				}
 			}
 		}
-		// todo: check if this works
-		"modify"
-		{
-			"classname" "env_mortar_launcher"
-			"target" "!player"
-			"add"
-			{
-				"target" "!pvsplayer" 
-			}
-		}
-		// env_screenoverlay shows to all players once activated. Remove it until a solution is found.
+		// env_screenoverlay shows to all players once activated - remove it until a solution is found.
 		"delete"
 		{
 			"classname" "env_screenoverlay"
 		}
-		// We never want player_speedmod to suppress HUD in MP as this hides chat and even the main menu
+		// we never want player_speedmod to suppress HUD in MP as this hides chat and even the main menu
 		"modify"
 		{
 			"classname" "player_speedmod"
@@ -172,6 +174,57 @@
 				"spawnflags"
 				{
 					"remove" "2" // Suppress HUD
+				}
+			}
+		}
+		// make vital NPCs invulnerable
+		#if
+		{
+			"vital_npcs_invulnerable" "1"
+			#then
+			{
+				"create"
+				{
+					"targetname" "__srccoop_damage_filter"
+					"classname" "filter_damage_class"
+				}
+				"modify"
+				{
+					"GameEndAlly" "1"
+					"add"
+					{
+						"damagefilter" "__srccoop_damage_filter"
+					}
+				}
+			}
+		}
+		// prevent glitchy looping sounds (doors, rotating platforms)
+		"modify"
+		{
+			"loopmovesound" "1"
+			"set"
+			{
+				"loopmovesound" "0"
+			}
+		}
+		#if
+		{
+			"never_close_areaportals" "1"
+			#then
+			{
+				"modify"
+				{
+					"outputs"
+					{
+						"remove"
+						{
+							"input" "Close"
+							"target"
+							{
+								"classname" "func_areaportal"
+							}
+						}
+					}
 				}
 			}
 		}

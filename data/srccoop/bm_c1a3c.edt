@@ -42,6 +42,11 @@
 				"delay_output" "OnMapSpawn"
 			}
 		}
+		// blocker
+		"delete"
+		{
+			"targetname" "block_player"
+		}
 		// global for return to c1a3a
 		"create"
 		{
@@ -49,22 +54,7 @@
 			"targetname" "c1a3c_c1a3a_global"
 			"globalstate" "c1a3c_c1a3a"
 		}
-		"modify"
-		{
-			"classname" "trigger_changelevel"
-			"map" "bm_c1a3a"
-			"outputs"
-			{
-				"add"
-				{
-					"output" "OnChangeLevel"
-					"target" "c1a3c_c1a3a_global"
-					"input" "TurnOn"
-					"delay" "-1"
-				}
-			}
-		}
-		// block going past changelevel
+		// block changelevel area
 		"add"
 		{
 			"classname" "func_brush"
@@ -75,6 +65,31 @@
 				{
 					"classname" "trigger_changelevel"
 					"map" "bm_c1a3a"
+				}
+			}
+		}
+		"modify"
+		{
+			"classname" "trigger_changelevel"
+			"map" "bm_c1a3a"
+			"functions"
+			{
+				// expand changelevel
+				"copy_model"
+				{
+					"classname" "trigger_transition"
+					"targetname" "bm_c1a3c-bm_c1a3a" 
+				}
+			}
+			"outputs"
+			{
+				// turn on the global
+				"add"
+				{
+					"output" "OnChangeLevel"
+					"target" "c1a3c_c1a3a_global"
+					"input" "TurnOn"
+					"delay" "-1"
 				}
 			}
 		}

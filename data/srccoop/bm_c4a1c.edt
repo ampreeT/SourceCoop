@@ -1,0 +1,82 @@
+#base "base/bm_sp_campaign.edt"
+
+"config"
+{
+	"chapter" "Xen"
+	"nextmap" "bm_c4a1c1"
+	"features"
+	{
+		"FIRSTPERSON_DEATHCAM" "0"
+	}
+	"equipment"
+	{
+		"lookup"
+		{
+			"targetname" "xen_equipment"
+		}
+	}
+	"entity"
+	{
+		// no going back
+		"modify"
+		{
+			"classname" "trigger_changelevel"
+			"map" "bm_c4a1b1"
+			"set"
+			{
+				"classname" "func_brush"
+				"rendermode" "10"
+			}
+		}
+		// zombify save reload trigs
+		"modify"
+		{
+			"classname" "trigger_multiple"
+			"OnStartTouch" "/^c4a1c_deathfall_loadsaveReload/"
+			"set"
+			{
+				"classname" "trigger_hurt"
+				"damage" "200"
+				"nodmgforce" "1"
+			}
+		}
+		// setup changelevel
+		"modify"
+		{
+			"classname" "trigger_changelevel"
+			"map" "bm_c4a1c1"
+			"functions"
+			{
+				"copy_model"
+				{
+					"classname" "trigger_transition"
+					"targetname" "c4a1c_to_c4a1c1_landmark"
+				}
+			}
+		}
+		// block off next map
+		"add"
+		{
+			"classname" "func_brush"
+			"rendermode" "10"
+			"functions"
+			{
+				"set_model"
+				{
+					"origin" "2528 -1824 5719"
+					"size" "320 192 632"
+				}
+			}
+		}
+	}
+	"checkpoint"
+	{
+		"use_map_autosave" "1"
+		
+		"spawn"
+		{
+			"origin"	"-6241 2564 8902"
+			"angles"	"0 0 0"
+		}
+	}
+}

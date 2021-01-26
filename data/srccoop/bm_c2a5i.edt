@@ -43,6 +43,11 @@
 				}
 			}
 		}
+		// blocker
+		"delete"
+		{
+			"targetname" "player_block_garga"
+		}
 		// triggers on top of the tower
 		"modify"
 		{

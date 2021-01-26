@@ -4,17 +4,22 @@
 {
 	"features"
 	{
-		"ALLOW_FLASHLIGHT" "1"
 		"FIRSTPERSON_DEATHCAM" "1"
 		"NO_TELEFRAGGING" "1"
 		"NO_FRIENDLYFIRE" "1"
 		"NOBLOCK" "1"
 		"SHOW_WELCOME_MESSAGE" "1"
 		"HEV_SOUNDS" "1"
+		"INSTANCE_ITEMS" "0"
+		"STRIP_DEFAULT_EQUIPMENT" "0"
+		"DISABLE_CANISTER_DROPS" "0"
 	}
 	
 	"console"
 	{
+		// enable flashlight by default
+		"mp_flashlight" "1"
+		
 		// fix for breakmodels not appearing
 		"breakable_multiplayer" "0"
 		

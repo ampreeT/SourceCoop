@@ -5,7 +5,7 @@
 
 enum SourceCoopFeature
 {
-	FT_ALLOW_FLASHLIGHT 		=	(1 << 0),
+	//FT_ALLOW_FLASHLIGHT 		=	(1 << 0),
 	FT_FIRSTPERSON_DEATHCAM 	=	(1 << 1),
 	FT_INSTANCE_ITEMS			=	(1 << 2),
 	FT_NO_TELEFRAGGING			=	(1 << 3),
@@ -24,7 +24,6 @@ methodmap FeatureMap < StringMap
 	{
 		StringMap pMap = new StringMap();
 		
-		pMap.SetValue("ALLOW_FLASHLIGHT", FT_ALLOW_FLASHLIGHT);
 		pMap.SetValue("FIRSTPERSON_DEATHCAM", FT_FIRSTPERSON_DEATHCAM);
 		pMap.SetValue("INSTANCE_ITEMS", FT_INSTANCE_ITEMS);
 		pMap.SetValue("NO_TELEFRAGGING", FT_NO_TELEFRAGGING);

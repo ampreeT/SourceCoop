@@ -103,18 +103,10 @@
 		{
 			"targetname"	"purgetheheretic_thexeno"
 		}
-		// prevent buggy areaportal from closing
-		"modify"
+		// Remove door blocker
+		"remove"
 		{
-			"targetname"	"tele_intro_first_trigger"
-			"outputs"
-			{
-				"remove"
-				{
-					"target"	"airlock_door2_portal1"
-					"input"	"Close"
-				}
-			}
+			"targetname" "tele_door_block"
 		}
 		// Reload map when timer runs out
 		"modify"

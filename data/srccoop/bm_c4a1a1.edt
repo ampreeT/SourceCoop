@@ -1,0 +1,143 @@
+#base "base/bm_sp_campaign.edt"
+
+"config"
+{
+	"chapter" "Xen"
+	"nextmap" "bm_c4a1b"
+	"equipment"
+	{
+		"item" "item_ammo_357"
+		"item" "item_ammo_crossbow"
+		"item" "item_ammo_glock"
+		"item" "item_ammo_mp5"
+		"item" "item_battery"
+		"item" "item_grenade_mp5"
+		"item" "item_grenade_mp5"
+		"item" "item_grenade_rpg"
+		"item" "item_longjump"
+		"item" "item_suit"
+		"item" "item_weapon_357"
+		"item" "item_weapon_crossbow"
+		"item" "item_weapon_crowbar"
+		"item" "item_weapon_frag"
+		"item" "item_weapon_glock"
+		"item" "item_weapon_gluon"
+		"item" "item_weapon_hivehand"
+		"item" "item_weapon_mp5"
+		"item" "item_weapon_rpg"
+		"item" "item_weapon_satchel"
+		"item" "item_weapon_shotgun"
+		"item" "item_weapon_tau"
+		"item" "item_weapon_tripmine"
+	}
+	"entity"
+	{
+		// no going back
+		"modify"
+		{
+			"classname" "trigger_changelevel"
+			"map" "bm_c4a1a"
+			"set"
+			{
+				"classname" "func_brush"
+				"rendermode" "10"
+			}
+		}
+		// make doors stay open
+		"modify"
+		{
+			"outputs"
+			{
+				"modify"
+				{
+					"target" "PCLIP_door"
+					"input" "Close"
+					"replace"
+					{
+						"target" "P1_door"
+					}
+				}
+				"remove"
+				{
+					"target" "locked_door1"
+					"input" "Close"
+				}
+				"remove"
+				{
+					"target" "poly_airlock_inner_door"
+					"input" "Close"
+				}
+				"remove"
+				{
+					"target" "P2_door"
+					"input" "Close"
+				}
+				"remove"
+				{
+					"target" "P4_door"
+					"input" "Close"
+				}
+			}
+		}
+		// setup changelevel touch
+		"modify"
+		{
+			"classname" "trigger_changelevel"
+			"targetname" "a_2_b_t"
+			"set"
+			{
+				"spawnflags" "0"
+				"StartDisabled" "1"
+			}
+			"functions"
+			{
+				"copy_model"
+				{
+					"classname" "trigger_transition"
+					"targetname" "a_2_b"
+				}
+			}
+		}
+		"modify"
+		{
+			"targetname" "a2b_button_t"
+			"outputs"
+			{
+				"modify"
+				{
+					"target" "A_Exit_door"
+					"input" "Close"
+					"replace"
+					{
+						"target" "a_2_b_t"
+						"input" "Enable"
+					}
+				}
+			}
+		}
+	}
+	"checkpoint"
+	{
+		"spawn"
+		{
+			"origin"	"4526 7195 7121"
+			"angles"	"0 320 0"
+		}
+		"habitat"
+		{
+			"origin"	"8092 7344 7073"
+			"angles"	"0 0 0"
+			"triggerid" "P1_door"
+			"output"	"OnClose"
+			"portal"	"7970 7347 7081"
+			"delay"		"1"
+		}
+		"habitat_inner"
+		{
+			"origin"	"9748 6400 7081"
+			"angles"	"0 0 0"
+			"triggerid" "xenP2_plug_relay"
+			"output"	"OnTrigger"
+		}
+	}
+}

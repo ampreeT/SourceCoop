@@ -26,6 +26,7 @@ Handle g_pCreateServerInterface;
 // DHooks
 // ----------------------------
 Handle hkFAllowFlashlight;
+//Handle hkIsDeathmatch;
 Handle hkIsMultiplayer;
 Handle hkRestoreWorld;
 Handle hkRespawnPlayers;
@@ -72,10 +73,12 @@ int g_iEnabledFeatures;
 ArrayList g_pPostponedSpawns;
 
 // represents the return value of the IsMultiplayer hook
-bool g_bIsMultiplayerOverride = true; 
+bool g_bIsMultiplayerOverride = true;
+// represents the return value of the IsDeathmatch hook
+bool g_bIsDeathmatchOverride = true;
 
-// the entity which UTIL_GetLocalPlayer hook will return the closest player to
-CBaseEntity g_pLocalPlayerCallingEntity = view_as<CBaseEntity>(-1);
+// the entity which UTIL_GetLocalPlayer hook will return the closest player to, alternatively containing the player index itself
+CBaseEntity g_pLocalPlayerEntity = view_as<CBaseEntity>(-1);
 
 // ----------------------------
 // Plugin API

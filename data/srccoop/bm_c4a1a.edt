@@ -1,0 +1,129 @@
+#base "base/bm_sp_campaign.edt"
+
+"config"
+{
+	"chapter" "Xen"
+	"nextmap" "bm_c4a1a1"
+	"intro_type" "fade"
+	"equipment"
+	{
+		"health" "32"
+		"lookup"
+		{
+			"targetname" "/^(crowbar|suit|weapons|ammo)$/"
+		}
+	}
+	"features"
+	{
+		"FIRSTPERSON_DEATHCAM" "0"
+	}
+	"define"
+	{
+		// do our viewcontrol fixup manually since map has player triggered views
+		"viewcontrol_allplayers" "0"
+	}
+	"entity"
+	{
+		// intro
+		"delete"
+		{
+			"targetname" "crowbar_remove"
+		}
+		"modify"
+		{
+			"classname" "logic_auto"
+			"functions"
+			{
+				"delay_output" "OnNewGame"
+			}
+		}
+		// fixup the telescope
+		"delete"
+		{
+			"hammerid" "23993"
+			"classname" "trigger_multiple"
+		}
+		"modify"
+		{
+			"targetname" "tele_button"
+			"set"
+			{
+				"classname" "func_button"
+				"spawnflags" "1057"
+			}
+			"outputs"
+			{
+				"modify"
+				{
+					"output" "OnOpen"
+					"target" "tele_button"
+					"input" "Unlock"
+					"replace"
+					{
+						"output" "OnOut"
+					}
+				}
+				"modify"
+				{
+					"output" "OnOpen"
+					"replace"
+					{
+						"output" "OnIn"
+					}
+				}
+			}
+		}
+		"modify"
+		{
+			"targetname" "telescope"
+			"outputs"
+			{
+				"modify"
+				{
+					"target" "tele_button"
+					"input" "Close"
+					"replace"
+					{
+						"input" "Unlock"
+					}
+				}
+			}
+		}
+		// zombify save reload trigs
+		"modify"
+		{
+			"classname" "trigger_once"
+			"OnStartTouch" "/^c4a1a_deathfall_loadsavedReload/"
+			"set"
+			{
+				"classname" "trigger_hurt"
+				"damage" "200"
+				"nodmgforce" "1"
+			}
+		}
+	}
+	"checkpoint"
+	{
+		"spawn"
+		{
+			"origin"	"-5215 -1712 8800"
+			"angles"	"0 67.5 0"
+		}
+		"jumptowaterfall"
+		{
+			"touchid"	"2650"
+		}
+		"houndeyeisland"
+		{
+			"origin"	"-701 1090 7326"
+			"angles"	"0 90 0"
+			"triggerid"	"houndisland_alert_seq"
+			"output"	"OnBeginSequence"
+		}
+		"endteleport"
+		{
+			"followid"	"xena-a"
+			"touchid"	"portal1"
+		}
+	}
+}

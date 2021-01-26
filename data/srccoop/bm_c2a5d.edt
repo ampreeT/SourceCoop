@@ -24,6 +24,11 @@
 				"rendermode" "10" // dont render
 			}
 		}
+		// keep hatch open
+		"delete"
+		{
+			"targetname" "hatch_block"
+		}
 		// make road airlock button close first doors for consistency
 		"modify"
 		{

@@ -4,6 +4,7 @@
 {
 	"chapter" "Lambda Core"
 	"nextmap" "bm_c3a2g"
+	"intro_type" "none"
 	"equipment"
 	{
 		"lookup"

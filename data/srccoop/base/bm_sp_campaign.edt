@@ -35,28 +35,5 @@
 				}
 			}
 		}
-		// make vital NPCs invulnerable
-		"create"
-		{
-			"targetname" "__srccoop_damage_filter"
-			"classname" "filter_damage_class"
-		}
-		"modify"
-		{
-			"GameEndAlly" "1"
-			"add"
-			{
-				"damagefilter" "__srccoop_damage_filter"
-			}
-		}
-		// prevent glitchy looping sounds (doors, rotating platforms)
-		"modify"
-		{
-			"loopmovesound" "1"
-			"set"
-			{
-				"loopmovesound" "0"
-			}
-		}
 	}
 }

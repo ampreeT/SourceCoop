@@ -420,6 +420,14 @@ methodmap CBaseEntity
 	{
 		SetEntPropString(this.GetEntIndex(), Prop_Data, "m_ModelName", szModel);
 	}
+	public int GetModelIndex()
+	{
+		GetEntProp(this.GetEntIndex(), Prop_Send, "m_nModelIndex");
+	}
+	public void SetModelIndex(int nModelIndex)
+	{
+		SetEntProp(this.GetEntIndex(), Prop_Send, "m_nModelIndex", nModelIndex);
+	}
 	public int GetEffects()
 	{
 		return GetEntProp(this.GetEntIndex(), Prop_Send, "m_fEffects");
@@ -454,7 +462,7 @@ methodmap CBaseEntity
 		char szNetClass[32];
 		if(this.GetNetClassname(szNetClass, sizeof(szNetClass)))
 		{
-			return (strcmp(szNetClass, "CBasePickup") == 0 || strcmp(szNetClass, "CItem_Battery") == 0);
+			return (strcmp(szNetClass, "CBasePickup") == 0 || strcmp(szNetClass, "CItem_Battery") == 0 || strcmp(szNetClass, "CAmmoCanister") == 0);
 		}
 		return false;
 	}
@@ -758,7 +766,11 @@ methodmap CBasePlayer < CBaseCombatCharacter
 {
 	public CBasePlayer(const int iEntIndex = -1)
 	{
-		return view_as<CBlackMesaPlayer>(InternalGetBaseEntity(iEntIndex));
+		return view_as<CBasePlayer>(InternalGetBaseEntity(iEntIndex));
+	}
+	public bool IsValid()
+	{
+		return view_as<bool>(this.IsClassPlayer() && IsClientInGame(this.GetEntIndex()));
 	}
 }
 
@@ -768,11 +780,7 @@ methodmap CBlackMesaPlayer < CBasePlayer
 	{
 		return view_as<CBlackMesaPlayer>(InternalGetBaseEntity(iEntIndex));
 	}
-
-	public bool IsValid()
-	{
-		return view_as<bool>(this.IsClassPlayer() && IsClientInGame(this.GetEntIndex()));
-	}
+	
 	public bool GetName(char[] szBuffer, const int iMaxLength)
 	{
 		return GetClientName(this.GetEntIndex(), szBuffer, iMaxLength);
@@ -836,7 +844,7 @@ methodmap CBlackMesaPlayer < CBasePlayer
 	public CBaseAnimating GiveItem(const char[] szItemName)
 	{
 		CBaseAnimating pItem = CBaseAnimating(GivePlayerItem(this.GetEntIndex(), szItemName));
-		if(!pItem.GetOwner().IsValid())
+		if(pItem.IsValid() && !pItem.GetOwner().IsValid())
 		{
 			// this would drop on the ground if player cant pick up any more
 			pItem.OutputAdd("OnUser1", "!self", "kill", _, 0.1);

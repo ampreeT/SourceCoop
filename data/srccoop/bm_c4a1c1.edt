@@ -1,0 +1,155 @@
+#base "base/bm_sp_campaign.edt"
+
+"config"
+{
+	"chapter" "Xen"
+	"nextmap" "bm_c4a2a"
+	"features"
+	{
+		"FIRSTPERSON_DEATHCAM" "0"
+	}
+	"equipment"
+	{
+		"item" "item_ammo_357"
+		"item" "item_ammo_energy"
+		"item" "item_ammo_mp5"
+		"item" "item_ammo_mp5"
+		"item" "item_ammo_shotgun"
+		"item" "item_ammo_shotgun"
+		"item" "item_battery"
+		"item" "item_battery"
+		"item" "item_grenade_rpg"
+		"item" "item_grenade_rpg"
+		"item" "item_longjump"
+		"item" "item_suit"
+		"item" "item_weapon_357"
+		"item" "item_weapon_crossbow"
+		"item" "item_weapon_crowbar"
+		"item" "item_weapon_frag"
+		"item" "item_weapon_frag"
+		"item" "item_weapon_frag"
+		"item" "item_weapon_glock"
+		"item" "item_weapon_gluon"
+		"item" "item_weapon_hivehand"
+		"item" "item_weapon_mp5"
+		"item" "item_weapon_rpg"
+		"item" "item_weapon_satchel"
+		"item" "item_weapon_satchel"
+		"item" "item_weapon_satchel"
+		"item" "item_weapon_shotgun"
+		"item" "item_weapon_snark"
+		"item" "item_weapon_snark"
+		"item" "item_weapon_tau"
+		"item" "item_weapon_tripmine"
+		"item" "item_weapon_tripmine"
+		"item" "item_weapon_tripmine"
+		"item" "item_weapon_tripmine"
+		"item" "item_weapon_tripmine"
+	}
+	"entity"
+	{
+		// zombify save reload trigs
+		"modify"
+		{
+			"classname" "trigger_multiple"
+			"OnStartTouch" "/^c4a1c_deathfall_loadsaveReload/"
+			"set"
+			{
+				"classname" "trigger_hurt"
+				"damage" "200"
+				"nodmgforce" "1"
+			}
+		}
+		// zombify laser (targeting !player) kill trigs
+		"modify"
+		{
+			"classname" "trigger_once"
+			"OnTrigger" "/^wrathTurnOn/"
+			"set"
+			{
+				"classname" "trigger_hurt"
+				"damage" "500"
+				"damagetype" "1024"
+			}
+		}
+		// dont block the way out from the control room
+		"delete"
+		{
+			"targetname" "floor_triggers_elevator1"
+		}
+		// cactus barrel puzzle - make sure the crystal breaks in all cases
+		"modify"
+		{
+			"targetname" "barrels_crystal1"
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnBreak"
+					"target" "breakable_crystal_relay1"
+					"input" "Trigger"
+				}
+			}
+		}
+		// make changelevel instant
+		"modify"
+		{
+			"targetname" "teleport_relay"
+			"outputs"
+			{
+				"modify"
+				{
+					"target" "teleport_transition_trigger"
+					"input" "Enable"
+					"replace"
+					{
+						"input" "ChangeLevel"
+					}
+				}
+			}
+		}
+	}
+	"checkpoint"
+	{
+		"spawn"
+		{
+			"origin"	"1861 -1672 6227"
+			"angles"	"0 38 0"
+		}
+		"controlroom"
+		{
+			"origin"	"8560 3304 6904"
+			"angles"	"0 240 0"
+			"triggerid"	"2908543"
+			"output"	"OnStartTouch"
+		}
+		"puzzle1"
+		{
+			"origin"	"7040 2176 6565"
+			"angles"	"0 225 0"
+			"touchid"	"forcefield_trigger_elevator1"
+		}
+		"puzzle2"
+		{
+			"touchid"	"3929216"
+			"angles"	"0 327 0"
+		}
+		"puzzle3"
+		{
+			"origin"	"7508 3237 6535"
+			"angles"	"0 300 0"
+			"triggerid"	"puzzle3_counter_relay"
+			"output"	"OnTrigger"
+			"portal"	"6870 2790 6535"
+		}
+		"controlroom-finale"
+		{
+			"origin"	"8332 2894 6900"
+			"angles"	"0 225 0"
+			"triggerid"	"console_main_button2"
+			"output"	"OnPressed"
+			"bringall"	"1"
+			"bringall_radius"	"150"
+		}
+	}
+}

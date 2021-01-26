@@ -472,10 +472,21 @@ enum struct CoopManager
 
 CoopManager g_pCoopManager;
 
+// Forwarding functions wrap CoopManager for global accessibility
+// --------------------------------------------------------------
 bool IsFeatureEnabled(SourceCoopFeature iFeatureBits)
 {
 	return g_pCoopManager.IsFeatureEnabled(iFeatureBits);
 }
+void EnableFeature(SourceCoopFeature iFeatureBits)
+{
+	g_pCoopManager.EnableFeature(iFeatureBits);
+}
+void DisableFeature(SourceCoopFeature iFeatureBits)
+{
+	g_pCoopManager.DisableFeature(iFeatureBits);
+}
+// --------------------------------------------------------------
 
 public Action StartTimerCallback(Handle pTimer)
 {
