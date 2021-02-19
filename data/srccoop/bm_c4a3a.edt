@@ -29,6 +29,28 @@
 				"nodmgforce" "1"
 			}
 		}
+		// make door stay open
+		"modify"
+		{
+			"outputs"
+			{
+				"remove"
+				{
+					"target" "village_shutterdoors1_shutter6"
+					"input" "Close"
+				}
+				"remove"
+				{
+					"target" "village_shutterdoors1_shutter3"
+					"input" "Close"
+				}
+				"remove"
+				{
+					"target" "clip_combineshieldwall1"
+					"input" "Enable"
+				}
+			}
+		}
 	}
 	"checkpoint"
 	{
@@ -37,26 +59,21 @@
 			"origin"	"176 9568 -2544"
 			"angles"	"0 282 0"
 		}
-		"after first elevator"
+		"first elevator"
 		{
-			"origin"	"3760 4088 -1592"
-			"angles"	"0 100 0"
+			"followid" 	"agrunt_elevator_prop"
+			"angles"	"0 -90 0"
 			"triggerid"	"3483674"
 			"output"	"OnPressed"
+			"bringall" 	"1"
 		}
-		"entered controllers fighting area"
+		"second elevator"
 		{
-			"origin"	"3072 4488 -1689"
-			"angles"	"0 270 0"
-			"triggerid"	"4162581"
-			"output"	"OnPressed"
-		}
-		"after second elevator"
-		{
-			"origin"	"1985 4327 -2011"
-			"angles"	"0 240 0"
+			"followid" 	"4744958"
+			"angles"	"0 -90 0"
 			"triggerid"	"4744955"
 			"output"	"OnPressed"
+			"bringall" 	"1"
 		}
 	}
 }
