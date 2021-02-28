@@ -1,0 +1,210 @@
+#base "base/bm_sp_campaign.edt"
+
+"config"
+{
+	"chapter" "Interloper"
+	"nextmap" "bm_c4a3d"
+	"features"
+	{
+		"FIRSTPERSON_DEATHCAM" "0"
+	}
+	"equipment"
+	{
+		"lookup"
+		{
+			"targetname" "interloper_equipment"
+		}
+	}
+	"entity"
+	{
+		// no going back
+		"modify"
+		{
+			"classname" "trigger_changelevel"
+			"map" "bm_c4a3c1"
+			"set"
+			{
+				"classname" "func_brush"
+				"rendermode" "10"
+			}
+		}
+		// zombify save reload trigs
+		"modify"
+		{
+			"classname" "trigger_multiple"
+			"OnStartTouch" "/^c1_loadsaveReload/"
+			"set"
+			{
+				"classname" "trigger_hurt"
+				"damage" "400"
+				"nodmgforce" "1"
+			}
+		}
+		// controller trap fix
+		"add"
+		{
+			"classname" "point_template"
+			"spawnflags" "2"
+			"targetname" "tower_base_controller_template"
+			"Template01" "tower_base_controller0.5"
+		}
+		"modify"
+		{
+			"hammerid" "3875661"
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnTrigger"
+					"target" "tower_base_controller_template"
+					"input"	"ForceSpawn"
+				}
+			}
+		}
+		// make the main puzzle consistent
+		"modify"
+		{
+			"targetname" "tier2_main_door_force"
+			"set"
+			{
+				"spawnpos" "1"
+			}
+		}
+		"modify"
+		{
+			"targetname" "tier2_main_door_particle"
+			"set"
+			{
+				"start_active" "0"
+			}
+		}
+		"modify"
+		{
+			"targetname" "tier1_heart"
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnBreak"
+					"target" "tier2_main_door_force"
+					"input"	"Close"
+				}
+				"add"
+				{
+					"output" "OnBreak"
+					"target" "tier2_main_door_particle"
+					"input"	"Start"
+				}
+			}
+		}
+		"modify"
+		{
+			"targetname" "tier3_main_door_force"
+			"set"
+			{
+				"spawnpos" "1"
+			}
+		}
+		"modify"
+		{
+			"targetname" "tier3_main_door_particle"
+			"set"
+			{
+				"start_active" "0"
+			}
+		}
+		"modify"
+		{
+			"targetname" "tier2_heart"
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnBreak"
+					"target" "tier3_main_door_force"
+					"input"	"Close"
+				}
+				"add"
+				{
+					"output" "OnBreak"
+					"target" "tier3_main_door_particle"
+					"input"	"Start"
+				}
+			}
+		}
+		// main puzzle doors fix
+		"modify"
+		{
+			"hammerid" "1330948"
+			"functions"
+			{
+				"set_model"
+				{
+					"origin" "6560 10048 -944"
+					"size" "160 160 160"
+				}
+			}
+		}
+		"modify"
+		{
+			"hammerid" "1334257"
+			"functions"
+			{
+				"set_model"
+				{
+					"origin" "7904 8512 -112"
+					"size" "160 160 160"
+				}
+			}
+		}
+		"modify"
+		{
+			"hammerid" "1334291"
+			"functions"
+			{
+				"set_model"
+				{
+					"origin" "7904 10560 656"
+					"size" "160 160 160"
+				}
+			}
+		}
+	}
+	"checkpoint"
+	{
+		"spawn"
+		{
+			"origin"	"4753 4156 -12402"
+			"angles"	"0 163.5 0"
+		}
+		"round door"
+		{
+			"origin"	"4736 6432 -9567"
+			"angles"	"0 -35 0"
+			"triggerid"	"c1_iris_close"
+			"output"	"OnTrigger"
+		}
+		"after controller trap"
+		{
+			"origin"	"7992 10884 -9443"
+			"angles"	"0 -90 0"
+			"triggerid"	"3043668"
+			"output"	"OnTrigger"
+		}
+		"portal"
+		{
+			"origin"	"7028 8465 -5467"
+			"angles"	"0 180 0"
+			"triggerid"	"1217599"
+			"output"	"OnTrigger"
+		}
+		"end of the map"
+		{
+			"origin"	"3179 9023 15877"
+			"angles"	"0 180 0"
+			"triggerid"	"catchers_finalmover"
+			"output"	"OnFullyOpen"
+			"bringall"	"1"
+		}
+	}
+}
