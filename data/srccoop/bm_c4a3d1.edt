@@ -1,0 +1,90 @@
+#base "base/bm_sp_campaign.edt"
+
+"config"
+{
+	"chapter" "Interloper"
+	"nextmap" "bm_c4a4a"
+	"features"
+	{
+		"FIRSTPERSON_DEATHCAM" "0"
+	}
+	"equipment"
+	{
+		"item" "item_suit"
+		"item" "item_weapon_crowbar"
+		"item" "item_weapon_glock"
+		"item" "item_weapon_357"
+		"item" "item_weapon_mp5"
+		"item" "item_weapon_shotgun"
+		"item" "item_weapon_crossbow"
+		"item" "item_weapon_rpg"
+		"item" "item_weapon_satchel"
+		"item" "item_weapon_frag"
+		"item" "item_weapon_tau"
+		"item" "item_weapon_gluon"
+		"item" "item_weapon_tripmine"
+		"item" "item_weapon_hivehand"
+		"item" "item_weapon_snark"
+		"item" "item_weapon_satchel"
+		"item" "item_weapon_satchel"
+		"item" "item_weapon_frag"
+		"item" "item_weapon_frag"
+		"item" "item_weapon_tripmine"
+		"item" "item_weapon_tripmine"
+		"item" "item_weapon_tripmine"
+		"item" "item_weapon_tripmine"
+		"item" "item_weapon_snark"
+		"item" "item_ammo_mp5"
+		"item" "item_ammo_mp5"
+		"item" "item_grenade_rpg"
+		"item" "item_grenade_rpg"
+		"item" "item_ammo_shotgun"
+		"item" "item_ammo_shotgun"
+		"item" "item_ammo_357"
+		"item" "item_ammo_energy"
+		"item" "item_longjump"
+		"item" "item_battery"
+		"item" "item_battery"
+		"item" "item_grenade_mp5"
+		"item" "item_grenade_mp5"
+		"item" "item_grenade_mp5"
+	}
+	"entity"
+	{
+		// zombify save reload trigs
+		"modify"
+		{
+			"classname" "trigger_multiple"
+			"OnTrigger" "/^loadReload/"
+			"set"
+			{
+				"classname" "trigger_hurt"
+				"damage" "400"
+				"nodmgforce" "1"
+			}
+		}
+	}
+	"checkpoint"
+	{
+		"spawn"
+		{
+			"origin"	"-9920 -12672 6564"
+			"angles"	"0 270 0"
+		}
+		"map room"
+		{
+			"origin"	"-12065 -14432 6570"
+			"angles"	"0 135 0"
+			"triggerid"	"8554"
+			"output"	"OnTrigger"
+		}
+		"portal to nihilanth"
+		{
+			"origin"	"-1856 -2304 10852"
+			"angles"	"0 90 0"
+			"triggerid"	"520"
+			"output"	"OnTrigger"
+			"bringall"	"1"
+		}
+	}
+}
