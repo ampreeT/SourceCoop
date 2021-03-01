@@ -40,6 +40,29 @@
 				"nodmgforce" "1"
 			}
 		}
+		// make map change even if all players die in laser trap
+		"modify"
+		{
+			"hammerid" "6885212"
+			"set"
+			{
+				"targetname" "trigger_changelevel_bm_c4a3c1"
+			}
+		}
+		"modify"
+		{
+			"targetname" "machine3_path7"
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnPass"
+					"target" "trigger_changelevel_bm_c4a3c1"
+					"input"	"ChangeLevel"
+					"delay" "6"
+				}
+			}
+		}
 	}
 	"checkpoint"
 	{
@@ -52,8 +75,8 @@
 		{
 			"origin"	"-8821 -1529 -14815"
 			"angles"	"0 15 0"
-			"triggerid"	"1888030"
-			"output"	"OnTrigger"
+			"triggerid"	"reveal_machine_door1"
+			"output"	"OnFullyClosed"
 			"bringall" 	"1"
 		}
 		"main teleport"
@@ -70,6 +93,13 @@
 			"triggerid"	"machine3_main_arm"
 			"output"	"OnFullyClosed"
 			"bringall" 	"1"
+		}
+		"waiting for map change"
+		{
+			"origin"	"-7153 696 -12763"
+			"angles"	"0 0 0"
+			"triggerid"	"machine3_path5"
+			"output"	"OnPass"
 		}
 	}
 }
