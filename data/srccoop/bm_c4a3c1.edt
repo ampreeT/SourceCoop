@@ -1,0 +1,199 @@
+#base "base/bm_sp_campaign.edt"
+
+"config"
+{
+	"chapter" "Interloper"
+	"nextmap" "bm_c4a3c2"
+	"features"
+	{
+		"FIRSTPERSON_DEATHCAM" "0"
+	}
+	"equipment"
+	{
+		"lookup"
+		{
+			"targetname" "interloper_equipment"
+		}
+	}
+	"entity"
+	{
+		// no going back
+		"modify"
+		{
+			"hammerid" "6640829"
+			"set"
+			{
+				"classname" "func_brush"
+				"rendermode" "10"
+			}
+		}
+		// zombify save reload trigs
+		"modify"
+		{
+			"classname" "trigger_multiple"
+			"OnStartTouch" "/^loadsave_pitfallReload/"
+			"set"
+			{
+				"classname" "trigger_hurt"
+				"damage" "400"
+				"nodmgforce" "1"
+			}
+		}
+		// set alarm fire once
+		"modify"
+		{
+			"hammerid" "4470380"
+			"set"
+			{
+				"classname" "trigger_once"
+			}
+		}
+		// controllers and vorts fix
+		"add"
+		{
+			"classname" "point_template"
+			"spawnflags" "2"
+			"targetname" "control_cage_controller_template"
+			"Template01" "control_cage_controller*"
+		}
+		"modify"
+		{
+			"hammerid" "5947531"
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnTrigger"
+					"target" "control_cage_controller_template"
+					"input"	"ForceSpawn"
+				}
+			}
+		}
+		"add"
+		{
+			"classname" "point_template"
+			"spawnflags" "2"
+			"targetname" "sprint_vort_template"
+			"Template01" "sprint_xort"
+		}
+		"modify"
+		{
+			"hammerid" "6384524"
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnTrigger"
+					"target" "sprint_vort_template"
+					"input"	"ForceSpawn"
+				}
+			}
+		}
+		"add"
+		{
+			"classname" "point_template"
+			"spawnflags" "2"
+			"targetname" "sprint_controller_template"
+			"Template01" "sprint_controller*"
+		}
+		"modify"
+		{
+			"hammerid" "6355697"
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnTrigger"
+					"target" "sprint_controller_template"
+					"input"	"ForceSpawn"
+				}
+			}
+		}
+		// soundtrack fix
+		"add"
+		{
+			"classname" "ambient_generic"
+			"spawnflags" "17"
+			"targetname" "sprint_song_a_fix"
+			"message" "music.interloper.convey1"
+		}
+		"modify"
+		{
+			"hammerid" "5947531"
+			"outputs"
+			{
+				"modify"
+				{
+					"output" "OnTrigger"
+					"target" "sprint_song_a"
+					"input" "Play"
+					"replace"
+					{
+						"target" "sprint_song_a_fix"
+						"input" "PlaySound"
+					}
+				}
+			}
+		}
+		"modify"
+		{
+			"hammerid" "6355697"
+			"outputs"
+			{
+				"modify"
+				{
+					"output" "OnTrigger"
+					"target" "sprint_song_a"
+					"input" "Next"
+					"replace"
+					{
+						"target" "sprint_song_a_fix"
+						"input" "StopSound"
+					}
+				}
+				"add"
+				{
+					"output" "OnTrigger"
+					"target" "sprint_song_b_fix"
+					"input"	"PlaySound"
+				}
+			}
+		}
+		"add"
+		{
+			"classname" "ambient_generic"
+			"spawnflags" "17"
+			"targetname" "sprint_song_b_fix"
+			"message" "music.interloper.convey2"
+		}
+	}
+	"checkpoint"
+	{
+		"spawn"
+		{
+			"origin"	"-7814 561 -13009"
+			"angles"	"0 -130 0"
+		}
+		"after control room"
+		{
+			"origin"	"-2288 -2408 -13114"
+			"angles"	"0 20 0"
+			"triggerid"	"6384524"
+			"output"	"OnTrigger"
+		}
+		"sprint checkpoint 1"
+		{
+			"origin"	"48 -880 -12699"
+			"angles"	"0 20 0"
+			"triggerid"	"2436481"
+			"output"	"OnTrigger"
+		}
+		"sprint checkpoint 2"
+		{
+			"origin"	"3160 1200 -12809"
+			"angles"	"0 30 0"
+			"triggerid"	"2436639"
+			"output"	"OnTrigger"
+		}
+	}
+}

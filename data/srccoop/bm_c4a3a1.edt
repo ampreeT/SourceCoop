@@ -1,0 +1,101 @@
+#base "base/bm_sp_campaign.edt"
+
+"config"
+{
+	"chapter" "Interloper"
+	"nextmap" "bm_c4a3b"
+	"features"
+	{
+		"FIRSTPERSON_DEATHCAM" "0"
+	}
+	"equipment"
+	{
+		"lookup"
+		{
+			"targetname" "interloper_equipment"
+		}
+	}
+	"entity"
+	{
+		// zombify save reload trigs
+		"modify"
+		{
+			"classname" "trigger_once"
+			"OnTrigger" "/^reloadReload/"
+			"set"
+			{
+				"classname" "trigger_hurt"
+				"damage" "400"
+				"nodmgforce" "1"
+			}
+		}
+		// no going back
+		"modify"
+		{
+			"classname" "trigger_changelevel"
+			"map" "bm_c4a3a"
+			"set"
+			{
+				"classname" "func_brush"
+				"rendermode" "10"
+			}
+		}
+		// no spawning garg in air before third and forth pushpads
+		"modify"
+		{
+			"hammerid" "196029"
+			"outputs"
+			{
+				"add"
+				{
+					"target"	"upper_garg_01"
+					"output"	"OnTrigger"
+					"input"		"chaseend"
+				}
+			}
+		}
+	}
+	"checkpoint"
+	{
+		"spawn"
+		{
+			"origin"	"208 5856 300"
+			"angles"	"0 180 0"
+		}
+		"escape begins"
+		{
+			"origin"	"-2924 5248 425"
+			"angles"	"0 180 0"
+			"triggerid"	"182765"
+			"output"	"OnTrigger"
+		}
+		"jumped in hole"
+		{
+			"origin"	"-4381 1241 651"
+			"angles"	"0 320 0"
+			"triggerid"	"183701"
+			"output"	"OnTrigger"
+		}
+		"after first pushpad"
+		{
+			"origin"	"-7678 -1460 276"
+			"angles"	"0 185 0"
+			"triggerid"	"189261"
+			"output"	"OnTrigger"
+		}
+		"after second pushpad"
+		{
+			"origin"	"-6159 -176 1060"
+			"angles"	"0 20 0"
+			"triggerid"	"196449"
+			"output"	"OnTrigger"
+		}
+		"before third and forth pushpads"
+		{
+			"origin"	"1568 -791 1071"
+			"angles"	"0 -27 0"
+			"triggerid"	"196029"
+			"output"	"OnTrigger"
+		}
+	}
+}

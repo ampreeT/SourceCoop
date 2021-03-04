@@ -1,0 +1,77 @@
+#base "base/bm_sp_campaign.edt"
+
+"config"
+{
+	"chapter" "Interloper"
+	"nextmap"	"bm_c4a3b1"
+	"features"
+	{
+		"FIRSTPERSON_DEATHCAM" "0"
+	}
+	"equipment"
+	{
+		"lookup"
+		{
+			"targetname" "interloper_equipment"
+		}
+	}
+	"entity"
+	{
+		// delete first suckyvent clip brush
+		"delete"
+		{
+			"targetname" "b_suckyvent_01_brush_02"
+		}
+		// crouch bug (after first suckyvent) fix
+		"delete"
+		{
+			"hammerid" "1299484"
+		}
+		// make second suckyvent always working
+		"modify"
+		{
+			"hammerid" "2314447"
+			"set"
+			{
+				"classname" "trigger_multiple"
+				"wait" "1"
+			}
+		}
+	}
+	"checkpoint"
+	{
+		"spawn"
+		{
+			"origin"	"-1866 3424 -1050"
+			"angles"	"0 315 0"
+		}
+		"entered factory and puzzle 1"
+		{
+			"origin"	"723 -309 433"
+			"angles"	"0 -45 0"
+			"triggerid"	"711824"
+			"output"	"OnTrigger"
+		}
+		"puzzle 2"
+		{
+			"origin"	"539 -2710 615"
+			"angles"	"0 40 0"
+			"triggerid" "3478094"
+			"output"	"OnCase02"
+		}
+		"puzzle 3"
+		{
+			"origin"	"128 -1594 805"
+			"angles"	"0 90 0"
+			"triggerid" "3478092"
+			"output"	"OnCase02"
+		}
+		"puzzle 4 and controllers fight"
+		{
+			"origin"	"113 -83 1013"
+			"angles"	"0 -45 0"
+			"triggerid" "3478090"
+			"output"	"OnCase03"
+		}
+	}
+}

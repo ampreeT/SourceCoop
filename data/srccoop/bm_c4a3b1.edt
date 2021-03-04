@@ -1,0 +1,202 @@
+#base "base/bm_sp_campaign.edt"
+
+"config"
+{
+	"chapter" "Interloper"
+	"nextmap" "bm_c4a3b2"
+	"features"
+	{
+		"FIRSTPERSON_DEATHCAM" "0"
+	}
+	"equipment"
+	{
+		"lookup"
+		{
+			"targetname" "interloper_equipment"
+		}
+	}
+	"entity"
+	{
+		// zombify save reload trigs
+		"modify"
+		{
+			"classname" "trigger_once"
+			"OnTrigger" "/^agrunt_elev_01_fallReload/"
+			"set"
+			{
+				"classname" "trigger_hurt"
+				"damage" "400"
+				"nodmgforce" "1"
+			}
+		}
+		// no going back
+		"modify"
+		{
+			"classname" "trigger_changelevel"
+			"map" "bm_c4a3b"
+			"set"
+			{
+				"classname" "func_brush"
+				"rendermode" "10"
+			}
+		}
+		// make ai_relationship work
+		"modify"
+		{
+			"targetname" "controller_trig"
+			"classname" "trigger_once"
+			"set"
+			{
+				"classname" "trigger_multiple"
+			}
+			"functions"
+			{
+				"set_model"
+				{
+					"origin" "3840 -2128 1328"
+					"size" "384 224 96"
+				}
+			}
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnTrigger"
+					"target" "maintenance_xontroller_rel"
+					"input"	"ApplyRelationship"
+				}
+			}
+		}
+		// first controllers elevator fight fix
+		"add"
+		{
+			"classname" "point_template"
+			"spawnflags" "2"
+			"targetname" "agrunt_elev_01_ctrlrm_template"
+			"Template01" "agrunt_elev_01_ctrlrm_xontroller_0*"
+		}
+		"modify"
+		{
+			"targetname" "agrunt_elev_01_roombreak_relay"
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnTrigger"
+					"target" "agrunt_elev_01_ctrlrm_template"
+					"input"	"ForceSpawn"
+				}
+			}
+		}
+		// second controllers elevator fight fix
+		"add"
+		{
+			"classname" "point_template"
+			"spawnflags" "2"
+			"targetname" "agrunt_elev_02_ctrlrm_template"
+			"Template01" "agrunt_elev_02_ctrlrm_xontroller_0*"
+		}
+		"modify"
+		{
+			"targetname" "agrunt_elev_02a_aneurysm_xontroller_relay"
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnTrigger"
+					"target" "agrunt_elev_02_ctrlrm_template"
+					"input"	"ForceSpawn"
+				}
+			}
+		}
+		// some outputs fix
+		"modify"
+		{
+			"outputs"
+			{
+				// make web_burnable destroy in all cases
+				"remove"
+				{
+					"target" "agrunt_vat_filter_02_relay"
+					"input" "Disable"
+				}
+				"remove"
+				{
+					"target" "agrunt_vat_filter_03_relay"
+					"input" "Disable"
+				}
+				"remove"
+				{
+					"target" "agrunt_vat_filter_04_segment_01_relay"
+					"input" "Disable"
+				}
+				"remove"
+				{
+					"target" "agrunt_vat_filter_04_segment_02_relay"
+					"input" "Disable"
+				}
+				"remove"
+				{
+					"target" "agrunt_vat_filter_04_segment_03_relay"
+					"input" "Disable"
+				}
+				"remove"
+				{
+					"target" "agrunt_vat_filter_04_segment_04_relay"
+					"input" "Disable"
+				}
+				"remove"
+				{
+					"target" "agrunt_vat_filter_04_segment_05_relay"
+					"input" "Disable"
+				}
+				"remove"
+				{
+					"target" "agrunt_vat_filter_04_segment_06_relay"
+					"input" "Disable"
+				}
+				// make door stay open
+				"remove"
+				{
+					"target" "agrunt_elev_01_backtrack_door"
+					"input" "Close"
+				}
+				// make water blocker stay disabled
+				"remove"
+				{
+					"target" "agrunt_vat_water_blocker"
+					"input" "Enable"
+				}
+			}
+		}
+	}
+	"checkpoint"
+	{
+		"spawn"
+		{
+			"origin"	"3924 -2157 1325"
+			"angles"	"0 335 0"
+		}
+		"after first elevator"
+		{
+			"origin"	"6090 1890 1701"
+			"angles"	"0 -90 0"
+			"triggerid"	"805326"
+			"output"	"OnTrigger"
+		}
+		"puzzle"
+		{
+			"origin"	"4350 1000 1989"
+			"angles"	"0 90 0"
+			"triggerid" 	"9094"
+			"output"	"OnTrigger"
+		}
+		"before last elevators"
+		{
+			"origin"	"4335 950 2982"
+			"angles"	"0 90 0"
+			"triggerid"	"2077402"
+			"output"	"OnStartTouch"
+		}
+	}
+}

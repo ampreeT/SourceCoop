@@ -1,0 +1,242 @@
+#base "base/bm_sp_campaign.edt"
+
+"config"
+{
+	"chapter" "Interloper"
+	"nextmap" "bm_c4a3d1"
+	"features"
+	{
+		"FIRSTPERSON_DEATHCAM" "0"
+	}
+	"equipment"
+	{
+		"lookup"
+		{
+			"targetname" "interloper_equipment"
+		}
+	}
+	"entity"
+	{
+		// suckyvents fix
+		"modify"
+		{
+			"targetname" "base_barrel_triggers"
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnTrigger"
+					"target" "first_vent"
+					"input"	"Kill"
+				}
+			}
+		}
+		"delete"
+		{
+			"hammerid" "278608"
+
+		}
+		// make flower doors always open
+		"delete"
+		{
+			"hammerid" "285083"
+
+		}
+		// soundtrack fix
+		"add"
+		{
+			"classname" "ambient_generic"
+			"spawnflags" "17"
+			"targetname" "elevator_ride_0"
+			"message" "music.interloper.elevator_ride0"
+		}
+		"modify"
+		{
+			"targetname" "first_song_trig"
+			"outputs"
+			{
+				"modify"
+				{
+					"output" "OnTrigger"
+					"target" "first_song"
+					"input" "Play"
+					"replace"
+					{
+						"target" "elevator_ride_0"
+						"input" "PlaySound"
+					}
+				}
+			}
+		}
+		"modify"
+		{
+			"hammerid" "2206176"
+			"outputs"
+			{
+				"modify"
+				{
+					"output" "OnTrigger"
+					"target" "first_song"
+					"input" "Fade"
+					"replace"
+					{
+						"target" "elevator_ride_0"
+						"input" "StopSound"
+					}
+				}
+				"modify"
+				{
+					"output" "OnTrigger"
+					"target" "msic.ride1"
+					"input" "Play"
+					"replace"
+					{
+						"target" "elevator_ride_1"
+						"input" "PlaySound"
+					}
+				}
+			}
+		}
+		"add"
+		{
+			"classname" "ambient_generic"
+			"spawnflags" "17"
+			"targetname" "elevator_ride_1"
+			"message" "music.interloper.elevator_ride1"
+		}
+		"modify"
+		{
+			"targetname" "song_change"
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnTrigger"
+					"target" "elevator_ride_1"
+					"input"	"StopSound"
+				}
+				"modify"
+				{
+					"output" "OnTrigger"
+					"target" "msic.ride1"
+					"input" "Next"
+					"replace"
+					{
+						"target" "elevator_ride_2"
+						"input" "PlaySound"
+					}
+				}
+			}
+		}
+		"add"
+		{
+			"classname" "ambient_generic"
+			"spawnflags" "17"
+			"targetname" "elevator_ride_2"
+			"message" "music.interloper.elevator_ride2"
+		}
+		"modify"
+		{
+			"hammerid" "2816843"
+			"outputs"
+			{
+				"modify"
+				{
+					"output" "OnTrigger"
+					"target" "msic.ride2"
+					"input" "Fade"
+					"replace"
+					{
+						"target" "elevator_ride_2"
+						"input" "StopSound"
+					}
+				}
+			}
+		}
+		"modify"
+		{
+			"targetname" "final_pull_down_elevator_invisible"
+			"outputs"
+			{
+				"modify"
+				{
+					"output" "OnOpen"
+					"target" "msic.ride3"
+					"input" "Play"
+					"replace"
+					{
+						"target" "elevator_ride_3"
+						"input" "PlaySound"
+					}
+				}
+			}
+		}
+		"add"
+		{
+			"classname" "ambient_generic"
+			"spawnflags" "17"
+			"targetname" "elevator_ride_3"
+			"message" "music.interloper.elevator_ride3"
+		}
+	}
+	"checkpoint"
+	{
+		"spawn"
+		{
+			"origin"	"-7753 -15059 -10753"
+			"angles"	"0 180 0"
+		}
+		"base crystal controller fight"
+		{
+			"origin"	"-9687 -11662 -11482"
+			"angles"	"0 -112 0"
+			"triggerid"	"base_barrel_triggers"
+			"output"	"OnTrigger"
+		}
+		"after base crystal controller fight"
+		{
+			"origin"	"-9799 -12224 -11298"
+			"angles"	"0 0 0"
+			"triggerid"	"first_song_trig"
+			"output"	"OnStartTouch"
+			"bringall"	"1"
+		}
+		"middle crystal controller fight"
+		{
+			"origin"	"-10317 -12222 -3289"
+			"angles"	"0 0 0"
+			"triggerid"	"284463"
+			"output"	"OnTrigger"
+		}
+		"after middle crystal controller fight"
+		{
+			"origin"	"-9799 -12224 -2466"
+			"angles"	"0 0 0"
+			"triggerid"	"288736"
+			"output"	"OnStartTouch"
+			"bringall"	"1"
+		}
+		"final crystal controller fight"
+		{
+			"origin"	"-10317 -12222 1989"
+			"angles"	"0 0 0"
+			"triggerid"	"280999"
+			"output"	"OnTrigger"
+		}
+		"after final crystal controller fight"
+		{
+			"origin"	"-9799 -12224 3070"
+			"angles"	"0 0 0"
+			"triggerid"	"288895"
+			"output"	"OnStartTouch"
+			"bringall"	"1"
+		}
+		"elevator goes back"
+		{
+			"origin"	"-9799 -12224 4162"
+			"angles"	"0 0 0"
+			"triggerid"	"final_pull_down_elevator_invisible"
+			"output"	"OnFullyOpen"
+		}
+	}
+}

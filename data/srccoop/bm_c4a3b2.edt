@@ -1,0 +1,136 @@
+#base "base/bm_sp_campaign.edt"
+
+"config"
+{
+	"chapter" "Interloper"
+	"nextmap"	"bm_c4a3c"
+	"features"
+	{
+		"FIRSTPERSON_DEATHCAM" "0"
+	}
+	"equipment"
+	{
+		"lookup"
+		{
+			"targetname" "interloper_equipment"
+		}
+	}
+	"entity"
+	{
+		// no going back
+		"modify"
+		{
+			"classname" "trigger_changelevel"
+			"map" "bm_c4a3b1"
+			"set"
+			{
+				"classname" "func_brush"
+				"rendermode" "10"
+			}
+			"functions"
+			{
+				"set_model"
+				{
+					"origin" "7552 1024 4224"
+					"size" "512 512 512"
+				}
+			}
+		}
+		// controllers fight fix
+		"add"
+		{
+			"classname" "point_template"
+			"spawnflags" "2"
+			"targetname" "final_elev_01_xontroller_template_01"
+			"Template01" "final_elev_01_xontroller_01"
+			"Template02" "final_elev_01_xontroller_02"
+			"Template03" "final_elev_01_xontroller_03"
+		}
+		"modify"
+		{
+			"targetname" "final_elev_overload_xontroller_relay_01"
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnTrigger"
+					"target" "final_elev_01_xontroller_template_01"
+					"input"	"ForceSpawn"
+				}
+			}
+		}
+		"add"
+		{
+			"classname" "point_template"
+			"spawnflags" "2"
+			"targetname" "final_elev_01_xontroller_template_02"
+			"Template01" "final_elev_01_xontroller_06"
+			"Template02" "final_elev_01_xontroller_07"
+			"Template03" "final_elev_01_xontroller_08"
+		}
+		"modify"
+		{
+			"targetname" "final_elev_overload_xontroller_relay_02"
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnTrigger"
+					"target" "final_elev_01_xontroller_template_02"
+					"input"	"ForceSpawn"
+				}
+			}
+		}
+		"add"
+		{
+			"classname" "point_template"
+			"spawnflags" "2"
+			"targetname" "final_elev_01_xontroller_template_03"
+			"Template01" "final_elev_01_xontroller_09"
+			"Template02" "final_elev_01_xontroller_10"
+			"Template03" "final_elev_01_xontroller_11"
+		}
+		"modify"
+		{
+			"targetname" "final_elev_overload_xontroller_relay_03"
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnTrigger"
+					"target" "final_elev_01_xontroller_template_03"
+					"input"	"ForceSpawn"
+				}
+			}
+		}
+	}
+	"checkpoint"
+	{
+		"spawn"
+		{
+			"origin"	"8416 713 4404"
+			"angles"	"0 270 0"
+		}
+		"before first fight"
+		{
+			"origin"	"9105 -2685 5285"
+			"angles"	"0 -90 0"
+			"triggerid"	"1262448"
+			"output"	"OnTrigger"
+		}
+		"before second fight"
+		{
+			"origin"	"8862 -7361 5815"
+			"angles"	"0 180 0"
+			"triggerid"	"929556"
+			"output"	"OnStartTouch"
+		}
+		"before third fight"
+		{
+			"origin"	"9279 -5241 6437"
+			"angles"	"0 -90 0"
+			"triggerid"	"1827"
+			"output"	"OnTrigger"
+		}
+	}
+}
