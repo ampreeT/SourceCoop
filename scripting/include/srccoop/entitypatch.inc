@@ -56,11 +56,11 @@ public MRESReturn Hook_IsMultiplayer(Handle hReturn)
 //------------------------------------------------------
 // CMultiplayRules::IsDeathmatch
 //------------------------------------------------------
-public MRESReturn Hook_IsDeathmatch(Handle hReturn)
-{
-	DHookSetReturn(hReturn, g_bIsDeathmatchOverride);
-	return MRES_Supercede;
-}
+//public MRESReturn Hook_IsDeathmatch(Handle hReturn)
+//{
+//	DHookSetReturn(hReturn, g_bIsDeathmatchOverride);
+//	return MRES_Supercede;
+//}
 
 //------------------------------------------------------
 // CNPC_Human_Scientist - npc_human_scientist*
@@ -241,6 +241,26 @@ public MRESReturn Hook_HoundeyeThink(int _this)
 	return MRES_Ignored;
 }
 public MRESReturn Hook_HoundeyeThinkPost(int _this)
+{
+	ClearLocalPlayerCallingEntity();
+	return MRES_Ignored;
+}
+
+//------------------------------------------------------
+// CNPC_Gonarch - npc_gonarch
+// MP crash fix
+//------------------------------------------------------
+public MRESReturn Hook_GonarchRunAI(int _this)
+{
+	CBaseEntity pThis = CBaseEntity(_this);
+	CBasePlayer pPlayer = GetNearestPlayer(pThis, true);
+	if(!pPlayer.IsClassPlayer()) {
+		return MRES_Supercede;
+	}
+	SetLocalPlayerCallingEntity(view_as<int>(pPlayer));
+	return MRES_Ignored;
+}
+public MRESReturn Hook_GonarchRunAIPost(int _this)
 {
 	ClearLocalPlayerCallingEntity();
 	return MRES_Ignored;
@@ -436,7 +456,7 @@ public MRESReturn Hook_FindNamedEntity(int _this, Handle hReturn, Handle hParams
 			CBaseEntity pActor = CBaseEntity(DHookGetParam(hParams, 2));
 			if (pActor.IsValid())
 			{
-				CBlackMesaPlayer pBestPlayer = GetNearestPlayer(pActor);
+				CBasePlayer pBestPlayer = GetNearestPlayer(pActor);
 				if (pBestPlayer.IsValid())
 				{
 					DHookSetReturn(hReturn, pBestPlayer.GetEntIndex());
@@ -798,16 +818,29 @@ public MRESReturn Hook_ClientCommandAcceptInput(int _this, Handle hReturn, Handl
 	{
 		if (!DHookIsNullParam(hParams, 1))
 		{
-			char szInputType[MAX_FORMAT];
-			DHookGetParamString(hParams, 1, szInputType, sizeof(szInputType));
-			LogDebug("Hook_ClientCommandAcceptInput input=%s", szInputType);
-			if (strcmp(szInputType, "CommandAll", false) == 0) // new input
+			char szInput[MAX_FORMAT]; char szParam[MAX_FORMAT];
+			DHookGetParamString(hParams, 1, szInput, sizeof(szInput));
+			DHookGetParamObjectPtrString(hParams, 4, 0, ObjectValueType_String, szParam, sizeof(szParam));
+			LogDebug("Hook_ClientCommandAcceptInput input=%s, param=%s", szInput, szParam);
+			
+			if (!StrEqual(szInput, "CommandAll", false) && !StrEqual(szInput, "Command", false))
 			{
-				char szParam[MAX_FORMAT];
-				DHookGetParamObjectPtrString(hParams, 4, 0, ObjectValueType_String, szParam, sizeof(szParam));
-				
+				return MRES_Ignored;
+			}
+			
+			if(IsFeatureEnabled(FT_AUTODETECT_MAP_END))
+			{
+				if(StrContains(szParam, "disconnect", false) != -1 || StrContains(szParam, "startupmenu", false) != -1)
+				{
+					g_pCoopManager.OnMapSeriesFinished();
+					DHookSetReturn(hReturn, true);
+					return MRES_Supercede;
+				}
+			}
+			
+			if (strcmp(szInput, "CommandAll", false) == 0) // new input
+			{
 				// do special handling for the give command: give it to all and add to equipment for later spawns
-				
 				int iStart = 5;
 				if(strncmp(szParam, "give ", iStart, false) == 0)
 				{
@@ -828,7 +861,6 @@ public MRESReturn Hook_ClientCommandAcceptInput(int _this, Handle hReturn, Handl
 					}
 					g_SpawnSystem.AddSpawnItem(szParam[iStart]);
 				}
-				
 				else
 				{
 					bHookSkip = true;
@@ -874,6 +906,84 @@ public MRESReturn Hook_ServerCommandAcceptInput(int _this, Handle hReturn, Handl
 				}
 			}
 		}
+	}
+	return MRES_Ignored;
+}
+
+//------------------------------------------------------
+// CMiscMarionettist - misc_marionettist
+// Prevent a crash due to reactivation before finishing or when used by multiple players at once
+//------------------------------------------------------
+public MRESReturn Hook_MarionettistAcceptInput(int _this, Handle hReturn, Handle hParams)
+{
+	if (g_pCoopManager.IsCoopModeEnabled())
+	{
+		if (!DHookIsNullParam(hParams, 1))
+		{
+			char szInputType[MAX_FORMAT];
+			DHookGetParamString(hParams, 1, szInputType, sizeof(szInputType));
+			if (strcmp(szInputType, "Manipulate", false) == 0)
+			{
+				char szParam[MAX_FORMAT];
+				DHookGetParamObjectPtrString(hParams, 4, 0, ObjectValueType_String, szParam, sizeof(szParam));
+				if(strcmp(szParam, "!activator", false) == 0)
+				{
+					if(!DHookIsNullParam(hParams, 2))
+					{
+						int iActivator = DHookGetParam(hParams, 2);
+						CBaseEntity pActivator = CBaseEntity(iActivator);
+						if(pActivator.IsClassPlayer())
+						{
+							g_bTempDontHookEnts = true;
+							CBaseEntity pPuppet = CloneMarionettist(_this);
+							g_bTempDontHookEnts = false;
+							pPuppet.AcceptInputStr("Manipulate", "!activator", pActivator);
+							DHookEntity(hkThink, true, pPuppet.GetEntIndex(), _, Hook_MarionettistPuppetThinkPost);
+							
+							DHookSetReturn(hReturn, true);
+							return MRES_Supercede;
+						}
+					}
+				}
+			}
+		}
+	}
+	return MRES_Ignored;
+}
+
+CBaseEntity CloneMarionettist(int iEnt)
+{
+	int iClone = CreateEntityByName("misc_marionettist");
+	char buff[MAX_VALUE];
+	char buff2[29];
+	GetEntPropString(iEnt, Prop_Data, "m_iszSoundScriptStart", buff, sizeof(buff));
+	SetEntPropString(iClone, Prop_Data, "m_iszSoundScriptStart", buff);
+	GetEntPropString(iEnt, Prop_Data, "m_iszSoundScriptLoop", buff, sizeof(buff));
+	SetEntPropString(iClone, Prop_Data, "m_iszSoundScriptLoop", buff);
+	GetEntPropString(iEnt, Prop_Data, "m_iszSoundScriptEnd", buff, sizeof(buff));
+	SetEntPropString(iClone, Prop_Data, "m_iszSoundScriptEnd", buff);
+	for(int i = 0; i < 16; i++)
+	{
+		FormatEx(buff2, sizeof(buff2), "m_iszDestinationsNames[ %d ]", i);
+		GetEntPropString(iEnt, Prop_Data, buff2, buff, sizeof(buff));
+		SetEntPropString(iClone, Prop_Data, buff2, buff);
+	}
+	SetEntPropFloat(iClone, Prop_Data, "m_flInnerDestinationRadiusPrevious", GetEntPropFloat(iEnt, Prop_Data, "m_flInnerDestinationRadiusPrevious"));
+	SetEntPropFloat(iClone, Prop_Data, "m_flInnerPullSpeedPrevious", GetEntPropFloat(iEnt, Prop_Data, "m_flInnerPullSpeedPrevious"));
+	SetEntPropFloat(iClone, Prop_Data, "m_flOuterDestinationRadiusPrevious", GetEntPropFloat(iEnt, Prop_Data, "m_flOuterDestinationRadiusPrevious"));
+	SetEntPropFloat(iClone, Prop_Data, "m_flOuterPullSpeedPrevious", GetEntPropFloat(iEnt, Prop_Data, "m_flOuterPullSpeedPrevious"));
+	SetEntProp(iClone, Prop_Data, "m_bIgnoreCollisions", GetEntProp(iEnt, Prop_Data, "m_bIgnoreCollisions"));
+	ActivateEntity(iClone);
+	DispatchSpawn(iClone);
+	return CBaseEntity(iClone);
+}
+
+public MRESReturn Hook_MarionettistPuppetThinkPost(int _this)
+{
+	CBaseEntity pThis = CBaseEntity(_this);
+	if(pThis.GetNextThinkTick() == -1)
+	{
+		pThis.Kill();
 	}
 	return MRES_Ignored;
 }
@@ -1092,7 +1202,7 @@ public MRESReturn Hook_ResolveNamesPost(int _this)
 	if(szGoal[0] == '\0' || strcmp(szGoal, "!player", false) == 0)
 	{
 		CBaseEntity pEnt = CBaseEntity(_this);
-		CBlackMesaPlayer pPlayer = GetNearestPlayer(pEnt);
+		CBasePlayer pPlayer = GetNearestPlayer(pEnt);
 		SetEntPropEnt(_this, Prop_Data, "m_hGoalEntity", pPlayer.GetEntIndex());
 	}
 	return MRES_Ignored;

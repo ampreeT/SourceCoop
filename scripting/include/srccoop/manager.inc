@@ -220,7 +220,7 @@ enum struct CoopManager
 		}
 	}
 
-	void OnClientPutInServer(CBlackMesaPlayer pPlayer)
+	void OnClientPutInServer(CBasePlayer pPlayer)
 	{
 		if (this.IsCoopModeEnabled())
 		{
@@ -228,7 +228,7 @@ enum struct CoopManager
 		}
 	}
 
-	void OnPlayerSpawned(CBlackMesaPlayer pPlayer)
+	void OnPlayerSpawned(CBasePlayer pPlayer)
 	{
 		if(this.IsCoopModeEnabled())
 		{
@@ -422,6 +422,20 @@ enum struct CoopManager
 			}
 		}
 		return true;
+	}
+	
+	void OnMapSeriesFinished()
+	{
+		char szNextMap[MAX_MAPNAME];
+		g_pConvarHomeMap.GetString(szNextMap, sizeof(szNextMap));
+		if(szNextMap[0] != '\0')
+		{
+			ForceChangeLevel(szNextMap, "SourceCoop - return to home map");
+		}
+		else if (GetNextMap(szNextMap, sizeof(szNextMap)))
+		{
+			ForceChangeLevel(szNextMap, "SourceCoop - next map");
+		}
 	}
 		
 	void EnableFeature(SourceCoopFeature iFeatureBits)

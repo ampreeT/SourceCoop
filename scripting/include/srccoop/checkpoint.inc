@@ -29,7 +29,7 @@ enum struct CCoopSpawnEntry
 		this.m_pFollowEnt = CBaseEntity();
 	}
 	
-	bool TeleportPlayer(CBlackMesaPlayer pPlayer, bool bForceTeleport = false, bool bIsBringAllTP = false)
+	bool TeleportPlayer(CBasePlayer pPlayer, bool bForceTeleport = false, bool bIsBringAllTP = false)
 	{
 		float vecPosition[3];
 		float vecAngles[3];
@@ -104,7 +104,7 @@ enum struct CCoopSpawnEntry
 		{
 			for (int pp = 0; pp <= MaxClients; pp++)
 			{
-				CBlackMesaPlayer pPlayer = CBlackMesaPlayer(pp);
+				CBasePlayer pPlayer = CBasePlayer(pp);
 				if(pPlayer.IsValid() && pPlayer.IsAlive())
 				{
 					if(this.TeleportPlayer(pPlayer, true, true))
@@ -280,7 +280,7 @@ enum struct CCoopSpawn
 		return false;
 	}
 	
-	void StripPlayer(CBlackMesaPlayer pPlayer)
+	void StripPlayer(CBasePlayer pPlayer)
 	{
 		if (IsFeatureEnabled(FT_STRIP_DEFAULT_EQUIPMENT))
 		{
@@ -288,7 +288,7 @@ enum struct CCoopSpawn
 		}
 	}
 	
-	void SpawnPlayerEquipment(CBlackMesaPlayer pPlayer)
+	void SpawnPlayerEquipment(CBasePlayer pPlayer)
 	{
 		if(this.m_pDefaultEquipment.m_iHealth > 0)
 			pPlayer.SetHealth(this.m_pDefaultEquipment.m_iHealth);
@@ -309,7 +309,7 @@ enum struct CCoopSpawn
 		}
 	}
 	
-	void SpawnPlayer(CBlackMesaPlayer pPlayer, bool bSpawnEquipment = true)
+	void SpawnPlayer(CBasePlayer pPlayer, bool bSpawnEquipment = true)
 	{
 		CCoopSpawnEntry pCheckpoint;
 		// pickup possible spawn items and make sure player spawned in if following teleport is blocked
@@ -379,6 +379,10 @@ enum struct CCoopSpawn
 
 	void ParseCheckpoint(KeyValues kv)
 	{
+		if(view_as<bool>(kv.GetNum("use_map_spawnpoint")))
+		{
+			this.AddSpawnPointFromMap();
+		}
 		if(view_as<bool>(kv.GetNum("use_map_autosave")))
 		{
 			this.m_bStrictOrder = false;
@@ -505,10 +509,21 @@ enum struct CCoopSpawn
 		return CBaseEntity(FindEntityByTargetname(-1, szValue));
 	}
 	
+	void AddSpawnPointFromMap()
+	{
+		CCoopSpawnEntry pEntry; pEntry.Initialize();
+		
+		int ent = -1;
+		if ((ent = FindEntityByClassname(ent, "info_player_start")) != -1)
+		{
+			pEntry.m_pFollowEnt = CBaseEntity(ent);
+			this.AddCheckpoint(pEntry);
+		}
+	}
+	
 	void AddCheckpointsFromMap()
 	{
-		CCoopSpawnEntry pEntry;
-		pEntry.Initialize();
+		CCoopSpawnEntry pEntry; pEntry.Initialize();
 		
 		int ent = -1;
 		while ((ent = FindEntityByClassname(ent, "trigger_autosave")) != -1)
@@ -676,13 +691,13 @@ enum struct CCoopSpawn
 
 CCoopSpawn g_SpawnSystem;
 
-public void RequestSpawnPlayer(CBlackMesaPlayer pPlayer)
+public void RequestSpawnPlayer(CBasePlayer pPlayer)
 {
 	// one more frame to allow time for picking up batteries after suit is picked up
 	RequestFrame(RequestSpawnPlayer2, pPlayer);
 }
 
-public void RequestSpawnPlayer2(CBlackMesaPlayer pPlayer)
+public void RequestSpawnPlayer2(CBasePlayer pPlayer)
 {
 	if (pPlayer.IsValid() && pPlayer.IsAlive())
 	{
@@ -750,7 +765,7 @@ public Action Timer_Checkpoint(Handle timer, DataPack dp)
 
 public void Hook_TouchPortal(int iEntity, int iOther)
 {
-	CBlackMesaPlayer pPlayer = CBlackMesaPlayer(iOther);
+	CBasePlayer pPlayer = CBasePlayer(iOther);
 	if (pPlayer.IsClassPlayer())
 	{
 		CCoopSpawnEntry pCheckpoint;

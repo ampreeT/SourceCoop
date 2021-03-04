@@ -142,13 +142,21 @@ stock void FormatTimeLengthLong(int seconds, char[] out, int size)
 	}
 }
 
-stock int SplitNewline(const char[] szSource, const int nSize, char[] szBuffer)
+// Like SplitString but more efficient
+stock int SplitByChar(const char[] szSource, char c, char[] szBuffer, int nSize)
 {
 	int i = 0;
-	while (szSource[i] != '\n' && szSource[i] != '\0')
+	while (szSource[i] != c)
+	{
+		if(szSource[i] == '\0')
+		{
+			return -1;
+		}
 		i++;
-	strcopy(szBuffer, ((i + 1) < nSize) ? (i + 1) : nSize, szSource);	// strcopy inconvinently includes the null terminator
-	return (i < nSize) ? i : nSize;
+	}
+	i++;
+	strcopy(szBuffer, i < nSize ? i : nSize, szSource);
+	return i;
 }
 
 stock void LowerCaseString(const char[] szInput, char[] szOutput, int iSize)
@@ -261,16 +269,16 @@ stock CBaseEntity CreateByClassname(const char[] szClassname)
 // Player utils
 //------------------------------------------------------
 //------------------------------------------------------
-stock CBlackMesaPlayer GetNearestPlayer(CBaseEntity pOriginEntity, bool bOnlyAlive = true)
+stock CBasePlayer GetNearestPlayer(CBaseEntity pOriginEntity, bool bOnlyAlive = true)
 {
 	float vecEntityPosition[3];
 	pOriginEntity.GetAbsOrigin(vecEntityPosition);
 
-	CBlackMesaPlayer pBestPlayer = CBlackMesaPlayer();
+	CBasePlayer pBestPlayer = CBasePlayer();
 	float flBestDistance = FLT_MAX;
 	for (int i = 1; i < (MaxClients + 1); i++)
 	{
-		CBlackMesaPlayer pPlayer = CBlackMesaPlayer(i);
+		CBasePlayer pPlayer = CBasePlayer(i);
 		if (pPlayer.IsValid() && (!bOnlyAlive || pPlayer.IsAlive()))
 		{
 			float vecPlayerPosition[3];
@@ -310,7 +318,7 @@ enum CanTeleportResult
 	CAN_TP_MUSTDUCK		//🦆//
 }
 
-stock CanTeleportResult CanTeleportPlayer(CBlackMesaPlayer pPlayer, float vecOrigin[3], bool bExact = false)
+stock CanTeleportResult CanTeleportPlayer(CBasePlayer pPlayer, float vecOrigin[3], bool bExact = false)
 {
 	bool bDidHit;
 

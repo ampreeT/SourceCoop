@@ -117,6 +117,8 @@ public void OnPluginStart()
 	g_pConvarWaitPeriod = CreateConVar("sourcecoop_start_wait_period", "15.0", "The max number of seconds to wait since first player spawned in to start the map. The timer is skipped when all players enter the game.", _, true, 0.0);
 	g_pConvarEndWaitPeriod = CreateConVar("sourcecoop_end_wait_period", "60.0", "The max number of seconds to wait since first player triggered a changelevel. The timer speed increases each time a new player finishes the level.", _, true, 0.0);
 	g_pConvarEndWaitFactor = CreateConVar("sourcecoop_end_wait_factor", "1.0", "Controls how much the number of finished players increases the changelevel timer speed. 1.0 means full, 0 means none (timer will run full length).", _, true, 0.0, true, 1.0);
+	g_pConvarHomeMap = CreateConVar("sourcecoop_homemap", "", "The map to return to after finishing a campaign/map.");
+	
 	RegAdminCmd("sourcecoop_ft", Command_SetFeature, ADMFLAG_ROOT, "Command for toggling plugin features on/off");
 	RegAdminCmd("sc_ft", Command_SetFeature, ADMFLAG_ROOT, "Command for toggling plugin features on/off");
 	RegServerCmd("sourcecoop_dump", Command_DumpMapEntities, "Command for dumping map entities to a file");
@@ -232,7 +234,7 @@ public void OnConfigsExecutedPost()
 
 public void OnClientPutInServer(int client)
 {
-	CBlackMesaPlayer pPlayer = CBlackMesaPlayer(client);
+	CBasePlayer pPlayer = CBasePlayer(client);
 	
 	// fixes visual bug for players which had different view ent at mapchange
 	pPlayer.SetViewEntity(pPlayer);
@@ -251,6 +253,7 @@ public void OnClientPutInServer(int client)
 	SDKHook(client, SDKHook_SpawnPost, Hook_PlayerSpawnPost);
 	SDKHook(client, SDKHook_TraceAttack, Hook_PlayerTraceAttack);
 	SDKHook(client, SDKHook_OnTakeDamage, Hook_PlayerTakeDamage);
+	SDKHook(client, SDKHook_WeaponEquipPost, Hook_PlayerWeaponEquipPost);
 	DHookEntity(hkChangeTeam, false, client, _, Hook_PlayerChangeTeam);
 	DHookEntity(hkShouldCollide, false, client, _, Hook_PlayerShouldCollide);
 	GreetPlayer(client);
@@ -320,6 +323,11 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 					DHookEntity(hkThink, false, iEntIndex, _, Hook_HoundeyeThink);
 					DHookEntity(hkThink, true, iEntIndex, _, Hook_HoundeyeThinkPost);
 				}
+				else if (strcmp(szClassname, "npc_gonarch") == 0)
+				{
+					DHookEntity(hkRunAI, false, iEntIndex, _, Hook_GonarchRunAI);
+					DHookEntity(hkRunAI, true, iEntIndex, _, Hook_GonarchRunAIPost);
+				}
 			}
 			else if ((strcmp(szClassname, "instanced_scripted_scene", false) == 0) ||
 					(strcmp(szClassname, "logic_choreographed_scene", false) == 0) ||
@@ -328,18 +336,19 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 				DHookEntity(hkFindNamedEntity, true, iEntIndex, _, Hook_FindNamedEntity);
 				DHookEntity(hkFindNamedEntityClosest, true, iEntIndex, _, Hook_FindNamedEntity);
 			}
-			else if (strncmp(szClassname, "item_", 5) == 0)
+			else if (strncmp(szClassname, "item_", 5) == 0 && pEntity.IsPickupItem())
 			{
 				if (g_pCoopManager.IsFeatureEnabled(FT_INSTANCE_ITEMS))
 				{
-					if(pEntity.IsPickupItem())
-					{
-						SDKHook(iEntIndex, SDKHook_Spawn, Hook_ItemSpawnDelay);
-					}
+					SDKHook(iEntIndex, SDKHook_Spawn, Hook_ItemSpawnDelay);
 				}
 				if (strcmp(szClassname, "item_weapon_snark") == 0)
 				{
 					SDKHook(iEntIndex, SDKHook_OnTakeDamagePost, Hook_OnItemSnarkDamagePost);
+				}
+				if (strcmp(szClassname, "item_suit") == 0)
+				{
+					DHookEntity(hkOnTryPickUp, true, iEntIndex, _, Hook_OnEquipmentTryPickUpPost);
 				}
 			}
 			else if (pEntity.IsClassWeapon())
@@ -398,6 +407,10 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 			{
 				//DHookEntity(hkThink, false, iEntIndex, _, Hook_PropChargerThink);
 				//DHookEntity(hkThink, true, iEntIndex, _, Hook_PropChargerThinkPost);
+			}
+			else if(strcmp(szClassname, "misc_marionettist") == 0)
+			{
+				DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_MarionettistAcceptInput);
 			}
 			
 			// if some explosions turn out to be damaging all players except one, this is the fix
@@ -488,7 +501,7 @@ public void OnEntityDestroyed(int iEntIndex)
 			{
 				if (IsClientInGame(i))
 				{
-					CBlackMesaPlayer pPlayer = CBlackMesaPlayer(i);
+					CBasePlayer pPlayer = CBasePlayer(i);
 					if (pPlayer.GetViewEntity() == pEntity)
 					{
 						pPlayer.SetViewEntity(pPlayer);
@@ -564,6 +577,37 @@ public Action Event_BroadcastTeamsound(Event hEvent, const char[] szName, bool b
 		return Plugin_Changed;
 	}
 	return Plugin_Continue;
+}
+
+public MRESReturn Hook_OnEquipmentTryPickUpPost(int _this, Handle hReturn, Handle hParams)
+{
+	if (g_pCoopManager.IsFeatureEnabled(FT_KEEP_EQUIPMENT))
+	{
+		bool bPickedUp = DHookGetReturn(hReturn);
+		if(bPickedUp)
+		{
+			CBasePlayer pPlayer = CBasePlayer(DHookGetParam(hParams, 1));
+			if(pPlayer.IsClassPlayer())
+			{
+				CBaseEntity pItem = CBaseEntity(_this);
+				char szClass[MAX_CLASSNAME];
+				pItem.GetClassname(szClass, sizeof(szClass));
+				g_SpawnSystem.AddSpawnItem(szClass);
+			}
+		}
+	}
+	return MRES_Ignored;
+}
+
+public void Hook_PlayerWeaponEquipPost(int client, int weapon)
+{
+	if (g_pCoopManager.IsFeatureEnabled(FT_KEEP_EQUIPMENT))
+	{
+		CBaseEntity pItem = CBaseEntity(weapon);
+		char szClass[MAX_CLASSNAME];
+		pItem.GetClassname(szClass, sizeof(szClass));
+		g_SpawnSystem.AddSpawnItem(szClass);
+	}
 }
 
 public MRESReturn Hook_RestoreWorld(Handle hReturn)

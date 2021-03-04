@@ -9,6 +9,7 @@ enum struct ItemInstancingManager
 	
 	void Initialize()
 	{
+		DHookAddEntityListener(ListenType_Deleted, Hook_Instancing_ItemDeleted);
 	}
 	
 	void OnClientPutInServer(int client)
@@ -23,7 +24,10 @@ enum struct ItemInstancingManager
 	
 	void OnPlayerSpawned(CBlackMesaPlayer pPlayer)
 	{
-		this.m_pPickedUpItems[pPlayer.GetEntIndex()].Clear();
+		if(!IsFeatureEnabled(FT_INSTANCE_ITEMS_NORESET))
+		{
+			this.m_pPickedUpItems[pPlayer.GetEntIndex()].Clear();
+		}
 	}
 	
 	void AddPickedUpItem(CBlackMesaPlayer pPlayer, CBaseEntity pItem)
@@ -57,7 +61,6 @@ public void Hook_Instancing_ItemSpawn(int iEntIndex)
 	CBaseEntity pItem = CBaseEntity(iEntIndex);
 	DHookEntity(hkOnTryPickUp, false, iEntIndex, _, Hook_Instancing_OnTryPickUpPre);
 	DHookEntity(hkOnTryPickUp, true, iEntIndex, _, Hook_Instancing_OnTryPickUpPost);
-	DHookAddEntityListener(ListenType_Deleted, Hook_Instancing_ItemDeleted);
 	if(pItem.IsClassname("item_healthkit"))
 	{
 		// this spawns second entity item_healthkit_ragdoll_clone

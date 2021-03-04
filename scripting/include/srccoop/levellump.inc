@@ -315,16 +315,34 @@ enum struct CGlobalLevelLump
 	void ParseMapEntities(const char szMapEntities[ENTITYSTRING_LENGTH])
 	{
 		this.m_pEntityList.Clear();
-		Regex pRegex = new Regex("\"(.*)\" \"(.*)\"");
-		if (pRegex == null)
-			ThrowError("pRegex is null when attempting to create pattern");
+		float flStartTime = GetEngineTime();
 		
 		CEntityInfoLump pEntityInfo = new CEntityInfoLump();
-		int iMapEntitiesLength = strlen(szMapEntities);
+		CEntityKeyLump pEntityInfoKey;
+		bool bParsingValue;
+		int n;
 		
-		for (int i = 0; i < iMapEntitiesLength; i++)
+		for (int i = 0; szMapEntities[i] != '\0'; i++)
 		{
-			if (szMapEntities[i] == '\n' || szMapEntities[i] == '\0')
+			if (szMapEntities[i] == '"')
+			{
+				if(bParsingValue)
+				{
+					n = SplitByChar(szMapEntities[++i], '"', pEntityInfoKey.m_szValue, sizeof(pEntityInfoKey.m_szValue));
+					pEntityInfo.PushArray(pEntityInfoKey, sizeof(pEntityInfoKey));
+				}
+				else
+				{
+					n = SplitByChar(szMapEntities[++i], '"', pEntityInfoKey.m_szKey, sizeof(pEntityInfoKey.m_szKey));
+				}
+				if (n == -1)
+				{
+					ThrowError("Did not find closing \" for keyvalue");
+				}
+				i += n;
+				bParsingValue = !bParsingValue;
+			}
+			else if (bParsingValue)
 			{
 				continue;
 			}
@@ -343,23 +361,9 @@ enum struct CGlobalLevelLump
 				this.m_pEntityList.Push(pEntityInfo);
 				pEntityInfo = new CEntityInfoLump();
 			}
-			else
-			{
-				char szKeyValue[2048];
-				int n = SplitNewline(szMapEntities[i], sizeof(szKeyValue), szKeyValue);
-				i += n;
-				
-				if (pRegex.Match(szKeyValue) == -1 || pRegex.MatchCount() == 0)
-					ThrowError("Regex match failed when parsing: %s", szKeyValue);
-				
-				CEntityKeyLump pEntityInfoKey;
-				pRegex.GetSubString(1, pEntityInfoKey.m_szKey, sizeof(pEntityInfoKey.m_szKey));
-				pRegex.GetSubString(2, pEntityInfoKey.m_szValue, sizeof(pEntityInfoKey.m_szValue));
-				pEntityInfo.PushArray(pEntityInfoKey, sizeof(pEntityInfoKey));
-			}
 		}
 		
-		delete pRegex;
+		LogDebug("ParseMapEntities took %f", GetEngineTime() - flStartTime);
 	}
 	
 	int ToString(char szBuffer[ENTITYSTRING_LENGTH])	// absolutely do not care for bounds checking, this 2 mb buffer is big enough for everything

@@ -12,6 +12,7 @@ ConVar g_pConvarCoopRespawnTime;
 ConVar g_pConvarWaitPeriod;
 ConVar g_pConvarEndWaitPeriod;
 ConVar g_pConvarEndWaitFactor;
+ConVar g_pConvarHomeMap;
 
 // ----------------------------
 // SDK Calls
@@ -75,7 +76,7 @@ ArrayList g_pPostponedSpawns;
 // represents the return value of the IsMultiplayer hook
 bool g_bIsMultiplayerOverride = true;
 // represents the return value of the IsDeathmatch hook
-bool g_bIsDeathmatchOverride = true;
+//bool g_bIsDeathmatchOverride = true;
 
 // the entity which UTIL_GetLocalPlayer hook will return the closest player to, alternatively containing the player index itself
 CBaseEntity g_pLocalPlayerEntity = view_as<CBaseEntity>(-1);

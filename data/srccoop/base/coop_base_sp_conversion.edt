@@ -4,6 +4,7 @@
 
 "config"
 {
+	"intro_type" "freeze"
 	"features"
 	{
 		"INSTANCE_ITEMS" "1"
@@ -21,6 +22,9 @@
 		"viewcontrol_allplayers" "1"
 		"clientcommand_allplayers" "1"
 		"speedmod_allplayers" "1"
+		"env_message_allplayers" "1"
+		"env_hudhint_allplayers" "1"
+		"game_text_allplayers" "1"
 		"vital_npcs_invulnerable" "1"
 		"never_close_areaportals" "1"
 	}
@@ -155,6 +159,63 @@
 							{
 								"input" "CommandAll"
 							}
+						}
+					}
+				}
+			}
+		}
+		// env_message - Show to all
+		#if
+		{
+			"env_message_allplayers" "1"
+			#then
+			{
+				"modify"
+				{
+					"classname" "env_message"
+					"flags"
+					{
+						"spawnflags"
+						{
+							"add" "2"
+						}
+					}
+				}
+			}
+		}
+		// env_hudhint - Show to all
+		#if
+		{
+			"env_hudhint_allplayers" "1"
+			#then
+			{
+				"modify"
+				{
+					"classname" "env_hudhint"
+					"flags"
+					{
+						"spawnflags"
+						{
+							"add" "1"
+						}
+					}
+				}
+			}
+		}
+		// game_text - Show to all
+		#if
+		{
+			"game_text_allplayers" "1"
+			#then
+			{
+				"modify"
+				{
+					"classname" "game_text"
+					"flags"
+					{
+						"spawnflags"
+						{
+							"add" "1"
 						}
 					}
 				}

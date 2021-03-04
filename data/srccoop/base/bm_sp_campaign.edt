@@ -5,35 +5,10 @@
 "config"
 {
 	"campaign" "Black Mesa Official"
-	"intro_type" "freeze"
 	"console"
 	{
 	}
 	"entity_base_bm_sp_campaign"
 	{
-		// env_message - Show to all
-		"modify"
-		{
-			"classname"	"env_message"
-			"flags"
-			{
-				"spawnflags"
-				{
-					"add" "2"
-				}
-			}
-		}
-		// env_hudhint - Show to all
-		"modify"
-		{
-			"classname" "env_hudhint"
-			"flags"
-			{
-				"spawnflags"
-				{
-					"add" "1"
-				}
-			}
-		}
 	}
 }

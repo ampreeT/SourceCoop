@@ -319,6 +319,22 @@ methodmap CBaseEntity
 	{
 		SetEntPropVector(this.GetEntIndex(), Prop_Send, "m_angRotation", vecAngles);
 	}
+	public void GetBaseVelocity(float vecBuffer[3])
+	{
+		GetEntPropVector(this.GetEntIndex(), Prop_Data, "m_vecBaseVelocity", vecBuffer);
+	}
+	public void SetBaseVelocity(const float vecVel[3])
+	{
+		SetEntPropVector(this.GetEntIndex(), Prop_Data, "m_vecBaseVelocity", vecVel);
+	}
+	public void GetAbsVelocity(float vecBuffer[3])
+	{
+		GetEntPropVector(this.GetEntIndex(), Prop_Data, "m_vecAbsVelocity", vecBuffer);
+	}
+	public void SetAbsVelocity(const float vecVel[3])
+	{
+		SetEntPropVector(this.GetEntIndex(), Prop_Data, "m_vecAbsVelocity", vecVel);
+	}
 	public void HookOutput(const char[] szOutput, EntityOutput pCallback, const bool bOnce)
 	{
 		HookSingleEntityOutput(this.GetEntIndex(), szOutput, pCallback, bOnce);
@@ -367,6 +383,10 @@ methodmap CBaseEntity
 	{
 		SetEntityMoveType(this.GetEntIndex(), moveType);
 	}
+	public MoveCollide_t GetMoveCollide()
+	{
+		return view_as<MoveCollide_t>(GetEntProp(this.GetEntIndex(), Prop_Data, "m_MoveCollide"));
+	}
 	public int GetCollisionGroup()
 	{
 		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_CollisionGroup");
@@ -391,9 +411,13 @@ methodmap CBaseEntity
 	{
 		SetEntProp(this.GetEntIndex(), Prop_Data, "m_usSolidFlags", iSolidFlags);
 	}
+	public int GetNextThinkTick()
+	{
+		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_nNextThinkTick");
+	}
 	public void SetNextThinkTick(const int iTick)
 	{
-		SetEntProp(view_as<int>(this), Prop_Data, "m_nNextThinkTick", iTick);
+		SetEntProp(this.GetEntIndex(), Prop_Data, "m_nNextThinkTick", iTick);
 	}
 	public void SetNextThink(float flThinkTime)
 	{
@@ -772,15 +796,6 @@ methodmap CBasePlayer < CBaseCombatCharacter
 	{
 		return view_as<bool>(this.IsClassPlayer() && IsClientInGame(this.GetEntIndex()));
 	}
-}
-
-methodmap CBlackMesaPlayer < CBasePlayer
-{
-	public CBlackMesaPlayer(const int iEntIndex = -1)
-	{
-		return view_as<CBlackMesaPlayer>(InternalGetBaseEntity(iEntIndex));
-	}
-	
 	public bool GetName(char[] szBuffer, const int iMaxLength)
 	{
 		return GetClientName(this.GetEntIndex(), szBuffer, iMaxLength);
@@ -800,14 +815,6 @@ methodmap CBlackMesaPlayer < CBasePlayer
 	public void SetSuit(const bool bShouldHaveSuit)
 	{
 		SetEntProp(this.GetEntIndex(), Prop_Send, "m_bWearingSuit", bShouldHaveSuit);
-	}
-	public bool HasJumpModule()
-	{
-		return view_as<bool>(GetEntProp(this.GetEntIndex(), Prop_Send, "m_bHasJumpModule"));
-	}
-	public void SetJumpModule(const bool bShouldHaveJumpModule)
-	{
-		SetEntProp(this.GetEntIndex(), Prop_Send, "m_bHasJumpModule", bShouldHaveJumpModule);
 	}
 	public bool IsSprinting()
 	{
@@ -1087,6 +1094,22 @@ methodmap CBlackMesaPlayer < CBasePlayer
 		int iNewScore = this.GetScore() + iPoints;
 		this.SetScore(iNewScore);
 		return iNewScore;
+	}
+}
+
+methodmap CBlackMesaPlayer < CBasePlayer
+{
+	public CBlackMesaPlayer(const int iEntIndex = -1)
+	{
+		return view_as<CBlackMesaPlayer>(InternalGetBaseEntity(iEntIndex));
+	}
+	public bool HasJumpModule()
+	{
+		return view_as<bool>(GetEntProp(this.GetEntIndex(), Prop_Send, "m_bHasJumpModule"));
+	}
+	public void SetJumpModule(const bool bShouldHaveJumpModule)
+	{
+		SetEntProp(this.GetEntIndex(), Prop_Send, "m_bHasJumpModule", bShouldHaveJumpModule);
 	}
 }
 
