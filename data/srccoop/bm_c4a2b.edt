@@ -1,0 +1,136 @@
+#base "base/bm_sp_campaign.edt"
+
+"config"
+{
+	"chapter" "Gonarch's Lair"
+	"nextmap"	"bm_c4a2c"
+	"features"
+	{
+		"FIRSTPERSON_DEATHCAM" "0"
+	}
+	"equipment"
+	{
+		"lookup"
+		{
+			"targetname" "gonarch_equipment"
+		}
+	}
+	"entity"
+	{
+		// zombify save reload trigs
+		"modify"
+		{
+			"classname" "trigger_once"
+			"OnTrigger" "/^load_savedReload/"
+			"set"
+			{
+				"classname" "trigger_hurt"
+				"damage" "400"
+				"nodmgforce" "1"
+			}
+		}
+		// block off next map
+		"add"
+		{
+			"classname" "func_brush"
+			"rendermode" "10"
+			"functions"
+			{
+				"set_model"
+				{
+					"origin" "2208 -4512 -40"
+					"size" "960 832 16"
+				}
+			}
+		}
+	}
+	"checkpoint"
+	{
+		"spawn"
+		{
+			"origin"	"-5668 767 2328"
+			"angles"	"0 125 0"
+		}
+		"after rockslide"
+		{
+			"origin"	"-5020 -13 1716"
+			"angles"	"0 165 0"
+			"triggerid"	"2197111"
+			"output"	"OnTrigger"
+			"bringall"	"1"
+		}
+		"entered the canyon"
+		{
+			"origin"	"-4115 -1725 1667"
+			"angles"	"0 -60 0"
+			"triggerid"	"891430"
+			"output"	"OnTrigger"
+		}
+		"pit jump"
+		{
+			"origin"	"-2086 1828 1002"
+			"angles"	"0 150 0"
+			"triggerid"	"chasmtochicv1"
+			"output"	"OnTrigger"
+		}
+		"canyon jump"
+		{
+			"origin"	"-727 1706 1554"
+			"angles"	"0 322 0"
+			"triggerid"	"chicvtochasm4"
+			"output"	"OnTrigger"
+		}
+		"cave healing pool"
+		{
+			"origin"	"1752 -1890 1594"
+			"angles"	"0 -45 0"
+			"triggerid"	"3213876"
+			"output"	"OnTrigger"
+		}
+		"gonarch fight"
+		{
+			"origin"	"-521 -1753 1408"
+			"angles"	"0 -153 0"
+			"triggerid"	"3024008"
+			"output"	"OnTrigger"
+			"bringall"	"1"
+		}
+		"gonarch canyon chase start"
+		{
+			"origin"	"-1533 -1955 1692"
+			"angles"	"0 -135 0"
+			"triggerid"	"2072862"
+			"output"	"OnTrigger"
+			"bringall"	"1"
+		}
+		"gonarch canyon chase end"
+		{
+			"origin"	"-3545 -4369 1711"
+			"angles"	"0 270 0"
+			"triggerid"	"chasmtocry"
+			"output"	"OnTrigger"
+		}
+		"gonarch crystal chase start"
+		{
+			"origin"	"-5172 -6052 1573"
+			"angles"	"0 265 0"
+			"triggerid"	"cccave_plunger_button1"
+			"output"	"OnPressed"
+			"bringall"	"1"
+		}
+		"gonarch crystal chase end"
+		{
+			"origin"	"-2635 -7449 1578"
+			"angles"	"0 0 0"
+			"triggerid"	"151607"
+			"output"	"OnTrigger"
+		}
+		"poison pool"
+		{
+			"origin"	"-313 -5041 1398"
+			"angles"	"0 45 0"
+			"triggerid"	"3231904"
+			"output"	"OnTrigger"
+		}
+	}
+}
