@@ -29,6 +29,20 @@
 				"nodmgforce" "1"
 			}
 		}
+		// block off next map
+		"add"
+		{
+			"classname" "func_brush"
+			"rendermode" "10"
+			"functions"
+			{
+				"set_model"
+				{
+					"origin" "5408 -656 2808"
+					"size" "960 736 16"
+				}
+			}
+		}
 	}
 	"checkpoint"
 	{
