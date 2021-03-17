@@ -27,20 +27,49 @@
 				"delay_output" "OnMapSpawn"
 			}
 		}
+		"modify"
+		{
+			"classname" "logic_auto"
+			"hammerid" "3561"
+			"functions"
+			{
+				"delay_output" "OnMapSpawn"
+			}
+		}
+		"modify"
+		{
+			"classname" "logic_auto"
+			"hammerid" "3694"
+			"functions"
+			{
+				"delay_output" "OnMapSpawn"
+			}
+		}
+		"modify"
+		{
+			"classname" "logic_auto"
+			"hammerid" "324279"
+			"functions"
+			{
+				"delay_output" "OnMapSpawn"
+			}
+		}
+		"modify"
+		{
+			"classname" "logic_auto"
+			"hammerid" "796971"
+			"functions"
+			{
+				"delay_output" "OnMapSpawn"
+			}
+		}
 	}
 	"checkpoint"
 	{
 		"spawn"
 		{
-			"origin"	"-6400 5376 -956"
-			"angles"	"0 270 0"
-		}
-		"nihilanth fight"
-		{
 			"origin"	"34 1869 -659"
 			"angles"	"0 270 0"
-			"triggerid"	"Intro_nihl"
-			"output"	"OnEndSequence"
 		}
 	}
 }
