@@ -40,6 +40,20 @@
 				"rendermode" "10"
 			}
 		}
+		// block off next map
+		"add"
+		{
+			"classname" "func_brush"
+			"rendermode" "10"
+			"functions"
+			{
+				"set_model"
+				{
+					"origin" "7856 1008 4352"
+					"size" "32 672 512"
+				}
+			}
+		}
 		// make ai_relationship work
 		"modify"
 		{
@@ -188,7 +202,7 @@
 		{
 			"origin"	"4350 1000 1989"
 			"angles"	"0 90 0"
-			"triggerid" 	"9094"
+			"triggerid"	"9094"
 			"output"	"OnTrigger"
 		}
 		"before last elevators"
