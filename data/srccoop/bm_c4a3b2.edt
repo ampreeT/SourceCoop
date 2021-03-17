@@ -3,7 +3,7 @@
 "config"
 {
 	"chapter" "Interloper"
-	"nextmap"	"bm_c4a3c"
+	"nextmap" "bm_c4a3c"
 	"features"
 	{
 		"FIRSTPERSON_DEATHCAM" "0"
@@ -33,6 +33,20 @@
 				{
 					"origin" "7552 1024 4224"
 					"size" "512 512 512"
+				}
+			}
+		}
+		// block off next map
+		"add"
+		{
+			"classname" "func_brush"
+			"rendermode" "10"
+			"functions"
+			{
+				"set_model"
+				{
+					"origin" "9792 -10208 9024"
+					"size" "384 32 320"
 				}
 			}
 		}
