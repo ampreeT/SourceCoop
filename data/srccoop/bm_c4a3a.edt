@@ -10,7 +10,7 @@
 	}
 	"equipment"
 	{
-			"lookup"
+		"lookup"
 		{
 			"targetname" "interloper_equipment"
 		}
@@ -27,6 +27,30 @@
 				"classname" "trigger_hurt"
 				"damage" "200"
 				"nodmgforce" "1"
+			}
+		}
+		// block off next map
+		"add"
+		{
+			"classname" "func_brush"
+			"rendermode" "10"
+			"functions"
+			{
+				"set_model"
+				{
+					"origin" "642 -2711 203"
+					"size" "43 597 785"
+				}
+			}
+		}
+		// delay map start
+		"modify"
+		{
+			"classname" "logic_auto"
+			"hammerid" "2406415"
+			"functions"
+			{
+				"delay_output" "OnMapSpawn"
 			}
 		}
 		// make door stay open
@@ -66,6 +90,13 @@
 			"triggerid"	"3483674"
 			"output"	"OnPressed"
 			"bringall" 	"1"
+		}
+		"controllers fight area"
+		{
+			"origin"	"3072 4488 -1689"
+			"angles"	"0 270 0"
+			"triggerid"	"4162581"
+			"output"	"OnPressed"
 		}
 		"second elevator"
 		{
