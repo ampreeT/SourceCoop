@@ -40,6 +40,20 @@
 				"nodmgforce" "1"
 			}
 		}
+		// block off next map
+		"add"
+		{
+			"classname" "func_brush"
+			"rendermode" "10"
+			"functions"
+			{
+				"set_model"
+				{
+					"origin" "-7744 632 -13128"
+					"size" "48 16 48"
+				}
+			}
+		}
 		// make map change even if all players die in laser trap
 		"modify"
 		{
