@@ -1,0 +1,138 @@
+#base "base/bm_sp_campaign.edt"
+
+"config"
+{
+	"chapter" "Endgame"
+	"nextmap" "/.*/"
+	"features"
+	{
+		"FIRSTPERSON_DEATHCAM" "0"
+	}
+	"equipment"
+	{
+		"lookup"
+		{
+			"targetname" "suit"
+		}
+	}
+	"entity"
+	{
+		// zombify save reload trigs
+		"modify"
+		{
+			"classname" "trigger_once"
+			"OnTrigger" "/^c5a1a_deathfall_loadsavedReload/"
+			"set"
+			{
+				"classname" "trigger_hurt"
+				"damage" "400"
+				"nodmgforce" "1"
+			}
+		}
+		// delay map start
+		"modify"
+		{
+			"classname" "logic_auto"
+			"hammerid" "36809"
+			"functions"
+			{
+				"delay_output" "OnMapSpawn"
+			}
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnMapSpawn"
+					"target" "ss1"
+					"input" "Enable"
+				}
+				"add"
+				{
+					"output" "OnMapSpawn"
+					"target" "Tower_template"
+					"input"	"ForceSpawn"
+				}
+			}
+		}
+		"modify"
+		{
+			"classname" "logic_auto"
+			"hammerid" "188412"
+			"functions"
+			{
+				"delay_output" "OnMapSpawn"
+			}
+		}
+		"modify"
+		{
+			"classname" "logic_auto"
+			"hammerid" "188410"
+			"functions"
+			{
+				"delay_output" "OnMapSpawn"
+			}
+		}
+		"modify"
+		{
+			"targetname" "ss1"
+			"set"
+			{
+				"StartDisabled" "1"
+			}
+		}
+		"add"
+		{
+			"classname" "point_template"
+			"spawnflags" "2"
+			"targetname" "Tower_template"
+			"Template01" "Tower"
+			"Template02" "clouds"
+			"Template03" "manta_flee"
+			"Template04" "flock"
+		}
+		// g-man offer accepted replic fix
+		"add"
+		{
+			"classname" "ambient_generic"
+			"targetname" "gman_offer_fix"
+			"spawnflags" "49"
+			"message" "endgame.gman.wiselydone01"
+		}
+		"modify"
+		{
+			"targetname" "gman_end_relay"
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnTrigger"
+					"target" "gman_offer_fix"
+					"input" "PlaySound"
+					"delay" "1"
+				}
+			}
+		}
+		"modify"
+		{
+			"targetname" "gman_end_relay_classic"
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnTrigger"
+					"target" "gman_offer_fix"
+					"input" "PlaySound"
+					"delay" "1"
+				}
+			}
+		}
+	}
+	"checkpoint"
+	{
+		"spawn"
+		{
+			"origin"	"-13920 8305 11836"
+			"angles"	"0 90 0"
+		}
+	}
+}

@@ -1,0 +1,77 @@
+#base "base/bm_sp_campaign.edt"
+
+"config"
+{
+	"chapter" "Gonarch's Lair"
+	"nextmap" "bm_c4a2b"
+	"features"
+	{
+		"FIRSTPERSON_DEATHCAM" "0"
+	}
+	"equipment"
+	{
+		"lookup"
+		{
+			"targetname" "gonarch_equipment"
+		}
+	}
+	"entity"
+	{
+		// zombify save reload trigs
+		"modify"
+		{
+			"classname" "trigger_multiple"
+			"OnStartTouch" "/^c4a2a_deathfall_loadsavedReload/"
+			"set"
+			{
+				"classname" "trigger_hurt"
+				"damage" "400"
+				"nodmgforce" "1"
+			}
+		}
+		// block off next map
+		"add"
+		{
+			"classname" "func_brush"
+			"rendermode" "10"
+			"functions"
+			{
+				"set_model"
+				{
+					"origin" "5408 -656 2808"
+					"size" "960 736 16"
+				}
+			}
+		}
+	}
+	"checkpoint"
+	{
+		"spawn"
+		{
+			"origin"	"492 4292 3631"
+			"angles"	"0 0 0"
+		}
+		"entered gonarch fight area"
+		{
+			"origin"	"335 1723 3036"
+			"angles"	"0 -135 0"
+			"triggerid"	"661319"
+			"output"	"OnTrigger"
+		}
+		"gonarch shows up"
+		{
+			"origin"	"-1554 1256 3098"
+			"angles"	"0 -10 0"
+			"triggerid"	"portal_button"
+			"output"	"OnPressed"
+			"bringall"	"1"
+		}
+		"gonarch fight"
+		{
+			"origin"	"335 1723 3036"
+			"angles"	"0 -135 0"
+			"triggerid"	"gonarch_a_intro"
+			"output"	"OnEndSequence"
+		}
+	}
+}
