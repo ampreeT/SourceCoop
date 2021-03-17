@@ -3,7 +3,7 @@
 "config"
 {
 	"chapter" "Interloper"
-	"nextmap"	"bm_c4a3b1"
+	"nextmap" "bm_c4a3b1"
 	"features"
 	{
 		"FIRSTPERSON_DEATHCAM" "0"
@@ -17,6 +17,20 @@
 	}
 	"entity"
 	{
+		// block off next map
+		"add"
+		{
+			"classname" "func_brush"
+			"rendermode" "10"
+			"functions"
+			{
+				"set_model"
+				{
+					"origin" "3648 -2112 1342"
+					"size" "256 256 71"
+				}
+			}
+		}
 		// delete first suckyvent clip brush
 		"delete"
 		{
