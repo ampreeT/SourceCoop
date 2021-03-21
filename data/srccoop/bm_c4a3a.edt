@@ -29,6 +29,20 @@
 				"nodmgforce" "1"
 			}
 		}
+		// no going back
+		"add"
+		{
+			"classname" "func_brush"
+			"rendermode" "10"
+			"functions"
+			{
+				"set_model"
+				{
+					"origin" "-504 10736 -2128"
+					"size" "16 288 352"
+				}
+			}
+		}
 		// block off next map
 		"add"
 		{
