@@ -146,6 +146,28 @@
 				}
 			}
 		}
+		// tower flames fix
+		"modify"
+		{
+			"targetname" "info_particle_system006"
+			"set"
+			{
+				"start_active" "0"
+			}
+		}
+		"modify"
+		{
+			"hammerid" "520"
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnTrigger"
+					"target" "info_particle_system006"
+					"input" "Start"
+				}
+			}
+		}
 	}
 	"checkpoint"
 	{
