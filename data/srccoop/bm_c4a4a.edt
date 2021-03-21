@@ -63,6 +63,11 @@
 				"delay_output" "OnMapSpawn"
 			}
 		}
+		// delete all misc_marionettist to fix server crush
+		"delete"
+		{
+			"classname" "misc_marionettist"
+		}
 	}
 	"checkpoint"
 	{

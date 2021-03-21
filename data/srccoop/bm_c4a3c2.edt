@@ -40,6 +40,20 @@
 				"nodmgforce" "1"
 			}
 		}
+		// block off next map
+		"add"
+		{
+			"classname" "func_brush"
+			"rendermode" "10"
+			"functions"
+			{
+				"set_model"
+				{
+					"origin" "3072 9024 15674"
+					"size" "128 128 20"
+				}
+			}
+		}
 		// controller trap fix
 		"add"
 		{
@@ -64,6 +78,63 @@
 		// make the main puzzle consistent
 		"modify"
 		{
+			"targetname" "tier1_controller1"
+			"outputs"
+			{
+				"delete"
+				{
+					"output" "OnDeath"
+					"target" "tier1_main_door_force"
+					"input"	"Open"
+				}
+				"delete"
+				{
+					"output" "OnDeath"
+					"target" "tier1_main_door_particle"
+					"input"	"Stop"
+				}
+			}
+		}
+		"modify"
+		{
+			"targetname" "tier2_bone_marrow_entrance_counter"
+			"outputs"
+			{
+				"delete"
+				{
+					"output" "OnHitMax"
+					"target" "tier2_main_door_force"
+					"input"	"Open"
+				}
+				"delete"
+				{
+					"output" "OnHitMax"
+					"target" "tier2_main_door_particle"
+					"input"	"Stop"
+				}
+			}
+		}
+		"modify"
+		{
+			"targetname" "tier3_controller1"
+			"outputs"
+			{
+				"delete"
+				{
+					"output" "OnDeath"
+					"target" "tier3_main_door_force"
+					"input"	"Open"
+				}
+				"delete"
+				{
+					"output" "OnDeath"
+					"target" "tier3_main_door_particle"
+					"input"	"Stop"
+				}
+			}
+		}
+		"modify"
+		{
 			"targetname" "tier2_main_door_force"
 			"set"
 			{
@@ -76,25 +147,6 @@
 			"set"
 			{
 				"start_active" "0"
-			}
-		}
-		"modify"
-		{
-			"targetname" "tier1_heart"
-			"outputs"
-			{
-				"add"
-				{
-					"output" "OnBreak"
-					"target" "tier2_main_door_force"
-					"input"	"Close"
-				}
-				"add"
-				{
-					"output" "OnBreak"
-					"target" "tier2_main_door_particle"
-					"input"	"Start"
-				}
 			}
 		}
 		"modify"
@@ -115,9 +167,52 @@
 		}
 		"modify"
 		{
+			"targetname" "tier1_heart"
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnBreak"
+					"target" "tier1_main_door_force"
+					"input"	"Open"
+				}
+				"add"
+				{
+					"output" "OnBreak"
+					"target" "tier1_main_door_particle"
+					"input"	"Stop"
+				}
+				"add"
+				{
+					"output" "OnBreak"
+					"target" "tier2_main_door_force"
+					"input"	"Close"
+				}
+				"add"
+				{
+					"output" "OnBreak"
+					"target" "tier2_main_door_particle"
+					"input"	"Start"
+				}
+			}
+		}
+		"modify"
+		{
 			"targetname" "tier2_heart"
 			"outputs"
 			{
+				"add"
+				{
+					"output" "OnBreak"
+					"target" "tier2_main_door_force"
+					"input"	"Open"
+				}	
+				"add"
+				{
+					"output" "OnBreak"
+					"target" "tier2_main_door_particle"
+					"input"	"Stop"
+				}
 				"add"
 				{
 					"output" "OnBreak"
@@ -129,6 +224,25 @@
 					"output" "OnBreak"
 					"target" "tier3_main_door_particle"
 					"input"	"Start"
+				}
+			}
+		}
+		"modify"
+		{
+			"targetname" "tier3_heart"
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnBreak"
+					"target" "tier3_main_door_force"
+					"input"	"Open"
+				}	
+				"add"
+				{
+					"output" "OnBreak"
+					"target" "tier3_main_door_particle"
+					"input"	"Stop"
 				}
 			}
 		}
@@ -169,6 +283,24 @@
 				}
 			}
 		}
+		// tier 1 controller beams fix
+		"modify"
+		{
+			"hammerid" "1330948"
+			"outputs"
+			{
+				"modify"
+				{
+					"output" "OnTrigger"
+					"target" "tier1_controller1_beam*"
+					"input" "TurnOn"
+					"set"
+					{
+						"timestofire" "1"
+					}
+				}
+			}
+		}
 	}
 	"checkpoint"
 	{
@@ -200,10 +332,10 @@
 		}
 		"end of the map"
 		{
-			"origin"	"3179 9023 15877"
-			"angles"	"0 180 0"
-			"triggerid"	"catchers_finalmover"
-			"output"	"OnFullyOpen"
+			"origin"	"4198 9024 15968"
+			"angles"	"0 0 0"
+			"triggerid"	"3998072"
+			"output"	"OnTrigger"
 			"bringall"	"1"
 		}
 	}

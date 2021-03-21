@@ -40,6 +40,20 @@
 				"rendermode" "10"
 			}
 		}
+		// block off next map
+		"add"
+		{
+			"classname" "func_brush"
+			"rendermode" "10"
+			"functions"
+			{
+				"set_model"
+				{
+					"origin" "8272 -7248 4032"
+					"size" "32 608 448"
+				}
+			}
+		}
 		// no spawning garg in air before third and forth pushpads
 		"modify"
 		{
