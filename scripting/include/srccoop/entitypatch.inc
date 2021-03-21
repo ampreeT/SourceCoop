@@ -267,6 +267,35 @@ public MRESReturn Hook_GonarchRunAIPost(int _this)
 }
 
 //------------------------------------------------------
+// CNPC_Nihilanth - npc_nihilanth
+// MP crash fix
+//------------------------------------------------------
+public MRESReturn Hook_NihilanthRunAI(int _this)
+{
+	CBaseEntity pThis = CBaseEntity(_this);
+	CBasePlayer pPlayer = GetNearestPlayer(pThis, true);
+	if(!pPlayer.IsClassPlayer()) {
+		return MRES_Supercede;
+	}
+	SetLocalPlayerCallingEntity(view_as<int>(pPlayer));
+	return MRES_Ignored;
+}
+public MRESReturn Hook_NihilanthRunAIPost(int _this)
+{
+	ClearLocalPlayerCallingEntity();
+	return MRES_Ignored;
+}
+
+public MRESReturn Hook_NihilanthHandleAnimEvent(int _this, Handle hParams)
+{
+	return Hook_NihilanthRunAI(_this);
+}
+public MRESReturn Hook_NihilanthHandleAnimEventPost(int _this, Handle hParams)
+{
+	return Hook_NihilanthRunAIPost(_this);
+}
+
+//------------------------------------------------------
 // CPropRadiationCharger - prop_radiation_charger, CPropHevCharger - prop_hev_charger
 // ToDo: reimplement on serverside (avoid clientside effects)
 //------------------------------------------------------
@@ -1030,7 +1059,7 @@ public MRESReturn Hook_EnvCreditsAcceptInput(int _this, Handle hReturn, Handle h
 			DHookSetReturn(hReturn, true);
 			return MRES_Supercede;
 		}
-		if(strcmp(szInputType, "RollOutroCredits", false) == 0)
+		if(strcmp(szInputType, "RollEndCredits", false) == 0 || strcmp(szInputType, "RollOutroCredits", false) == 0)
 		{
 			Handle pMsg = StartMessageAll("CreditsMsg", USERMSG_RELIABLE);
 			if(pMsg != null) {

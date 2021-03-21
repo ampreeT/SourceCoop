@@ -20,7 +20,7 @@ A step-by-step guide is also available on [Steam](https://steamcommunity.com/sha
 
 ### Recommendations
 - Setting convar __mp_teamplay__ to __1__ will provide lag-free noblock
-- Setting convar __sv_always_run__ to __1__ is recommended to avoid glitchy sprinting weapon animations
+- Setting convar __sv_always_run__ to __1__ will avoid glitchy sprinting weapon animations
 
 ### Plugin Convars
 - __sourcecoop_enabled__ - Enables cooperative functionality on maps.
@@ -29,6 +29,7 @@ A step-by-step guide is also available on [Steam](https://steamcommunity.com/sha
 - __sourcecoop_start_wait_period__ - The max number of seconds to wait since first player spawned in to start the map. The timer is skipped when all players enter the game.
 -  __sourcecoop_end_wait_period__ - The max number of seconds to wait since first player triggered a changelevel. The timer speed increases each time a new player finishes the level.
 -  __sourcecoop_end_wait_factor__ - Controls how much the number of finished players increases the changelevel timer speed. 1.0 means full, 0 means none (timer will run full length).
+-  __sourcecoop_homemap__ - The map to return to after finishing a campaign/map.
 -  __sourcecoop_debug__ - Sets debug logging options
 
 __Additional configuration can be found on the [wiki page](https://github.com/ampreeT/SourceCoop/wiki/Features-&-Configuration).__
@@ -49,7 +50,9 @@ If you are interested in helping us, create a pull request above or contact __am
 - __Alienmario__ | programming, reverse engineering, map editing
 	- [Steam](https://steamcommunity.com/id/4oM0/) | [GitHub](https://github.com/Alienmario)
 - __Rock__ | miscellaneous plugin features, map editing
-	- [Steam](https://steamcommunity.com/id/Rock48/) | [GitHub](https://github.com/Rock48)
+	- [Steam](https://steamcommunity.com/id/Rock48/) | [GitHub](https://github.com/Rock48
+- __Krozis Kane__ | map editing
+	- [Steam](https://steamcommunity.com/id/Krozis_Kane/) | [GitHub](https://github.com/KrozisKane)
 ### Playtesters
 - [Lear](https://steamcommunity.com/id/SKGNick)
 - [bddu](https://steamcommunity.com/id/bddu/)

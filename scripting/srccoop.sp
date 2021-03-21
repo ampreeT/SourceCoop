@@ -2,7 +2,7 @@
 
 #include <srccoop>
 
-#define PLUGIN_VERSION "1.0.2"
+#define PLUGIN_VERSION "1.0.3"
 
 public Plugin myinfo =
 {
@@ -327,6 +327,13 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 				{
 					DHookEntity(hkRunAI, false, iEntIndex, _, Hook_GonarchRunAI);
 					DHookEntity(hkRunAI, true, iEntIndex, _, Hook_GonarchRunAIPost);
+				}
+				else if (strcmp(szClassname, "npc_nihilanth") == 0)
+				{
+					DHookEntity(hkRunAI, false, iEntIndex, _, Hook_NihilanthRunAI);
+					DHookEntity(hkRunAI, true, iEntIndex, _, Hook_NihilanthRunAIPost);
+					DHookEntity(hkHandleAnimEvent, false, iEntIndex, _, Hook_NihilanthHandleAnimEvent);
+					DHookEntity(hkHandleAnimEvent, true, iEntIndex, _, Hook_NihilanthHandleAnimEventPost);
 				}
 			}
 			else if ((strcmp(szClassname, "instanced_scripted_scene", false) == 0) ||
