@@ -43,6 +43,21 @@
 				}
 			}
 		}
+		// delete brush near gonarch crystal chase start
+		"delete"
+		{
+			"targetname" "cc_block_player_in"
+		}
+		// delete brush near gonarch crystal chase end
+		"delete"
+		{
+			"targetname" "cc_tunnel_block"
+		}
+		// delete trigger_hurt near gonarch crystal chase end
+		"delete"
+		{
+			"targetname" "cc_crush"
+		}
 	}
 	"checkpoint"
 	{
@@ -124,6 +139,7 @@
 			"angles"	"0 0 0"
 			"triggerid"	"151607"
 			"output"	"OnTrigger"
+			"bringall"	"1"
 		}
 		"poison pool"
 		{
