@@ -134,6 +134,11 @@
 				}
 			}
 		}
+		// delete brush near gonarch first chase start
+		"delete"
+		{
+			"targetname" "main_canyon_reverse_01_clip"
+		}
 	}
 	"checkpoint"
 	{
@@ -166,10 +171,11 @@
 		}
 		"gonarch first chase end"
 		{
-			"origin"	"10576 -2424 -965"
-			"angles"	"0 0 0"
-			"triggerid"	"water_cave_fumerol_01_wall"
-			"output"	"OnBurningComplete"
+			"origin"	"10328 -2424 -984"
+			"angles"	"0 -90 0"
+			"triggerid"	"5592044"
+			"output"	"OnTrigger"
+			"bringall"	"1"
 		}
 		"water puzzle start"
 		{
