@@ -1,6 +1,6 @@
 # SourceCoop
 
-SourceCoop is a cooperative plugin for [Black Mesa](https://store.steampowered.com/app/362890/Black_Mesa/ "Black Mesa") that __allows multiple players to play together on official and custom campaigns__. The plugin fixes various crashes, adjusts maps for cooperative play, re-enables single-player functionality, and __only needs to be installed on the server__. SourceCoop is currently in development and currently supports all earthbound levels from the official campaign.
+SourceCoop is a cooperative plugin for [Black Mesa](https://store.steampowered.com/app/362890/Black_Mesa/ "Black Mesa") that __allows multiple players to play together on official and custom campaigns__. The plugin fixes various crashes, adjusts maps for cooperative play, re-enables single-player functionality, and __only needs to be installed on the server__.
 
 ## Installation Guide
 __If you are someone who is looking to play on a server__, you are already completely set up and ready to play! Cooperative servers can be found on the server browser just like any other server.
@@ -50,7 +50,7 @@ If you are interested in helping us, create a pull request above or contact __am
 - __Alienmario__ | programming, reverse engineering, map editing
 	- [Steam](https://steamcommunity.com/id/4oM0/) | [GitHub](https://github.com/Alienmario)
 - __Rock__ | miscellaneous plugin features, map editing
-	- [Steam](https://steamcommunity.com/id/Rock48/) | [GitHub](https://github.com/Rock48
+	- [Steam](https://steamcommunity.com/id/Rock48/) | [GitHub](https://github.com/Rock48)
 - __Krozis Kane__ | map editing
 	- [Steam](https://steamcommunity.com/id/Krozis_Kane/) | [GitHub](https://github.com/KrozisKane)
 ### Playtesters
