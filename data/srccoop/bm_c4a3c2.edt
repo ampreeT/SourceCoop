@@ -294,7 +294,10 @@
 					"output" "OnTrigger"
 					"target" "tier1_controller1_beam*"
 					"input" "TurnOn"
-					"timestofire" "1"
+					"set"
+					{
+						"timestofire" "1"
+					}
 				}
 			}
 		}
