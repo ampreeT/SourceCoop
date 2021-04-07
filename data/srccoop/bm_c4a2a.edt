@@ -43,6 +43,11 @@
 				}
 			}
 		}
+		// delete return blocker
+		"delete"
+		{
+			"targetname" "return_blocker"
+		}
 	}
 	"checkpoint"
 	{
