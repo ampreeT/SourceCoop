@@ -312,8 +312,7 @@ enum struct CCoopSpawn
 	void SpawnPlayer(CBasePlayer pPlayer, bool bSpawnEquipment = true)
 	{
 		CCoopSpawnEntry pCheckpoint;
-		// pickup possible spawn items and make sure player spawned in if following teleport is blocked
-		if (this.GetCheckpointByIndex(0, pCheckpoint))
+		if (this.GetCurrentCheckpoint(pCheckpoint))
 		{
 			pCheckpoint.TeleportPlayer(pPlayer, true);
 		}
@@ -325,7 +324,6 @@ enum struct CCoopSpawn
 			}
 			this.SpawnPlayerEquipment(pPlayer);
 		}
-		RequestFrame(RequestSpawnPlayer, pPlayer);
 	}
 	
 	void CreatePortal(const float vecPosition[3])
@@ -690,24 +688,6 @@ enum struct CCoopSpawn
 }
 
 CCoopSpawn g_SpawnSystem;
-
-public void RequestSpawnPlayer(CBasePlayer pPlayer)
-{
-	// one more frame to allow time for picking up batteries after suit is picked up
-	RequestFrame(RequestSpawnPlayer2, pPlayer);
-}
-
-public void RequestSpawnPlayer2(CBasePlayer pPlayer)
-{
-	if (pPlayer.IsValid() && pPlayer.IsAlive())
-	{
-		CCoopSpawnEntry pCheckpoint;
-		if (g_SpawnSystem.m_iCurrentCheckpoint > 0 && g_SpawnSystem.GetCurrentCheckpoint(pCheckpoint))
-		{
-			pCheckpoint.TeleportPlayer(pPlayer);
-		}
-	}
-}
 
 public void Hook_OutputCheckpoint(const char[] szName, int iCaller, int iActivator, float flDelay)
 {

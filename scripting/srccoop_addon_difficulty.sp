@@ -32,7 +32,7 @@ bool bEnabled;
 
 public void OnPluginStart()
 {
-	g_pConvarDifficulty = CreateConVar("sourcecoop_difficulty", "0", "Sets the difficulty - from 0 (base difficulty) and infinitely up.", _, true, 0.0);
+	g_pConvarDifficulty = CreateConVar("sourcecoop_difficulty", "0", "Sets the difficulty - from 0 (base difficulty) and up.", _, true, 0.0);
 	g_pConvarDifficultyAuto = CreateConVar("sourcecoop_difficulty_auto", "2", "Sets automatic difficulty mode. -1 disables. 0 balances difficulty between min and max convars. Values above 0 set the difficulty increment per player, ignoring the min and max cvars.", _, true, -1.0);
 	g_pConvarDifficultyAutoMin = CreateConVar("sourcecoop_difficulty_auto_min", "1", "When automatic difficulty mode is set to 0, this is the difficulty at 1 player.", _, true, 0.0);
 	g_pConvarDifficultyAutoMax = CreateConVar("sourcecoop_difficulty_auto_max", "20", "When automatic difficulty mode is set to 0, this is the difficulty at max players.", _, true, 0.0);

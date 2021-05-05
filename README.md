@@ -37,8 +37,7 @@ __Additional configuration can be found on the [wiki page](https://github.com/am
 ## Other Information
 __If you are looking to help with the development of the project__, we are always looking for more help! Heres some ways you can help:
 - Debugging and tracking down crashes
-- Helping us make the last few official maps compatible with the plugin
-- Adding new campaigns or levels to the plugin
+- Adding configs for new campaigns or levels
 - Simply playing on a server to help us test
 
 If you are interested in helping us, create a pull request above or contact __ampreeT__ or __Alienmario__ below.
