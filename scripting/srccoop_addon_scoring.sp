@@ -13,6 +13,9 @@
 #define COLOR_CRIMSON		 "\x07E31919"
 #define COLOR_WHITE			 "\x07FFFFFF"
 
+#define MAX_DAMAGE_AWARDED_PER_HIT	500.0
+#define MAX_COMBO					50
+
 #define MENUITEM_TOGGLE_KILLFEED "ToggleKillfeed"
 
 StringMap hTrie;
@@ -121,6 +124,8 @@ public void PopulateEntityNameMap()
 		SetTrieString(hTrie, "weapon_tau", "Tau Cannon");
 		SetTrieString(hTrie, "weapon_gluon", "Gluon Gun");
 		SetTrieString(hTrie, "weapon_assassin_glock", "Silenced Glock");
+		SetTrieString(hTrie, "projectile_electric_ball", "Electric Orb");
+		SetTrieString(hTrie, "projectile_electrocluster_chunk", "Electrocluster");
 
 		// Projectiles & Grenades
 		SetTrieString(hTrie, "grenade_hornet", "Hive Hand");
@@ -174,6 +179,19 @@ public void PopulateEntityNameMap()
 		SetTrieString(hTrie, "npc_xontroller", "Alien Controller");
 		SetTrieString(hTrie, "npc_gargantua", "Gargantua");
 		SetTrieString(hTrie, "npc_tentacle", "Outer-Space Octopus");
+
+		// Xen
+		SetTrieString(hTrie, "npc_houndeye_knockback", "Armored Houndeye");
+		SetTrieString(hTrie, "npc_houndeye_suicide", "Baby Houndeye");
+		SetTrieString(hTrie, "npc_beneathticle", "Beneathticle");
+		SetTrieString(hTrie, "npc_protozoan", "Floaty Boi");
+		SetTrieString(hTrie, "npc_xentree", "Xen Tree");
+		SetTrieString(hTrie, "npc_xenturret", "Xen Turret"); 
+		SetTrieString(hTrie, "npc_headcrab_baby", "Baby Headcrab"); 
+		SetTrieString(hTrie, "npc_bullsquid_melee", "Melee Bullsquid"); 
+		SetTrieString(hTrie, "npc_gonarch", "The Gonarch");   
+		SetTrieString(hTrie, "npc_xen_grun", "Xen Grunt");  
+		SetTrieString(hTrie, "npc_nihalinth", "The Nihalinth");  
 
 		// misc
 		SetTrieString(hTrie, "prop_physics", "a physics prop");
@@ -418,13 +436,23 @@ public Action Timer_DamageUpdate(Handle hTimer)
 				// Calculate bonus score for combo
 				float fDmgMinus100Clamped = fDamageDone - 100.0 > 0.0 ? fDamageDone - 100.0 : 0.0;
 				int iScoreToGive = RoundFloat(Pow(fDmgMinus100Clamped/60.0,1.25));
+				bool bMaxCombo = false;
+				
+				// Clamp max score to MAX_COMBO (in case of obscene combo bonuses)
+				if(iScoreToGive >= MAX_COMBO) {
+					iScoreToGive = MAX_COMBO;
+					bMaxCombo = true;
+				}
 
 				if(GetCookieBool(pKillfeedEnabledCookie, iClientIndex)) {
 					if(iScoreToGive > 0) {
 						SendDialogToOne(iClientIndex, 255, 50, 50, "Bonus Points +%d", iScoreToGive);
 						PrintToChat(iClientIndex, "%sFinal Combo: %s(%.0f Dmg for +%d Points)%s!",
 							COLOR_WHITE, COLOR_KILL_SCORE_ENT, fDamageDone, iScoreToGive, COLOR_WHITE);
-						PrintCenterText(iClientIndex, "COMBO COMPLETE");
+						if(bMaxCombo)
+							PrintCenterText(iClientIndex, "MAXIMUM COMBO COMPLETE");
+						else
+							PrintCenterText(iClientIndex, "COMBO COMPLETE");
 					} else {
 						PrintCenterText(iClientIndex, "COMBO OVER");
 					}
@@ -432,9 +460,15 @@ public Action Timer_DamageUpdate(Handle hTimer)
 
 				pPlayer.ModifyScore(iScoreToGive);
 
-				if(fDamageDone >= 400)
-					PrintToChatKillfeed("%s%s%s GOT A %s%.0f%s DAMAGE COMBO! GRANTING THEM A SCORE BONUS OF %s%d",
+				if(fDamageDone >= 400) {
+					if(bMaxCombo)
+						PrintToChatKillfeed("%s%s%s GOT A MAX COMBO OF %s%.0f%s DAMAGE! GRANTING THEM A SCORE BONUS OF %s%d",
 						COLOR_KILL_SCORE_ENT, szPlayerName, COLOR_MURDER, COLOR_KILL_SCORE_ENT, fDamageDone, COLOR_MURDER, COLOR_KILL_SCORE_ENT, iScoreToGive);
+					else
+						PrintToChatKillfeed("%s%s%s GOT A %s%.0f%s DAMAGE COMBO! GRANTING THEM A SCORE BONUS OF %s%d",
+						COLOR_KILL_SCORE_ENT, szPlayerName, COLOR_MURDER, COLOR_KILL_SCORE_ENT, fDamageDone, COLOR_MURDER, COLOR_KILL_SCORE_ENT, iScoreToGive);
+				}
+					
 			}
 		}
 	}
@@ -449,6 +483,12 @@ public Action Hook_OnNpcTakeDamage(int iVictim, int &iAttacker, int &iInflictor,
 	if(pAttacker.IsClassPlayer()) {
 		float[] attackers = new float[MaxClients];
 		lNpcDamageTracker.GetArray(iVictim, attackers);
+
+		// No negative damage
+		if(fDamage <= 0) return Plugin_Continue;
+		// Cap the max damage awarded from any given source to prevent obscene numbers due to edge cases (such as with with controllers in Xen)
+		if(fDamage > MAX_DAMAGE_AWARDED_PER_HIT) fDamage = MAX_DAMAGE_AWARDED_PER_HIT;
+
 		attackers[iAttacker] += fDamage;
 		lNpcDamageTracker.SetArray(iVictim, attackers);
 	}
