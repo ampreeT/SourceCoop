@@ -11,22 +11,25 @@ public Plugin myinfo =
 	name = "SourceCoop KillSounds",
 	author = "Alienmario",
 	description = "",
-	version = "1.0.0",
+	version = "1.0.1",
 	url = "https://github.com/ampreeT/SourceCoop"
 };
 
-#define SND_KILLNPC "buttons/button10.wav"
+#define SND_KILLNPC ""
 #define MENUITEM_TOGGLE_KILLSOUNDS "ToggleKillsounds"
 
 Cookie pEnabledCookie;
 ConVar pConvarDefault;
+ConVar pSoundEffectPath;
 
 public void OnPluginStart()
 {
 	HookEvent("entity_killed", Event_EntityKilled, EventHookMode_Post);
 	pEnabledCookie = new Cookie("sourcecoop_ks_enabled", "Killsounds", CookieAccess_Protected);
 	pConvarDefault = CreateConVar("sourcecoop_ks_default", "1", "Sets the default setting of the killsounds player preference.", _, true, 0.0, true, 1.0);
-	
+	pSoundEffectPath = CreateConVar("sourcecoop_ks_path", "buttons/button10.wav", "Sets the path to the kill sound effect.");
+	pSoundEffectPath.AddChangeHook(OnSndPathChange);
+
 	InitSourceCoopAddon();
 	if (LibraryExists(SRCCOOP_LIBRARY))
 	{
@@ -79,7 +82,14 @@ public void MyMenuHandler(TopMenu topmenu, TopMenuAction action, TopMenuObject o
 
 public void OnConfigsExecuted()
 {
-	PrecacheSound(SND_KILLNPC);
+	char szKillSnd[255];
+	pSoundEffectPath.GetString(szKillSnd, sizeof(szKillSnd));
+	PrecacheSound(szKillSnd);
+}
+
+public void OnSndPathChange(ConVar szConvar, const char[] szOldPath, const char[] szNewPath)
+{
+	PrecacheSound(szNewPath);
 }
 
 public void OnClientCookiesCached(int client)
@@ -100,9 +110,11 @@ public void Event_EntityKilled(Event hEvent, const char[] szName, bool bDontBroa
 	{
 		if(GetCookieBool(pEnabledCookie, pAttacker.GetEntIndex()))
 		{
+			char szKillSnd[255];
+			pSoundEffectPath.GetString(szKillSnd, sizeof(szKillSnd));
 			// double the sound, double the fun (actualy just to hear it over gunfire..)
-			EmitSoundToClient(pAttacker.GetEntIndex(), SND_KILLNPC);
-			EmitSoundToClient(pAttacker.GetEntIndex(), SND_KILLNPC);
+			EmitSoundToClient(pAttacker.GetEntIndex(), szKillSnd);
+			EmitSoundToClient(pAttacker.GetEntIndex(), szKillSnd);
 		}
 	}
 }
