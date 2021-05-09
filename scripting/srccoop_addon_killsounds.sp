@@ -15,7 +15,6 @@ public Plugin myinfo =
 	url = "https://github.com/ampreeT/SourceCoop"
 };
 
-#define SND_KILLNPC ""
 #define MENUITEM_TOGGLE_KILLSOUNDS "ToggleKillsounds"
 
 Cookie pEnabledCookie;
@@ -87,7 +86,7 @@ public void OnConfigsExecuted()
 	PrecacheSound(szKillSnd);
 }
 
-public void OnSndPathChange(ConVar szConvar, const char[] szOldPath, const char[] szNewPath)
+public void OnSndPathChange(ConVar pConvar, const char[] szOldPath, const char[] szNewPath)
 {
 	PrecacheSound(szNewPath);
 }
