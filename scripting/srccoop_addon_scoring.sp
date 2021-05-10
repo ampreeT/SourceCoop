@@ -389,7 +389,7 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 
 		// Each NPC needs an array of damage that clients have done to them
 		lNpcDamageTracker.SetArray(iEntIndex, clients);
-
+		
 		// Hook NPC damage
 		SDKHook(iEntIndex, SDKHook_OnTakeDamage, Hook_OnNpcTakeDamage);
 	}
@@ -483,13 +483,29 @@ public Action Hook_OnNpcTakeDamage(int iVictim, int &iAttacker, int &iInflictor,
 	if(pAttacker.IsClassPlayer()) {
 		float[] attackers = new float[MaxClients];
 		lNpcDamageTracker.GetArray(iVictim, attackers);
+		
+		float fDamageToAward = fDamage;
 
+		// DOESNT WORK:
+		// CBaseCombatCharacter pVictim = CBaseCombatCharacter(iVictim);
+		// int iHealth = pVictim.GetHealth();
+
+		// WORKAROUND:
+		int iHealth = GetEntProp(iVictim, Prop_Data, "m_iHealth", 1);
+
+		// Prevent overkill damage from being recorded
+		if(fDamage > iHealth)
+			fDamageToAward = float(iHealth);
+		
 		// No negative damage
-		if(fDamage <= 0) return Plugin_Continue;
-		// Cap the max damage awarded from any given source to prevent obscene numbers due to edge cases (such as with with controllers in Xen)
-		if(fDamage > MAX_DAMAGE_AWARDED_PER_HIT) fDamage = MAX_DAMAGE_AWARDED_PER_HIT;
+		if(fDamageToAward <= 0) fDamageToAward = 0.0;
 
-		attackers[iAttacker] += fDamage;
+		// Cap the max damage awarded from any given source to prevent obscene numbers due to edge cases
+		if(fDamageToAward > MAX_DAMAGE_AWARDED_PER_HIT)
+			fDamageToAward = MAX_DAMAGE_AWARDED_PER_HIT;
+
+		attackers[iAttacker] += fDamageToAward;
+
 		lNpcDamageTracker.SetArray(iVictim, attackers);
 	}
 
