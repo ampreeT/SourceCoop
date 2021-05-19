@@ -25,7 +25,7 @@ public void OnPluginStart()
 {
 	HookEvent("entity_killed", Event_EntityKilled, EventHookMode_Post);
 	pEnabledCookie = new Cookie("sourcecoop_ks_enabled", "Killsounds", CookieAccess_Protected);
-	pConvarDefault = CreateConVar("sourcecoop_ks_default", "1", "Sets the default setting of the killsounds player preference.", _, true, 0.0, true, 1.0);
+	pConvarDefault = CreateConVar("sourcecoop_ks_default", "0", "Sets the default setting of the killsounds player preference.", _, true, 0.0, true, 1.0);
 	pSoundEffectPath = CreateConVar("sourcecoop_ks_path", "buttons/button10.wav", "Sets the path to the kill sound effect.");
 	pSoundEffectPath.AddChangeHook(OnSndPathChange);
 
@@ -81,7 +81,7 @@ public void MyMenuHandler(TopMenu topmenu, TopMenuAction action, TopMenuObject o
 
 public void OnConfigsExecuted()
 {
-	char szKillSnd[255];
+	char szKillSnd[PLATFORM_MAX_PATH];
 	pSoundEffectPath.GetString(szKillSnd, sizeof(szKillSnd));
 	PrecacheSound(szKillSnd);
 }
@@ -109,7 +109,7 @@ public void Event_EntityKilled(Event hEvent, const char[] szName, bool bDontBroa
 	{
 		if(GetCookieBool(pEnabledCookie, pAttacker.GetEntIndex()))
 		{
-			char szKillSnd[255];
+			char szKillSnd[PLATFORM_MAX_PATH];
 			pSoundEffectPath.GetString(szKillSnd, sizeof(szKillSnd));
 			// double the sound, double the fun (actualy just to hear it over gunfire..)
 			EmitSoundToClient(pAttacker.GetEntIndex(), szKillSnd);
