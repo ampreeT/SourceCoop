@@ -13,6 +13,20 @@
 	}
 	"entity"
 	{
+		// block off next map
+		"add"
+		{
+			"classname" "func_brush"
+			"rendermode" "10"
+			"functions"
+			{
+				"set_model"
+				{
+					"origin" "-160 -3472 196"
+					"size" "448 16 384"
+				}
+			}
+		}
 		// Change this door opening to an earlier trigger
 		"delete"
 		{
