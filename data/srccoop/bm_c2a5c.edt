@@ -13,10 +13,24 @@
 	}
 	"entity"
 	{
+		// block off next map
+		"add"
+		{
+			"classname" "func_brush"
+			"rendermode" "10"
+			"functions"
+			{
+				"set_model"
+				{
+					"origin" "-13097.5 -10227 6732"
+					"size" "19 72 72"
+				}
+			}
+		}
 		"create"
 		{
 			"targetname"	"climb_cp_trig"
-			"classname"		"trigger_once"
+			"classname"	"trigger_once"
 			"spawnflags"	"1"
 			"functions"
 			{
