@@ -25,6 +25,20 @@
 				"rendermode" "10" // dont render
 			}
 		}
+		// block off next map
+		"add"
+		{
+			"classname" "func_brush"
+			"rendermode" "10"
+			"functions"
+			{
+				"set_model"
+				{
+					"origin" "132 1360 2088"
+					"size" "200 256 192"
+				}
+			}
+		}
 		// create coolant exit cp trigger
 		"create"
 		{
