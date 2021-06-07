@@ -13,9 +13,23 @@
 	}
 	"entity"
 	{
+		// block off next map
+		"add"
+		{
+			"classname" "func_brush"
+			"rendermode" "10"
+			"functions"
+			{
+				"set_model"
+				{
+					"origin" "1252 -7194 48"
+					"size" "600 36 384"
+				}
+			}
+		}
 		"create"
 		{
-			"classname"		"trigger_once"
+			"classname"	"trigger_once"
 			"targetname"	"garage_cp_trig"
 			"spawnflags"	"1"
 			"functions"
