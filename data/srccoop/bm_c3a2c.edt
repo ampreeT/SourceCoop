@@ -16,20 +16,6 @@
 	}
 	"entity"
 	{
-		// block off next map
-		"add"
-		{
-			"classname" "func_brush"
-			"rendermode" "10"
-			"functions"
-			{
-				"set_model"
-				{
-					"origin" "1192 1792 -800"
-					"size" "96 144 192"
-				}
-			}
-		}
 		// delay map start
 		"modify"
 		{
