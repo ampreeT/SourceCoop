@@ -13,6 +13,17 @@
 	}
 	"entity"
 	{
+		// no going back
+		"modify"
+		{
+			"classname" "trigger_changelevel"
+			"map" "bm_c3a1a"
+			"set"
+			{
+				"classname" "func_brush"
+				"rendermode" "10"
+			}
+		}
 	}
 	"checkpoint"
 	{
