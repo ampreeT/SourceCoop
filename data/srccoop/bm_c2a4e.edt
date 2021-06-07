@@ -13,6 +13,20 @@
 	}
 	"entity"
 	{
+		// block off next map
+		"add"
+		{
+			"classname" "func_brush"
+			"rendermode" "10"
+			"functions"
+			{
+				"set_model"
+				{
+					"origin" "-1984 -1304 560"
+					"size" "272 16 256"
+				}
+			}
+		}
 		// Allow tests to kill players too
 		"modify"
 		{
