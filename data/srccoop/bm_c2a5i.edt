@@ -13,6 +13,20 @@
 	}
 	"entity"
 	{
+		// block off next map
+		"add"
+		{
+			"classname" "func_brush"
+			"rendermode" "10"
+			"functions"
+			{
+				"set_model"
+				{
+					"origin" "234 8120 -232"
+					"size" "12 56 112"
+				}
+			}
+		}
 		// merge these triggers for edge case
 		"delete"
 		{
