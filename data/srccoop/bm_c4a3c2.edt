@@ -301,6 +301,35 @@
 				}
 			}
 		}
+		// catcher fix
+		"modify"
+		{
+			"hammerid" "3946440"
+			"outputs"
+			{
+				"modify"
+				{
+					"output" "OnTrigger"
+					"target" "catcher5_mover1"
+					"input" "Open"
+					"set"
+					{
+						"delay" "2"
+					}
+				}
+			}
+		}
+		"delete"
+		{
+			"hammerid" "3946420"
+			"hammerid" "3946383"
+			"hammerid" "3946331"
+			"hammerid" "3946400"
+			"hammerid" "3946471"
+			"hammerid" "3946454"
+			"hammerid" "3946357"
+			"targetname" "coneclip_pushes*"
+		}
 	}
 	"checkpoint"
 	{
