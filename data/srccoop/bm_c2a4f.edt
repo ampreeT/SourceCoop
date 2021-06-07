@@ -66,6 +66,20 @@
 				"rendermode" "10" // dont render
 			}
 		}
+		// block off next map (c2a4g)
+		"add"
+		{
+			"classname" "func_brush"
+			"rendermode" "10"
+			"functions"
+			{
+				"set_model"
+				{
+					"origin" "1746 2064 -64"
+					"size" "36 160 235"
+				}
+			}
+		}
 		// building exit changelevel timer setup
 		"modify"
 		{
