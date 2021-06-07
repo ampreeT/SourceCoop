@@ -13,6 +13,20 @@
 	}
 	"entity"
 	{
+		// block off next map
+		"add"
+		{
+			"classname" "func_brush"
+			"rendermode" "10"
+			"functions"
+			{
+				"set_model"
+				{
+					"origin" "1676 936 -768"
+					"size" "8 368 192"
+				}
+			}
+		}
 		// Kill the end game condition for triggering the tripmines...
 		// TODO: How should we *actually* handle this?
 		"delete"
