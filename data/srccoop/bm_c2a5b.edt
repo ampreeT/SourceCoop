@@ -44,6 +44,20 @@
 				"rendermode"	"10"
 			}
 		}
+		// block off next map
+		"add"
+		{
+			"classname" "func_brush"
+			"rendermode" "10"
+			"functions"
+			{
+				"set_model"
+				{
+					"origin" "-3940 5200 176"
+					"size" "72 16 72"
+				}
+			}
+		}
 		// Create a cp trigger
 		"create"
 		{
