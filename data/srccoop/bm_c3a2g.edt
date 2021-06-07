@@ -83,20 +83,6 @@
 				}
 			}
 		}
-		// block off next map
-		"add"
-		{
-			"classname" "func_brush"
-			"rendermode" "10"
-			"functions"
-			{
-				"set_model"
-				{
-					"origin" "848 -256 1572"
-					"size" "224 32 136"
-				}
-			}
-		}
 	}
 	"checkpoint"
 	{
