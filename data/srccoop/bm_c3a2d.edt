@@ -37,6 +37,20 @@
 	}
 	"entity"
 	{
+		// block off next map
+		"add"
+		{
+			"classname" "func_brush"
+			"rendermode" "10"
+			"functions"
+			{
+				"set_model"
+				{
+					"origin" "-1296 864 628"
+					"size" "128 224 136"
+				}
+			}
+		}
 		// fix logic_auto not firing
 		"modify"
 		{
