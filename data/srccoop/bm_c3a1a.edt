@@ -24,6 +24,20 @@
 				"rendermode" "10" // dont render
 			}
 		}
+		// block off next map
+		"add"
+		{
+			"classname" "func_brush"
+			"rendermode" "10"
+			"functions"
+			{
+				"set_model"
+				{
+					"origin" "1296 -1716 -424"
+					"size" "64 64 32"
+				}
+			}
+		}
 		// dont do the hatch closing and barney killing
 		"delete"
 		{
