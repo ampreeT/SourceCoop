@@ -25,6 +25,20 @@
 				"rendermode" "10" // dont render
 			}
 		}
+		// block off next map
+		"add"
+		{
+			"classname" "func_brush"
+			"rendermode" "10"
+			"functions"
+			{
+				"set_model"
+				{
+					"origin" "-516 -5186 488"
+					"size" "8 516 272"
+				}
+			}
+		}
 		// Make guard from last map invul, 
 		// move him behind a cutscene trigger
 		// make auto follow player
