@@ -304,13 +304,13 @@
 		// catcher fix
 		"modify"
 		{
-			"hammerid" "3946400"
+			"hammerid" "3946440"
 			"outputs"
 			{
 				"modify"
 				{
 					"output" "OnTrigger"
-					"target" "catcher1_mover1"
+					"target" "catcher5_mover1"
 					"input" "Open"
 					"set"
 					{
@@ -321,7 +321,7 @@
 		}
 		"delete"
 		{
-			"hammerid" "/^(3946331|3946383|3946420|3946440|3946357|3946454|3946471)$/"
+			"hammerid" "/^(3946400|3946331|3946383|3946420|3946357|3946454|3946471)$/"
 			"targetname" "/^coneclip_pushes/"
 		}
 		// make map change in case catcher still doesn't work properly
@@ -378,8 +378,8 @@
 		}
 		"end of the map"
 		{
-			"origin"	"3680 9024 15968"
-			"angles"	"0 180 0"
+			"origin"	"4198 9024 15968"
+			"angles"	"0 0 0"
 			"triggerid"	"3998072"
 			"output"	"OnTrigger"
 			"bringall"	"1"
