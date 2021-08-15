@@ -8,6 +8,7 @@
 // ----------------------------
 ConVar g_pConvarCoopEnabled;
 ConVar g_pConvarCoopTeam;
+ConVar g_pConvarDisableTeamSelect;
 ConVar g_pConvarCoopRespawnTime;
 ConVar g_pConvarWaitPeriod;
 ConVar g_pConvarEndWaitPeriod;

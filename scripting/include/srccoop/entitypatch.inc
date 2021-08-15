@@ -505,7 +505,8 @@ public MRESReturn Hook_FindNamedEntity(int _this, Handle hReturn, Handle hParams
 void ChangeLevelTriggered(CChangelevel pChangelevel, CBlackMesaPlayer pActivator)
 {
 	char szMapName[MAX_MAPNAME];
-	if (pChangelevel.GetMapName(szMapName, sizeof(szMapName)) && g_pLevelLump.m_pNextMapList.IsInMapList(szMapName))
+	if (pChangelevel.GetMapName(szMapName, sizeof(szMapName))
+		&& (g_pLevelLump.m_pNextMapList.Length == 0 || g_pLevelLump.m_pNextMapList.IsInMapList(szMapName)))
 	{
 		if(pActivator.IsClassPlayer())
 		{

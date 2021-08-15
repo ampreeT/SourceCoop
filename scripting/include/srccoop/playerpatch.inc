@@ -143,6 +143,13 @@ public void Hook_PlayerSpawnPost(int iClient)
 		
 		if (g_Engine == Engine_BlackMesa)
 		{
+			if(g_pConvarDisableTeamSelect.BoolValue && GetClientTeam(iClient) == TEAM_SPECTATOR)
+			{
+				// hide team select
+				ClientCommand(iClient, "hidepanel team");
+				ClientCommand(iClient, "hidepanel deathmatch");
+				ChangeClientTeam(iClient, TEAM_SCIENTIST);
+			}
 			if(pPlayer.IsAlive())
 			{
 				// Correct the 'damages' from the prethink hook hack
