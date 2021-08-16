@@ -455,12 +455,7 @@ enum struct CoopManager
 
 	bool IsCoopModeEnabled()
 	{
-		return this.m_bIsCoopMap && this.IsPluginEnabled();
-	}
-
-	bool IsPluginEnabled()
-	{
-		return g_pConvarCoopEnabled.BoolValue;
+		return this.m_bIsCoopMap;
 	}
 	
 	KeyValues LoadMapConfig(const char[] szMapName)
