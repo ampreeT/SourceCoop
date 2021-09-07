@@ -23,9 +23,9 @@ A step-by-step guide is also available on [Steam](https://steamcommunity.com/sha
 - Setting convar __sv_always_run__ to __1__ will avoid glitchy sprinting weapon animations
 
 ### Plugin Convars
-- __sourcecoop_enabled__ - Enables cooperative functionality on maps.
 - __sourcecoop_team__ - Sets which team to use in TDM mode. Valid values are "marines" or "scientist". Any other values will assume the server will handle it (not recommended).
-- __sourcecoop_respawntime__ - Set player respawn time in seconds. (Cannot be used to extend respawn time).
+- __sourcecoop_disable_teamselect__ - Whether to skip the team select screen and spawn in instantly.
+- __sourcecoop_respawntime__ - Sets player respawn time in seconds. (This can only be used for making respawn times quicker, not longer). Set to 0 to disable.
 - __sourcecoop_start_wait_period__ - The max number of seconds to wait since first player spawned in to start the map. The timer is skipped when all players enter the game.
 -  __sourcecoop_end_wait_period__ - The max number of seconds to wait since first player triggered a changelevel. The timer speed increases each time a new player finishes the level.
 -  __sourcecoop_end_wait_factor__ - Controls how much the number of finished players increases the changelevel timer speed. 1.0 means full, 0 means none (timer will run full length).

@@ -850,7 +850,9 @@ methodmap CBasePlayer < CBaseCombatCharacter
 	}
 	public CBaseAnimating GiveItem(const char[] szItemName)
 	{
-		CBaseAnimating pItem = CBaseAnimating(GivePlayerItem(this.GetEntIndex(), szItemName));
+		int iNameOffset = (strncmp(szItemName, "item_weapon_", 12, false) == 0) ? 5 : 0;
+		
+		CBaseAnimating pItem = CBaseAnimating(GivePlayerItem(this.GetEntIndex(), szItemName[iNameOffset]));
 		if(pItem.IsValid() && !pItem.GetOwner().IsValid())
 		{
 			// this would drop on the ground if player cant pick up any more
