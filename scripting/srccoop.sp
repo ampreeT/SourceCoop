@@ -2,7 +2,7 @@
 
 #include <srccoop>
 
-#define PLUGIN_VERSION "1.0.3"
+#define PLUGIN_VERSION "1.0.4"
 
 public Plugin myinfo =
 {
