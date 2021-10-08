@@ -27,6 +27,17 @@
 				}
 			}
 		}
+		// turns fall trigger to a trigger we can use
+		"modify"
+		{
+			"targetname"	"fall_off"
+			"add"
+			{
+				"classname"	"trigger_hurt"
+				"damagetype" "32"
+				"damage"	"9999"
+			}
+		}
 		"create"
 		{
 			"targetname"	"climb_cp_trig"
