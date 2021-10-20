@@ -28,18 +28,6 @@
 				"rendermode" "10"
 			}
 		}
-		// zombify save reload trigs
-		"modify"
-		{
-			"classname" "trigger_multiple"
-			"OnStartTouch" "/^loadsave_pitfallReload/"
-			"set"
-			{
-				"classname" "trigger_hurt"
-				"damage" "400"
-				"nodmgforce" "1"
-			}
-		}
 		// block off next map
 		"add"
 		{

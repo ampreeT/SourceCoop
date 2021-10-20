@@ -41,7 +41,7 @@
 		{
 			"targetname" "c2a2c_trans_counter"
 		}
-		// train going through wall
+		// fix train going through wall
 		"delete"
 		{
 			"targetname" "/^(track_66|track_65)$/"

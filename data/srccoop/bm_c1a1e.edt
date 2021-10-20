@@ -13,16 +13,6 @@
 	}
 	"entity"
 	{
-		// enable fall killtrig
-		"modify"
-		{
-			"classname" "trigger_hurt"
-			"origin" "-3808 -7936 -4384"
-			"add"
-			{
-				"StartDisabled" "0"
-			}
-		}
 		// dont lock elevator button
 		"modify"
 		{

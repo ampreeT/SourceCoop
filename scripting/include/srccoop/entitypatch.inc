@@ -596,7 +596,7 @@ void InitTrigger(CBaseEntity pTrigger)
 	pTrigger.SetMoveType(MOVETYPE_NONE);
 	static char szBuffer[PLATFORM_MAX_PATH];
 	pTrigger.GetModel(szBuffer, sizeof(szBuffer));
-	pTrigger.SetModel(szBuffer);
+	pTrigger.SetModel(szBuffer); // initialize the model from name
 	pTrigger.SetEffects(pTrigger.GetEffects() | EF_NODRAW);
 }
 
@@ -1304,4 +1304,34 @@ public Action Timer_FixRotatingAngles(Handle timer, CBaseEntity pEntity)
 public Action Hook_NoGibDmg(int victim, int &attacker, int &inflictor, float &damage, int &damagetype, int &weapon, float damageForce[3], float damagePosition[3])
 {
 	return Plugin_Handled;
+}
+
+//------------------------------------------------------
+// player_loadsaved
+// multiplayer support
+//------------------------------------------------------
+public MRESReturn Hook_LoadSavedAcceptInput(int _this, Handle hReturn, Handle hParams)
+{
+	char szBuffer[MAX_FORMAT];
+	DHookGetParamString(hParams, 1, szBuffer, sizeof(szBuffer));
+
+	if (strcmp(szBuffer, "Reload", false) == 0)
+	{
+		if (!DHookIsNullParam(hParams, 2))
+		{
+			int iActivator = DHookGetParam(hParams, 2);
+			if (CBaseEntity(iActivator).IsClassPlayer())
+			{
+				int r, g, b, a;
+				GetEntityRenderColor(_this, r, g, b, a);
+				float duration = GetEntPropFloat(_this, Prop_Data, "m_Duration");
+				Client_ScreenFade(iActivator, RoundFloat(duration * 1000), FFADE_OUT|FFADE_STAYOUT, _, r, g, b, a);
+				ForcePlayerSuicide(iActivator);
+			}
+		}
+		DHookSetReturn(hReturn, true);
+		return MRES_Supercede;
+	}
+	
+	return MRES_Ignored;
 }

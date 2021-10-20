@@ -39,17 +39,6 @@
 		{
 			"targetname" "c1a1c_lift_block"
 		}
-		// turn trigger_once autosave reloader into kill trig
-		"modify"
-		{
-			"targetname" "spk_loadsaved"
-			"add"
-			{
-				"classname" "trigger_hurt"
-				"damage" "9999"
-				"damagetype" "32"
-			}
-		}
 		// block going past changelevel
 		"add"
 		{

@@ -27,6 +27,7 @@
 		"game_text_allplayers" "1"
 		"vital_npcs_invulnerable" "1"
 		"never_close_areaportals" "1"
+		"fix_reload_triggers" "1"
 	}
 	"entity_base_sp_conversion"
 	{
@@ -285,6 +286,22 @@
 								"classname" "func_areaportal"
 							}
 						}
+					}
+				}
+			}
+		}
+		#if
+		{
+			"fix_reload_triggers" "1"
+			#then
+			{
+				"modify"
+				{
+					"classname" "trigger_once"
+					"/^(OnTrigger|OnStartTouch)$/" "/^[^]+Reload/"
+					"set"
+					{
+						"classname" "trigger_multiple"
 					}
 				}
 			}

@@ -49,15 +49,6 @@
 		{
 			"targetname"	"noreturn" 
 		}
-		// areaportals should stay open
-		"modify"
-		{
-			"targetname" "g_vent_areaportals"
-			"remove"
-			{
-				"targetname" ""
-			}
-		}
 		// attempt to fix client crash caused by lav npc
 		"modify"
 		{

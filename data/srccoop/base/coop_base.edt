@@ -36,12 +36,6 @@
 	
 	"entity_base_coop"
 	{
-		// unwanted and bugs players
-		"remove"
-		{
-			"classname" "player_loadsaved"
-		}
-		
 		// crashes since BM1.5
 		"remove"
 		{

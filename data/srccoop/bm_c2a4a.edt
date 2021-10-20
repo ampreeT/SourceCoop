@@ -28,15 +28,6 @@
 		{
 			"targetname" "crusher_kill_relay"
 		}
-		// portal shouldn't close in mp
-		"modify"
-		{
-			"targetname" "outside_portal"
-			"remove"
-			{
-				"targetname" ""
-			}
-		}
 		// spawn with crowbar once it's picked up
 		"add"
 		{

@@ -25,18 +25,6 @@
 				"delay_output" "OnNewGame"
 			}
 		}
-		// turn reload trigger into kill trig
-		"modify"
-		{
-			"classname" "trigger_once"
-			"OnTrigger" "/^c1a4c_loadsavedReload/"
-			"set"
-			{
-				"classname" "trigger_hurt"
-				"damage"	"9999"
-				"damagetype" "32"
-			}
-		}
 		// dont gag tentacles
 		"modify"
 		{

@@ -206,7 +206,7 @@ public void OnConfigsExecutedPost()
 			{
 				if(!g_pCoopManager.IsFeatureEnabled(FT_STRIP_DEFAULT_EQUIPMENT_KEEPSUIT))
 				{
-					pGameEquip.SetSpawnFlags(SF_PLAYER_EQUIP_STRIP_SUIT);	
+					pGameEquip.SetSpawnFlags(SF_PLAYER_EQUIP_STRIP_SUIT);
 				}
 				pGameEquip.Spawn();
 			}
@@ -415,9 +415,13 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 				//DHookEntity(hkThink, false, iEntIndex, _, Hook_PropChargerThink);
 				//DHookEntity(hkThink, true, iEntIndex, _, Hook_PropChargerThinkPost);
 			}
-			else if(strcmp(szClassname, "misc_marionettist") == 0)
+			else if (strcmp(szClassname, "misc_marionettist") == 0)
 			{
 				DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_MarionettistAcceptInput);
+			}
+			else if (strcmp(szClassname, "player_loadsaved") == 0)
+			{
+				DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_LoadSavedAcceptInput);
 			}
 			
 			// if some explosions turn out to be damaging all players except one, this is the fix

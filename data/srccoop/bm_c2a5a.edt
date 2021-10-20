@@ -27,18 +27,6 @@
 				}
 			}
 		}
-		// Change the trigger_reloadgame at the bottom of the dam
-		// into a trigger_hurt that kills people
-		"modify"
-		{
-			"targetname"	"trigger_reloadgame"
-			"add"
-			{
-				"classname"	"trigger_hurt"
-				"damagetype" "32"
-				"damage"	"10000"
-			}
-		}
 		// Copy the trigger that gets deleted when chopper dies to use as a checkpoint
 		"create"
 		{

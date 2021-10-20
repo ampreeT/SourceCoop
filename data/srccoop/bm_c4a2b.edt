@@ -17,18 +17,6 @@
 	}
 	"entity"
 	{
-		// zombify save reload trigs
-		"modify"
-		{
-			"classname" "trigger_once"
-			"OnTrigger" "/^load_savedReload/"
-			"set"
-			{
-				"classname" "trigger_hurt"
-				"damage" "400"
-				"nodmgforce" "1"
-			}
-		}
 		// block off next map
 		"add"
 		{

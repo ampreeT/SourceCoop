@@ -48,18 +48,6 @@
 	}
 	"entity"
 	{
-		// zombify save reload trigs
-		"modify"
-		{
-			"classname" "trigger_multiple"
-			"OnStartTouch" "/^c4a1c_deathfall_loadsaveReload/"
-			"set"
-			{
-				"classname" "trigger_hurt"
-				"damage" "200"
-				"nodmgforce" "1"
-			}
-		}
 		// zombify laser (targeting !player) kill trigs
 		"modify"
 		{

@@ -19,7 +19,7 @@
 	}
 	"define"
 	{
-		// do our viewcontrol fixup manually since map has player triggered views
+		// since map has player triggered views (the telescope), dont force the camera on all players
 		"viewcontrol_allplayers" "0"
 	}
 	"entity"
@@ -87,18 +87,6 @@
 						"input" "Unlock"
 					}
 				}
-			}
-		}
-		// zombify save reload trigs
-		"modify"
-		{
-			"classname" "trigger_once"
-			"OnStartTouch" "/^c4a1a_deathfall_loadsavedReload/"
-			"set"
-			{
-				"classname" "trigger_hurt"
-				"damage" "200"
-				"nodmgforce" "1"
 			}
 		}
 	}

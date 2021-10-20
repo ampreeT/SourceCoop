@@ -13,15 +13,6 @@
 	}
 	"entity"
 	{
-		// this portal should never close
-		"modify"
-		{
-			"targetname" "airlock_door_portal_out"
-			"remove"
-			{
-				"targetname" ""
-			}
-		}
 		// make killer doors
 		"delete"
 		{

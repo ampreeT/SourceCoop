@@ -17,18 +17,6 @@
 	}
 	"entity"
 	{
-		// zombify save reload trigs
-		"modify"
-		{
-			"classname" "trigger_multiple"
-			"OnStartTouch" "/^c4a3a_deathfall_loadsaveReload/"
-			"set"
-			{
-				"classname" "trigger_hurt"
-				"damage" "200"
-				"nodmgforce" "1"
-			}
-		}
 		// no going back
 		"add"
 		{
