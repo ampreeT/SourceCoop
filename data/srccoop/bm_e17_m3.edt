@@ -1,0 +1,70 @@
+// Script for workshop item 934371395 - Emergency 17
+
+#base "base/coop_base_sp_conversion.edt"
+
+"config"
+{
+	"campaign" "Workshop maps"
+	"chapter" "Emergency 17"
+	
+	"features"
+	{
+		"KEEP_EQUIPMENT" "1"
+	}
+	"equipment"
+	{
+		"item" "item_suit"
+		"item" "item_battery"
+		"item" "item_weapon_crowbar"
+		"item" "item_weapon_357"
+		"item" "item_weapon_mp5"
+		"item" "item_weapon_shotgun"
+		"item" "item_ammo_357"
+		"item" "item_ammo_mp5"
+		"item" "item_grenade_mp5"
+		"item" "item_ammo_shotgun"
+		"item" "item_ammo_shotgun"
+		"item" "item_weapon_frag"
+	}
+	"entity"
+	{
+		//music fix
+		"modify"
+		{
+			"targetname" "anomalous"
+			"set"
+			{
+				"message" "music.qe.tau_cannon"
+			}
+		}
+	}
+	"checkpoint"
+	{
+		"spawn"
+		{
+			"origin"	"576 -160 4"
+			"angles"	"0 0 0"
+		}
+		"before fight"
+		{
+			"origin"	"1232 32 -155"
+			"angles"	"0 90 0"
+			"triggerid"	"28434"
+			"output"	"OnTrigger"
+		}
+		"found gauss"
+		{
+			"origin"	"3104 -1251 -219"
+			"angles"	"0 -90 0"
+			"triggerid"	"41851"
+			"output"	"OnTrigger"
+		}
+		"stairs"
+		{
+			"origin"	"2000 -3024 -283"
+			"angles"	"0 -90 0"
+			"triggerid"	"40175"
+			"output"	"OnTrigger"
+		}
+	}
+}
