@@ -423,6 +423,10 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 			{
 				DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_LoadSavedAcceptInput);
 			}
+			else if (strcmp(szClassname, "game_end") == 0)
+			{
+				DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_GameEndAcceptInput);
+			}
 			
 			// if some explosions turn out to be damaging all players except one, this is the fix
 			//else if (strcmp(szClassname, "env_explosion") == 0)

@@ -1342,10 +1342,10 @@ public Action Hook_NoGibDmg(int victim, int &attacker, int &inflictor, float &da
 //------------------------------------------------------
 public MRESReturn Hook_LoadSavedAcceptInput(int _this, Handle hReturn, Handle hParams)
 {
-	char szBuffer[MAX_FORMAT];
-	DHookGetParamString(hParams, 1, szBuffer, sizeof(szBuffer));
+	char szInputType[MAX_FORMAT];
+	DHookGetParamString(hParams, 1, szInputType, sizeof(szInputType));
 
-	if (strcmp(szBuffer, "Reload", false) == 0)
+	if (strcmp(szInputType, "Reload", false) == 0)
 	{
 		if (!DHookIsNullParam(hParams, 2))
 		{
@@ -1363,5 +1363,24 @@ public MRESReturn Hook_LoadSavedAcceptInput(int _this, Handle hReturn, Handle hP
 		return MRES_Supercede;
 	}
 	
+	return MRES_Ignored;
+}
+
+
+//------------------------------------------------------
+// game_end
+// Does not work in BM
+//------------------------------------------------------
+public MRESReturn Hook_GameEndAcceptInput(int _this, Handle hReturn, Handle hParams)
+{
+	char szInputType[MAX_FORMAT];
+	DHookGetParamString(hParams, 1, szInputType, sizeof(szInputType));
+
+	if (strcmp(szInputType, "EndGame", false) == 0)
+	{
+		g_pCoopManager.OnMapSeriesFinished();
+		DHookSetReturn(hReturn, true);
+		return MRES_Supercede;
+	}
 	return MRES_Ignored;
 }
