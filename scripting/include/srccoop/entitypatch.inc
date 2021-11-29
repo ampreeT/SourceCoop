@@ -502,32 +502,15 @@ public MRESReturn Hook_FindNamedEntity(int _this, Handle hReturn, Handle hParams
 // CChangelevel - trigger_changelevel
 // Hook to handle mapchanges
 //------------------------------------------------------
-void ChangeLevelTriggered(CChangelevel pChangelevel, CBlackMesaPlayer pActivator)
-{
-	char szMapName[MAX_MAPNAME];
-	if (pChangelevel.GetMapName(szMapName, sizeof(szMapName))
-		&& (g_pLevelLump.m_pNextMapList.Length == 0 || g_pLevelLump.m_pNextMapList.IsInMapList(szMapName)))
-	{
-		if(pActivator.IsClassPlayer())
-		{
-			g_pCoopManager.OnTouchChangeLevel(pChangelevel, pActivator);
-		}
-		else
-		{
-			SDKUnhook(pChangelevel.GetEntIndex(), SDKHook_Touch, Hook_ChangelevelOnTouch);
-			pChangelevel.ChangeLevelNow();
-		}
-	}
-}
-
 public void Hook_ChangelevelSpawn(int iEntIndex)
 {
-	CBaseEntity pEntity = CBaseEntity(iEntIndex);
+	CChangelevel pEntity = CChangelevel(iEntIndex);
 	DHookEntity(hkAcceptInput, true, pEntity.GetEntIndex(), _, Hook_ChangelevelAcceptInput);
 
 	if(!pEntity.HasSpawnFlag(SF_CHANGELEVEL_NOTOUCH))
 	{
 		SDKHook(pEntity.GetEntIndex(), SDKHook_Touch, Hook_ChangelevelOnTouch);
+		CreateTimer(2.0, ChangelevelEffects, pEntity, TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT);
 	}
 }
 
@@ -562,6 +545,53 @@ public void Hook_ChangelevelOnTouch(int _this, int iOther)
 			ChangeLevelTriggered(pChangelevel, pPlayer);
 		}
 	}
+}
+
+void ChangeLevelTriggered(CChangelevel pChangelevel, CBlackMesaPlayer pActivator)
+{
+	char szMapName[MAX_MAPNAME];
+	if (pChangelevel.GetMapName(szMapName, sizeof(szMapName))
+		&& (g_pLevelLump.m_pNextMapList.Length == 0 || g_pLevelLump.m_pNextMapList.IsInMapList(szMapName)))
+	{
+		if(pActivator.IsClassPlayer())
+		{
+			g_pCoopManager.OnTouchChangeLevel(pChangelevel, pActivator);
+		}
+		else
+		{
+			SDKUnhook(pChangelevel.GetEntIndex(), SDKHook_Touch, Hook_ChangelevelOnTouch);
+			pChangelevel.ChangeLevelNow();
+		}
+	}
+}
+
+public Action ChangelevelEffects(Handle timer, CChangelevel pChangelevel) {
+	if (pChangelevel.IsValid())
+	{
+		if (IsFeatureEnabled(FT_CHANGELEVEL_FX)) {
+			char szMapName[MAX_MAPNAME];
+			if (!pChangelevel.IsDisabled() && pChangelevel.GetMapName(szMapName, sizeof(szMapName))
+				&& (g_pLevelLump.m_pNextMapList.Length == 0 || g_pLevelLump.m_pNextMapList.IsInMapList(szMapName)))
+			{
+				float vecMins[3], vecMaxs[3];
+				pChangelevel.GetMins(vecMins);
+				pChangelevel.GetMaxs(vecMaxs);
+				vecMins[2] -= 100.0;
+				
+				int model = PrecacheModel("particle/xen_portal_tracer.vmt");
+				TE_Start("Bubbles");
+				TE_WriteVector("m_vecMins", vecMins);
+				TE_WriteVector("m_vecMaxs", vecMaxs);
+				TE_WriteNum("m_nModelIndex", model);
+				TE_WriteNum("m_nCount", 100);
+				TE_WriteFloat("m_fHeight", vecMaxs[2] - vecMins[2]);
+				TE_WriteFloat("m_fSpeed", 10.0);
+				TE_SendToAll();
+			}
+		}
+		return Plugin_Continue;
+	}
+	return Plugin_Stop;
 }
 
 //------------------------------------------------------

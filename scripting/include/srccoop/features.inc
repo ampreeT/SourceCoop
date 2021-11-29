@@ -17,7 +17,8 @@ enum SourceCoopFeature
 	FT_STRIP_DEFAULT_EQUIPMENT_KEEPSUIT	=	(1 << 9),
 	FT_DISABLE_CANISTER_DROPS	=	(1 << 10),
 	FT_KEEP_EQUIPMENT			=	(1 << 11),
-	FT_AUTODETECT_MAP_END		=	(1 << 12)
+	FT_AUTODETECT_MAP_END		=	(1 << 12),
+	FT_CHANGELEVEL_FX			=	(1 << 13)
 }
 
 methodmap FeatureMap < StringMap
@@ -39,6 +40,7 @@ methodmap FeatureMap < StringMap
 		pMap.SetValue("DISABLE_CANISTER_DROPS", FT_DISABLE_CANISTER_DROPS);
 		pMap.SetValue("KEEP_EQUIPMENT", FT_KEEP_EQUIPMENT);
 		pMap.SetValue("AUTODETECT_MAP_END", FT_AUTODETECT_MAP_END);
+		pMap.SetValue("CHANGELEVEL_FX", FT_CHANGELEVEL_FX);
 		
 		return view_as<FeatureMap>(pMap);
 	}

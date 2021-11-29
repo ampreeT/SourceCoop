@@ -579,6 +579,15 @@ methodmap CBaseTrigger < CBaseEntity
 	{
 		return view_as<CBaseTrigger>(InternalGetBaseEntity(iEntIndex));
 	}
+	public bool IsDisabled()
+	{
+		return view_as<bool>(GetEntProp(this.GetEntIndex(), Prop_Data, "m_bDisabled"));
+	}
+	public void SetDisabled(bool bDisabled)
+	{
+		SetEntProp(this.GetEntIndex(), Prop_Data, "m_bDisabled", bDisabled);
+	}
+	
 }
 
 methodmap CChangelevel < CBaseTrigger
