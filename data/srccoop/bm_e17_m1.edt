@@ -41,6 +41,7 @@
 			"angles"	"0 270 0"
 			"triggerid"	"58101"
 			"output"	"OnPressed"
+			"portal"	"-192 2720 -187"
 		}
 		"before fight"
 		{
