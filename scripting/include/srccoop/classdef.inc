@@ -111,38 +111,6 @@ void InitClassdef(GameData pGameConfig)
 	}
 }
 
-enum struct FireOutputData
-{
-	char m_szName[MAX_KEY];
-	CBaseEntity m_pCaller;
-	CBaseEntity m_pActivator;
-	float m_flDelay;
-}
-
-methodmap Array_t < ArrayList
-{
-	public Array_t(ArrayList pHandle = null)
-	{
-		return view_as<Array_t>(pHandle);
-	}
-	public bool IsValid()
-	{
-		return this != null;
-	}
-	public void Close()
-	{
-		if (this.IsValid())
-		{
-			CloseHandle(this);
-		}
-	}
-}
-
-public int InternalGetBaseEntity(const int iEntIndex)
-{
-	return (iEntIndex > -1) ? EntIndexToEntRef(iEntIndex) : iEntIndex;
-}
-
 methodmap CBaseEntity
 {
 	public CBaseEntity(const int iEntIndex = -1)
@@ -516,6 +484,38 @@ methodmap CBaseEntity
 		return false;
 	}
 	*/
+}
+
+enum struct FireOutputData
+{
+	char m_szName[MAX_KEY];
+	CBaseEntity m_pCaller;
+	CBaseEntity m_pActivator;
+	float m_flDelay;
+}
+
+methodmap Array_t < ArrayList
+{
+	public Array_t(ArrayList pHandle = null)
+	{
+		return view_as<Array_t>(pHandle);
+	}
+	public bool IsValid()
+	{
+		return this != null;
+	}
+	public void Close()
+	{
+		if (this.IsValid())
+		{
+			CloseHandle(this);
+		}
+	}
+}
+
+public int InternalGetBaseEntity(const int iEntIndex)
+{
+	return (iEntIndex > -1) ? EntIndexToEntRef(iEntIndex) : iEntIndex;
 }
 
 methodmap CTraceRay

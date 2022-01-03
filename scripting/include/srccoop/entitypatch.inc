@@ -1153,6 +1153,7 @@ public Action IntroCreditsMsgRepeater(Handle timer, DataPack dp)
 		}
 		EndMessage();
 	}
+	return Plugin_Handled;
 }
 
 //------------------------------------------------------

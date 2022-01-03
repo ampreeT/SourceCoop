@@ -118,6 +118,7 @@ public void OnPluginStart()
 	g_pConvarEndWaitPeriod = CreateConVar("sourcecoop_end_wait_period", "60.0", "The max number of seconds to wait since first player triggered a changelevel. The timer speed increases each time a new player finishes the level.", _, true, 0.0);
 	g_pConvarEndWaitFactor = CreateConVar("sourcecoop_end_wait_factor", "1.0", "Controls how much the number of finished players increases the changelevel timer speed. 1.0 means full, 0 means none (timer will run full length).", _, true, 0.0, true, 1.0);
 	g_pConvarHomeMap = CreateConVar("sourcecoop_homemap", "", "The map to return to after finishing a campaign/map.");
+	g_pConvarEndWaitDisplayMode = CreateConVar("sourcecoop_end_wait_display_mode", "0", "Sets which method to show countdown. 0 is panel, 1 is hud text.", _, true, 0.0, true, 1.0);
 	
 	RegAdminCmd("sourcecoop_ft", Command_SetFeature, ADMFLAG_ROOT, "Command for toggling plugin features on/off");
 	RegAdminCmd("sc_ft", Command_SetFeature, ADMFLAG_ROOT, "Command for toggling plugin features on/off");
@@ -153,6 +154,8 @@ public void OnPluginStart()
 			OnClientPutInServer(i);
 		}
 	}
+	
+	AutoExecConfig(true, "srccoop");
 }
 
 #pragma dynamic ENTITYSTRING_LENGTH
@@ -474,7 +477,38 @@ public void Hook_EntitySpawnPost(int iEntIndex)
 			}
 			pOutputHookList.Close();
 		}
+		
+		// Fix env_sprite out of range proxy size console spam
+		if(pEntity.IsClassname("env_sprite"))
+		{
+			if (HasEntProp(iEntIndex, Prop_Data, "m_flGlowProxySize"))
+			{
+				if (GetEntPropFloat(iEntIndex, Prop_Data, "m_flGlowProxySize") > 64.0)
+				{
+					SetEntPropFloat(iEntIndex, Prop_Data, "m_flGlowProxySize", 64.0);
+				}
+				
+				// There are certain sprites that have proxy size set after post spawn that will still need to be checked...
+				CreateTimer(0.1, Timer_EnvSpriteProxyCheck, iEntIndex, TIMER_FLAG_NO_MAPCHANGE);
+			}
+		}
 	}
+}
+
+public Action Timer_EnvSpriteProxyCheck(Handle timer, int iEntIndex)
+{
+	if (IsValidEntity(iEntIndex))
+	{
+		// Have to re-run these checks because the entity index passed could have changed.
+		if (HasEntProp(iEntIndex, Prop_Data, "m_flGlowProxySize"))
+		{
+			if (GetEntPropFloat(iEntIndex, Prop_Data, "m_flGlowProxySize") > 64.0)
+			{
+				SetEntPropFloat(iEntIndex, Prop_Data, "m_flGlowProxySize", 64.0);
+			}
+		}
+	}
+	return Plugin_Handled;
 }
 
 // Postpone items' Spawn() until Gamerules IsMultiplayer() gets hooked in OnMapStart()

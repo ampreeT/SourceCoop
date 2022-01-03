@@ -14,6 +14,7 @@ void InitializeMenus()
 	RegConsoleCmd("sm_coopmenu", Command_CoopMenu, "Displays the coop menu");
 	// The sizeup command is bound by default to equals, but doesn't actually exist, we can take advantake of this.
 	RegConsoleCmd("sizeup", Command_CoopMenu, "Displays the coop menu");
+	RegConsoleCmd("stuck", Command_UnStuck, "Teleports player to the active checkpoint");
 	
 	g_pCoopTopMenu = new TopMenu(CoopTopMenuHandler);
 	g_pCoopPlayerSettingsMenu = g_pCoopTopMenu.AddCategory(COOPMENU_CATEGORY_PLAYER, CoopTopMenuHandler);
@@ -71,5 +72,24 @@ public Action Command_CoopMenu(int client, int args)
 		return Plugin_Handled;
 	}
 	g_pCoopTopMenu.Display(client, TopMenuPosition_Start);
+	return Plugin_Handled;
+}
+
+public Action Command_UnStuck(int client, int args)
+{
+	if (!client) return Plugin_Handled;
+	if (!IsPlayerAlive(client)) return Plugin_Handled;
+	CBasePlayer pPlayer = CBasePlayer(client);
+	if (pPlayer.IsClassPlayer())
+	{
+		CCoopSpawnEntry pCheckpoint;
+		if (g_SpawnSystem.GetCurrentCheckpoint(pCheckpoint))
+		{
+			pCheckpoint.TeleportPlayer(pPlayer, true);
+			PrintToChat(client, "> Moved to active checkpoint...");
+			return Plugin_Handled;
+		}
+	}
+	PrintToChat(client, "> Unable to find an active checkpoint...");
 	return Plugin_Handled;
 }

@@ -13,6 +13,7 @@ ConVar g_pConvarWaitPeriod;
 ConVar g_pConvarEndWaitPeriod;
 ConVar g_pConvarEndWaitFactor;
 ConVar g_pConvarHomeMap;
+ConVar g_pConvarEndWaitDisplayMode;
 
 // ----------------------------
 // SDK Calls

@@ -51,6 +51,7 @@ enum struct CEntityOutputLump
 	}
 	
 	// Note: pOther is passed as array to work around a bug in compiler
+	// In SM 1.11-git6837 it must be formatted: CEntityOutputLump pOther[1]
 	bool Matches(CEntityOutputLump[1] pOther, bool bMatchTarget, bool bMatchInput, bool bMatchParameter, bool bMatchDelay, bool bMatchTTF)
 	{
 		if(bMatchTarget && !StrEqualsRegex(this.m_szTargetEntity, pOther[0].m_szTargetEntity, false)
@@ -377,6 +378,7 @@ enum struct CGlobalLevelLump
 			if (pEntityInfo.Length <= 0)	// never write if it has nothing in it to begin with
 				continue;
 			
+			// In SM 1.11-git6837 this reports invalid memory access on almost every map
 			szBuffer[n] = '{';
 			szBuffer[n + 1] = '\n';
 			n += 2;

@@ -67,6 +67,15 @@ public void Hook_PlayerPreThinkPost(int iClient)
 	CBlackMesaPlayer pPlayer = CBlackMesaPlayer(iClient);
 	if(pPlayer.IsAlive())
 	{
+		if(IsValidEntity(pPlayer.GetCarriedObject().GetEntIndex()))
+		{
+			int iWeapon = GetEntPropEnt(pPlayer.GetEntIndex(), Prop_Data, "m_hActiveWeapon");
+			if (IsValidEntity(iWeapon))
+			{
+				if (HasEntProp(iWeapon, Prop_Data, "m_flNextPrimaryAttack")) SetEntPropFloat(iWeapon, Prop_Data, "m_flNextPrimaryAttack", GetGameTime() + 1.0);
+				if (HasEntProp(iWeapon, Prop_Data, "m_flNextSecondaryAttack")) SetEntPropFloat(iWeapon, Prop_Data, "m_flNextSecondaryAttack", GetGameTime() + 1.0);
+			}
+		}
 	}
 	else
 	{
