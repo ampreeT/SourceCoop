@@ -378,7 +378,6 @@ enum struct CGlobalLevelLump
 			if (pEntityInfo.Length <= 0)	// never write if it has nothing in it to begin with
 				continue;
 			
-			// In SM 1.11-git6837 this reports invalid memory access on almost every map
 			szBuffer[n] = '{';
 			szBuffer[n + 1] = '\n';
 			n += 2;

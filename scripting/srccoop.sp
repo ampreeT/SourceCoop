@@ -164,7 +164,13 @@ public Action OnLevelInit(const char[] szMapName, char szMapEntities[ENTITYSTRIN
 	OnMapEnd(); // this does not always get called, so call it here
 	strcopy(g_szPrevMapName, sizeof(g_szPrevMapName), g_szMapName);
 	strcopy(g_szMapName, sizeof(g_szMapName), szMapName);
-	g_szEntityString = szMapEntities;
+	if (strlen(szMapEntities) < 4)
+	{
+		LogError("Failed to get map entities string! Most likely this version of SourceMod is too new...");
+		g_szEntityString = "";
+		return Plugin_Continue;
+	}
+	else g_szEntityString = szMapEntities;
 	g_pCoopManager.OnLevelInit(szMapName, szMapEntities);
 
 	return Plugin_Changed;
