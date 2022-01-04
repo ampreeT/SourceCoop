@@ -436,6 +436,10 @@ enum struct CoopManager
 		{
 			ForceChangeLevel(szNextMap, "SourceCoop - next map");
 		}
+		else
+		{
+			LogMessage("Tried to change the map, but neither home map or next map is set! Set sourcecoop_homemap or change the map manually.");
+		}
 	}
 		
 	void EnableFeature(SourceCoopFeature iFeatureBits)

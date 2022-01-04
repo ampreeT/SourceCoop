@@ -193,6 +193,37 @@ public MRESReturn Hook_SetPlayerAvoidState(int _this)
 }
 
 //------------------------------------------------------
+// phys_bone_follower
+// This hook deletes selected NPC's bone followers to increase multiplayer server perf.
+// Using VPhysicsUpdate since Spawn isn't called for this ent.
+//------------------------------------------------------
+public void Hook_BoneFollowerVPhysicsUpdatePost(int iEntIndex)
+{
+	CBaseEntity pEntity = CBaseEntity(iEntIndex);
+	CBaseEntity pOwner = pEntity.GetOwner();
+	if (pOwner.IsValid())
+	{
+		char szOwnerClass[MAX_CLASSNAME];
+		pOwner.GetClassname(szOwnerClass, sizeof(szOwnerClass));
+		if (StrEqual(szOwnerClass, "npc_gargantua"))
+		{
+			RemoveEntity(iEntIndex);
+		}
+	}
+	SDKUnhook(iEntIndex, SDKHook_VPhysicsUpdatePost, Hook_BoneFollowerVPhysicsUpdatePost);
+}
+
+//------------------------------------------------------
+// CAI_BaseNPC - npc_gargantua
+// Use SOLID_BBOX instead of bone followers for collisions
+//------------------------------------------------------
+public void Hook_GargSpawnPost(int iEntIndex)
+{
+	CBaseEntity pEntity = CBaseEntity(iEntIndex);
+	pEntity.SetSolidType(SOLID_BBOX);
+}
+
+//------------------------------------------------------
 // CAI_BaseNPC - npc_gargantua
 // fix the 'ChasePlayer' input by setting a target ent.
 //------------------------------------------------------
