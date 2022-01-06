@@ -326,6 +326,7 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 				else if (strcmp(szClassname, "npc_gargantua") == 0)
 				{
 					DHookEntity(hkAcceptInput, true, iEntIndex, _, Hook_GargAcceptInputPost);
+					SDKHook(iEntIndex, SDKHook_SpawnPost, Hook_GargSpawnPost);
 				}
 				else if (strncmp(szClassname, "npc_houndeye", 12) == 0)
 				{
@@ -435,6 +436,10 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 			else if (strcmp(szClassname, "game_end") == 0)
 			{
 				DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_GameEndAcceptInput);
+			}
+			else if (strcmp(szClassname, "phys_bone_follower") == 0)
+			{
+				SDKHook(iEntIndex, SDKHook_VPhysicsUpdatePost, Hook_BoneFollowerVPhysicsUpdatePost);
 			}
 			
 			// if some explosions turn out to be damaging all players except one, this is the fix
