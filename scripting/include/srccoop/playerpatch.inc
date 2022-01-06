@@ -64,6 +64,7 @@ public void Hook_PlayerPreThinkPost(int iClient)
 	if(!g_pCoopManager.IsCoopModeEnabled())
 		return;
 	
+	static int iEntity = -1;
 	CBlackMesaPlayer pPlayer = CBlackMesaPlayer(iClient);
 	if(pPlayer.IsAlive())
 	{
@@ -73,12 +74,16 @@ public void Hook_PlayerPreThinkPost(int iClient)
 		}
 		else if (GetEntProp(pPlayer.GetEntIndex(), Prop_Data, "m_nWaterLevel") == 3)
 		{
-			int iWeapon = GetEntPropEnt(pPlayer.GetEntIndex(), Prop_Data, "m_hActiveWeapon");
-			if (IsValidEntity(iWeapon))
+			// Can *usually* assume that if you are parented and underwater that you are bound by a beneathticle
+			if (IsValidEntity(GetEntPropEnt(pPlayer.GetEntIndex(), Prop_Data, "m_hParent")))
 			{
-				if ((!GetEntProp(iWeapon, Prop_Data, "m_bFiresUnderwater")) && (GetEntProp(iWeapon, Prop_Data, "m_iPrimaryAmmoType") != -1))
+				iEntity = GetEntPropEnt(pPlayer.GetEntIndex(), Prop_Data, "m_hActiveWeapon");
+				if (IsValidEntity(iEntity))
 				{
-					PreventWeaponFiring(pPlayer.GetEntIndex(), 0.5);
+					if ((!GetEntProp(iEntity, Prop_Data, "m_bFiresUnderwater")) && (GetEntProp(iEntity, Prop_Data, "m_iPrimaryAmmoType") != -1))
+					{
+						PreventWeaponFiring(pPlayer.GetEntIndex(), 0.2);
+					}
 				}
 			}
 		}
