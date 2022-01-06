@@ -691,7 +691,7 @@ void GreetPlayer(int client)
 {
 	if (g_pCoopManager.IsFeatureEnabled(FT_SHOW_WELCOME_MESSAGE))
 	{
-		Msg(client, "This server runs SourceCoop version %s.\nPress %s=%s or type %s/coopmenu%s for extra settings.", PLUGIN_VERSION, CHAT_COLOR_SEC, CHAT_COLOR_PRI, CHAT_COLOR_SEC, CHAT_COLOR_PRI);
+		Msg(client, "This server runs SourceCoop version %s.\nPress %s=%s or type %s/coopmenu%s for extra settings. Use !stuck if you get stuck.", PLUGIN_VERSION, CHAT_COLOR_SEC, CHAT_COLOR_PRI, CHAT_COLOR_SEC, CHAT_COLOR_PRI);
 	}
 }
 

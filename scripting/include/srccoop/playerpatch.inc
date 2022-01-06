@@ -69,11 +69,17 @@ public void Hook_PlayerPreThinkPost(int iClient)
 	{
 		if(IsValidEntity(pPlayer.GetCarriedObject().GetEntIndex()))
 		{
+			PreventWeaponFiring(pPlayer.GetEntIndex(), 1.0);
+		}
+		else if (GetEntProp(pPlayer.GetEntIndex(), Prop_Data, "m_nWaterLevel") == 3)
+		{
 			int iWeapon = GetEntPropEnt(pPlayer.GetEntIndex(), Prop_Data, "m_hActiveWeapon");
 			if (IsValidEntity(iWeapon))
 			{
-				if (HasEntProp(iWeapon, Prop_Data, "m_flNextPrimaryAttack")) SetEntPropFloat(iWeapon, Prop_Data, "m_flNextPrimaryAttack", GetGameTime() + 1.0);
-				if (HasEntProp(iWeapon, Prop_Data, "m_flNextSecondaryAttack")) SetEntPropFloat(iWeapon, Prop_Data, "m_flNextSecondaryAttack", GetGameTime() + 1.0);
+				if ((!GetEntProp(iWeapon, Prop_Data, "m_bFiresUnderwater")) && (GetEntProp(iWeapon, Prop_Data, "m_iPrimaryAmmoType") != -1))
+				{
+					PreventWeaponFiring(pPlayer.GetEntIndex(), 0.5);
+				}
 			}
 		}
 	}
@@ -89,6 +95,20 @@ public void Hook_PlayerPreThinkPost(int iClient)
 			}
 		}
 	}
+}
+
+void PreventWeaponFiring(int iPlayer, float flDelayTime = 1.0)
+{
+	if (IsValidEntity(iPlayer))
+	{
+		int iWeapon = GetEntPropEnt(iPlayer, Prop_Data, "m_hActiveWeapon");
+		if (IsValidEntity(iWeapon))
+		{
+			if (HasEntProp(iWeapon, Prop_Data, "m_flNextPrimaryAttack")) SetEntPropFloat(iWeapon, Prop_Data, "m_flNextPrimaryAttack", GetGameTime() + flDelayTime);
+			if (HasEntProp(iWeapon, Prop_Data, "m_flNextSecondaryAttack")) SetEntPropFloat(iWeapon, Prop_Data, "m_flNextSecondaryAttack", GetGameTime() + flDelayTime);
+		}
+	}
+	return;
 }
 
 //------------------------------------------------------
