@@ -154,8 +154,6 @@ public void OnPluginStart()
 			OnClientPutInServer(i);
 		}
 	}
-	
-	AutoExecConfig(true, "srccoop");
 }
 
 #pragma dynamic ENTITYSTRING_LENGTH
@@ -166,8 +164,7 @@ public Action OnLevelInit(const char[] szMapName, char szMapEntities[ENTITYSTRIN
 	strcopy(g_szMapName, sizeof(g_szMapName), szMapName);
 	if (strlen(szMapEntities) < 4)
 	{
-		LogError("Failed to get map entities string! Most likely this version of SourceMod is too new...");
-		g_szEntityString = "";
+		SetFailState("Failed to get map entities string! Most likely this version of SourceMod is too new...");
 		return Plugin_Continue;
 	}
 	else g_szEntityString = szMapEntities;
@@ -488,38 +485,7 @@ public void Hook_EntitySpawnPost(int iEntIndex)
 			}
 			pOutputHookList.Close();
 		}
-		
-		// Fix env_sprite out of range proxy size console spam
-		if(pEntity.IsClassname("env_sprite"))
-		{
-			if (HasEntProp(iEntIndex, Prop_Data, "m_flGlowProxySize"))
-			{
-				if (GetEntPropFloat(iEntIndex, Prop_Data, "m_flGlowProxySize") > 64.0)
-				{
-					SetEntPropFloat(iEntIndex, Prop_Data, "m_flGlowProxySize", 64.0);
-				}
-				
-				// There are certain sprites that have proxy size set after post spawn that will still need to be checked...
-				CreateTimer(0.1, Timer_EnvSpriteProxyCheck, iEntIndex, TIMER_FLAG_NO_MAPCHANGE);
-			}
-		}
 	}
-}
-
-public Action Timer_EnvSpriteProxyCheck(Handle timer, int iEntIndex)
-{
-	if (IsValidEntity(iEntIndex))
-	{
-		// Have to re-run these checks because the entity index passed could have changed.
-		if (HasEntProp(iEntIndex, Prop_Data, "m_flGlowProxySize"))
-		{
-			if (GetEntPropFloat(iEntIndex, Prop_Data, "m_flGlowProxySize") > 64.0)
-			{
-				SetEntPropFloat(iEntIndex, Prop_Data, "m_flGlowProxySize", 64.0);
-			}
-		}
-	}
-	return Plugin_Handled;
 }
 
 // Postpone items' Spawn() until Gamerules IsMultiplayer() gets hooked in OnMapStart()
@@ -696,7 +662,7 @@ void GreetPlayer(int client)
 {
 	if (g_pCoopManager.IsFeatureEnabled(FT_SHOW_WELCOME_MESSAGE))
 	{
-		Msg(client, "This server runs SourceCoop version %s.\nPress %s=%s or type %s/coopmenu%s for extra settings. Use !stuck if you get stuck.", PLUGIN_VERSION, CHAT_COLOR_SEC, CHAT_COLOR_PRI, CHAT_COLOR_SEC, CHAT_COLOR_PRI);
+		Msg(client, "This server runs SourceCoop version %s.\nPress %s=%s or type %s/coopmenu%s for extra settings.", PLUGIN_VERSION, CHAT_COLOR_SEC, CHAT_COLOR_PRI, CHAT_COLOR_SEC, CHAT_COLOR_PRI);
 	}
 }
 

@@ -66,14 +66,18 @@ methodmap ChangeLevelManager < Array_t
 	public void UpdateStatus(int iSecondsLeft)
 	{
 		char szMapName[MAX_MAPNAME], szDisplay[128];
-		if (g_pConvarEndWaitDisplayMode.BoolValue)
+		ChangeLevelManager pSorted = this.Sorted();
+		
+		// Use panel if there are votes in the queue
+		if ((g_pConvarEndWaitDisplayMode.BoolValue) && (pSorted.Length < 2))
 		{
 			Format(szDisplay, sizeof(szDisplay), "Changing map\n(%d)", iSecondsLeft);
 			SetHudTextParams(-1.0, 0.05, 1.0, 200, 200, 200, 255, 0, 0.5, 0.1, 0.1);
+			
 			for (int i = 1; i <= MaxClients; i++)
 			{
 				if (IsClientInGame(i))
-					ShowHudText(i, 2, "%s",szDisplay);
+					ShowHudText(i, 2, szDisplay);
 			}
 		}
 		else
@@ -83,7 +87,6 @@ methodmap ChangeLevelManager < Array_t
 			Format(szDisplay, sizeof(szDisplay), "Changing map.. (%d)", iSecondsLeft);
 			panel.SetTitle(szDisplay);
 
-			ChangeLevelManager pSorted = this.Sorted();
 			ChangeLevelVoteLump pChangeLvlLump;
 			
 			for (int i = 0; i < pSorted.Length; i++)
@@ -104,8 +107,9 @@ methodmap ChangeLevelManager < Array_t
 			}
 			
 			delete panel;
-			delete pSorted;
 		}
+		
+		delete pSorted;
 	}
 
 	public bool SetPlayerVote(CChangelevel pChangelevel, CBlackMesaPlayer pPlayer, int[] iClientVoteIndicies)

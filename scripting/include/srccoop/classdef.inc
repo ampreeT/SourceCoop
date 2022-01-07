@@ -484,6 +484,10 @@ methodmap CBaseEntity
 		return false;
 	}
 	*/
+	public int GetWaterLevel()
+	{
+		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_nWaterLevel");
+	}
 }
 
 enum struct FireOutputData
@@ -638,6 +642,10 @@ methodmap CBaseCombatWeapon < CBaseAnimating
 	{
 		SetEntProp(this.GetEntIndex(), Prop_Send, "m_iClip1", iPrimaryAmmo); 
 	}
+	public int GetPrimaryAmmoType()
+	{
+		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_iPrimaryAmmoType");
+	}
 	public float GetNextPrimaryAttack()
 	{
 		return GetEntPropFloat(this.GetEntIndex(), Prop_Send, "m_flNextPrimaryAttack");
@@ -653,6 +661,14 @@ methodmap CBaseCombatWeapon < CBaseAnimating
 	public void SetNextSecondaryAttack(const float flNextSecondaryAttack)
 	{
 		SetEntPropFloat(this.GetEntIndex(), Prop_Send, "m_flNextSecondaryAttack", flNextSecondaryAttack); 
+	}
+	public int GetSecondaryAmmoType()
+	{
+		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_iSecondaryAmmoType");
+	}
+	public bool m_bFiresUnderwater()
+	{
+		return view_as<bool>(GetEntProp(this.GetEntIndex(), Prop_Data, "m_bFiresUnderwater"));
 	}
 }
 
