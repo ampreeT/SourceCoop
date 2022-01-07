@@ -1,0 +1,48 @@
+// This is a sample map script for a singleplayer map, usually from the workshop, that is to be converted for multiplayer.
+// It inherits from a base config, which contains commonly needed modifications, simplifying the work you have to do in this map script. 
+// You can override the base config's settings if you find something incompatible with the map being converted.
+// This file must must be named same as the .bsp and can either be saved in sourcemod\data\srccoop or the game's maps folder.
+// The "maps" folder is also scanned from the .bsp if this .edt is packed in it.
+// For more information on map scripts, check the wiki or examine other maps' scripts.
+
+// Script for workshop item <Workshop_id> - <Workshop_name>
+
+#base "base/coop_base_sp_conversion.edt"
+#base "../addons/sourcemod/data/srccoop/base/coop_base_sp_conversion.edt"
+
+"config"
+{
+	"campaign" "Workshop maps"
+	"chapter" "<Workshop_name>"
+
+	"features"
+	{
+		// This will save all picked up equipment and equip players with it on subsequent spawns.
+		"KEEP_EQUIPMENT" "1"
+		
+		// setup plugin features here
+	}
+	"define"
+	{
+		// override defines from base configs here
+	}	
+	"console"
+	{
+		// setup convars here
+	}
+	"equipment"
+	{
+		// setup extra equipment, health or suit here
+	}
+	"entity"
+	{
+		// modify map's entities here
+	}
+	"checkpoint"
+	{
+		"use_map_autosave" "1"
+		"use_map_spawnpoint" "1"
+		
+		// add extra checkpoints here
+	}
+}
