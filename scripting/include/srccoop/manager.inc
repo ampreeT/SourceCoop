@@ -67,11 +67,22 @@ methodmap ChangeLevelManager < Array_t
 	{
 		char szMapName[MAX_MAPNAME], szDisplay[128];
 		ChangeLevelManager pSorted = this.Sorted();
+		ChangeLevelVoteLump pChangeLvlLump;
 		
-		// Use panel if there are votes in the queue
-		if ((g_pConvarEndWaitDisplayMode.BoolValue) && (pSorted.Length < 2))
+		if (g_pConvarEndWaitDisplayMode.BoolValue)
 		{
-			Format(szDisplay, sizeof(szDisplay), "Changing map\n(%d)", iSecondsLeft);
+			Format(szDisplay, sizeof(szDisplay), "Changing map (%d)\n", iSecondsLeft);
+			
+			for (int i = 0; i < pSorted.Length; i++)
+			{
+				pSorted.GetArray(i, pChangeLvlLump);
+				if(pChangeLvlLump.m_pChangeLevel.IsValid())
+				{
+					pChangeLvlLump.m_pChangeLevel.GetMapName(szMapName, sizeof(szMapName));
+					Format(szDisplay, sizeof(szDisplay), "%s%s (%d players) ", szDisplay, szMapName, pChangeLvlLump.votes);
+				}
+			}
+			
 			SetHudTextParams(-1.0, 0.05, 1.0, 200, 200, 200, 255, 0, 0.5, 0.1, 0.1);
 			
 			for (int i = 1; i <= MaxClients; i++)
@@ -86,8 +97,6 @@ methodmap ChangeLevelManager < Array_t
 			
 			Format(szDisplay, sizeof(szDisplay), "Changing map.. (%d)", iSecondsLeft);
 			panel.SetTitle(szDisplay);
-
-			ChangeLevelVoteLump pChangeLvlLump;
 			
 			for (int i = 0; i < pSorted.Length; i++)
 			{

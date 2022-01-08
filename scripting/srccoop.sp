@@ -409,6 +409,10 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 			{
 				DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_EnvCreditsAcceptInput);
 			}
+			else if (strcmp(szClassname, "env_sprite") == 0)
+			{
+				SDKHook(iEntIndex, SDKHook_SpawnPost, Hook_EnvSpriteSpawn);
+			}
 			else if (strcmp(szClassname, "ai_script_conditions") == 0)
 			{
 				DHookEntity(hkThink, false, iEntIndex, _, Hook_AIConditionsThink);
