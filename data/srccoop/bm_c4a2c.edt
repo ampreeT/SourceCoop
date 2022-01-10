@@ -117,8 +117,72 @@
 					"replace"
 					{
 						"target" "gonarch_fight"
-						"input" "StopSound"
+						"input" "Volume"
+						"parameter" "8"
 					}
+				}
+				"add"
+				{
+					"target" "gonarch_fight"
+					"output" "OnEndSequence"
+					"input" "Volume"
+					"parameter" "7"
+					"delay" "2.0"
+				}
+				"add"
+				{
+					"target" "gonarch_fight"
+					"output" "OnEndSequence"
+					"input" "Volume"
+					"parameter" "6"
+					"delay" "3.0"
+				}
+				"add"
+				{
+					"target" "gonarch_fight"
+					"output" "OnEndSequence"
+					"input" "Volume"
+					"parameter" "5"
+					"delay" "3.5"
+				}
+				"add"
+				{
+					"target" "gonarch_fight"
+					"output" "OnEndSequence"
+					"input" "Volume"
+					"parameter" "4"
+					"delay" "4.0"
+				}
+				"add"
+				{
+					"target" "gonarch_fight"
+					"output" "OnEndSequence"
+					"input" "Volume"
+					"parameter" "3"
+					"delay" "4.5"
+				}
+				"add"
+				{
+					"target" "gonarch_fight"
+					"output" "OnEndSequence"
+					"input" "Volume"
+					"parameter" "2"
+					"delay" "5.0"
+				}
+				"add"
+				{
+					"target" "gonarch_fight"
+					"output" "OnEndSequence"
+					"input" "Volume"
+					"parameter" "1"
+					"delay" "5.5"
+				}
+				"add"
+				{
+					"target" "gonarch_fight"
+					"output" "OnEndSequence"
+					"input" "StopSound"
+					"delay" "6.0"
 				}
 			}
 		}

@@ -51,6 +51,7 @@ enum struct ItemInstancingManager
 				this.m_pPickedUpItems[i].Remove(key);
 			}
 		}
+		return true;
 	}
 }
 

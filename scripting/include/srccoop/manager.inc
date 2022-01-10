@@ -66,32 +66,58 @@ methodmap ChangeLevelManager < Array_t
 	public void UpdateStatus(int iSecondsLeft)
 	{
 		char szMapName[MAX_MAPNAME], szDisplay[128];
-		Panel panel = new Panel();
-		
-		Format(szDisplay, sizeof(szDisplay), "Changing map.. (%d)", iSecondsLeft);
-		panel.SetTitle(szDisplay);
-
 		ChangeLevelManager pSorted = this.Sorted();
 		ChangeLevelVoteLump pChangeLvlLump;
 		
-		for (int i = 0; i < pSorted.Length; i++)
+		if (g_pConvarEndWaitDisplayMode.BoolValue)
 		{
-			pSorted.GetArray(i, pChangeLvlLump);
-			if(pChangeLvlLump.m_pChangeLevel.IsValid())
+			Format(szDisplay, sizeof(szDisplay), "Changing map (%d)\n", iSecondsLeft);
+			
+			for (int i = 0; i < pSorted.Length; i++)
 			{
-		 		pChangeLvlLump.m_pChangeLevel.GetMapName(szMapName, sizeof(szMapName));
-				Format(szDisplay, sizeof(szDisplay), "%s (%d players)", szMapName, pChangeLvlLump.votes);
-				panel.DrawItem(szDisplay);
+				pSorted.GetArray(i, pChangeLvlLump);
+				if(pChangeLvlLump.m_pChangeLevel.IsValid())
+				{
+					pChangeLvlLump.m_pChangeLevel.GetMapName(szMapName, sizeof(szMapName));
+					Format(szDisplay, sizeof(szDisplay), "%s%s (%d players) ", szDisplay, szMapName, pChangeLvlLump.votes);
+				}
+			}
+			
+			SetHudTextParams(-1.0, 0.05, 1.0, 200, 200, 200, 255, 0, 0.5, 0.1, 0.1);
+			
+			for (int i = 1; i <= MaxClients; i++)
+			{
+				if (IsClientInGame(i))
+					ShowHudText(i, 2, szDisplay);
 			}
 		}
-		
-		for(int i = 1; i <= MaxClients; i++)
+		else
 		{
-			if(IsClientInGame(i))
-				panel.Send(i, ChangeLevelStatusPanelCallback, 1);
+			Panel panel = new Panel();
+			
+			Format(szDisplay, sizeof(szDisplay), "Changing map.. (%d)", iSecondsLeft);
+			panel.SetTitle(szDisplay);
+			
+			for (int i = 0; i < pSorted.Length; i++)
+			{
+				pSorted.GetArray(i, pChangeLvlLump);
+				if(pChangeLvlLump.m_pChangeLevel.IsValid())
+				{
+					pChangeLvlLump.m_pChangeLevel.GetMapName(szMapName, sizeof(szMapName));
+					Format(szDisplay, sizeof(szDisplay), "%s (%d players)", szMapName, pChangeLvlLump.votes);
+					panel.DrawItem(szDisplay);
+				}
+			}
+			
+			for(int i = 1; i <= MaxClients; i++)
+			{
+				if(IsClientInGame(i))
+					panel.Send(i, ChangeLevelStatusPanelCallback, 1);
+			}
+			
+			delete panel;
 		}
 		
-		delete panel;
 		delete pSorted;
 	}
 
@@ -138,7 +164,7 @@ public int ChangeLvlLumpSortFunc(int index1, int index2, ArrayList array, Handle
 	return 0;
 }
 
-public int ChangeLevelStatusPanelCallback(Menu menu, MenuAction action, int param1, int param2) {}
+public int ChangeLevelStatusPanelCallback(Menu menu, MenuAction action, int param1, int param2) {return -1;}
 
 //------------------------------------------------------
 // Coop manager
@@ -542,4 +568,5 @@ public Action ChangeLevelTimerCallback(Handle pTimer)
 		g_pCoopManager.m_pChangeLevelMgr.UpdateStatus(g_pCoopManager.m_iTicksToEnd);
 		g_pCoopManager.m_pChangeLevelTimer = CreateTimer(g_pCoopManager.GetChangeLevelTimerInterval(), ChangeLevelTimerCallback, _, TIMER_FLAG_NO_MAPCHANGE);
 	}
+	return Plugin_Handled;
 }

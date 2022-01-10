@@ -1184,6 +1184,7 @@ public Action IntroCreditsMsgRepeater(Handle timer, DataPack dp)
 		}
 		EndMessage();
 	}
+	return Plugin_Handled;
 }
 
 //------------------------------------------------------
@@ -1199,6 +1200,31 @@ public void Hook_ExplosionSpawn(int iEntIndex)
 		SetEntPropString(iEntIndex, Prop_Data, "m_strEntityNameToIgnore", "");
 		SetEntProp(iEntIndex, Prop_Data, "m_iClassIgnore", CLASS_PLAYER);
 	}
+}
+
+//------------------------------------------------------
+// env_sprite
+// fix m_flGlowProxySize out of bounds console spam
+//------------------------------------------------------
+public void Hook_EnvSpriteSpawn(int iEntIndex)
+{
+	CreateTimer(0.1, Timer_EnvSpritePostSpawn, CBaseEntity(iEntIndex), TIMER_FLAG_NO_MAPCHANGE);
+	return;
+}
+
+public Action Timer_EnvSpritePostSpawn(Handle timer, CBaseEntity pEntity)
+{
+	if (pEntity.IsValid())
+	{
+		if (HasEntProp(pEntity.GetEntIndex(), Prop_Data, "m_flGlowProxySize"))
+		{
+			if (GetEntPropFloat(pEntity.GetEntIndex(), Prop_Data, "m_flGlowProxySize") > 64.0)
+			{
+				SetEntPropFloat(pEntity.GetEntIndex(), Prop_Data, "m_flGlowProxySize", 64.0);
+			}
+		}
+	}
+	return Plugin_Handled;
 }
 
 //------------------------------------------------------

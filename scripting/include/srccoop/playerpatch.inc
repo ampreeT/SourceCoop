@@ -67,6 +67,31 @@ public void Hook_PlayerPreThinkPost(int iClient)
 	CBlackMesaPlayer pPlayer = CBlackMesaPlayer(iClient);
 	if(pPlayer.IsAlive())
 	{
+		CBaseCombatWeapon pWeapon = pPlayer.GetActiveWeapon();
+		if (pWeapon.IsValid())
+		{
+			if(pPlayer.GetCarriedObject().IsValid())
+			{
+				PreventWeaponFiring(pWeapon, 1.0);
+			}
+			else if (pPlayer.GetWaterLevel() == 3)
+			{
+				CBaseEntity pEntity = pPlayer.GetParent();
+				if (pEntity.IsValid())
+				{
+					if (HasEntProp(pEntity.GetEntIndex(), Prop_Data, "m_hPrey"))
+					{
+						if (GetEntPropEnt(pEntity.GetEntIndex(), Prop_Data, "m_hPrey") == pPlayer.GetEntIndex())
+						{
+							if ((!pWeapon.m_bFiresUnderwater()) && (pWeapon.GetPrimaryAmmoType() != -1))
+							{
+								PreventWeaponFiring(pPlayer.GetActiveWeapon(), 0.2);
+							}
+						}
+					}
+				}
+			}
+		}
 	}
 	else
 	{
@@ -80,6 +105,16 @@ public void Hook_PlayerPreThinkPost(int iClient)
 			}
 		}
 	}
+}
+
+void PreventWeaponFiring(CBaseCombatWeapon pWeapon, float flDelayTime = 1.0)
+{
+	if (pWeapon.IsValid())
+	{
+		pWeapon.SetNextPrimaryAttack(GetGameTime() + flDelayTime);
+		pWeapon.SetNextSecondaryAttack(GetGameTime() + flDelayTime);
+	}
+	return;
 }
 
 //------------------------------------------------------

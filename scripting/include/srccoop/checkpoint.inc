@@ -741,6 +741,7 @@ public Action Timer_Checkpoint(Handle timer, DataPack dp)
 	int iCheckpointIndex = dp.ReadCell();
 	CBasePlayer pActivator = dp.ReadCell();
 	g_SpawnSystem.ActivateCheckpoint(iCheckpointIndex, pActivator);
+	return Plugin_Handled;
 }
 
 public void Hook_TouchPortal(int iEntity, int iOther)

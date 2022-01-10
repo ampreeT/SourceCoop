@@ -111,38 +111,6 @@ void InitClassdef(GameData pGameConfig)
 	}
 }
 
-enum struct FireOutputData
-{
-	char m_szName[MAX_KEY];
-	CBaseEntity m_pCaller;
-	CBaseEntity m_pActivator;
-	float m_flDelay;
-}
-
-methodmap Array_t < ArrayList
-{
-	public Array_t(ArrayList pHandle = null)
-	{
-		return view_as<Array_t>(pHandle);
-	}
-	public bool IsValid()
-	{
-		return this != null;
-	}
-	public void Close()
-	{
-		if (this.IsValid())
-		{
-			CloseHandle(this);
-		}
-	}
-}
-
-public int InternalGetBaseEntity(const int iEntIndex)
-{
-	return (iEntIndex > -1) ? EntIndexToEntRef(iEntIndex) : iEntIndex;
-}
-
 methodmap CBaseEntity
 {
 	public CBaseEntity(const int iEntIndex = -1)
@@ -516,6 +484,42 @@ methodmap CBaseEntity
 		return false;
 	}
 	*/
+	public int GetWaterLevel()
+	{
+		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_nWaterLevel");
+	}
+}
+
+enum struct FireOutputData
+{
+	char m_szName[MAX_KEY];
+	CBaseEntity m_pCaller;
+	CBaseEntity m_pActivator;
+	float m_flDelay;
+}
+
+methodmap Array_t < ArrayList
+{
+	public Array_t(ArrayList pHandle = null)
+	{
+		return view_as<Array_t>(pHandle);
+	}
+	public bool IsValid()
+	{
+		return this != null;
+	}
+	public void Close()
+	{
+		if (this.IsValid())
+		{
+			CloseHandle(this);
+		}
+	}
+}
+
+public int InternalGetBaseEntity(const int iEntIndex)
+{
+	return (iEntIndex > -1) ? EntIndexToEntRef(iEntIndex) : iEntIndex;
 }
 
 methodmap CTraceRay
@@ -638,6 +642,10 @@ methodmap CBaseCombatWeapon < CBaseAnimating
 	{
 		SetEntProp(this.GetEntIndex(), Prop_Send, "m_iClip1", iPrimaryAmmo); 
 	}
+	public int GetPrimaryAmmoType()
+	{
+		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_iPrimaryAmmoType");
+	}
 	public float GetNextPrimaryAttack()
 	{
 		return GetEntPropFloat(this.GetEntIndex(), Prop_Send, "m_flNextPrimaryAttack");
@@ -653,6 +661,14 @@ methodmap CBaseCombatWeapon < CBaseAnimating
 	public void SetNextSecondaryAttack(const float flNextSecondaryAttack)
 	{
 		SetEntPropFloat(this.GetEntIndex(), Prop_Send, "m_flNextSecondaryAttack", flNextSecondaryAttack); 
+	}
+	public int GetSecondaryAmmoType()
+	{
+		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_iSecondaryAmmoType");
+	}
+	public bool m_bFiresUnderwater()
+	{
+		return view_as<bool>(GetEntProp(this.GetEntIndex(), Prop_Data, "m_bFiresUnderwater"));
 	}
 }
 

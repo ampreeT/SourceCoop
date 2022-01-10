@@ -118,6 +118,7 @@ public void OnPluginStart()
 	g_pConvarEndWaitPeriod = CreateConVar("sourcecoop_end_wait_period", "60.0", "The max number of seconds to wait since first player triggered a changelevel. The timer speed increases each time a new player finishes the level.", _, true, 0.0);
 	g_pConvarEndWaitFactor = CreateConVar("sourcecoop_end_wait_factor", "1.0", "Controls how much the number of finished players increases the changelevel timer speed. 1.0 means full, 0 means none (timer will run full length).", _, true, 0.0, true, 1.0);
 	g_pConvarHomeMap = CreateConVar("sourcecoop_homemap", "", "The map to return to after finishing a campaign/map.");
+	g_pConvarEndWaitDisplayMode = CreateConVar("sourcecoop_end_wait_display_mode", "0", "Sets which method to show countdown. 0 is panel, 1 is hud text.", _, true, 0.0, true, 1.0);
 	
 	RegAdminCmd("sourcecoop_ft", Command_SetFeature, ADMFLAG_ROOT, "Command for toggling plugin features on/off");
 	RegAdminCmd("sc_ft", Command_SetFeature, ADMFLAG_ROOT, "Command for toggling plugin features on/off");
@@ -161,7 +162,12 @@ public Action OnLevelInit(const char[] szMapName, char szMapEntities[ENTITYSTRIN
 	OnMapEnd(); // this does not always get called, so call it here
 	strcopy(g_szPrevMapName, sizeof(g_szPrevMapName), g_szMapName);
 	strcopy(g_szMapName, sizeof(g_szMapName), szMapName);
-	g_szEntityString = szMapEntities;
+	if (strlen(szMapEntities) < 4)
+	{
+		SetFailState("Failed to get map entities string! Most likely this version of SourceMod is too new...");
+		return Plugin_Continue;
+	}
+	else g_szEntityString = szMapEntities;
 	g_pCoopManager.OnLevelInit(szMapName, szMapEntities);
 
 	return Plugin_Changed;
@@ -402,6 +408,10 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 			else if (strcmp(szClassname, "env_credits") == 0)
 			{
 				DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_EnvCreditsAcceptInput);
+			}
+			else if (strcmp(szClassname, "env_sprite") == 0)
+			{
+				SDKHook(iEntIndex, SDKHook_SpawnPost, Hook_EnvSpriteSpawn);
 			}
 			else if (strcmp(szClassname, "ai_script_conditions") == 0)
 			{
