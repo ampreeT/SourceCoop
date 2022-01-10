@@ -352,7 +352,7 @@ enum struct CoopManager
 		}
 		
 		this.m_bStarted = true;
-		PrintToServer("Co-op map %s has begun", g_szMapName);
+		PrintToServer("%sCo-op map %s has begun", CONSOLE_TAG, g_szMapName);
 
 		if(g_pLevelLump.m_iIntroType == INTRO_FADE || g_pLevelLump.m_iIntroType == INTRO_FREEZE)
 		{

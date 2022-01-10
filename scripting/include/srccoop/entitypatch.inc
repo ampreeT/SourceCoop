@@ -1005,6 +1005,8 @@ public MRESReturn Hook_ServerCommandAcceptInput(int _this, Handle hReturn, Handl
 // CMiscMarionettist - misc_marionettist
 // Prevent a crash due to reactivation before finishing or when used by multiple players at once
 //------------------------------------------------------
+CBaseEntity g_pActiveMarionettist[MAXPLAYERS+1] = {view_as<CBaseEntity>(-1), ...};
+
 public MRESReturn Hook_MarionettistAcceptInput(int _this, Handle hReturn, Handle hParams)
 {
 	if (g_pCoopManager.IsCoopModeEnabled())
@@ -1025,11 +1027,17 @@ public MRESReturn Hook_MarionettistAcceptInput(int _this, Handle hReturn, Handle
 						CBaseEntity pActivator = CBaseEntity(iActivator);
 						if(pActivator.IsClassPlayer())
 						{
+							// cancel previous
+							if (g_pActiveMarionettist[iActivator].IsValid())
+							{
+								g_pActiveMarionettist[iActivator].Kill();
+							}
 							g_bTempDontHookEnts = true;
 							CBaseEntity pPuppet = CloneMarionettist(_this);
 							g_bTempDontHookEnts = false;
 							pPuppet.AcceptInputStr("Manipulate", "!activator", pActivator);
 							DHookEntity(hkThink, true, pPuppet.GetEntIndex(), _, Hook_MarionettistPuppetThinkPost);
+							g_pActiveMarionettist[iActivator] = pPuppet;
 							
 							DHookSetReturn(hReturn, true);
 							return MRES_Supercede;
@@ -1046,18 +1054,18 @@ CBaseEntity CloneMarionettist(int iEnt)
 {
 	int iClone = CreateEntityByName("misc_marionettist");
 	char buff[MAX_VALUE];
-	char buff2[29];
 	GetEntPropString(iEnt, Prop_Data, "m_iszSoundScriptStart", buff, sizeof(buff));
 	SetEntPropString(iClone, Prop_Data, "m_iszSoundScriptStart", buff);
 	GetEntPropString(iEnt, Prop_Data, "m_iszSoundScriptLoop", buff, sizeof(buff));
 	SetEntPropString(iClone, Prop_Data, "m_iszSoundScriptLoop", buff);
 	GetEntPropString(iEnt, Prop_Data, "m_iszSoundScriptEnd", buff, sizeof(buff));
 	SetEntPropString(iClone, Prop_Data, "m_iszSoundScriptEnd", buff);
+	char szDestNamesProp[29];
 	for(int i = 0; i < 16; i++)
 	{
-		FormatEx(buff2, sizeof(buff2), "m_iszDestinationsNames[ %d ]", i);
-		GetEntPropString(iEnt, Prop_Data, buff2, buff, sizeof(buff));
-		SetEntPropString(iClone, Prop_Data, buff2, buff);
+		FormatEx(szDestNamesProp, sizeof(szDestNamesProp), "m_iszDestinationsNames[ %d ]", i);
+		GetEntPropString(iEnt, Prop_Data, szDestNamesProp, buff, sizeof(buff));
+		SetEntPropString(iClone, Prop_Data, szDestNamesProp, buff);
 	}
 	SetEntPropFloat(iClone, Prop_Data, "m_flInnerDestinationRadiusPrevious", GetEntPropFloat(iEnt, Prop_Data, "m_flInnerDestinationRadiusPrevious"));
 	SetEntPropFloat(iClone, Prop_Data, "m_flInnerPullSpeedPrevious", GetEntPropFloat(iEnt, Prop_Data, "m_flInnerPullSpeedPrevious"));
@@ -1072,9 +1080,21 @@ CBaseEntity CloneMarionettist(int iEnt)
 public MRESReturn Hook_MarionettistPuppetThinkPost(int _this)
 {
 	CBaseEntity pThis = CBaseEntity(_this);
-	if(pThis.GetNextThinkTick() == -1)
+	if (pThis.GetNextThinkTick() == -1)
 	{
 		pThis.Kill();
+		return MRES_Ignored;
+	}
+	for (int i = 1; i <= MaxClients; i++)
+	{
+		if (g_pActiveMarionettist[i] == pThis)
+		{
+			if (!IsClientInGame(i) || !IsPlayerAlive(i))
+			{
+				pThis.Kill();
+				break;
+			}
+		}
 	}
 	return MRES_Ignored;
 }

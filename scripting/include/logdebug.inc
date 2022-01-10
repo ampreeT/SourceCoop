@@ -63,11 +63,11 @@ stock void InitDebugLog(const char[] convarBaseName, const char[] debugTag, int 
 	
 	g_DebugAdminFlags = adminFlags;
 	
-	int convarNameLen = strlen(convarBaseName)+10;
+	int convarNameLen = strlen(convarBaseName) + 10;
 	char[] convarName = new char[convarNameLen];
 	char convarDescription[512];
 	
-	FormatEx(convarDescription, sizeof(convarDescription), "Add up values to enable debug logging to those locations\n  1 = server console\n  2 = all clients' consoles\n  4 = consoles of admins with '%s' flag%s or access to '%s' override\n  8 = all clients' chat\n  16 = chat of admins with '%s' flag%s or access to '%s' override\n  32 = debug log file %s", flagChars, flagChars[1] == '\0' ? "" : "s", convarName, flagChars, flagChars[1] == '\0' ? "" : "s", convarName, g_DebugLogFileName);
+	FormatEx(convarDescription, sizeof(convarDescription), "Add up values to enable debug logging to those locations\n  1 = server console\n  2 = all clients' consoles\n  4 = consoles of admins with '%s' flag%s or access to '%s' override\n  8 = all clients' chat\n  16 = chat of admins with '%s' flag%s or access to '%s' override\n  32 = debug log file %s", flagChars, flagChars[1] == '\0' ? "" : "s", convarBaseName, flagChars, flagChars[1] == '\0' ? "" : "s", convarBaseName, g_DebugLogFileName);
 	g_cvarDebugLocation = CreateConVar(convarBaseName, "0", convarDescription, FCVAR_DONTRECORD, true, 0.0, true, 63.0);
 	
 	FormatEx(convarName, convarNameLen, "%s_parts", convarBaseName);
@@ -98,7 +98,7 @@ stock bool _LogDebug(int line, const char[] format, any ...) {
 		return false;
 	}
 	
-	char buffer[512];
+	static char buffer[512];
 	VFormat(buffer, sizeof(buffer), format, 3);
 	
 	int debugParts = g_cvarDebugParts.IntValue;

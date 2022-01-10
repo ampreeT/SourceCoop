@@ -364,18 +364,20 @@ enum struct CGlobalLevelLump
 			}
 		}
 		
-		LogDebug("ParseMapEntities took %f", GetEngineTime() - flStartTime);
+		LogDebug("CGlobalLevelLump.ParseMapEntities took %f", GetEngineTime() - flStartTime);
 	}
 	
 	int ToString(char szBuffer[ENTITYSTRING_LENGTH])	// absolutely do not care for bounds checking, this 2 mb buffer is big enough for everything
 	{
+		float flStartTime = GetEngineTime();
+		
 		int n = 0;
 		for (int i = 0; i < this.m_pEntityList.Length; i++)
 		{
 			CEntityInfoLump pEntityInfo = this.m_pEntityList.Get(i);
-			if (!pEntityInfo.IsValid())		// should be never invalid
+			if (!pEntityInfo.IsValid()) // should be never invalid
 				return -1;
-			if (pEntityInfo.Length <= 0)	// never write if it has nothing in it to begin with
+			if (pEntityInfo.Length <= 0) // never write if it has nothing in it to begin with
 				continue;
 			
 			szBuffer[n] = '{';
@@ -387,7 +389,7 @@ enum struct CGlobalLevelLump
 				CEntityKeyLump pEntityInfoKey;
 				if (pEntityInfo.GetArray(j, pEntityInfoKey, sizeof(pEntityInfoKey)))
 				{
-					char szKeyValue[2048];
+					static char szKeyValue[2048];
 					int iLength = Format(szKeyValue, sizeof(szKeyValue), "\t\"%s\"\t\"%s\"\n", pEntityInfoKey.m_szKey, pEntityInfoKey.m_szValue);
 					strcopy(szBuffer[n], iLength + 1, szKeyValue);
 					n += iLength;
@@ -395,15 +397,18 @@ enum struct CGlobalLevelLump
 			}
 			
 			szBuffer[n] = '}';
-			szBuffer[n + 1] = (i == (this.m_pEntityList.Length - 1)) ? '\0' : '\n';	// if this doesn't end with a null terminator, the token will search for '{' and crash the server
+			szBuffer[n + 1] = (i == (this.m_pEntityList.Length - 1)) ? '\0' : '\n'; // if this doesn't end with a null terminator, the token will search for '{' and crash the server
 			n += 2;
 		}
 		
+		LogDebug("CGlobalLevelLump.ToString took %f", GetEngineTime() - flStartTime);
 		return n;
 	}
 	
 	void ParseConfigFile(KeyValues kv)
 	{
+		float flStartTime = GetEngineTime();
+		
 		if (kv.GotoFirstSubKey(false))
 		{
 			do
@@ -467,6 +472,8 @@ enum struct CGlobalLevelLump
 			kv.GoBack();
 		}
 		this.m_pOutputHookList.Validate(this.m_pEntityList);
+		
+		LogDebug("CGlobalLevelLump.ParseConfigFile took %f", GetEngineTime() - flStartTime);
 	}
 	
 	void ParseEquipment(KeyValues kv)

@@ -80,7 +80,7 @@ stock void MsgAll(const char[] msg, any ...)
 	int len = strlen(msg) + 255;
 	char[] formatMsg = new char[len];
 	VFormat(formatMsg, len, msg, 2);
-	PrintToServer(formatMsg);
+	PrintToServer("%s%s", CONSOLE_TAG, formatMsg);
  	PrintToChatAll("%s%s", CHAT_TAG, formatMsg);
 }
 

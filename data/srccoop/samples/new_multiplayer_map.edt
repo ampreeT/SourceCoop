@@ -12,6 +12,10 @@
 	"campaign" "SourceCoop"
 	"chapter" "<Full_name>"
 
+	// Tells the mod to allow any map to be next (using a regex expression).
+	// Depending on the transitions in this map, you can specify nextmap inside the quotes to prevent players from backtracking.
+	"nextmap" "/.*/"
+	
 	"features"
 	{
 		// setup plugin features here

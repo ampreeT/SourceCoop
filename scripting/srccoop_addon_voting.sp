@@ -53,7 +53,7 @@ public void OnPluginStart()
 
 public void OnLibraryAdded(const char[] name)
 {
-	if(StrEqual(name, SRCCOOP_LIBRARY))
+	if (StrEqual(name, SRCCOOP_LIBRARY))
 	{
 		OnSourceCoopStarted();
 	}
@@ -62,7 +62,7 @@ public void OnLibraryAdded(const char[] name)
 public void OnMapStart()
 {
 	static bool firstLoad = true;
-	if(firstLoad || pReloadMapsOnMapchange.BoolValue)
+	if (firstLoad || pReloadMapsOnMapchange.BoolValue)
 	{
 		firstLoad = false;
 		BuildMaps();
@@ -80,7 +80,7 @@ void OnSourceCoopStarted()
 {
 	TopMenu pCoopMenu = GetCoopTopMenu();
 	TopMenuObject pMenuCategory = pCoopMenu.FindCategory(COOPMENU_CATEGORY_VOTING);
-	if(pMenuCategory != INVALID_TOPMENUOBJECT)
+	if (pMenuCategory != INVALID_TOPMENUOBJECT)
 	{
 		pCoopMenu.AddItem(MENUITEM_SKIPINTRO, MyCoopMenuHandler, pMenuCategory);
 		pCoopMenu.AddItem(MENUITEM_RESTARTMAP, MyCoopMenuHandler, pMenuCategory);
@@ -92,7 +92,7 @@ public void OnCoopMapStart()
 {
 	char szCurrentMap[MAX_MAPNAME];
 	GetCurrentMap(szCurrentMap, sizeof(szCurrentMap));
-	if(IsIntroMap(szCurrentMap))
+	if (IsIntroMap(szCurrentMap))
 	{
 		CreateTimer(15.0, Timer_StartVoteSkipIntro, _, TIMER_FLAG_NO_MAPCHANGE);
 	}
@@ -104,11 +104,11 @@ public void MyCoopMenuHandler(TopMenu topmenu, TopMenuAction action, TopMenuObje
 	{
 		char szItem[32];
 		topmenu.GetObjName(topobj_id, szItem, sizeof(szItem));
-		if(StrEqual(szItem, MENUITEM_SKIPINTRO))
+		if (StrEqual(szItem, MENUITEM_SKIPINTRO))
 		{
 			Format(buffer, maxlength, "Skip intro");
 		}
-		if(StrEqual(szItem, MENUITEM_RESTARTMAP))
+		if (StrEqual(szItem, MENUITEM_RESTARTMAP))
 		{
 			Format(buffer, maxlength, "Restart current map");
 		}
@@ -121,23 +121,23 @@ public void MyCoopMenuHandler(TopMenu topmenu, TopMenuAction action, TopMenuObje
 	{
 		char szItem[32];
 		topmenu.GetObjName(topobj_id, szItem, sizeof(szItem));
-		if(StrEqual(szItem, MENUITEM_SKIPINTRO))
+		if (StrEqual(szItem, MENUITEM_SKIPINTRO))
 		{
-			if(!StartVoteSkipIntro(param))
+			if (!StartVoteSkipIntro(param))
 			{
 				topmenu.Display(param, TopMenuPosition_LastCategory);
 			}
 		}
-		else if(StrEqual(szItem, MENUITEM_RESTARTMAP))
+		else if (StrEqual(szItem, MENUITEM_RESTARTMAP))
 		{
-			if(!StartVoteRestartMap(param))
+			if (!StartVoteRestartMap(param))
 			{
 				topmenu.Display(param, TopMenuPosition_LastCategory);
 			}
 		}
-		else if(StrEqual(szItem, MENUITEM_MAPVOTE))
+		else if (StrEqual(szItem, MENUITEM_MAPVOTE))
 		{
-			if(!OpenMapSelectMenu(param))
+			if (!OpenMapSelectMenu(param))
 			{
 				topmenu.Display(param, TopMenuPosition_LastCategory);
 			}
@@ -151,7 +151,7 @@ public void MyCoopMenuHandler(TopMenu topmenu, TopMenuAction action, TopMenuObje
 
 public Action Timer_StartVoteSkipIntro(Handle timer)
 {
-	StartVoteSkipIntro(0);
+	StartVoteSkipIntro(-1);
 }
 
 public Action Command_VoteSkipIntro(int client, int args)
@@ -166,15 +166,17 @@ bool StartVoteSkipIntro(int client)
 	GetCurrentMap(szCurrentMap, sizeof(szCurrentMap));
 	if (!IsIntroMap(szCurrentMap))
 	{
-		MsgReply(client, "This is not an intro map");
+		if (client != -1)
+			MsgReply(client, "This is not an intro map");
 		return false;
 	}
 	if (IsVoteInProgress())
 	{
-		MsgReply(client, "Another vote is already in progress");
+		if (client != -1)
+			MsgReply(client, "Another vote is already in progress");
 		return false;
 	}
-	if (GetTime() < nextVoteSkip)
+	if (GetTime() < nextVoteSkip && client != -1)
 	{
 		char sTime[32];
 		FormatTimeLengthLong(nextVoteSkip - GetTime(), sTime, sizeof(sTime));
@@ -187,7 +189,14 @@ bool StartVoteSkipIntro(int client)
 	menu.AddItem("1", "No");
 	menu.ExitButton = false;
 	menu.DisplayVoteToAll(VOTE_DURATION);
-	if(client) MsgAll("%N started a skip intro vote!", client);
+	if (client >= 0)
+	{
+		MsgAll("%N started a skip intro vote!", client);
+	}
+	else
+	{
+		MsgAll("Skip intro vote has started!");
+	}
 	return true;
 }
 
@@ -209,7 +218,7 @@ public int VoteSkipHandler(Menu menu, MenuAction action, int param1, int param2)
 			MsgAll("Vote failed!");
 		}
 	}
-	else if(action == MenuAction_VoteCancel)
+	else if (action == MenuAction_VoteCancel)
 	{
 		MsgAll("Vote cancelled!");
 	}
@@ -224,7 +233,7 @@ bool IsIntroMap(char szMap[MAX_MAPNAME])
 {
 	for (int i = 0; i < sizeof(INTROMAPS); i++)
 	{
-		if(StrEqual(szMap, INTROMAPS[i], false))
+		if (StrEqual(szMap, INTROMAPS[i], false))
 		{
 			return true;
 		}
@@ -262,7 +271,7 @@ bool StartVoteRestartMap(int client)
 	menu.AddItem("1", "No");
 	menu.ExitButton = false;
 	menu.DisplayVoteToAll(VOTE_DURATION);
-	if(client) MsgAll("%N started a map restart vote!", client);
+	MsgAll("%N started a map restart vote!", client);
 	return true;
 }
 
@@ -286,7 +295,7 @@ public int VoteRestartHandler(Menu menu, MenuAction action, int param1, int para
 			MsgAll("Vote failed!");
 		}
 	}
-	else if(action == MenuAction_VoteCancel)
+	else if (action == MenuAction_VoteCancel)
 	{
 		MsgAll("Vote cancelled!");
 	}
@@ -317,11 +326,11 @@ void MapMenuSection_Init(MapMenuSection _this, const char[] szName)
 	
 void MapMenuSection_Destroy(MapMenuSection _this)
 {
-	if(_this.pSubSections != null)
+	if (_this.pSubSections != null)
 	{
 		int len = _this.pSubSections.Length;
 		MapMenuSection pSubSection;
-		for(int i = 0; i < len; i++)
+		for (int i = 0; i < len; i++)
 		{
 			_this.pSubSections.GetArray(i, pSubSection);
 			MapMenuSection_Destroy(pSubSection);
@@ -335,7 +344,7 @@ bool MapMenuSection_GetSubSection(MapMenuSection _this, const char[] szSection, 
 {
 	MapMenuSection pTemp;
 	int len = _this.pSubSections.Length;
-	for(int i = 0; i < len; i++)
+	for (int i = 0; i < len; i++)
 	{
 		_this.pSubSections.GetArray(i, pTemp);
 		if(StrEqual(pTemp.szName, szSection))
@@ -344,7 +353,7 @@ bool MapMenuSection_GetSubSection(MapMenuSection _this, const char[] szSection, 
 			return true;
 		}
 	}
-	if(add)
+	if (add)
 	{
 		MapMenuSection_Init(pTemp, szSection);
 		_this.pSubSections.PushArray(pTemp);
@@ -395,12 +404,12 @@ void LoadMapsInPath(const char szConfigPath[PLATFORM_MAX_PATH], StringMap duplic
 	FileType fileType;
 	DirectoryListing dir = OpenDirectory(szConfigPath, true);
 	
-	while(dir.GetNext(szFile, sizeof(szFile), fileType))
+	while (dir.GetNext(szFile, sizeof(szFile), fileType))
 	{
-		if(fileType == FileType_File)
+		if (fileType == FileType_File)
 		{
 			int len = strlen(szFile);
-			if(len >= 4 && strcmp(szFile[len - 4], ".edt", false) == 0)
+			if (len >= 4 && strcmp(szFile[len - 4], ".edt", false) == 0)
 			{
 				FormatEx(szBuffer, sizeof(szBuffer), "%s/%s", szConfigPath, szFile);
 				szFile[len - 4] = '\0';
@@ -412,7 +421,7 @@ void LoadMapsInPath(const char szConfigPath[PLATFORM_MAX_PATH], StringMap duplic
 				kv.SetEscapeSequences(true);
 				if (kv.ImportFromFile(szBuffer) && kv.GetSectionName(szBuffer, sizeof(szBuffer)) && strcmp(szBuffer, "config", false) == 0)
 				{
-					if(duplicityChecker.SetString(szFile, "", false))
+					if (duplicityChecker.SetString(szFile, "", false))
 					{
 						LoadMap(szFile, kv);
 					}
@@ -470,7 +479,7 @@ Menu ShowMapSelectMenu(int client)
 	
 	ArrayList pSubs = pMapSection[client].pSubSections;
 	MapMenuSection pSub;
-	for(int i = 0; i < pSubs.Length; i++)
+	for (int i = 0; i < pSubs.Length; i++)
 	{
 		pSubs.GetArray(i, pSub);
 		menu.AddItem(MAPMENU_SUBSECTION, pSub.szName);
@@ -478,7 +487,7 @@ Menu ShowMapSelectMenu(int client)
 	
 	ArrayList pMaps = pMapSection[client].pMaps;
 	char szMap[MAX_MAPNAME];
-	for(int i = 0; i < pMaps.Length; i++)
+	for (int i = 0; i < pMaps.Length; i++)
 	{
 		pMaps.GetString(i, szMap, sizeof(szMap));
 		menu.AddItem(MAPMENU_MAP, szMap);
@@ -508,9 +517,9 @@ public int MapSelectMenuHandler(Menu menu, MenuAction action, int client, int pa
 	}
 	else if (action == MenuAction_Cancel)
 	{
-		if(param2 == MenuCancel_ExitBack)
+		if (param2 == MenuCancel_ExitBack)
 		{
-			if(pMapMenuNavStack[client].Empty)
+			if (pMapMenuNavStack[client].Empty)
 			{
 				TopMenu pCoopMenu = GetCoopTopMenu();
 				pCoopMenu.Display(client, TopMenuPosition_LastCategory);
