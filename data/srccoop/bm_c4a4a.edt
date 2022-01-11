@@ -8,6 +8,10 @@
 	{
 		"FIRSTPERSON_DEATHCAM" "0"
 	}
+	"define"
+	{
+		"outputs_fixup_player_in_parameter" "0"
+	}
 	"equipment"
 	{
 		"lookup"

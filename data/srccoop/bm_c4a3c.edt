@@ -28,6 +28,11 @@
 				"rendermode" "10"
 			}
 		}
+		// remove blocker
+		"remove"
+		{
+			"targetname" "reveal_machine_blocker_visual3"
+		}
 		// block off next map
 		"add"
 		{
