@@ -64,9 +64,10 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 	{
 		if (!g_pReviveTarget[client].IsValid()) g_pReviveTarget[client] = view_as<CBasePlayer>(-1);
 		CBasePlayer pPlayer = CBasePlayer(client);
-		float vecEyeAngles[3];
-		float vecEyeOrigin[3];
-		pPlayer.GetEyePosition(vecEyeOrigin);
+		static float vecEyeAngles[3];
+		static float vecOrigin[3];
+		static float vecRagdollPosition[3];
+		pPlayer.GetEyePosition(vecOrigin);
 		pPlayer.GetEyeAngles(vecEyeAngles);
 		if (g_pReviveTarget[client].IsValid())
 		{
@@ -79,14 +80,13 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 			{
 				if (g_flReviveTime[client] == 0.0)
 				{
-					g_flReviveTime[client] = GetGameTime()+g_pConVarReviveTime.FloatValue;
+					g_flReviveTime[client] = GetGameTime() + g_pConVarReviveTime.FloatValue;
 				}
-				CBaseEntity pRagdoll = CBaseEntity(GetEntPropEnt(g_pReviveTarget[client].GetEntIndex(),Prop_Send,"m_hRagdoll"));
-				float vecRagdollPosition[3];
+				CBaseEntity pRagdoll = CBaseEntity(GetEntPropEnt(g_pReviveTarget[client].GetEntIndex(), Prop_Send, "m_hRagdoll"));
 				if (pRagdoll.IsValid())
 				{
 					pRagdoll.GetAbsOrigin(vecRagdollPosition);
-					if (GetVectorDistance(vecEyeOrigin,vecRagdollPosition,false) > 120.0)
+					if (GetVectorDistance(vecOrigin, vecRagdollPosition, false) > 120.0)
 					{
 						// Client left range to revive, play deny sound and stop previous start sound
 						
@@ -110,21 +110,9 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 						// Fix for if player died on a ladder
 						SetEntPropEnt(g_pReviveTarget[client].GetEntIndex(), Prop_Data, "m_hLadder", -1);
 						
-						// The issue with this is if a ragdoll falls under an object the player can become stuck there
-						// Spawn the player at the revivers position instead
-						/*
-						// Can't do this because player_ragdoll only has m_angRotation as a Prop_Data
-						//pRagdoll.GetAngles(vecRagdollAngle);
-						GetEntPropVector(pRagdoll.GetEntIndex(),Prop_Data,"m_angRotation",vecRagdollAngle);
+						pPlayer.GetAbsOrigin(vecOrigin);
 						
-						// Ensure pitch and roll are not kept from ragdoll
-						vecRagdollAngle[0] = 0.0;
-						vecRagdollAngle[2] = 0.0;
-						*/
-						
-						pPlayer.GetAbsOrigin(vecEyeOrigin);
-						
-						g_pReviveTarget[client].Teleport(vecEyeOrigin,vecEyeAngles,NULL_VECTOR);
+						g_pReviveTarget[client].Teleport(vecOrigin, vecEyeAngles, NULL_VECTOR);
 						pRagdoll.Kill();
 						
 						pPlayer.ModifyScore(g_pConVarReviveScore.IntValue);
@@ -136,7 +124,6 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 		}
 		else
 		{
-			float vecEndPosition[3];
 			for (int i = 1;i<MaxClients+1;i++)
 			{
 				if (i != client)
@@ -146,15 +133,15 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 					{
 						if (!pTarget.IsAlive())
 						{
-							CBaseEntity pRagdoll = CBaseEntity(GetEntPropEnt(i,Prop_Send,"m_hRagdoll"));
+							CBaseEntity pRagdoll = CBaseEntity(GetEntPropEnt(i, Prop_Send, "m_hRagdoll"));
 							if (pRagdoll.IsValid())
 							{
-								pRagdoll.GetAbsOrigin(vecEndPosition);
-								if (GetVectorDistance(vecEyeOrigin,vecEndPosition,false) < 100.0)
+								pRagdoll.GetAbsOrigin(vecRagdollPosition);
+								if (GetVectorDistance(vecOrigin, vecRagdollPosition, false) < 100.0)
 								{
-									TR_TraceRayFilter(vecEyeOrigin,vecEyeAngles,MASK_SOLID,RayType_Infinite,TraceEntityFilter,client);
-									TR_GetEndPosition(vecEyeOrigin);
-									if (GetVectorDistance(vecEyeOrigin,vecEndPosition,false) < 100.0)
+									TR_TraceRayFilter(vecOrigin, vecEyeAngles, MASK_SOLID, RayType_Infinite, TraceEntityFilter, client);
+									TR_GetEndPosition(vecOrigin);
+									if (GetVectorDistance(vecOrigin, vecRagdollPosition, false) < 100.0)
 									{
 										g_pReviveTarget[client] = CBasePlayer(i);
 										EmitSoundToAll("items/suitchargeok1.wav", client, SNDCHAN_STATIC, SNDLEVEL_NORMAL);
