@@ -685,6 +685,23 @@ enum struct CCoopSpawn
 		this.m_pDefaultEquipment.m_pWeaponList.PushArray(pWeaponEntry);
 		return true;
 	}
+	
+	void SurvivalRespawnPlayers()
+	{
+		for (int i = 1; i <= MaxClients; i++)
+		{
+			CBasePlayer pPlayer = CBasePlayer(i);
+			if (pPlayer.IsValid())
+			{
+				if (!pPlayer.IsAlive())
+				{
+					pPlayer.SetCanSpawn(true);
+					pPlayer.Spawn();
+					pPlayer.Activate();
+				}
+			}
+		}
+	}
 }
 
 CCoopSpawn g_SpawnSystem;
@@ -732,6 +749,9 @@ public void Hook_TouchCheckpoint(int iEntity, int iOther)
 			iIndex++;
 		}
 		SDKUnhook(iEntity, SDKHook_StartTouchPost, Hook_TouchCheckpoint);
+		
+		// Survival mode respawn players at trigger_autosaves
+		if (g_pSurvivalMode.IntValue) g_SpawnSystem.SurvivalRespawnPlayers();
 	}
 }
 

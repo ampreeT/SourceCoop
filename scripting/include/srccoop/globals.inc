@@ -14,6 +14,7 @@ ConVar g_pConvarEndWaitPeriod;
 ConVar g_pConvarEndWaitFactor;
 ConVar g_pConvarHomeMap;
 ConVar g_pConvarEndWaitDisplayMode;
+ConVar g_pSurvivalMode;
 
 // ----------------------------
 // SDK Calls
@@ -30,6 +31,7 @@ Handle g_pCreateServerInterface;
 Handle hkFAllowFlashlight;
 //Handle hkIsDeathmatch;
 Handle hkIsMultiplayer;
+Handle hkPlayerSpawn;
 Handle hkRestoreWorld;
 Handle hkRespawnPlayers;
 Handle hkIRelationType;

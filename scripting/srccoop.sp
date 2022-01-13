@@ -70,6 +70,7 @@ void LoadGameData()
 	
 		LoadDHookVirtual(pGameConfig, hkChangeTeam, "CBasePlayer::ChangeTeam");
 		LoadDHookVirtual(pGameConfig, hkShouldCollide, "CBaseEntity::ShouldCollide");
+		LoadDHookVirtual(pGameConfig, hkPlayerSpawn, "CBlackMesaPlayer::Spawn");
 	}
 		
 	if (g_Engine == Engine_BlackMesa)
@@ -119,6 +120,7 @@ public void OnPluginStart()
 	g_pConvarEndWaitFactor = CreateConVar("sourcecoop_end_wait_factor", "1.0", "Controls how much the number of finished players increases the changelevel timer speed. 1.0 means full, 0 means none (timer will run full length).", _, true, 0.0, true, 1.0);
 	g_pConvarHomeMap = CreateConVar("sourcecoop_homemap", "", "The map to return to after finishing a campaign/map.");
 	g_pConvarEndWaitDisplayMode = CreateConVar("sourcecoop_end_wait_display_mode", "0", "Sets which method to show countdown. 0 is panel, 1 is hud text.", _, true, 0.0, true, 1.0);
+	g_pSurvivalMode = CreateConVar("sourcecoop_survivalmode", "0", "Sets survival mode. 1 will respawn all players if all dead. 2 will restart map if all players dead.", _, true, 0.0, true, 2.0);
 	
 	RegAdminCmd("sourcecoop_ft", Command_SetFeature, ADMFLAG_ROOT, "Command for toggling plugin features on/off");
 	RegAdminCmd("sc_ft", Command_SetFeature, ADMFLAG_ROOT, "Command for toggling plugin features on/off");
@@ -146,6 +148,8 @@ public void OnPluginStart()
 			HookUserMessage(iIntroCredits, Hook_IntroCreditsMsg, true);
 		}
 	}
+	
+	HookEventEx("entity_killed", Event_EntityKilled, EventHookMode_Post);
 	
 	for (int i = 1; i <= MaxClients; i++)
 	{
@@ -262,6 +266,7 @@ public void OnClientPutInServer(int client)
 	SDKHook(client, SDKHook_WeaponEquipPost, Hook_PlayerWeaponEquipPost);
 	DHookEntity(hkChangeTeam, false, client, _, Hook_PlayerChangeTeam);
 	DHookEntity(hkShouldCollide, false, client, _, Hook_PlayerShouldCollide);
+	DHookEntity(hkPlayerSpawn, false, client, _, Hook_PlayerSpawn);
 	GreetPlayer(client);
 }
 
@@ -433,6 +438,10 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 			else if (strcmp(szClassname, "player_loadsaved") == 0)
 			{
 				DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_LoadSavedAcceptInput);
+			}
+			else if (strcmp(szClassname, "logic_autosave") == 0)
+			{
+				DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_LogicAutosaveAcceptInput);
 			}
 			else if (strcmp(szClassname, "game_end") == 0)
 			{
@@ -607,6 +616,76 @@ public Action Event_BroadcastTeamsound(Event hEvent, const char[] szName, bool b
 		return Plugin_Changed;
 	}
 	return Plugin_Continue;
+}
+
+public Action Event_EntityKilled(Event hEvent, const char[] szName, bool bDontBroadcast)
+{
+	if ((g_pSurvivalMode.IntValue) && (g_pCoopManager.IsCoopModeEnabled()))
+	{
+		// Minor optimization to only run the for loops if the entity that died is a player
+		int iVictimCheck = GetEventInt(hEvent, "victim");
+		if (iVictimCheck <= MaxClients)
+		{
+			bool bRunAllDead = true;
+			for (int i = 1; i < MaxClients+1; i++)
+			{
+				CBasePlayer pPlayer = CBasePlayer(i);
+				if (pPlayer.IsValid())
+				{
+					if (pPlayer.IsAlive())
+					{
+						bRunAllDead = false;
+						break;
+					}
+				}
+			}
+			
+			if (bRunAllDead)
+			{
+				switch (g_pSurvivalMode.IntValue)
+				{
+					case 1:
+					{
+						// Must wait for 0.1 seconds as the last player that dies will have invalid properties set
+						CreateTimer(0.1, SurvivalModeRespawnPlayers, _, TIMER_FLAG_NO_MAPCHANGE);
+					}
+					case 2:
+					{
+						// Fade all with message, then restart map
+						SetHudTextParams(-1.0, 0.45, 6.0, 200, 200, 200, 255, 0, 0.5, 1.0, 1.0);
+						for (int i = 1; i < MaxClients+1; i++)
+						{
+							CBasePlayer pPlayer = CBasePlayer(i);
+							if (pPlayer.IsValid())
+							{
+								Client_ScreenFade(pPlayer.GetEntIndex(), 1000, FFADE_OUT|FFADE_STAYOUT, _, 0, 0, 0, 255);
+								ShowHudText(pPlayer.GetEntIndex(), 2, "All players have died\nRestarting map...");
+							}
+						}
+						
+						CreateTimer(6.0, RestartLevel, _, TIMER_FLAG_NO_MAPCHANGE);
+					}
+				}
+			}
+		}
+	}
+	return Plugin_Continue;
+}
+
+public Action SurvivalModeRespawnPlayers(Handle timer)
+{
+	g_SpawnSystem.SurvivalRespawnPlayers();
+	
+	return Plugin_Handled;
+}
+
+public Action RestartLevel(Handle timer)
+{
+	char szMapName[MAX_MAPNAME];
+	GetCurrentMap(szMapName, sizeof(szMapName));
+	ForceChangeLevel(szMapName, "SourceCoop - all players died");
+	
+	return Plugin_Handled;
 }
 
 public MRESReturn Hook_OnEquipmentTryPickUpPost(int _this, Handle hReturn, Handle hParams)

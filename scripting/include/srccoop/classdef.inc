@@ -488,6 +488,11 @@ methodmap CBaseEntity
 	{
 		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_nWaterLevel");
 	}
+	
+	public int GetGroundEntity()
+	{
+		return GetEntPropEnt(this.GetEntIndex(), Prop_Data, "m_hGroundEntity");
+	}
 }
 
 enum struct FireOutputData
@@ -689,7 +694,11 @@ methodmap CBaseCombatCharacter < CBaseAnimating
 	}
 	public bool IsAlive()
 	{
-		return view_as<bool>(this.GetHealth() > 0);
+		//return view_as<bool>(this.GetHealth() > 0);
+		
+		// Any value above 0 indicates dead or other death information
+		if (GetEntProp(this.GetEntIndex(), Prop_Data, "m_lifeState")) return false;
+		return true;
 	}
 	public CBaseCombatWeapon GetActiveWeapon()
 	{
@@ -1121,6 +1130,17 @@ methodmap CBasePlayer < CBaseCombatCharacter
 		int iNewScore = this.GetScore() + iPoints;
 		this.SetScore(iNewScore);
 		return iNewScore;
+	}
+	
+	public bool CanSpawn()
+	{
+		return view_as<bool>(!GetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_iRespawnFrames"));
+	}
+	
+	public void SetCanSpawn(const bool bCanSpawn)
+	{
+		SetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_iRespawnFrames", view_as<float>(!bCanSpawn));
+		return;
 	}
 }
 

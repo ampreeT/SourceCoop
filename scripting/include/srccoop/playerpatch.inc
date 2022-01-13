@@ -23,7 +23,7 @@ public MRESReturn Hook_FAllowFlashlight(Handle hReturn, Handle hParams)
 //------------------------------------------------------
 public void Hook_CameraDeathSpawn(int iEntIndex)
 {
-	if (g_pCoopManager.IsFeatureEnabled(FT_FIRSTPERSON_DEATHCAM))
+	if ((g_pCoopManager.IsFeatureEnabled(FT_FIRSTPERSON_DEATHCAM)) && (!g_pSurvivalMode.IntValue))
 	{
 		CBaseEntity pEntity = CBaseEntity(iEntIndex);
 		if (pEntity.IsValid())
@@ -95,16 +95,20 @@ public void Hook_PlayerPreThinkPost(int iClient)
 	}
 	else
 	{
-		if(pPlayer.GetTeam() != TEAM_SPECTATOR && g_pConvarCoopRespawnTime.FloatValue
-			&& GetGameTime() - pPlayer.GetDeathTime() > g_pConvarCoopRespawnTime.FloatValue)
+		if (!g_pSurvivalMode.IntValue)
 		{
-			int iPressed = pPlayer.GetPressedButtons();
-			if(iPressed != 0 && iPressed != IN_SCORE)
+			if(pPlayer.GetTeam() != TEAM_SPECTATOR && g_pConvarCoopRespawnTime.FloatValue
+				&& GetGameTime() - pPlayer.GetDeathTime() > g_pConvarCoopRespawnTime.FloatValue)
 			{
-				DispatchSpawn(iClient);
+				int iPressed = pPlayer.GetPressedButtons();
+				if(iPressed != 0 && iPressed != IN_SCORE)
+				{
+					DispatchSpawn(iClient);
+				}
 			}
 		}
 	}
+	return;
 }
 
 void PreventWeaponFiring(CBaseCombatWeapon pWeapon, float flDelayTime = 1.0)
@@ -277,6 +281,27 @@ public MRESReturn Hook_PlayerShouldCollide(int _this, Handle hReturn, Handle hPa
 		{
 			DHookSetReturn(hReturn, false);
 			return MRES_Supercede;
+		}
+	}
+	return MRES_Ignored;
+}
+
+//------------------------------------------------------
+// Prevent spawn for survival mode
+//------------------------------------------------------
+public MRESReturn Hook_PlayerSpawn(int _this, Handle hReturn, Handle hParams)
+{
+	if (g_pCoopManager.IsCoopModeEnabled())
+	{
+		CBasePlayer pPlayer = CBasePlayer(_this);
+		if (g_pSurvivalMode.IntValue)
+		{
+			if (!pPlayer.CanSpawn())
+				return MRES_Supercede;
+			
+			// This is fired upon joining the game before selecting a team so this must be checked
+			if (pPlayer.GetTeam() > 1)
+				pPlayer.SetCanSpawn(false);
 		}
 	}
 	return MRES_Ignored;
