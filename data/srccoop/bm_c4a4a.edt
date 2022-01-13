@@ -6,7 +6,6 @@
 	"nextmap" "bm_c5a1a"
 	"features"
 	{
-		"FIRSTPERSON_DEATHCAM" "0"
 	}
 	"define"
 	{
@@ -29,52 +28,59 @@
 		"modify"
 		{
 			"classname" "logic_auto"
-			"hammerid" "33040"
 			"functions"
 			{
 				"delay_output" "OnMapSpawn"
+			}
+		}
+		// modify all cyclone misc_marionettist to target !activator
+		"modify"
+		{
+			"classname" "logic_relay"
+			"outputs"
+			{
+				"modify"
+				{
+					"output" "OnTrigger"
+					"target" "/^cyclone_marionettist_/"
+					"input" "Manipulate"
+					"parameter" "!player"
+					"replace"
+					{
+						"parameter" "!activator"
+					}
+				}
+			}
+		}
+		// fix cyclone hurt
+		"modify"
+		{
+			"targetname" "cyclone_hurt"
+			"set"
+			{
+				"DamageTarget" "!activator"
 			}
 		}
 		"modify"
 		{
-			"classname" "logic_auto"
-			"hammerid" "3561"
-			"functions"
+			"classname" "logic_relay"
+			"outputs"
 			{
-				"delay_output" "OnMapSpawn"
+				"remove"
+				{
+					"target" "cyclone_hurt"
+					"input" "TurnOff"
+				}
+				"modify"
+				{
+					"target" "cyclone_hurt"
+					"input" "TurnOn"
+					"replace"
+					{
+						"input" "Hurt"
+					}
+				}
 			}
-		}
-		"modify"
-		{
-			"classname" "logic_auto"
-			"hammerid" "3694"
-			"functions"
-			{
-				"delay_output" "OnMapSpawn"
-			}
-		}
-		"modify"
-		{
-			"classname" "logic_auto"
-			"hammerid" "324279"
-			"functions"
-			{
-				"delay_output" "OnMapSpawn"
-			}
-		}
-		"modify"
-		{
-			"classname" "logic_auto"
-			"hammerid" "796971"
-			"functions"
-			{
-				"delay_output" "OnMapSpawn"
-			}
-		}
-		// delete all misc_marionettist to fix server crash
-		"delete"
-		{
-			"classname" "misc_marionettist"
 		}
 	}
 	"checkpoint"
