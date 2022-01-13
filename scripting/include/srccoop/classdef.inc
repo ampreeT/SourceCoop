@@ -1057,6 +1057,11 @@ methodmap CBasePlayer < CBaseCombatCharacter
 	{
 		return view_as<Obs_Mode>(GetEntProp(this.GetEntIndex(), Prop_Data, "m_iObserverMode"));
 	}
+	public void SetObserverMode(Obs_Mode iMode)
+	{
+		SetEntProp(this.GetEntIndex(), Prop_Data, "m_iObserverMode", iMode);
+		return;
+	}
 	public int GetTeam()
 	{
 		return GetClientTeam(this.GetEntIndex());

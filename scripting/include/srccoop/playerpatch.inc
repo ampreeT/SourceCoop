@@ -293,11 +293,17 @@ public MRESReturn Hook_PlayerSpawn(int _this, Handle hReturn, Handle hParams)
 {
 	if (g_pCoopManager.IsCoopModeEnabled())
 	{
-		CBasePlayer pPlayer = CBasePlayer(_this);
 		if (g_pSurvivalMode.IntValue)
 		{
+			CBasePlayer pPlayer = CBasePlayer(_this);
+			
 			if (!pPlayer.CanSpawn())
+			{
+				// Ensure enabled observing players
+				pPlayer.SetObserverMode(OBS_MODE_CHASE);
+				
 				return MRES_Supercede;
+			}
 			
 			// This is fired upon joining the game before selecting a team so this must be checked
 			if (pPlayer.GetTeam() > 1)
