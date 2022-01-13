@@ -258,6 +258,13 @@
 					}
 				}
 			}
+			"CBlackMesaPlayer::Spawn"
+			{
+				"offset"	"CBlackMesaPlayer::Spawn"
+				"hooktype"	"entity"
+				"return"	"void"
+				"this"		"entity"
+			}
 			"CBaseEntity::ShouldCollide"
 			{
 				"offset"	"CBaseEntity::ShouldCollide"
@@ -446,6 +453,11 @@
 			{
 				"windows"	"433"
 				"linux" 	"434"
+			}
+			"CBlackMesaPlayer::Spawn"			// CBlackMesaPlayer::Spawn(CBaseEntity*)
+			{
+				"windows"	"24"
+				"linux" 	"25"
 			}
 			"CBaseCombatWeapon::SendWeaponAnim"		// CBaseCombatWeapon::SendWeaponAnim(int)
 			{
