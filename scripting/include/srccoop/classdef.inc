@@ -15,6 +15,8 @@ Handle g_pShouldPlayerAvoid;
 Handle g_pRemoveAllItems;
 Handle g_pIsNPC;
 
+bool g_bPlayerCanSpawn[MAXPLAYERS+1] = true;
+
 void InitClassdef(GameData pGameConfig)
 {
 	// ALL Games
@@ -1139,12 +1141,12 @@ methodmap CBasePlayer < CBaseCombatCharacter
 	
 	public bool CanSpawn()
 	{
-		return view_as<bool>(!GetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_iRespawnFrames"));
+		return g_bPlayerCanSpawn[this.GetEntIndex()];
 	}
 	
 	public void SetCanSpawn(const bool bCanSpawn)
 	{
-		SetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_iRespawnFrames", view_as<float>(!bCanSpawn));
+		g_bPlayerCanSpawn[this.GetEntIndex()] = bCanSpawn;
 		return;
 	}
 }
