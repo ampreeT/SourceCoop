@@ -159,6 +159,12 @@ public void OnPluginStart()
 #pragma dynamic ENTITYSTRING_LENGTH
 public Action OnLevelInit(const char[] szMapName, char szMapEntities[ENTITYSTRING_LENGTH])
 {
+	if (!IsDedicatedServer() && MaxClients == 1)
+	{
+		SetFailState("Singleplayer detected, unloading SourceCoop (ignore this)");
+		return Plugin_Continue;
+	}
+	
 	OnMapEnd(); // this does not always get called, so call it here
 	strcopy(g_szPrevMapName, sizeof(g_szPrevMapName), g_szMapName);
 	strcopy(g_szMapName, sizeof(g_szMapName), szMapName);
@@ -457,6 +463,25 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 	}
 }
 
+public void OnEntityDestroyed(int iEntIndex)
+{
+	CBaseEntity pEntity = CBaseEntity(iEntIndex);
+	if (pEntity.IsValid())
+	{
+		static char szClassname[MAX_CLASSNAME];
+		pEntity.GetClassname(szClassname, sizeof(szClassname));
+		
+		if (strcmp(szClassname, "camera_death") == 0)
+		{
+			OnEntityDestroyed_CameraDeath(pEntity);
+		}
+		else if (strcmp(szClassname, "misc_marionettist") == 0)
+		{
+			OnEntityDestroyed_Marionettist(pEntity);
+		}
+	}
+}
+
 public void Hook_EntitySpawnPost(int iEntIndex)
 {
 	if (g_pCoopManager.IsCoopModeEnabled())
@@ -522,28 +547,6 @@ public void SpawnPostponedItem(CBaseEntity pEntity)
 		g_bIsMultiplayerOverride = false; // IsMultiplayer=false will spawn items with physics
 		pEntity.Spawn();
 		g_bIsMultiplayerOverride = true;
-	}
-}
-
-public void OnEntityDestroyed(int iEntIndex)
-{
-	CBaseEntity pEntity = CBaseEntity(iEntIndex);
-	if (pEntity.IsValid())
-	{
-		if (pEntity.IsClassname("camera_death"))
-		{
-			for (int i = 1; i <= MaxClients; i++)
-			{
-				if (IsClientInGame(i))
-				{
-					CBasePlayer pPlayer = CBasePlayer(i);
-					if (pPlayer.GetViewEntity() == pEntity)
-					{
-						pPlayer.SetViewEntity(pPlayer);
-					}
-				}
-			}
-		}
 	}
 }
 

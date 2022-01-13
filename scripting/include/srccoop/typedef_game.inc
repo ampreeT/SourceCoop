@@ -147,6 +147,17 @@ enum
 #define DAMAGE_AIM			3
 
 //------------------------------------------------------
+// Settings for m_nWaterLevel
+//------------------------------------------------------
+enum WaterLevel
+{
+	WATER_LEVEL_NOT_IN_WATER = 0,
+	WATER_LEVEL_FEET_IN_WATER,
+	WATER_LEVEL_WAIST_IN_WATER,
+	WATER_LEVEL_HEAD_IN_WATER
+};
+
+//------------------------------------------------------
 // Screen Fade flags
 //------------------------------------------------------
 #define FFADE_IN			0x0001		// Just here so we don't pass 0 into the function

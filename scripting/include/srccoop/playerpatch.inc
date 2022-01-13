@@ -41,6 +41,21 @@ public void Hook_CameraDeathSpawn(int iEntIndex)
 	}
 }
 
+void OnEntityDestroyed_CameraDeath(CBaseEntity pEntity)
+{
+	for (int i = 1; i <= MaxClients; i++)
+	{
+		if (IsClientInGame(i))
+		{
+			CBasePlayer pPlayer = CBasePlayer(i);
+			if (pPlayer.GetViewEntity() == pEntity)
+			{
+				pPlayer.SetViewEntity(pPlayer);
+			}
+		}
+	}
+}
+
 //------------------------------------------------------
 // The singleplayer override for PreThink handles our
 // prop pickup, sprinting, vm anims, suit queue updates, etc
@@ -74,7 +89,7 @@ public void Hook_PlayerPreThinkPost(int iClient)
 			{
 				PreventWeaponFiring(pWeapon, 1.0);
 			}
-			else if (pPlayer.GetWaterLevel() == 3)
+			else if (pPlayer.GetWaterLevel() == WATER_LEVEL_HEAD_IN_WATER)
 			{
 				CBaseEntity pEntity = pPlayer.GetParent();
 				if (pEntity.IsValid())

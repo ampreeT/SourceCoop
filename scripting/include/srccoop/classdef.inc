@@ -115,9 +115,8 @@ methodmap CBaseEntity
 {
 	public CBaseEntity(const int iEntIndex = -1)
 	{
-		return view_as<CBaseEntity>(InternalGetBaseEntity(iEntIndex));
+		return view_as<CBaseEntity>(iEntIndex > -1 ? EntIndexToEntRef(iEntIndex) : iEntIndex);
 	}
-
 	public int GetEntIndex()
 	{
 		return EntRefToEntIndex(view_as<int>(this));
@@ -128,7 +127,7 @@ methodmap CBaseEntity
 		{
 			return false;
 		}
-		return IsValidEntity(this.GetEntIndex());
+		return IsValidEntity(view_as<int>(this));
 	}
 	public bool HasEdict()
 	{
@@ -470,23 +469,9 @@ methodmap CBaseEntity
 			return view_as<bool>(strcmp(szClassname, szTitle, false) == 0);
 		return false;
 	}
-	// incorrect implementation
-	/*
-	public bool IsClassScene()
+	public WaterLevel GetWaterLevel()
 	{
-		char szClassname[MAX_CLASSNAME];
-		if (this.GetClassname(szClassname, sizeof(szClassname)))
-		{
-			return view_as<bool>((strcmp(szClassname, "instanced_scripted_scene", false) == 0) ||
-			(strcmp(szClassname, "logic_choreographed_scene", false) == 0) ||
-			(strcmp(szClassname, "scripted_scene", false) == 0));
-		}
-		return false;
-	}
-	*/
-	public int GetWaterLevel()
-	{
-		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_nWaterLevel");
+		return view_as<WaterLevel>(GetEntProp(this.GetEntIndex(), Prop_Data, "m_nWaterLevel"));
 	}
 }
 
@@ -515,11 +500,6 @@ methodmap Array_t < ArrayList
 			CloseHandle(this);
 		}
 	}
-}
-
-public int InternalGetBaseEntity(const int iEntIndex)
-{
-	return (iEntIndex > -1) ? EntIndexToEntRef(iEntIndex) : iEntIndex;
 }
 
 methodmap CTraceRay
@@ -553,7 +533,7 @@ methodmap CBaseAnimating < CBaseEntity
 {
 	public CBaseAnimating(const int iEntIndex = -1)
 	{
-		return view_as<CBaseAnimating>(InternalGetBaseEntity(iEntIndex));
+		return view_as<CBaseAnimating>(CBaseEntity(iEntIndex));
 	}
 	public float GetModelScale()
 	{
@@ -581,7 +561,7 @@ methodmap CBaseTrigger < CBaseEntity
 {
 	public CBaseTrigger(const int iEntIndex = -1)
 	{
-		return view_as<CBaseTrigger>(InternalGetBaseEntity(iEntIndex));
+		return view_as<CBaseTrigger>(CBaseEntity(iEntIndex));
 	}
 	public bool IsDisabled()
 	{
@@ -598,7 +578,7 @@ methodmap CChangelevel < CBaseTrigger
 {
 	public CChangelevel(const int iEntIndex = -1)
 	{
-		return view_as<CChangelevel>(InternalGetBaseEntity(iEntIndex));
+		return view_as<CChangelevel>(CBaseEntity(iEntIndex));
 	}
 
 	public bool GetMapName(char[] szBuffer, const int iMaxLength)
@@ -619,7 +599,24 @@ methodmap CSceneEntity < CBaseEntity
 {
 	public CSceneEntity(const int iEntIndex = -1)
 	{
-		return view_as<CSceneEntity>(InternalGetBaseEntity(iEntIndex));
+		return view_as<CSceneEntity>(CBaseEntity(iEntIndex));
+	}
+}
+
+methodmap CAI_ScriptConditions < CBaseEntity
+{
+	public CAI_ScriptConditions(const int iEntIndex = -1)
+	{
+		return view_as<CAI_ScriptConditions>(CBaseEntity(iEntIndex));
+	}
+
+	public bool IsDisabled()
+	{
+		return view_as<bool>(GetEntProp(this.GetEntIndex(), Prop_Data, "m_fDisabled"));
+	}
+	public void SetDisabled(bool disabled)
+	{
+		SetEntProp(this.GetEntIndex(), Prop_Data, "m_fDisabled", disabled);
 	}
 }
 
@@ -627,7 +624,7 @@ methodmap CBaseCombatWeapon < CBaseAnimating
 {
 	public CBaseCombatWeapon(const int iEntIndex = -1)
 	{
-		return view_as<CBaseCombatWeapon>(InternalGetBaseEntity(iEntIndex));
+		return view_as<CBaseCombatWeapon>(CBaseEntity(iEntIndex));
 	}
 	
 	public CBaseEntity GetOwner()
@@ -676,7 +673,7 @@ methodmap CBaseCombatCharacter < CBaseAnimating
 {
 	public CBaseCombatCharacter(const int iEntIndex = -1)
 	{
-		return view_as<CBaseCombatCharacter>(InternalGetBaseEntity(iEntIndex));
+		return view_as<CBaseCombatCharacter>(CBaseEntity(iEntIndex));
 	}
 
 	public int GetHealth()
@@ -705,7 +702,7 @@ methodmap CAI_BaseNPC < CBaseCombatCharacter
 {
 	public CAI_BaseNPC(const int iEntIndex = -1)
 	{
-		return view_as<CAI_BaseNPC>(InternalGetBaseEntity(iEntIndex));
+		return view_as<CAI_BaseNPC>(CBaseEntity(iEntIndex));
 	}
 	
 	public void SetSleepState(const int iSleepState)
@@ -790,7 +787,7 @@ methodmap CProtoSniper < CAI_BaseNPC
 {
 	public CProtoSniper(const int iEntIndex = -1)
 	{
-		return view_as<CProtoSniper>(InternalGetBaseEntity(iEntIndex));
+		return view_as<CProtoSniper>(CBaseEntity(iEntIndex));
 	}
 	
 	public bool IsSweepHighestPriority()
@@ -815,11 +812,15 @@ methodmap CBasePlayer < CBaseCombatCharacter
 {
 	public CBasePlayer(const int iEntIndex = -1)
 	{
-		return view_as<CBasePlayer>(InternalGetBaseEntity(iEntIndex));
+		return view_as<CBasePlayer>(CBaseEntity(iEntIndex));
 	}
 	public bool IsValid()
 	{
 		return view_as<bool>(this.IsClassPlayer() && IsClientInGame(this.GetEntIndex()));
+	}
+	public bool IsInGame()
+	{
+		return IsClientInGame(this.GetEntIndex());
 	}
 	public bool GetName(char[] szBuffer, const int iMaxLength)
 	{
@@ -1128,7 +1129,7 @@ methodmap CBlackMesaPlayer < CBasePlayer
 {
 	public CBlackMesaPlayer(const int iEntIndex = -1)
 	{
-		return view_as<CBlackMesaPlayer>(InternalGetBaseEntity(iEntIndex));
+		return view_as<CBlackMesaPlayer>(CBaseEntity(iEntIndex));
 	}
 	public bool HasJumpModule()
 	{
