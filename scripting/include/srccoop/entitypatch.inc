@@ -1021,33 +1021,49 @@ public MRESReturn Hook_MarionettistAcceptInput(int _this, Handle hReturn, Handle
 				DHookGetParamObjectPtrString(hParams, 4, 0, ObjectValueType_String, szParam, sizeof(szParam));
 				if(strcmp(szParam, "!activator", false) == 0)
 				{
-					if(!DHookIsNullParam(hParams, 2))
+					if (!DHookIsNullParam(hParams, 2))
 					{
 						int iActivator = DHookGetParam(hParams, 2);
 						CBaseEntity pActivator = CBaseEntity(iActivator);
-						if(pActivator.IsClassPlayer())
+						if (pActivator.IsClassPlayer())
 						{
-							// cancel previous
-							if (g_pActiveMarionettist[iActivator].IsValid())
-							{
-								g_pActiveMarionettist[iActivator].Kill();
-							}
-							g_bTempDontHookEnts = true;
-							CBaseEntity pPuppet = CloneMarionettist(_this);
-							g_bTempDontHookEnts = false;
-							pPuppet.AcceptInputStr("Manipulate", "!activator", pActivator);
-							DHookEntity(hkThink, true, pPuppet.GetEntIndex(), _, Hook_MarionettistPuppetThinkPost);
-							g_pActiveMarionettist[iActivator] = pPuppet;
-							
+							MarionettistManipulate(_this, iActivator);
 							DHookSetReturn(hReturn, true);
 							return MRES_Supercede;
 						}
 					}
 				}
+				else if (strcmp(szParam, "!player", false) == 0 || strcmp(szParam, "player", false) == 0)
+				{
+					for (int i = 1; i <= MaxClients; i++)
+					{
+						if (IsClientInGame(i) && IsPlayerAlive(i))
+						{
+							MarionettistManipulate(_this, i);
+						}
+					}
+					DHookSetReturn(hReturn, true);
+					return MRES_Supercede;
+				}
 			}
 		}
 	}
 	return MRES_Ignored;
+}
+
+void MarionettistManipulate(int iMarionettist, int iClient)
+{
+	// cancel previous
+	if (g_pActiveMarionettist[iClient].IsValid())
+	{
+		g_pActiveMarionettist[iClient].Kill();
+	}
+	g_bTempDontHookEnts = true;
+	CBaseEntity pPuppet = CloneMarionettist(iMarionettist);
+	g_bTempDontHookEnts = false;
+	pPuppet.AcceptInputStr("Manipulate", "!activator", CBasePlayer(iClient));
+	DHookEntity(hkThink, true, pPuppet.GetEntIndex(), _, Hook_MarionettistPuppetThinkPost);
+	g_pActiveMarionettist[iClient] = pPuppet;
 }
 
 CBaseEntity CloneMarionettist(int iEnt)
@@ -1074,7 +1090,10 @@ CBaseEntity CloneMarionettist(int iEnt)
 	SetEntProp(iClone, Prop_Data, "m_bIgnoreCollisions", GetEntProp(iEnt, Prop_Data, "m_bIgnoreCollisions"));
 	ActivateEntity(iClone);
 	DispatchSpawn(iClone);
-	return CBaseEntity(iClone);
+	
+	CBaseEntity pClone = CBaseEntity(iClone);
+	pClone.SetParent(CBaseEntity(iEnt));
+	return pClone;
 }
 
 public MRESReturn Hook_MarionettistPuppetThinkPost(int _this)
@@ -1502,3 +1521,61 @@ public MRESReturn Hook_GameEndAcceptInput(int _this, Handle hReturn, Handle hPar
 	}
 	return MRES_Ignored;
 }
+
+
+//------------------------------------------------------
+// CMusicTrack - music_track
+// crash fix
+//------------------------------------------------------
+public MRESReturn Hook_MusicTrackThink(int _this)
+{
+	return MRES_Supercede;
+}
+
+public MRESReturn Hook_MusicTrackAceptInput(int _this, Handle hReturn, Handle hParams)
+{
+	char szInputType[MAX_FORMAT];
+	char szBuffer[MAX_VALUE];
+	DHookGetParamString(hParams, 1, szInputType, sizeof(szInputType));
+
+	if (strcmp(szInputType, "Play", false) == 0)
+	{
+		GetEntPropString(_this, Prop_Data, "m_TrackScriptSound", szBuffer, sizeof(szBuffer));
+		
+		Event event = CreateEvent("music_track_register", true);
+		event.SetString("soundscriptname", szBuffer);
+		event.Fire();
+		event = CreateEvent("music_track_play", true);
+		event.SetString("soundscriptname", szBuffer);
+		event.Fire();
+		
+		DHookSetReturn(hReturn, true);
+		return MRES_Supercede;
+	}
+	else if (strcmp(szInputType, "Fade", false) == 0)
+	{
+		GetEntPropString(_this, Prop_Data, "m_TrackScriptSound", szBuffer, sizeof(szBuffer));
+		
+		Event event = CreateEvent("music_track_fade", true);
+		event.SetString("soundscriptname", szBuffer);
+		event.Fire();
+		
+		DHookSetReturn(hReturn, true);
+		return MRES_Supercede;
+	}
+	else if (strcmp(szInputType, "Next", false) == 0)
+	{
+		GetEntPropString(_this, Prop_Data, "m_strNextTrackEntity", szBuffer, sizeof(szBuffer));
+		int iNext = FindEntityByTargetname(-1, szBuffer, "music_track");
+		if (iNext != -1)
+		{
+			AcceptEntityInput(iNext, "Play");
+		}
+		AcceptEntityInput(_this, "Fade");
+		
+		DHookSetReturn(hReturn, true);
+		return MRES_Supercede;
+	}
+	return MRES_Ignored;
+}
+

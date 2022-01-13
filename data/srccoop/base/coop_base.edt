@@ -37,10 +37,5 @@
 	
 	"entity_base_coop"
 	{
-		// crashes since BM1.5
-		"remove"
-		{
-			"classname" "music_track"
-		}
 	}
 }

@@ -62,50 +62,6 @@
 				"nodmgforce" "1"
 			}
 		}
-		// soundtrack fix
-		"add"
-		{
-			"classname" "ambient_generic"
-			"spawnflags" "17"
-			"targetname" "tower_music_fix"
-			"message" "music.interloper.tower"
-		}
-		"modify"
-		{
-			"hammerid" "520"
-			"outputs"
-			{
-				"modify"
-				{
-					"output" "OnTrigger"
-					"target" "tower_music"
-					"input" "Play"
-					"replace"
-					{
-						"target" "tower_music_fix"
-						"input" "PlaySound"
-					}
-				}
-			}
-		}
-		"modify"
-		{
-			"hammerid" "235"
-			"outputs"
-			{
-				"modify"
-				{
-					"output" "OnTrigger"
-					"target" "tower_music"
-					"input" "Fade"
-					"replace"
-					{
-						"target" "tower_music_fix"
-						"input" "StopSound"
-					}
-				}
-			}
-		}
 		// delete elevator's door to prevent stuck in there
 		"delete"
 		{

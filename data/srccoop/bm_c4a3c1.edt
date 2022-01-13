@@ -111,63 +111,6 @@
 				}
 			}
 		}
-		// soundtrack fix
-		"add"
-		{
-			"classname" "ambient_generic"
-			"spawnflags" "17"
-			"targetname" "sprint_song_a_fix"
-			"message" "music.interloper.convey1"
-		}
-		"modify"
-		{
-			"hammerid" "5947531"
-			"outputs"
-			{
-				"modify"
-				{
-					"output" "OnTrigger"
-					"target" "sprint_song_a"
-					"input" "Play"
-					"replace"
-					{
-						"target" "sprint_song_a_fix"
-						"input" "PlaySound"
-					}
-				}
-			}
-		}
-		"modify"
-		{
-			"hammerid" "6355697"
-			"outputs"
-			{
-				"modify"
-				{
-					"output" "OnTrigger"
-					"target" "sprint_song_a"
-					"input" "Next"
-					"replace"
-					{
-						"target" "sprint_song_a_fix"
-						"input" "StopSound"
-					}
-				}
-				"add"
-				{
-					"output" "OnTrigger"
-					"target" "sprint_song_b_fix"
-					"input"	"PlaySound"
-				}
-			}
-		}
-		"add"
-		{
-			"classname" "ambient_generic"
-			"spawnflags" "17"
-			"targetname" "sprint_song_b_fix"
-			"message" "music.interloper.convey2"
-		}
 	}
 	"checkpoint"
 	{

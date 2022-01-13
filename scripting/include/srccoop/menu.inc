@@ -24,7 +24,7 @@ void InitializeMenus()
 	char path[PLATFORM_MAX_PATH];
 	char error[256];
 	
-	BuildPath(Path_SM, path, sizeof(path), "configs/sourcecoop/menu_sorting.txt");
+	BuildPath(Path_SM, path, sizeof(path), "configs/srccoop/menu_sorting.txt");
 	
 	if (!g_pCoopTopMenu.LoadConfig(path, error, sizeof(error)))
 	{

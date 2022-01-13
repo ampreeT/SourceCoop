@@ -451,6 +451,11 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 			{
 				SDKHook(iEntIndex, SDKHook_VPhysicsUpdatePost, Hook_BoneFollowerVPhysicsUpdatePost);
 			}
+			else if (strcmp(szClassname, "music_track") == 0)
+			{
+				DHookEntity(hkThink, false, iEntIndex, _, Hook_MusicTrackThink);
+				DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_MusicTrackAceptInput);
+			}
 			
 			// if some explosions turn out to be damaging all players except one, this is the fix
 			//else if (strcmp(szClassname, "env_explosion") == 0)

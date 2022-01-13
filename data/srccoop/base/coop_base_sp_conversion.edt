@@ -19,6 +19,8 @@
 	}
 	"define"
 	{
+		"outputs_fixup_player_in_target" "1"
+		"outputs_fixup_player_in_parameter" "1"
 		"viewcontrol_allplayers" "1"
 		"clientcommand_allplayers" "1"
 		"speedmod_allplayers" "1"
@@ -26,6 +28,7 @@
 		"env_hudhint_allplayers" "1"
 		"game_text_allplayers" "1"
 		"vital_npcs_invulnerable" "1"
+		"unglitch_looping_sounds" "1"
 		"never_close_areaportals" "1"
 		"fix_reload_triggers" "1"
 	}
@@ -59,7 +62,6 @@
 				"WaitPointName" ""
 			}
 		}
-		// todo: check if this works
 		"modify"
 		{
 			"classname" "env_mortar_launcher"
@@ -69,24 +71,44 @@
 				"target" "!pvsplayer" 
 			}
 		}
-		"modify"
+		#if
 		{
-			"outputs"
+			"outputs_fixup_player_in_target" "1"
+			#then
 			{
 				"modify"
 				{
-					"target" "!player"
-					"replace"
+					"outputs"
 					{
-						"target" "player" // in the IO system, this will target all players (matched by their classname)
+						"modify"
+						{
+							"target" "!player"
+							"replace"
+							{
+								"target" "player" // in the IO system, this will target all players (matched by their classname)
+							}
+						}
 					}
 				}
+			}
+		}
+		#if
+		{
+			"outputs_fixup_player_in_parameter" "1"
+			#then
+			{
 				"modify"
 				{
-					"parameter" "!player"
-					"replace"
+					"outputs"
 					{
-						"parameter" "!pvsplayer"
+						"modify"
+						{
+							"parameter" "!player"
+							"replace"
+							{
+								"parameter" "!pvsplayer"
+							}
+						}
 					}
 				}
 			}
@@ -261,12 +283,19 @@
 			}
 		}
 		// prevent glitchy looping sounds (doors, rotating platforms)
-		"modify"
+		#if
 		{
-			"loopmovesound" "1"
-			"set"
+			"unglitch_looping_sounds" "1"
+			#then
 			{
-				"loopmovesound" "0"
+				"modify"
+				{
+					"loopmovesound" "1"
+					"set"
+					{
+						"loopmovesound" "0"
+					}
+				}
 			}
 		}
 		#if
