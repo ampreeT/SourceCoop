@@ -23,7 +23,7 @@ public MRESReturn Hook_FAllowFlashlight(Handle hReturn, Handle hParams)
 //------------------------------------------------------
 public void Hook_CameraDeathSpawn(int iEntIndex)
 {
-	if ((g_pCoopManager.IsFeatureEnabled(FT_FIRSTPERSON_DEATHCAM)) && (!g_pSurvivalMode.IntValue))
+	if (g_pCoopManager.IsFeatureEnabled(FT_FIRSTPERSON_DEATHCAM))
 	{
 		CBaseEntity pEntity = CBaseEntity(iEntIndex);
 		if (pEntity.IsValid())
@@ -103,6 +103,7 @@ public void Hook_PlayerPreThinkPost(int iClient)
 				int iPressed = pPlayer.GetPressedButtons();
 				if(iPressed != 0 && iPressed != IN_SCORE)
 				{
+					pPlayer.SetCanSpawn(true);
 					DispatchSpawn(iClient);
 				}
 			}
@@ -300,6 +301,7 @@ public MRESReturn Hook_PlayerSpawn(int _this, Handle hReturn, Handle hParams)
 			if (!pPlayer.CanSpawn())
 			{
 				// Ensure enabled observing players
+				pPlayer.SetViewEntity(pPlayer);
 				pPlayer.SetObserverMode(OBS_MODE_CHASE);
 				
 				return MRES_Supercede;
