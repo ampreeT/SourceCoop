@@ -698,6 +698,8 @@ enum struct CCoopSpawn
 					pPlayer.SetCanSpawn(true);
 					pPlayer.Spawn();
 					pPlayer.Activate();
+					// Fix for if player died on a ladder
+					SetEntPropEnt(pPlayer.GetEntIndex(), Prop_Data, "m_hLadder", -1);
 				}
 			}
 		}
