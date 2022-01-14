@@ -1027,7 +1027,7 @@ public MRESReturn Hook_MarionettistAcceptInput(int _this, Handle hReturn, Handle
 						CBaseEntity pActivator = CBaseEntity(iActivator);
 						if (pActivator.IsClassPlayer())
 						{
-							MarionettistManipulate(_this, iActivator);
+							MarionettistManipulate(_this, iActivator, view_as<CBasePlayer>(pActivator));
 							DHookSetReturn(hReturn, true);
 							return MRES_Supercede;
 						}
@@ -1039,7 +1039,7 @@ public MRESReturn Hook_MarionettistAcceptInput(int _this, Handle hReturn, Handle
 					{
 						if (IsClientInGame(i) && IsPlayerAlive(i))
 						{
-							MarionettistManipulate(_this, i);
+							MarionettistManipulate(_this, i, CBasePlayer(i));
 						}
 					}
 					DHookSetReturn(hReturn, true);
@@ -1051,17 +1051,21 @@ public MRESReturn Hook_MarionettistAcceptInput(int _this, Handle hReturn, Handle
 	return MRES_Ignored;
 }
 
-void MarionettistManipulate(int iMarionettist, int iClient)
+void MarionettistManipulate(int iMarionettist, int iClient, CBasePlayer pPlayer)
 {
 	// cancel previous
 	if (g_pActiveMarionettist[iClient].IsValid())
 	{
 		g_pActiveMarionettist[iClient].Kill();
 	}
+	
+	// create a puppet from the master, without hooking it
 	g_bTempDontHookEnts = true;
 	CBaseEntity pPuppet = CloneMarionettist(iMarionettist);
 	g_bTempDontHookEnts = false;
-	pPuppet.AcceptInputStr("Manipulate", "!activator", CBasePlayer(iClient));
+	
+	// start it
+	pPuppet.AcceptInputStr("Manipulate", "!activator", pPlayer);
 	DHookEntity(hkThink, true, pPuppet.GetEntIndex(), _, Hook_MarionettistPuppetThinkPost);
 	g_pActiveMarionettist[iClient] = pPuppet;
 }
@@ -1101,6 +1105,7 @@ public MRESReturn Hook_MarionettistPuppetThinkPost(int _this)
 	CBaseEntity pThis = CBaseEntity(_this);
 	if (pThis.GetNextThinkTick() == -1)
 	{
+		// last think, our puppet has finished
 		pThis.Kill();
 		return MRES_Ignored;
 	}
@@ -1110,12 +1115,34 @@ public MRESReturn Hook_MarionettistPuppetThinkPost(int _this)
 		{
 			if (!IsClientInGame(i) || !IsPlayerAlive(i))
 			{
+				// player left / died while manipulating
 				pThis.Kill();
 				break;
 			}
 		}
 	}
 	return MRES_Ignored;
+}
+
+// Catches all sources of removal, potentially resets player noclip.
+void OnEntityDestroyed_Marionettist(CBaseEntity pEntity)
+{
+	for (int i = 1; i <= MaxClients; i++)
+	{
+		if (g_pActiveMarionettist[i] == pEntity)
+		{
+			if (GetEntProp(g_pActiveMarionettist[i].GetEntIndex(), Prop_Data, "m_bIgnoreCollisions"))
+			{
+				if (IsClientInGame(i))
+				{
+					CBasePlayer pPlayer = CBasePlayer(i);
+					pPlayer.SetMoveType(MOVETYPE_WALK);
+				}
+			}
+			g_pActiveMarionettist[i] = CBaseEntity(-1);
+			break;
+		}
+	}
 }
 
 //------------------------------------------------------
@@ -1315,23 +1342,6 @@ public MRESReturn Hook_WeaponSetModel(int _this, Handle hParams)
 // ai_script_conditions
 // completely broken in mp
 //------------------------------------------------------
-methodmap CAI_ScriptConditions < CBaseEntity
-{
-	public CAI_ScriptConditions(const int iEntIndex = -1)
-	{
-		return view_as<CAI_ScriptConditions>(InternalGetBaseEntity(iEntIndex));
-	}
-
-	public bool IsDisabled()
-	{
-		return view_as<bool>(GetEntProp(this.GetEntIndex(), Prop_Data, "m_fDisabled"));
-	}
-	public void SetDisabled(bool disabled)
-	{
-		SetEntProp(this.GetEntIndex(), Prop_Data, "m_fDisabled", disabled);
-	}
-}
-
 public MRESReturn Hook_AIConditionsThink(int _this)
 {
 	LogDebug("Hook_AIConditionsThink");
