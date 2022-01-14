@@ -668,7 +668,7 @@ public Action Event_EntityKilled(Event hEvent, const char[] szName, bool bDontBr
 							if (pPlayer.IsValid())
 							{
 								Client_ScreenFade(pPlayer.GetEntIndex(), 1000, FFADE_OUT|FFADE_STAYOUT, _, 0, 0, 0, 255);
-								ShowHudText(pPlayer.GetEntIndex(), 2, "All players have died\nRestarting map...");
+								ShowHudText(pPlayer.GetEntIndex(), 2, "#BMS_GameOver_Ally");
 							}
 						}
 						

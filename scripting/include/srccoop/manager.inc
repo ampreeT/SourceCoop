@@ -233,6 +233,12 @@ enum struct CoopManager
 
 		if (this.m_bIsCoopMap) // cvars are not configured yet
 		{
+			// Need to ensure this is true
+			for (int i = 0; i <= MaxClients; i++)
+			{
+				g_bPlayerCanSpawn[i] = true;
+			}
+			
 			if (g_Engine == Engine_BlackMesa)
 			{
 				CBM_MP_GameRules.SetStateEndTime(STATE_WARMUP, GetGameTime() + 60 * 60 * 24 * 7);
