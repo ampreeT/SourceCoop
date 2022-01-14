@@ -146,15 +146,16 @@ enum
 #define DAMAGE_YES			2
 #define DAMAGE_AIM			3
 
-//------------------------------------------------------
-// Settings for m_nWaterLevel
-//------------------------------------------------------
+//-----------------------------------------------------------------------------
+// m_nWaterLevel enumeration
+// Purpose: Identifies how submerged in water a player is.
+//-----------------------------------------------------------------------------
 enum WaterLevel
 {
-	WATER_LEVEL_NOT_IN_WATER = 0,
-	WATER_LEVEL_FEET_IN_WATER,
-	WATER_LEVEL_WAIST_IN_WATER,
-	WATER_LEVEL_HEAD_IN_WATER
+	WL_NotInWater = 0,
+	WL_Feet,
+	WL_Waist,
+	WL_Eyes
 };
 
 //------------------------------------------------------

@@ -89,7 +89,7 @@ public void Hook_PlayerPreThinkPost(int iClient)
 			{
 				PreventWeaponFiring(pWeapon, 1.0);
 			}
-			else if (pPlayer.GetWaterLevel() == WATER_LEVEL_HEAD_IN_WATER)
+			else if (pPlayer.GetWaterLevel() == WL_Eyes)
 			{
 				CBaseEntity pEntity = pPlayer.GetParent();
 				if (pEntity.IsValid())
