@@ -420,7 +420,11 @@ enum struct CoopManager
 			if(this.m_iClientChangeLvlIndicies[j] != -1) votes++;
 		}
 		
-		int iPlayerCount = GetRealClientCount(true, g_pConvarSurvivalMode.IntValue ? false : true, true) - 1; // take off the 1 that we did with votes
+		// Only count dead players if survival mode and disabled respawns is off.
+		bool bCountLivingOnly = false;
+		if ((g_pConvarPreventRespawn.BoolValue) || (g_pConvarSurvivalMode.IntValue)) bCountLivingOnly = true;
+		
+		int iPlayerCount = GetRealClientCount(true, bCountLivingOnly, true) - 1; // take off the 1 that we did with votes
 		if(iPlayerCount < 1)
 		{
 			return 0.0;
