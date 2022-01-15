@@ -232,13 +232,7 @@ enum struct CoopManager
 		PrecacheSound(SND_CHANGELEVEL_TICK);
 
 		if (this.m_bIsCoopMap) // cvars are not configured yet
-		{
-			// Need to ensure this is true
-			for (int i = 0; i <= MaxClients; i++)
-			{
-				g_bPlayerCanSpawn[i] = true;
-			}
-			
+		{	
 			if (g_Engine == Engine_BlackMesa)
 			{
 				CBM_MP_GameRules.SetStateEndTime(STATE_WARMUP, GetGameTime() + 60 * 60 * 24 * 7);
@@ -269,6 +263,13 @@ enum struct CoopManager
 
 			if(bActuallySpawned)
 			{
+				// Fix for if player died on a ladder
+				SetEntPropEnt(pPlayer.GetEntIndex(), Prop_Data, "m_hLadder", -1);
+				
+				// Ensure view entity is player and observer mode is off
+				pPlayer.SetViewEntity(pPlayer);
+				pPlayer.SetObserverMode(OBS_MODE_NONE);
+				
 				this.m_bPlayerSpawned = true;
 				if(!this.m_bStarted)
 				{
@@ -418,7 +419,7 @@ enum struct CoopManager
 			if(this.m_iClientChangeLvlIndicies[j] != -1) votes++;
 		}
 		
-		int iPlayerCount = GetRealClientCount(true, false, true) - 1; // take off the 1 that we did with votes
+		int iPlayerCount = GetRealClientCount(true, true, true) - 1; // take off the 1 that we did with votes
 		if(iPlayerCount < 1)
 		{
 			return 0.0;

@@ -110,7 +110,7 @@ public void Hook_PlayerPreThinkPost(int iClient)
 	}
 	else
 	{
-		if (!g_pSurvivalMode.IntValue)
+		if (pPlayer.CanSpawn)
 		{
 			if(pPlayer.GetTeam() != TEAM_SPECTATOR && g_pConvarCoopRespawnTime.FloatValue
 				&& GetGameTime() - pPlayer.GetDeathTime() > g_pConvarCoopRespawnTime.FloatValue)
@@ -118,7 +118,6 @@ public void Hook_PlayerPreThinkPost(int iClient)
 				int iPressed = pPlayer.GetPressedButtons();
 				if(iPressed != 0 && iPressed != IN_SCORE)
 				{
-					pPlayer.SetCanSpawn(true);
 					DispatchSpawn(iClient);
 				}
 			}
@@ -318,6 +317,10 @@ public MRESReturn Hook_PlayerSpawn(int _this, Handle hReturn, Handle hParams)
 				// Ensure enabled observing players
 				pPlayer.SetViewEntity(pPlayer);
 				pPlayer.SetObserverMode(OBS_MODE_CHASE);
+				
+				// Fix for screen fade out indifnitely
+				// this is mostly being caused by player_loadsaved having FFADE_STAYOUT but it could come from other sources as well
+				Client_ScreenFade(pPlayer.GetEntIndex(), 1, FFADE_IN|FFADE_PURGE, 1, 0, 0, 0, 0);
 				
 				return MRES_Supercede;
 			}

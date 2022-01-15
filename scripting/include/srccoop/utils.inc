@@ -3,6 +3,9 @@
 #endif
 #define _srccoop_utils_included
 
+// In SM 1.11-git6837 this must be included here for srccoop_addons
+#include <regex>
+
 //------------------------------------------------------
 //------------------------------------------------------
 // DHooks utils

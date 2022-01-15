@@ -60,98 +60,109 @@ public Action Command_ForceRespawn(int client, int args)
 
 public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3], float angles[3], int &weapon)
 {
-	if ((buttons & IN_USE) && (IsPlayerAlive(client)))
+	if (IsPlayerAlive(client))
 	{
-		if (!g_pReviveTarget[client].IsValid()) g_pReviveTarget[client] = view_as<CBasePlayer>(-1);
-		CBasePlayer pPlayer = CBasePlayer(client);
-		static float vecEyeAngles[3];
-		static float vecOrigin[3];
-		static float vecRagdollPosition[3];
-		pPlayer.GetEyePosition(vecOrigin);
-		pPlayer.GetEyeAngles(vecEyeAngles);
-		if (g_pReviveTarget[client].IsValid())
+		if (buttons & IN_USE)
 		{
-			if (g_pReviveTarget[client].IsAlive())
+			if (!g_pReviveTarget[client].IsValid()) g_pReviveTarget[client] = view_as<CBasePlayer>(-1);
+			CBasePlayer pPlayer = CBasePlayer(client);
+			static float vecEyeAngles[3];
+			static float vecOrigin[3];
+			static float vecRagdollPosition[3];
+			pPlayer.GetEyePosition(vecOrigin);
+			pPlayer.GetEyeAngles(vecEyeAngles);
+			if (g_pReviveTarget[client].IsValid())
 			{
-				g_pReviveTarget[client] = view_as<CBasePlayer>(-1);
-				g_flReviveTime[client] = 0.0;
+				if (g_pReviveTarget[client].IsAlive())
+				{
+					g_pReviveTarget[client] = view_as<CBasePlayer>(-1);
+					g_flReviveTime[client] = 0.0;
+				}
+				else
+				{
+					if (g_flReviveTime[client] == 0.0)
+					{
+						g_flReviveTime[client] = GetGameTime() + g_pConVarReviveTime.FloatValue;
+					}
+					CBaseEntity pRagdoll = CBaseEntity(GetEntPropEnt(g_pReviveTarget[client].GetEntIndex(), Prop_Send, "m_hRagdoll"));
+					if (pRagdoll.IsValid())
+					{
+						pRagdoll.GetAbsOrigin(vecRagdollPosition);
+						if (GetVectorDistance(vecOrigin, vecRagdollPosition, false) > 120.0)
+						{
+							// Client left range to revive, play deny sound and stop previous start sound
+							
+							g_pReviveTarget[client] = view_as<CBasePlayer>(-1);
+							g_flReviveTime[client] = 0.0;
+							
+							StopSound(client, SNDCHAN_STATIC, "items/suitchargeok1.wav");
+							EmitSoundToAll("items/suitchargeno1.wav", client, SNDCHAN_AUTO, SNDLEVEL_NORMAL);
+							
+							return Plugin_Continue;
+						}
+						if (GetGameTime() >= g_flReviveTime[client])
+						{
+							EmitSoundToAll("weapons/tau/gauss_undercharge.wav", client, SNDCHAN_AUTO, SNDLEVEL_NORMAL, _, _, 150);
+							
+							g_pReviveTarget[client].SetCanSpawn(true);
+							
+							g_pReviveTarget[client].Spawn();
+							g_pReviveTarget[client].Activate();
+							
+							// Fix for if player died on a ladder
+							SetEntPropEnt(g_pReviveTarget[client].GetEntIndex(), Prop_Data, "m_hLadder", -1);
+							
+							pPlayer.GetAbsOrigin(vecOrigin);
+							
+							g_pReviveTarget[client].Teleport(vecOrigin, vecEyeAngles, NULL_VECTOR);
+							pRagdoll.Kill();
+							
+							pPlayer.ModifyScore(g_pConVarReviveScore.IntValue);
+							g_pReviveTarget[client] = view_as<CBasePlayer>(-1);
+							g_flReviveTime[client] = 0.0;
+						}
+					}
+				}
 			}
 			else
 			{
-				if (g_flReviveTime[client] == 0.0)
+				for (int i = 1;i<MaxClients+1;i++)
 				{
-					g_flReviveTime[client] = GetGameTime() + g_pConVarReviveTime.FloatValue;
-				}
-				CBaseEntity pRagdoll = CBaseEntity(GetEntPropEnt(g_pReviveTarget[client].GetEntIndex(), Prop_Send, "m_hRagdoll"));
-				if (pRagdoll.IsValid())
-				{
-					pRagdoll.GetAbsOrigin(vecRagdollPosition);
-					if (GetVectorDistance(vecOrigin, vecRagdollPosition, false) > 120.0)
+					if (i != client)
 					{
-						// Client left range to revive, play deny sound and stop previous start sound
-						
-						g_pReviveTarget[client] = view_as<CBasePlayer>(-1);
-						g_flReviveTime[client] = 0.0;
-						
-						StopSound(client, SNDCHAN_STATIC, "items/suitchargeok1.wav");
-						EmitSoundToAll("items/suitchargeno1.wav", client, SNDCHAN_AUTO, SNDLEVEL_NORMAL);
-						
-						return Plugin_Continue;
-					}
-					if (GetGameTime() >= g_flReviveTime[client])
-					{
-						EmitSoundToAll("weapons/tau/gauss_undercharge.wav", client, SNDCHAN_AUTO, SNDLEVEL_NORMAL, _, _, 150);
-						
-						g_pReviveTarget[client].SetCanSpawn(true);
-						
-						g_pReviveTarget[client].Spawn();
-						g_pReviveTarget[client].Activate();
-						
-						// Fix for if player died on a ladder
-						SetEntPropEnt(g_pReviveTarget[client].GetEntIndex(), Prop_Data, "m_hLadder", -1);
-						
-						pPlayer.GetAbsOrigin(vecOrigin);
-						
-						g_pReviveTarget[client].Teleport(vecOrigin, vecEyeAngles, NULL_VECTOR);
-						pRagdoll.Kill();
-						
-						pPlayer.ModifyScore(g_pConVarReviveScore.IntValue);
-						g_pReviveTarget[client] = view_as<CBasePlayer>(-1);
-						g_flReviveTime[client] = 0.0;
-					}
-				}
-			}
-		}
-		else
-		{
-			for (int i = 1;i<MaxClients+1;i++)
-			{
-				if (i != client)
-				{
-					CBasePlayer pTarget = CBasePlayer(i);
-					if (pTarget.IsValid())
-					{
-						if (!pTarget.IsAlive())
+						CBasePlayer pTarget = CBasePlayer(i);
+						if (pTarget.IsValid())
 						{
-							CBaseEntity pRagdoll = CBaseEntity(GetEntPropEnt(i, Prop_Send, "m_hRagdoll"));
-							if (pRagdoll.IsValid())
+							if (!pTarget.IsAlive())
 							{
-								pRagdoll.GetAbsOrigin(vecRagdollPosition);
-								if (GetVectorDistance(vecOrigin, vecRagdollPosition, false) < 100.0)
+								CBaseEntity pRagdoll = CBaseEntity(GetEntPropEnt(i, Prop_Send, "m_hRagdoll"));
+								if (pRagdoll.IsValid())
 								{
-									TR_TraceRayFilter(vecOrigin, vecEyeAngles, MASK_SOLID, RayType_Infinite, TraceEntityFilter, client);
-									TR_GetEndPosition(vecOrigin);
+									pRagdoll.GetAbsOrigin(vecRagdollPosition);
 									if (GetVectorDistance(vecOrigin, vecRagdollPosition, false) < 100.0)
 									{
-										g_pReviveTarget[client] = CBasePlayer(i);
-										EmitSoundToAll("items/suitchargeok1.wav", client, SNDCHAN_STATIC, SNDLEVEL_NORMAL);
-										break;
+										TR_TraceRayFilter(vecOrigin, vecEyeAngles, MASK_SOLID, RayType_Infinite, TraceEntityFilter, client);
+										TR_GetEndPosition(vecOrigin);
+										if (GetVectorDistance(vecOrigin, vecRagdollPosition, false) < 100.0)
+										{
+											g_pReviveTarget[client] = CBasePlayer(i);
+											EmitSoundToAll("items/suitchargeok1.wav", client, SNDCHAN_STATIC, SNDLEVEL_NORMAL);
+											break;
+										}
 									}
 								}
 							}
 						}
 					}
 				}
+			}
+		}
+		else if (!(buttons & IN_USE))
+		{
+			if (g_pReviveTarget[client].IsValid())
+			{
+				g_pReviveTarget[client] = view_as<CBasePlayer>(-1);
+				g_flReviveTime[client] = 0.0;
 			}
 		}
 	}

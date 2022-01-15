@@ -1462,7 +1462,9 @@ public MRESReturn Hook_LoadSavedAcceptInput(int _this, Handle hReturn, Handle hP
 				GetEntityRenderColor(_this, r, g, b, a);
 				float duration = GetEntPropFloat(_this, Prop_Data, "m_Duration");
 				Client_ScreenFade(iActivator, RoundFloat(duration * 1000), FFADE_OUT|FFADE_STAYOUT, _, r, g, b, a);
-				ForcePlayerSuicide(iActivator);
+				
+				// This breaks the spectator overlay if the player is already dead
+				if (CBasePlayer(iActivator).IsAlive()) ForcePlayerSuicide(iActivator);
 			}
 		}
 		DHookSetReturn(hReturn, true);

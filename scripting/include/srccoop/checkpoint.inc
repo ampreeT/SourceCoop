@@ -688,6 +688,9 @@ enum struct CCoopSpawn
 	
 	void SurvivalRespawnPlayers()
 	{
+		// This will be called on Saves it would be nice to use #BMS_SAVED
+		// Could maybe add a translation for Checkpoint, although most people won't pay too much attention
+		SetHudTextParams(-1.0, 0.9, 1.0, 200, 200, 200, 255, 0, 1.0, 1.0, 1.0);
 		for (int i = 1; i <= MaxClients; i++)
 		{
 			CBasePlayer pPlayer = CBasePlayer(i);
@@ -698,9 +701,8 @@ enum struct CCoopSpawn
 					pPlayer.SetCanSpawn(true);
 					pPlayer.Spawn();
 					pPlayer.Activate();
-					// Fix for if player died on a ladder
-					SetEntPropEnt(pPlayer.GetEntIndex(), Prop_Data, "m_hLadder", -1);
 				}
+				ShowHudText(i, 2, "Checkpoint reached");
 			}
 		}
 	}

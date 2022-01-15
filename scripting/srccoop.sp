@@ -279,7 +279,6 @@ public void OnClientPutInServer(int client)
 public void OnClientDisconnect(int client)
 {
 	g_pInstancingManager.OnClientDisconnect(client);
-	g_bPlayerCanSpawn[client] = true;
 }
 
 public void OnMapEnd()
