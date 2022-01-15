@@ -1482,7 +1482,7 @@ public MRESReturn Hook_LoadSavedAcceptInput(int _this, Handle hReturn, Handle hP
 //------------------------------------------------------
 public MRESReturn Hook_LogicAutosaveAcceptInput(int _this, Handle hReturn, Handle hParams)
 {
-	if (g_pSurvivalMode.IntValue)
+	if (g_pConvarSurvivalMode.IntValue)
 	{
 		char szInputType[MAX_FORMAT];
 		DHookGetParamString(hParams, 1, szInputType, sizeof(szInputType));

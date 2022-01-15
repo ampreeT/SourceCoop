@@ -189,10 +189,9 @@ public MRESReturn Hook_PlayerSpawn(int _this, Handle hReturn, Handle hParams)
 {
 	if (g_pCoopManager.IsCoopModeEnabled())
 	{
-		if (g_pSurvivalMode.IntValue)
+		CBasePlayer pPlayer = CBasePlayer(_this);
+		if ((g_pConvarSurvivalMode.IntValue) || (g_pConvarPreventRespawn.BoolValue))
 		{
-			CBasePlayer pPlayer = CBasePlayer(_this);
-			
 			if (!PlayerCanSpawn(pPlayer))
 			{
 				// Ensure enabled observing players
@@ -208,7 +207,9 @@ public MRESReturn Hook_PlayerSpawn(int _this, Handle hReturn, Handle hParams)
 			
 			// This is fired upon joining the game before selecting a team so this must be checked
 			if (pPlayer.GetTeam() > 1)
-				PlayerSetCanSpawn(pPlayer, false);
+			{
+				SetPlayerCanSpawn(pPlayer, false);
+			}
 		}
 	}
 	return MRES_Ignored;
@@ -248,7 +249,23 @@ public void Hook_PlayerSpawnPost(int iClient)
 				StopSound(iClient, SNDCHAN_STATIC, szLastSuitSound[iClient]);
 			}
 		}
+		
+		if ((pPlayer.IsAlive()) && (pPlayer.GetTeam() != TEAM_SPECTATOR))
+		{
+			char szSteamID[32];
+			GetClientAuthId(pPlayer.GetEntIndex(), AuthId_Steam2, szSteamID, sizeof(szSteamID));
+			if (g_pDeadPlayerIDs.FindString(szSteamID) != -1)
+			{
+				ForcePlayerSuicide(pPlayer.GetEntIndex());
+			}
+			if (g_pConvarPreventRespawn.BoolValue)
+			{
+				if (g_pDeadPlayerIDs.FindString(szSteamID) == -1) g_pDeadPlayerIDs.PushString(szSteamID);
+			}
+		}
 	}
+	
+	return;
 }
 
 //------------------------------------------------------

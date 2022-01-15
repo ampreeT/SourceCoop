@@ -688,6 +688,11 @@ enum struct CCoopSpawn
 	
 	void SurvivalRespawnPlayers()
 	{
+		// Prevent any of this running if prevented spawns
+		if (g_pConvarPreventRespawn.BoolValue) return;
+		
+		g_pDeadPlayerIDs.Clear();
+		
 		// This will be called on Saves it would be nice to use #BMS_SAVED
 		// Could maybe add a translation for Checkpoint, although most people won't pay too much attention
 		SetHudTextParams(-1.0, 0.9, 1.0, 200, 200, 200, 255, 0, 1.0, 1.0, 1.0);
@@ -698,13 +703,14 @@ enum struct CCoopSpawn
 			{
 				if (!pPlayer.IsAlive())
 				{
-					PlayerSetCanSpawn(pPlayer);
+					SetPlayerCanSpawn(pPlayer);
 					pPlayer.Spawn();
 					pPlayer.Activate();
 				}
 				ShowHudText(i, 2, "Checkpoint reached");
 			}
 		}
+		return;
 	}
 }
 
@@ -755,7 +761,7 @@ public void Hook_TouchCheckpoint(int iEntity, int iOther)
 		SDKUnhook(iEntity, SDKHook_StartTouchPost, Hook_TouchCheckpoint);
 		
 		// Survival mode respawn players at trigger_autosaves
-		if (g_pSurvivalMode.IntValue) g_SpawnSystem.SurvivalRespawnPlayers();
+		if (g_pConvarSurvivalMode.IntValue) g_SpawnSystem.SurvivalRespawnPlayers();
 	}
 }
 

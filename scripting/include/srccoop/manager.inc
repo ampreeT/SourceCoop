@@ -206,6 +206,7 @@ enum struct CoopManager
 		}
 		g_SpawnSystem.Clear();
 		g_pLevelLump.Clear();
+		g_pDeadPlayerIDs.Clear();
 		
 		KeyValues kv = this.LoadMapConfig(szMapName);
 	
@@ -419,7 +420,7 @@ enum struct CoopManager
 			if(this.m_iClientChangeLvlIndicies[j] != -1) votes++;
 		}
 		
-		int iPlayerCount = GetRealClientCount(true, true, true) - 1; // take off the 1 that we did with votes
+		int iPlayerCount = GetRealClientCount(true, g_pConvarSurvivalMode.IntValue ? false : true, true) - 1; // take off the 1 that we did with votes
 		if(iPlayerCount < 1)
 		{
 			return 0.0;
@@ -449,7 +450,7 @@ enum struct CoopManager
 		{
 			char map[MAX_MAPNAME], reason[32]; int startTime;
 			GetMapHistory(0, map, sizeof(map), reason, sizeof(reason), startTime);
-			if(strcmp(reason, SM_NORMAL_MAPCHANGE) == 0)
+			if ((strcmp(reason, SM_NORMAL_MAPCHANGE) == 0) || (strcmp(reason, SM_RESTART_MAPCHANGE) == 0))
 			{
 				return false;
 			}
@@ -474,7 +475,7 @@ enum struct CoopManager
 			LogMessage("Tried to change the map, but neither home map or next map is set! Set sourcecoop_homemap or change the map manually.");
 		}
 	}
-		
+	
 	void EnableFeature(SourceCoopFeature iFeatureBits)
 	{
 		g_iEnabledFeatures |= view_as<int>(iFeatureBits);

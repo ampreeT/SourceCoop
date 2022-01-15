@@ -14,7 +14,8 @@ ConVar g_pConvarEndWaitPeriod;
 ConVar g_pConvarEndWaitFactor;
 ConVar g_pConvarHomeMap;
 ConVar g_pConvarEndWaitDisplayMode;
-ConVar g_pSurvivalMode;
+ConVar g_pConvarSurvivalMode;
+ConVar g_pConvarPreventRespawn;
 
 // ----------------------------
 // SDK Calls
@@ -75,6 +76,7 @@ FeatureMap g_pFeatureMap;
 int g_iEnabledFeatures;
 
 ArrayList g_pPostponedSpawns;
+ArrayList g_pDeadPlayerIDs;
 
 // represents the return value of the IsMultiplayer hook
 bool g_bIsMultiplayerOverride = true;

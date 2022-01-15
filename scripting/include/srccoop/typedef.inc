@@ -14,6 +14,7 @@
 
 // String which SM uses when mapchange is not triggered externally
 #define SM_NORMAL_MAPCHANGE "Normal level change"
+#define SM_RESTART_MAPCHANGE "Restart map player failed"
 
 #define FLT_MAX 2147483647.0
 #define INT_MIN -2147483648

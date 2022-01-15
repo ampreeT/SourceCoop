@@ -51,7 +51,7 @@ public Action Command_ForceRespawn(int client, int args)
 	{
 		PrintToConsole(client, "Spawned %i", pTarget.GetEntIndex());
 		
-		PlayerSetCanSpawn(pTarget, true);
+		SetPlayerCanSpawn(pTarget, true);
 		pTarget.Spawn();
 		pTarget.Activate();
 	}
@@ -104,7 +104,7 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 						{
 							EmitSoundToAll("weapons/tau/gauss_undercharge.wav", client, SNDCHAN_AUTO, SNDLEVEL_NORMAL, _, _, 150);
 							
-							PlayerSetCanSpawn(g_pReviveTarget[client], true);
+							SetPlayerCanSpawn(g_pReviveTarget[client], true);
 							
 							g_pReviveTarget[client].Spawn();
 							g_pReviveTarget[client].Activate();
