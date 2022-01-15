@@ -698,7 +698,7 @@ enum struct CCoopSpawn
 			{
 				if (!pPlayer.IsAlive())
 				{
-					pPlayer.SetCanSpawn(true);
+					PlayerSetCanSpawn(pPlayer);
 					pPlayer.Spawn();
 					pPlayer.Activate();
 				}

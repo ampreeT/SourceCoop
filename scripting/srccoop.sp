@@ -276,6 +276,12 @@ public void OnClientPutInServer(int client)
 	GreetPlayer(client);
 }
 
+public void OnClientConnected(int client)
+{
+	// Ensure on connection that the player is allowed to spawn
+	g_bPlayerCanSpawn[client] = true;
+}
+
 public void OnClientDisconnect(int client)
 {
 	g_pInstancingManager.OnClientDisconnect(client);

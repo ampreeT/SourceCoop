@@ -1137,17 +1137,6 @@ methodmap CBasePlayer < CBaseCombatCharacter
 		this.SetScore(iNewScore);
 		return iNewScore;
 	}
-	
-	public bool CanSpawn()
-	{
-		return view_as<bool>(!GetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_iRespawnFrames"));
-	}
-	
-	public void SetCanSpawn(const bool bCanSpawn)
-	{
-		SetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_iRespawnFrames", view_as<float>(!bCanSpawn));
-		return;
-	}
 }
 
 methodmap CBlackMesaPlayer < CBasePlayer

@@ -38,6 +38,8 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 {
 	CreateNative("GetCoopTopMenu", Native_GetCoopTopMenu);
 	CreateNative("IsCurrentMapCoop", Native_IsCurrentMapCoop);
+	CreateNative("PlayerSetCanSpawn", Native_PlayerSetCanSpawn);
+	CreateNative("PlayerCanSpawn", Native_PlayerCanSpawn);
 	RegPluginLibrary(SRCCOOP_LIBRARY);
 	return APLRes_Success;
 }
@@ -50,4 +52,32 @@ public any Native_GetCoopTopMenu(Handle plugin, int numParams)
 public any Native_IsCurrentMapCoop(Handle plugin, int numParams)
 {
 	return g_pCoopManager.m_bIsCoopMap;
+}
+
+public any Native_PlayerSetCanSpawn(Handle plugin, int numParams)
+{
+	if (numParams < 1) ThrowNativeError(0,"You must pass a CBasePlayer as first parameter!");
+	
+	CBasePlayer pPlayer = CBasePlayer(GetNativeCell(1));
+	if (!pPlayer.IsValid())
+	{
+		return 0;
+	}
+	
+	if (numParams > 1) g_bPlayerCanSpawn[pPlayer.GetEntIndex()] = view_as<bool>(GetNativeCell(2));
+	else g_bPlayerCanSpawn[pPlayer.GetEntIndex()] = true;
+	return 0;
+}
+
+public any Native_PlayerCanSpawn(Handle plugin, int numParams)
+{
+	if (numParams < 1) ThrowNativeError(0,"You must pass a CBasePlayer as first parameter!");
+	
+	CBasePlayer pPlayer = CBasePlayer(GetNativeCell(1));
+	if (!pPlayer.IsValid())
+	{
+		ThrowNativeError(0,"Passed invalid CBasePlayer to CanSpawn %i!", pPlayer.GetEntIndex());
+	}
+	
+	return g_bPlayerCanSpawn[pPlayer.GetEntIndex()];
 }
