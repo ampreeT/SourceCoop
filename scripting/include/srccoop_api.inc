@@ -59,7 +59,7 @@ forward void OnCoopMapStart();
  * Allows other sources or plugins set whether a player can spawn
  * 
  */
-native void PlayerSetCanSpawn(CBasePlayer pPlayer, bool bSetCanSpawn = true);
+native void SetPlayerCanSpawn(CBasePlayer pPlayer, bool bSetCanSpawn = true);
 
 /**
  * Allows other sources or plugins check whether a player can spawn

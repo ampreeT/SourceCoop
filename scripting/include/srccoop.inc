@@ -38,7 +38,7 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 {
 	CreateNative("GetCoopTopMenu", Native_GetCoopTopMenu);
 	CreateNative("IsCurrentMapCoop", Native_IsCurrentMapCoop);
-	CreateNative("PlayerSetCanSpawn", Native_PlayerSetCanSpawn);
+	CreateNative("SetPlayerCanSpawn", Native_SetPlayerCanSpawn);
 	CreateNative("PlayerCanSpawn", Native_PlayerCanSpawn);
 	RegPluginLibrary(SRCCOOP_LIBRARY);
 	return APLRes_Success;
@@ -54,7 +54,7 @@ public any Native_IsCurrentMapCoop(Handle plugin, int numParams)
 	return g_pCoopManager.m_bIsCoopMap;
 }
 
-public any Native_PlayerSetCanSpawn(Handle plugin, int numParams)
+public any Native_SetPlayerCanSpawn(Handle plugin, int numParams)
 {
 	if (numParams < 1) ThrowNativeError(0,"You must pass a CBasePlayer as first parameter!");
 	
@@ -66,6 +66,15 @@ public any Native_PlayerSetCanSpawn(Handle plugin, int numParams)
 	
 	if (numParams > 1) g_bPlayerCanSpawn[pPlayer.GetEntIndex()] = view_as<bool>(GetNativeCell(2));
 	else g_bPlayerCanSpawn[pPlayer.GetEntIndex()] = true;
+	
+	if (g_bPlayerCanSpawn[pPlayer.GetEntIndex()])
+	{
+		char szSteamID[32];
+		GetClientAuthId(pPlayer.GetEntIndex(), AuthId_Steam2, szSteamID, sizeof(szSteamID));
+		int iFindInArray = g_pDeadPlayerIDs.FindString(szSteamID);
+		if (iFindInArray != -1) g_pDeadPlayerIDs.Erase(iFindInArray);
+	}
+	
 	return 0;
 }
 
