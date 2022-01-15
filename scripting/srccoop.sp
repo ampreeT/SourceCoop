@@ -697,7 +697,23 @@ public Action RestartLevel(Handle timer)
 {
 	char szMapName[MAX_MAPNAME];
 	GetCurrentMap(szMapName, sizeof(szMapName));
-	ForceChangeLevel(szMapName, "SourceCoop - all players died");
+	
+	// Clears all global states and entry positions
+	//ForceChangeLevel(szMapName, "SourceCoop - all players died");
+	
+	CChangelevel pChangeLevel = CChangelevel(CreateEntityByName("trigger_changelevel"));
+	if (pChangeLevel.IsValid())
+	{
+		DispatchKeyValue(pChangeLevel.GetEntIndex(), "map", szMapName);
+		DispatchKeyValue(pChangeLevel.GetEntIndex(), "landmark", "landmark");
+		DispatchSpawn(pChangeLevel.GetEntIndex());
+		ActivateEntity(pChangeLevel.GetEntIndex());
+		
+		// Workaround to restarting the map with globals and entry point intact
+		strcopy(g_szMapName, sizeof(g_szMapName), g_szPrevMapName);
+		
+		pChangeLevel.ChangeLevelNow();
+	}
 	
 	return Plugin_Handled;
 }
