@@ -28,6 +28,8 @@ public void OnPluginStart()
 	g_pConVarReviveScore = CreateConVar("sourcecoop_revive_score", "1", "Sets score to give for reviving a player.", _, true, 0.0, false);
 	
 	RegAdminCmd("sourcecoop_revive", Command_ForceRespawn, ADMFLAG_ROOT, "Force respawn by client index.");
+	
+	HookEventEx("entity_killed", Event_EntityKilled, EventHookMode_Post);
 }
 
 public void OnMapStart()
@@ -35,6 +37,51 @@ public void OnMapStart()
 	PrecacheSound("weapons/tau/gauss_undercharge.wav",true);
 	PrecacheSound("items/suitchargeok1.wav",true);
 	PrecacheSound("items/suitchargeno1.wav",true);
+}
+
+public Action Event_EntityKilled(Event hEvent, const char[] szName, bool bDontBroadcast)
+{
+	int iVictimCheck = GetEventInt(hEvent, "entindex_killed");
+	if ((iVictimCheck > 0) && (iVictimCheck <= MaxClients))
+	{
+		CreateTimer(0.1, GetCLRagdoll, iVictimCheck, TIMER_FLAG_NO_MAPCHANGE);
+	}
+}
+
+public Action GetCLRagdoll(Handle timer, int client)
+{
+	if (IsValidEntity(client))
+	{
+		int iRagdoll = GetEntPropEnt(client, Prop_Send, "m_hRagdoll");
+		if (IsValidEntity(iRagdoll))
+		{
+			float vecOrigin[3];
+			
+			GetEntPropVector(iRagdoll, Prop_Data, "m_vecAbsOrigin", vecOrigin);
+			vecOrigin[2] += 5.0;
+			
+			int iSprite = CreateEntityByName("env_sprite");
+			if (IsValidEntity(iSprite))
+			{
+				DispatchKeyValue(iSprite, "model", "vgui/hud/hud_health.vmt");
+				DispatchKeyValue(iSprite, "spawnflags", "1");
+				DispatchKeyValue(iSprite, "scale", "0.2");
+				DispatchKeyValue(iSprite, "rendermode", "9");
+				DispatchKeyValue(iSprite, "rendercolor", "255 0 0");
+				
+				TeleportEntity(iSprite, vecOrigin, NULL_VECTOR, NULL_VECTOR);
+				
+				DispatchSpawn(iSprite);
+				ActivateEntity(iSprite);
+				
+				// By setting the parent, we don't need to worry about removing it later as it will be removed with the server-side ragdoll
+				SetVariantString("!activator");
+				AcceptEntityInput(iSprite, "SetParent", iRagdoll);
+				
+				SetEntPropEnt(iRagdoll, Prop_Data, "m_hEffectEntity", iSprite);
+			}
+		}
+	}
 }
 
 public Action Command_ForceRespawn(int client, int args)
@@ -112,10 +159,17 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 							// Fix for if player died on a ladder
 							SetEntPropEnt(g_pReviveTarget[client].GetEntIndex(), Prop_Data, "m_hLadder", -1);
 							
-							pPlayer.GetAbsOrigin(vecOrigin);
-							
-							g_pReviveTarget[client].Teleport(vecOrigin, vecEyeAngles, NULL_VECTOR);
+							//pPlayer.GetAbsOrigin(vecOrigin);
+							//g_pReviveTarget[client].Teleport(vecOrigin, vecEyeAngles, NULL_VECTOR);
 							pRagdoll.Kill();
+							
+							// Delay to allow equip time
+							Handle dp = CreateDataPack();
+							WritePackCell(dp, pPlayer);
+							WritePackCell(dp, g_pReviveTarget[client]);
+							// Tested this as a CreateDataTimer, but the datapack is always empty for some reason
+							// Not going to put a TIMER_FLAG_NO_MAPCHANGE here so it can close the handle if the map changes
+							CreateTimer(0.1, DelayRespawn, dp);
 							
 							pPlayer.ModifyScore(g_pConVarReviveScore.IntValue);
 							g_pReviveTarget[client] = view_as<CBasePlayer>(-1);
@@ -139,6 +193,7 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 								if (pRagdoll.IsValid())
 								{
 									pRagdoll.GetAbsOrigin(vecRagdollPosition);
+									
 									if (GetVectorDistance(vecOrigin, vecRagdollPosition, false) < 100.0)
 									{
 										TR_TraceRayFilter(vecOrigin, vecEyeAngles, MASK_SOLID, RayType_Infinite, TraceEntityFilter, client);
@@ -167,6 +222,28 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 		}
 	}
 	return Plugin_Continue;
+}
+
+public Action DelayRespawn(Handle timer, Handle dp)
+{
+	if (dp != INVALID_HANDLE)
+	{
+		ResetPack(dp);
+		CBasePlayer pPlayer = ReadPackCell(dp);
+		CBasePlayer pTarget = ReadPackCell(dp);
+		CloseHandle(dp);
+		if ((pTarget.IsValid()) && (pPlayer.IsValid()))
+		{
+			float vecOrigin[3];
+			float vecEyeAngles[3];
+			
+			pPlayer.GetAbsOrigin(vecOrigin);
+			pPlayer.GetEyeAngles(vecEyeAngles);
+			
+			pTarget.Teleport(vecOrigin, vecEyeAngles, NULL_VECTOR);
+		}
+	}
+	return Plugin_Handled;
 }
 
 public void OnClientDisconnect_Post(int client)

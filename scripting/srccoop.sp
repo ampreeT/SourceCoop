@@ -114,14 +114,14 @@ public void OnPluginStart()
 	CreateConVar("sourcecoop_version", PLUGIN_VERSION, _, FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
 	g_pConvarCoopTeam = CreateConVar("sourcecoop_team", "scientist", "Sets which team to use in TDM mode. Valid values are [marines] or [scientist]. Setting anything else will not manage teams.");
 	g_pConvarDisableTeamSelect = CreateConVar("sourcecoop_disable_teamselect", "1", "Whether to skip the team select screen and spawn in instantly.", _, true, 0.0, true, 1.0);
-	g_pConvarPreventRespawn = CreateConVar("sourcecoop_disable_respawn", "0", "Fully prevents respawning even at checkpoints.", _, true, 0.0, true, 1.0);
 	g_pConvarCoopRespawnTime = CreateConVar("sourcecoop_respawntime", "2.0", "Sets player respawn time in seconds. This can only be used for making respawn times quicker, not longer. Set to 0 to use the game's default.", _, true, 0.0);
 	g_pConvarWaitPeriod = CreateConVar("sourcecoop_start_wait_period", "15.0", "The max number of seconds to wait since first player spawned in to start the map. The timer is skipped when all players enter the game.", _, true, 0.0);
 	g_pConvarEndWaitPeriod = CreateConVar("sourcecoop_end_wait_period", "60.0", "The max number of seconds to wait since first player triggered a changelevel. The timer speed increases each time a new player finishes the level.", _, true, 0.0);
 	g_pConvarEndWaitFactor = CreateConVar("sourcecoop_end_wait_factor", "1.0", "Controls how much the number of finished players increases the changelevel timer speed. 1.0 means full, 0 means none (timer will run full length).", _, true, 0.0, true, 1.0);
 	g_pConvarHomeMap = CreateConVar("sourcecoop_homemap", "", "The map to return to after finishing a campaign/map.");
 	g_pConvarEndWaitDisplayMode = CreateConVar("sourcecoop_end_wait_display_mode", "0", "Sets which method to show countdown. 0 is panel, 1 is hud text.", _, true, 0.0, true, 1.0);
-	g_pConvarSurvivalMode = CreateConVar("sourcecoop_survivalmode", "0", "Sets survival mode. 1 will respawn all players if all dead. 2 will restart map if all players dead.", _, true, 0.0, true, 2.0);
+	g_pConvarSurvivalMode = CreateConVar("sourcecoop_survival_mode", "0", "Sets survival mode. 1 will respawn all players if all dead. 2 will restart map if all players dead.", _, true, 0.0, true, 2.0);
+	g_pConvarPreventRespawn = CreateConVar("sourcecoop_survival_disable_respawn", "0", "Fully prevents respawning even at checkpoints.", _, true, 0.0, true, 1.0);
 	
 	g_pConvarSurvivalMode.AddChangeHook(ConVarChanged);
 	g_pConvarPreventRespawn.AddChangeHook(ConVarChanged);
