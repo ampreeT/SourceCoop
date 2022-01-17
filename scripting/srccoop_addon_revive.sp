@@ -9,6 +9,7 @@
 
 ConVar g_pConVarReviveTime;
 ConVar g_pConVarReviveScore;
+ConVar g_pConVarSpriteMaterial, g_pConVarSpriteScale, g_pConVarSpriteColor, g_pConVarSpriteFloatDistance;
 
 CBasePlayer g_pReviveTarget[MAXPLAYERS+1] = {view_as<CBasePlayer>(-1), ...};
 float g_flReviveTime[MAXPLAYERS+1];
@@ -24,12 +25,20 @@ public Plugin myinfo =
 
 public void OnPluginStart()
 {
-	g_pConVarReviveTime = CreateConVar("sourcecoop_revive_time", "4.0", "Sets time to revive.", _, true, 0.0, false);
+	g_pConVarReviveTime = CreateConVar("sourcecoop_revive_time", "4.0", "Sets time that you have to hold E to revive.", _, true, 0.0, false);
 	g_pConVarReviveScore = CreateConVar("sourcecoop_revive_score", "1", "Sets score to give for reviving a player.", _, true, 0.0, false);
+	
+	// Sprite ConVars
+	g_pConVarSpriteMaterial = CreateConVar("sourcecoop_revive_sprite_material", "vgui/hud/hud_health.vmt", "Sets material of sprite used when player dies. Must be relative to materials/ directory");
+	g_pConVarSpriteScale = CreateConVar("sourcecoop_revive_sprite_scale", "0.2", "Sets the scale size of the revive sprite.", _, true, 0.1, false);
+	g_pConVarSpriteColor = CreateConVar("sourcecoop_revive_sprite_color", "255 0 0", "Sets color of the revive sprite.");
+	g_pConVarSpriteFloatDistance = CreateConVar("sourcecoop_revive_sprite_vertical", "5.0", "Sets distance above ragdoll to spawn in at. Mainly used for custom material types that might clip through the floor.");
 	
 	RegAdminCmd("sourcecoop_revive", Command_ForceRespawn, ADMFLAG_ROOT, "Force respawn by client index.");
 	
 	HookEventEx("entity_killed", Event_EntityKilled, EventHookMode_Post);
+	
+	AutoExecConfig(true, "srccoop_addon_revive");
 }
 
 public void OnMapStart()
@@ -52,22 +61,30 @@ public Action GetCLRagdoll(Handle timer, int client)
 {
 	if (IsValidEntity(client))
 	{
+		char szSpecifications[128];
+		g_pConVarSpriteMaterial.GetString(szSpecifications, sizeof(szSpecifications));
+		Format(szSpecifications, sizeof(szSpecifications), "materials/%s", szSpecifications);
+		if (!FileExists(szSpecifications, true, NULL_STRING)) return Plugin_Handled;
+		g_pConVarSpriteMaterial.GetString(szSpecifications, sizeof(szSpecifications));
+		
 		int iRagdoll = GetEntPropEnt(client, Prop_Send, "m_hRagdoll");
 		if (IsValidEntity(iRagdoll))
 		{
 			float vecOrigin[3];
 			
 			GetEntPropVector(iRagdoll, Prop_Data, "m_vecAbsOrigin", vecOrigin);
-			vecOrigin[2] += 5.0;
+			vecOrigin[2] += g_pConVarSpriteFloatDistance.FloatValue;
 			
 			int iSprite = CreateEntityByName("env_sprite");
 			if (IsValidEntity(iSprite))
 			{
-				DispatchKeyValue(iSprite, "model", "vgui/hud/hud_health.vmt");
+				DispatchKeyValue(iSprite, "model", szSpecifications);
 				DispatchKeyValue(iSprite, "spawnflags", "1");
-				DispatchKeyValue(iSprite, "scale", "0.2");
+				DispatchKeyValueFloat(iSprite, "scale", g_pConVarSpriteScale.FloatValue);
 				DispatchKeyValue(iSprite, "rendermode", "9");
-				DispatchKeyValue(iSprite, "rendercolor", "255 0 0");
+				
+				g_pConVarSpriteColor.GetString(szSpecifications, sizeof(szSpecifications));
+				DispatchKeyValue(iSprite, "rendercolor", szSpecifications);
 				
 				TeleportEntity(iSprite, vecOrigin, NULL_VECTOR, NULL_VECTOR);
 				
@@ -82,6 +99,7 @@ public Action GetCLRagdoll(Handle timer, int client)
 			}
 		}
 	}
+	return Plugin_Handled;
 }
 
 public Action Command_ForceRespawn(int client, int args)
