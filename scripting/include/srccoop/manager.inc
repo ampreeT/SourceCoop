@@ -65,7 +65,7 @@ methodmap ChangeLevelManager < Array_t
 
 	public void UpdateStatus(int iSecondsLeft)
 	{
-		char szMapName[MAX_MAPNAME], szDisplay[128];
+		char szMapName[MAX_MAPNAME], szDisplay[256];
 		ChangeLevelManager pSorted = this.Sorted();
 		ChangeLevelVoteLump pChangeLvlLump;
 		
@@ -172,6 +172,7 @@ public int ChangeLevelStatusPanelCallback(Menu menu, MenuAction action, int para
 
 enum struct CoopManager
 {
+	int m_iEnabledFeatures;
 	bool m_bIsCoopMap;
 	bool m_bStarted;
 	bool m_bPlayerSpawned;
@@ -199,7 +200,7 @@ enum struct CoopManager
 		this.m_bStarted = false;
 		this.m_bPlayerSpawned = false;
 		this.m_pChangeLevelMgr.Clear();
-		g_iEnabledFeatures = 0;
+		this.m_iEnabledFeatures = 0;
 		for(int i = 0; i <= MaxClients; i++)
 		{
 			this.m_iClientChangeLvlIndicies[i] = -1;
@@ -346,6 +347,7 @@ enum struct CoopManager
 		if(!GetRealClientCount(true)) {
 			return;
 		}
+		
 		if (g_Engine == Engine_BlackMesa)
 		{
 			CBM_MP_GameRules.SetStateEndTime(STATE_WARMUP, 0.0);
@@ -470,17 +472,17 @@ enum struct CoopManager
 		
 	void EnableFeature(SourceCoopFeature iFeatureBits)
 	{
-		g_iEnabledFeatures |= view_as<int>(iFeatureBits);
+		this.m_iEnabledFeatures |= view_as<int>(iFeatureBits);
 	}
 	
 	void DisableFeature(SourceCoopFeature iFeatureBits)
 	{
-		g_iEnabledFeatures &= ~view_as<int>(iFeatureBits);
+		this.m_iEnabledFeatures &= ~view_as<int>(iFeatureBits);
 	}
 	
 	bool IsFeatureEnabled(SourceCoopFeature iFeatureBits)
 	{
-		return this.IsCoopModeEnabled() && g_iEnabledFeatures & view_as<int>(iFeatureBits);
+		return this.IsCoopModeEnabled() && this.m_iEnabledFeatures & view_as<int>(iFeatureBits);
 	}
 
 	bool IsCoopModeEnabled()

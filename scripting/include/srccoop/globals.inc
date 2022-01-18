@@ -15,6 +15,10 @@ ConVar g_pConvarEndWaitFactor;
 ConVar g_pConvarHomeMap;
 ConVar g_pConvarEndWaitDisplayMode;
 
+// Existing ConVars
+ConVar mp_friendlyfire;
+ConVar mp_flashlight;
+
 // ----------------------------
 // SDK Calls
 // ----------------------------
@@ -70,12 +74,12 @@ bool g_bMapStarted;
 EngineVersion g_Engine;
 OperatingSystem g_serverOS;
 FeatureMap g_pFeatureMap;
-int g_iEnabledFeatures;
 
 ArrayList g_pPostponedSpawns;
 
 // represents the return value of the IsMultiplayer hook
 bool g_bIsMultiplayerOverride = true;
+
 // represents the return value of the IsDeathmatch hook
 //bool g_bIsDeathmatchOverride = true;
 

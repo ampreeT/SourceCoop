@@ -8,12 +8,6 @@
 //------------------------------------------------------
 public MRESReturn Hook_FAllowFlashlight(Handle hReturn, Handle hParams)
 {
-	static ConVar mp_flashlight = null;
-	if(mp_flashlight == null)
-	{
-		mp_flashlight = FindConVar("mp_flashlight");
-	}
-
 	DHookSetReturn(hReturn, mp_flashlight.BoolValue);
 	return MRES_Supercede;
 }
@@ -219,7 +213,7 @@ public void Hook_PlayerSpawnPost(int iClient)
 //------------------------------------------------------
 public Action Hook_PlayerTraceAttack(int victim, int &attacker, int &inflictor, float &damage, int &damagetype, int &ammotype, int hitbox, int hitgroup)
 {
-	if(g_pCoopManager.IsFeatureEnabled(FT_NO_FRIENDLYFIRE))
+	if (g_pCoopManager.IsCoopModeEnabled() && !mp_friendlyfire.BoolValue)
 	{
 		// Disable FF
 		if(attacker != victim && CBlackMesaPlayer(attacker).IsClassPlayer())

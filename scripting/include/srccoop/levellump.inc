@@ -597,16 +597,24 @@ enum struct CGlobalLevelLump
 				{
 					EVAL_CONDITIONS(szKey, kv, this.ParseConsole(kv))
 					
-					if(kv.GetDataType(NULL_STRING) != KvData_None)
+					if (kv.GetDataType(NULL_STRING) != KvData_None)
 					{
+						static const char FORBIDDEN[][] = {"sv_allow_point_servercommand", "rcon_password"};
+						int pos = FindStringInArrayEx(FORBIDDEN, sizeof(FORBIDDEN), szKey, false);
+						if (pos != -1)
+						{
+							LogMessage("Map %s tried to change dangerous convar %s", g_szMapName, FORBIDDEN[pos]);
+							continue;
+						}
+						
 						char szValue[MAX_VALUE];
 						kv.GetString(NULL_STRING, szValue, sizeof(szValue));
 						ConVar pConvar = FindConVar(szKey);
-						if(pConvar != null)
+						if (pConvar != null)
 						{
 							this.m_pModifiedCvarList.Push(pConvar);
+							pConvar.SetString(szValue);
 						}
-						ServerCommand("%s %s", szKey, szValue);
 					}
 				}
 			}

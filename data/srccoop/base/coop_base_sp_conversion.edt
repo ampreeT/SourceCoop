@@ -34,7 +34,7 @@
 	}
 	"entity_base_sp_conversion"
 	{
-		// remove globalnames - prevents unspawned entities
+		// remove globalnames - prevents entities not spawning due to the map transition system not being in place
 		"modify"
 		{
 			"remove"
@@ -42,6 +42,7 @@
 				"globalname" ""
 			}
 		}
+		// Player targeting dilemma:
 		// !player is generally only useful in singleplayer, as it returns first player by index
 		// !pvsplayer may search by visibility, activator, or use first index as fallback; although this depends on the entity
 		"modify"
@@ -71,6 +72,7 @@
 				"target" "!pvsplayer" 
 			}
 		}
+		// replaces all outputs targeting !player with player
 		#if
 		{
 			"outputs_fixup_player_in_target" "1"
@@ -85,13 +87,14 @@
 							"target" "!player"
 							"replace"
 							{
-								"target" "player" // in the IO system, this will target all players (matched by their classname)
+								"target" "player" // in the IO system, this will target all players, matched by their classname
 							}
 						}
 					}
 				}
 			}
 		}
+		// replaces all outputs where !player is passed as parameter with !pvsplayer
 		#if
 		{
 			"outputs_fixup_player_in_parameter" "1"
@@ -244,7 +247,7 @@
 				}
 			}
 		}
-		// env_screenoverlay shows to all players once activated - remove it until a solution is found.
+		// env_screenoverlay shows to all players once activated - remove it until a solution is found
 		"delete"
 		{
 			"classname" "env_screenoverlay"
@@ -298,6 +301,7 @@
 				}
 			}
 		}
+		// it's better this way
 		#if
 		{
 			"never_close_areaportals" "1"
@@ -319,6 +323,9 @@
 				}
 			}
 		}
+		// finds trigger_once triggers that call the input "Reload",
+		// with player_loadsaved being the exclusive entity with it,
+		// and while asumming they are solely fall-reload triggers, changes them to trigger_multiple.
 		#if
 		{
 			"fix_reload_triggers" "1"

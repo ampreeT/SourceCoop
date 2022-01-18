@@ -4,9 +4,7 @@
 #define _srccoop_utils_included
 
 //------------------------------------------------------
-//------------------------------------------------------
 // DHooks utils
-//------------------------------------------------------
 //------------------------------------------------------
 #if defined _dhooks_included
 stock void LoadDHookDetour(const Handle pGameConfig, Handle& pHandle, const char[] szFuncName, DHookCallback pCallbackPre = INVALID_FUNCTION, DHookCallback pCallbackPost = INVALID_FUNCTION)
@@ -29,9 +27,7 @@ stock void LoadDHookVirtual(const Handle pGameConfig, Handle& pHandle, const cha
 #endif
 
 //------------------------------------------------------
-//------------------------------------------------------
 // Cookie utils
-//------------------------------------------------------
 //------------------------------------------------------
 #if defined _clientprefs_included
 stock bool GetCookieBool(Cookie cookie, int client)
@@ -55,9 +51,7 @@ stock bool IsCookieSet(Cookie cookie, int client)
 #endif
 
 //------------------------------------------------------
-//------------------------------------------------------
 // Text utils
-//------------------------------------------------------
 //------------------------------------------------------
 stock void Msg(int client, const char[] msg, any ...)
 {
@@ -214,9 +208,34 @@ stock bool IsDisableSynonym(const char[] str)
 }
 
 //------------------------------------------------------
+// Array utils
+//------------------------------------------------------
+stock int FindStringInArrayEx(const char[][] array, int len, const char[] str, bool caseSensitive = true)
+{
+	for (int i = 0; i < len; i++)
+	{
+		if (StrEqual(str, array[i], caseSensitive))
+		{
+			return i;
+		}
+	}
+	return -1;
+}
+
+stock int FindValueInArrayEx(const any[][] array, int len, const any val)
+{
+	for (int i = 0; i < len; i++)
+	{
+		if (array[i] == val)
+		{
+			return i;
+		}
+	}
+	return -1;
+}
+
 //------------------------------------------------------
 // Entity utils
-//------------------------------------------------------
 //------------------------------------------------------
 stock int FindEntityByHammerID(int iHammerID, const char[] szClassname = "*")
 {
@@ -265,9 +284,7 @@ stock CBaseEntity CreateByClassname(const char[] szClassname)
 }
 
 //------------------------------------------------------
-//------------------------------------------------------
 // Player utils
-//------------------------------------------------------
 //------------------------------------------------------
 stock CBasePlayer GetNearestPlayer(CBaseEntity pOriginEntity, bool bOnlyAlive = true)
 {
@@ -439,9 +456,7 @@ stock bool Client_ScreenFade(int client, int duration, int mode, int holdtime=-1
 }
 
 //------------------------------------------------------
-//------------------------------------------------------
 // Math utils
-//------------------------------------------------------
 //------------------------------------------------------
 stock void ScaleVectors(const float vecA[3], const float vecB[3], float vecResult[3])
 {

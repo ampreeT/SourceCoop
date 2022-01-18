@@ -16,6 +16,11 @@
 	// Depending on the transitions in this map, you can specify nextmap inside the quotes to prevent players from backtracking.
 	"nextmap" "/.*/"
 	
+	// Sets the "intro" type. Used together with delayed entity outputs.
+	// Freezes players in place until everyone connects or the startup timer runs out.
+	// Other values are "none" (players walk around freely) and "fade" (same as freeze but fades from black).
+	"intro_type" "freeze"
+	
 	"features"
 	{
 		// setup plugin features here
@@ -35,6 +40,18 @@
 	"entity"
 	{
 		// modify map's entities here
+		
+		// postpones map startup, edit as needed
+		"modify"
+		{
+			"classname" "logic_auto"
+			"functions"
+			{
+				"delay_output" "OnNewGame"
+				"delay_output" "OnMapSpawn"
+			}
+		}
+		
 	}
 	"checkpoint"
 	{
