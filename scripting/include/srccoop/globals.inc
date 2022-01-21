@@ -90,3 +90,4 @@ CBaseEntity g_pLocalPlayerEntity = view_as<CBaseEntity>(-1);
 // Plugin API
 // ----------------------------
 GlobalForward g_CoopMapStartFwd;
+GlobalForward g_CoopMapConfigLoadedFwd;

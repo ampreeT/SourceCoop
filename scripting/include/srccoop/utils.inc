@@ -497,3 +497,41 @@ stock bool IsBoxIntersectingBox(const float boxMin1[3], const float boxMax1[3], 
 		return false;
 	return true;
 }
+
+//------------------------------------------------------
+// File utils
+//------------------------------------------------------
+
+/* File copy from SMLIB
+ * @param source		Input file
+ * @param destination	Output file
+ * @return				True on success, false otherwise
+ */
+stock bool FileCopy(const char[] source, const char[] destination, bool use_valve_fs=false, const char[] valve_path_id="GAME")
+{
+	File file_source = OpenFile(source, "rb", use_valve_fs, valve_path_id);
+
+	if (file_source == null) {
+		return false;
+	}
+
+	File file_destination = OpenFile(destination, "wb", use_valve_fs, valve_path_id);
+
+	if (file_destination == null) {
+		delete file_source;
+		return false;
+	}
+
+	int buffer[32];
+	int cache;
+
+	while (!IsEndOfFile(file_source)) {
+		cache = ReadFile(file_source, buffer, sizeof(buffer), 1);
+		WriteFile(file_destination, buffer, cache, 1);
+	}
+
+	delete file_source;
+	delete file_destination;
+
+	return true;
+}

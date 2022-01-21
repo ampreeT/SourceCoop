@@ -15,16 +15,18 @@ public Plugin myinfo =
 
 #define VOTE_DURATION 20
 #define VOTE_COOLDOWN 60
+#define VOTE_SUCCESS_MAPCHANGE_DELAY 4.0
+#define VOTE_SKIP_AUTOSTART_DELAY 15.0
 
 #define MENUITEM_SKIPINTRO "SkipIntroVote"
 #define MENUITEM_RESTARTMAP "RestartMapVote"
 #define MENUITEM_MAPVOTE "MapVote"
 
-char INTROMAPS[][] = {"bm_c0a0a", "bm_c0a0b", "bm_c0a0c"};
-
 int nextVoteSkip;
 int nextVoteRestart;
 int nextVoteMap;
+char szSkipTo[MAX_MAPNAME];
+bool bAutoVoteSkip;
 
 ConVar pReloadMapsOnMapchange;
 
@@ -38,6 +40,7 @@ public void OnPluginStart()
 	pReloadMapsOnMapchange = CreateConVar("sourcecoop_voting_autoreload", "0", "Sets whether to reload all votemap menu entries on mapchange, which can prolong map loading times.", _, true, 0.0, true, 1.0);
 	
 	InitSourceCoopAddon();
+	
 	if (LibraryExists(SRCCOOP_LIBRARY))
 	{
 		OnSourceCoopStarted();
@@ -59,23 +62,6 @@ public void OnLibraryAdded(const char[] name)
 	}
 }
 
-public void OnMapStart()
-{
-	static bool firstLoad = true;
-	if (firstLoad || pReloadMapsOnMapchange.BoolValue)
-	{
-		firstLoad = false;
-		BuildMaps();
-	}
-}
-
-public Action Command_ReloadMaps(int client, int args)
-{
-	MsgReply(client, "Reloading maps");
-	BuildMaps();
-	return Plugin_Handled;
-}
-
 void OnSourceCoopStarted()
 {
 	TopMenu pCoopMenu = GetCoopTopMenu();
@@ -88,13 +74,57 @@ void OnSourceCoopStarted()
 	}
 }
 
+public void OnMapStart()
+{
+	static bool firstLoad = true;
+	if (firstLoad || pReloadMapsOnMapchange.BoolValue)
+	{
+		firstLoad = false;
+		BuildMaps();
+	}
+	if (!IsCurrentMapCoop())
+	{
+		szSkipTo = "";
+	}
+}
+
+public void OnCoopMapConfigLoaded(KeyValues kv, CoopConfigLocation location)
+{
+	kv.Rewind();
+	
+	kv.GetString("voting_skip_to", szSkipTo, sizeof(szSkipTo));
+	bAutoVoteSkip = !!kv.GetNum("voting_skip_autostart");
+	
+	// Cache the edt file for votemap generation
+	// provided that it won't be accessible outside of current map due to being packed inside the bsp.
+	
+	if (location == CCL_MAPS) // loaded from maps folder
+	{
+		char szMapFile[PLATFORM_MAX_PATH];
+		GetCurrentMap(szMapFile, sizeof(szMapFile));
+		Format(szMapFile, sizeof(szMapFile), "maps/%s.edt", szMapFile);
+		
+		if (!FileExists(szMapFile, true, "MOD")) // not inside the mod's maps
+		{
+			char szDest[PLATFORM_MAX_PATH];
+			Format(szDest, sizeof(szDest), "%s.cached", szMapFile);
+			FileCopy(szMapFile, szDest, true);
+		}
+	}
+}
+
+public Action Command_ReloadMaps(int client, int args)
+{
+	MsgReply(client, "Reloading maps");
+	BuildMaps();
+	return Plugin_Handled;
+}
+
 public void OnCoopMapStart()
 {
-	char szCurrentMap[MAX_MAPNAME];
-	GetCurrentMap(szCurrentMap, sizeof(szCurrentMap));
-	if (IsIntroMap(szCurrentMap))
+	if (szSkipTo[0] && bAutoVoteSkip)
 	{
-		CreateTimer(15.0, Timer_StartVoteSkipIntro, _, TIMER_FLAG_NO_MAPCHANGE);
+		CreateTimer(VOTE_SKIP_AUTOSTART_DELAY, Timer_StartVoteSkipIntro, _, TIMER_FLAG_NO_MAPCHANGE);
 	}
 }
 
@@ -162,9 +192,7 @@ public Action Command_VoteSkipIntro(int client, int args)
 
 bool StartVoteSkipIntro(int client)
 {
-	char szCurrentMap[MAX_MAPNAME];
-	GetCurrentMap(szCurrentMap, sizeof(szCurrentMap));
-	if (!IsIntroMap(szCurrentMap))
+	if (!szSkipTo[0])
 	{
 		if (client != -1)
 			MsgReply(client, "This is not an intro map");
@@ -211,7 +239,8 @@ public int VoteSkipHandler(Menu menu, MenuAction action, int param1, int param2)
 		if (param1 == 0)
 		{
 			MsgAll("Vote successful!");
-			ServerCommand("sm_map bm_c1a0a");
+			MsgAll("Changing map to %s...", szSkipTo);
+			StartMapVoteFinishedTimer(szSkipTo, SC_VOTING_SKIP_MAPCHANGE);
 		}
 		else
 		{
@@ -227,18 +256,6 @@ public int VoteSkipHandler(Menu menu, MenuAction action, int param1, int param2)
 		nextVoteSkip = GetTime() + VOTE_COOLDOWN;
 		delete menu;
 	}
-}
-
-bool IsIntroMap(char szMap[MAX_MAPNAME])
-{
-	for (int i = 0; i < sizeof(INTROMAPS); i++)
-	{
-		if (StrEqual(szMap, INTROMAPS[i], false))
-		{
-			return true;
-		}
-	}
-	return false;
 }
 
 //------------------------------------------------------
@@ -286,9 +303,10 @@ public int VoteRestartHandler(Menu menu, MenuAction action, int param1, int para
 		if (param1 == 0)
 		{
 			MsgAll("Vote successful!");
+			MsgAll("Restarting map...");
 			char szCurrentMap[MAX_MAPNAME];
 			GetCurrentMap(szCurrentMap, sizeof(szCurrentMap));
-			ServerCommand("sm_map %s", szCurrentMap);
+			StartMapVoteFinishedTimer(szCurrentMap, SC_VOTING_RESTART_MAPCHANGE);
 		}
 		else
 		{
@@ -393,12 +411,12 @@ void BuildMaps()
 	char szConfigPath[PLATFORM_MAX_PATH];
 	BuildPath(Path_SM, szConfigPath, sizeof(szConfigPath), "data/srccoop");
 	LoadMapsInPath(szConfigPath, duplicityChecker);
-	LoadMapsInPath("maps", duplicityChecker);
+	LoadMapsInPath("maps", duplicityChecker, true);
 	
 	delete duplicityChecker;
 }
 
-void LoadMapsInPath(const char szConfigPath[PLATFORM_MAX_PATH], StringMap duplicityChecker)
+void LoadMapsInPath(const char szConfigPath[PLATFORM_MAX_PATH], StringMap duplicityChecker, bool bLoadCached = false)
 {
 	char szFile[PLATFORM_MAX_PATH], szBuffer[PLATFORM_MAX_PATH];
 	FileType fileType;
@@ -409,25 +427,33 @@ void LoadMapsInPath(const char szConfigPath[PLATFORM_MAX_PATH], StringMap duplic
 		if (fileType == FileType_File)
 		{
 			int len = strlen(szFile);
-			if (len >= 4 && strcmp(szFile[len - 4], ".edt", false) == 0)
+			int extLen;
+			if (len > 4 && strcmp(szFile[len - 4], ".edt", false) == 0)
 			{
-				FormatEx(szBuffer, sizeof(szBuffer), "%s/%s", szConfigPath, szFile);
-				szFile[len - 4] = '\0';
-				if(!IsMapValid(szFile))
-				{
-					continue;
-				}
-				KeyValues kv = new KeyValues("");
-				kv.SetEscapeSequences(true);
-				if (kv.ImportFromFile(szBuffer) && kv.GetSectionName(szBuffer, sizeof(szBuffer)) && strcmp(szBuffer, "config", false) == 0)
-				{
-					if (duplicityChecker.SetString(szFile, "", false))
-					{
-						LoadMap(szFile, kv);
-					}
-				}
-				delete kv;
+				extLen = 4;
 			}
+			else if (bLoadCached && len > 11 && strcmp(szFile[len - 11], ".edt.cached", false) == 0)
+			{
+				extLen = 11;
+			}
+			else continue;
+			
+			FormatEx(szBuffer, sizeof(szBuffer), "%s/%s", szConfigPath, szFile);
+			szFile[len - extLen] = '\0';
+			if(!IsMapValid(szFile))
+			{
+				continue;
+			}
+			KeyValues kv = new KeyValues("");
+			kv.SetEscapeSequences(true);
+			if (kv.ImportFromFile(szBuffer) && kv.GetSectionName(szBuffer, sizeof(szBuffer)) && strcmp(szBuffer, "config", false) == 0)
+			{
+				if (duplicityChecker.SetString(szFile, "", false))
+				{
+					LoadMap(szFile, kv);
+				}
+			}
+			delete kv;
 		}
 	}
 	delete dir;
@@ -560,7 +586,8 @@ public int VoteMapHandler(Menu menu, MenuAction action, int param1, int param2)
 		if (param1 == 0)
 		{
 			MsgAll("Vote successful!");
-			ServerCommand("sm_map %s", szCurrentMapVote);
+			MsgAll("Changing map to %s...", szCurrentMapVote);
+			StartMapVoteFinishedTimer(szCurrentMapVote, SC_VOTING_VOTEMAP_MAPCHANGE);
 		}
 		else
 		{
@@ -576,4 +603,25 @@ public int VoteMapHandler(Menu menu, MenuAction action, int param1, int param2)
 		nextVoteMap = GetTime() + VOTE_COOLDOWN;
 		delete menu;
 	}
+}
+
+//------------------------------------------------------
+// Helpers
+//------------------------------------------------------
+
+void StartMapVoteFinishedTimer(const char szMap[MAX_MAPNAME], const char szReason[32])
+{
+	DataPack dp; CreateDataTimer(VOTE_SUCCESS_MAPCHANGE_DELAY, Timer_ChangeMap, dp, TIMER_FLAG_NO_MAPCHANGE);
+	dp.WriteString(szMap);
+	dp.WriteString(szReason);
+}
+
+public Action Timer_ChangeMap(Handle timer, DataPack dp)
+{
+	char szMap[MAX_MAPNAME], szReason[32];
+	dp.Reset();
+	dp.ReadString(szMap, sizeof(szMap));
+	dp.ReadString(szReason, sizeof(szReason));
+	ForceChangeLevel(szMap, szReason);
+	return Plugin_Handled;
 }

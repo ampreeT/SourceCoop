@@ -184,6 +184,7 @@ enum struct CoopManager
 	int m_iClientChangeLvlIndicies[MAXPLAYERS+1];
 	Handle m_pChangeLevelTimer;
 	int m_iTicksToEnd;
+	CoopConfigLocation m_mapConfigLoc;
 
 	void Initialize()
 	{
@@ -208,7 +209,7 @@ enum struct CoopManager
 		g_SpawnSystem.Clear();
 		g_pLevelLump.Clear();
 		
-		KeyValues kv = this.LoadMapConfig(szMapName);
+		KeyValues kv = this.LoadMapConfig(szMapName, this.m_mapConfigLoc);
 	
 		if((this.m_bIsCoopMap = kv != null))
 		{
@@ -238,10 +239,15 @@ enum struct CoopManager
 			{
 				CBM_MP_GameRules.SetStateEndTime(STATE_WARMUP, GetGameTime() + 60 * 60 * 24 * 7);
 			}
-			KeyValues kv = this.LoadMapConfig(g_szMapName);
+			KeyValues kv = this.LoadMapConfig(g_szMapName, this.m_mapConfigLoc);
 			if(kv != null)
 			{
 				g_SpawnSystem.ParseConfigFile(kv);
+				
+				Call_StartForward(g_CoopMapConfigLoadedFwd);
+				Call_PushCell(kv);
+				Call_PushCell(this.m_mapConfigLoc);
+				Call_Finish();
 				delete kv;
 			}
 		}
@@ -490,7 +496,7 @@ enum struct CoopManager
 		return this.m_bIsCoopMap;
 	}
 	
-	KeyValues LoadMapConfig(const char[] szMapName)
+	KeyValues LoadMapConfig(const char[] szMapName, CoopConfigLocation &src)
 	{
 		char szConfigPath[PLATFORM_MAX_PATH];
 		BuildPath(Path_SM, szConfigPath, sizeof(szConfigPath), "data/srccoop/%s.edt", szMapName);
@@ -501,12 +507,14 @@ enum struct CoopManager
 			{
 				return null;
 			}
+			else src = CCL_MAPS;
 		}
+		else src = CCL_SM_DATA;
 		
 		KeyValues kv = new KeyValues(szMapName);
 		char szRoot[16];
 		if (!(kv.ImportFromFile(szConfigPath) && kv.GetSectionName(szRoot, sizeof(szRoot)) && strcmp(szRoot, "config", false) == 0))
-			ThrowError("Couldn't import %s into KeyValues", szMapName);
+			ThrowError("Couldn't import %s into KeyValues", szConfigPath);
 		return kv;
 	}
 }

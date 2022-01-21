@@ -5,6 +5,10 @@
 	"chapter" "Black Mesa Inbound"
 	"nextmap" "bm_c0a0b"
 	"intro_type" "fade"
+	
+	"voting_skip_to" "bm_c1a0a"
+	"voting_skip_autostart" "1"
+	
 	"equipment"
 	{
 		"item" "item_weapon_crowbar"
