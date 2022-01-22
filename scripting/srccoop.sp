@@ -123,6 +123,9 @@ public void OnPluginStart()
 	g_pConvarSurvivalMode = CreateConVar("sourcecoop_survival_mode", "0", "Sets survival mode. 1 will respawn all players if all dead. 2 will restart map if all players dead.", _, true, 0.0, true, 2.0);
 	g_pConvarPreventRespawn = CreateConVar("sourcecoop_survival_disable_respawn", "0", "Fully prevents respawning even at checkpoints.", _, true, 0.0, true, 1.0);
 	
+	mp_friendlyfire = FindConVar("mp_friendlyfire");
+	mp_flashlight = FindConVar("mp_flashlight");
+	
 	g_pConvarSurvivalMode.AddChangeHook(ConVarChanged);
 	g_pConvarPreventRespawn.AddChangeHook(ConVarChanged);
 	
