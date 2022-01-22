@@ -32,7 +32,7 @@ public void OnPluginStart()
 	g_pConVarSpriteMaterial = CreateConVar("sourcecoop_revive_sprite_material", "vgui/hud/hud_health.vmt", "Sets material of sprite used when player dies. Must be relative to materials/ directory");
 	g_pConVarSpriteScale = CreateConVar("sourcecoop_revive_sprite_scale", "0.2", "Sets the scale size of the revive sprite.", _, true, 0.1, false);
 	g_pConVarSpriteColor = CreateConVar("sourcecoop_revive_sprite_color", "255 0 0", "Sets color of the revive sprite.");
-	g_pConVarSpriteFloatDistance = CreateConVar("sourcecoop_revive_sprite_vertical", "5.0", "Sets distance above ragdoll to spawn in at. Mainly used for custom material types that might clip through the floor.");
+	g_pConVarSpriteFloatDistance = CreateConVar("sourcecoop_revive_sprite_vertical", "8.0", "Sets distance above ragdoll to spawn in at. Mainly used for custom material types that might clip through the floor.");
 	
 	RegAdminCmd("sourcecoop_revive", Command_ForceRespawn, ADMFLAG_ROOT, "Force respawn by client index.");
 	
@@ -73,6 +73,10 @@ public Action GetCLRagdoll(Handle timer, int client)
 			float vecOrigin[3];
 			
 			GetEntPropVector(iRagdoll, Prop_Data, "m_vecAbsOrigin", vecOrigin);
+			// Bring up, then trace down to floor
+			vecOrigin[2] += 20.0;
+			TR_TraceRayFilter(vecOrigin, {90.0, 0.0, 0.0}, MASK_SOLID, RayType_Infinite, TraceEntityFilter, client);
+			TR_GetEndPosition(vecOrigin);
 			vecOrigin[2] += g_pConVarSpriteFloatDistance.FloatValue;
 			
 			int iSprite = CreateEntityByName("env_sprite");
@@ -91,14 +95,31 @@ public Action GetCLRagdoll(Handle timer, int client)
 				DispatchSpawn(iSprite);
 				ActivateEntity(iSprite);
 				
-				// By setting the parent, we don't need to worry about removing it later as it will be removed with the server-side ragdoll
-				SetVariantString("!activator");
-				AcceptEntityInput(iSprite, "SetParent", iRagdoll);
-				
+				SetEntPropEnt(iSprite, Prop_Data, "m_hEffectEntity", iRagdoll);
 				SetEntPropEnt(iRagdoll, Prop_Data, "m_hEffectEntity", iSprite);
+				
+				CreateTimer(0.1, SpriteTimerTick, CBaseEntity(iSprite), TIMER_FLAG_NO_MAPCHANGE);
 			}
 		}
 	}
+	return Plugin_Handled;
+}
+
+public Action SpriteTimerTick(Handle timer, CBaseEntity pSprite)
+{
+	if (pSprite.IsValid())
+	{
+		CBaseEntity pRagdoll = CBaseEntity(GetEntPropEnt(pSprite.GetEntIndex(), Prop_Data, "m_hEffectEntity"));
+		if ((!pRagdoll.IsValid()) || (pRagdoll.GetEntIndex() <= MaxClients))
+		{
+			pSprite.Kill();
+		}
+		else
+		{
+			CreateTimer(0.1, SpriteTimerTick, pSprite, TIMER_FLAG_NO_MAPCHANGE);
+		}
+	}
+	
 	return Plugin_Handled;
 }
 
@@ -152,46 +173,49 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 					CBaseEntity pRagdoll = CBaseEntity(GetEntPropEnt(g_pReviveTarget[client].GetEntIndex(), Prop_Send, "m_hRagdoll"));
 					if (pRagdoll.IsValid())
 					{
-						pRagdoll.GetAbsOrigin(vecRagdollPosition);
-						if (GetVectorDistance(vecOrigin, vecRagdollPosition, false) > 120.0)
+						CBaseEntity pSprite = CBaseEntity(GetEntPropEnt(pRagdoll.GetEntIndex(), Prop_Data, "m_hEffectEntity"));
+						if (pSprite.IsValid())
 						{
-							// Client left range to revive, play deny sound and stop previous start sound
-							
-							g_pReviveTarget[client] = view_as<CBasePlayer>(-1);
-							g_flReviveTime[client] = 0.0;
-							
-							StopSound(client, SNDCHAN_STATIC, "items/suitchargeok1.wav");
-							EmitSoundToAll("items/suitchargeno1.wav", client, SNDCHAN_AUTO, SNDLEVEL_NORMAL);
-							
-							return Plugin_Continue;
-						}
-						if (GetGameTime() >= g_flReviveTime[client])
-						{
-							EmitSoundToAll("weapons/tau/gauss_undercharge.wav", client, SNDCHAN_AUTO, SNDLEVEL_NORMAL, _, _, 150);
-							
-							SetPlayerCanSpawn(g_pReviveTarget[client], true);
-							
-							g_pReviveTarget[client].Spawn();
-							g_pReviveTarget[client].Activate();
-							
-							// Fix for if player died on a ladder
-							SetEntPropEnt(g_pReviveTarget[client].GetEntIndex(), Prop_Data, "m_hLadder", -1);
-							
-							//pPlayer.GetAbsOrigin(vecOrigin);
-							//g_pReviveTarget[client].Teleport(vecOrigin, vecEyeAngles, NULL_VECTOR);
-							pRagdoll.Kill();
-							
-							// Delay to allow equip time
-							Handle dp = CreateDataPack();
-							WritePackCell(dp, pPlayer);
-							WritePackCell(dp, g_pReviveTarget[client]);
-							// Tested this as a CreateDataTimer, but the datapack is always empty for some reason
-							// Not going to put a TIMER_FLAG_NO_MAPCHANGE here so it can close the handle if the map changes
-							CreateTimer(0.1, DelayRespawn, dp);
-							
-							pPlayer.ModifyScore(g_pConVarReviveScore.IntValue);
-							g_pReviveTarget[client] = view_as<CBasePlayer>(-1);
-							g_flReviveTime[client] = 0.0;
+							pSprite.GetAbsOrigin(vecRagdollPosition);
+							if (GetVectorDistance(vecOrigin, vecRagdollPosition, false) > 120.0)
+							{
+								// Client left range to revive, play deny sound and stop previous start sound
+								
+								g_pReviveTarget[client] = view_as<CBasePlayer>(-1);
+								g_flReviveTime[client] = 0.0;
+								
+								StopSound(client, SNDCHAN_STATIC, "items/suitchargeok1.wav");
+								EmitSoundToAll("items/suitchargeno1.wav", client, SNDCHAN_AUTO, SNDLEVEL_NORMAL);
+								
+								return Plugin_Continue;
+							}
+							if (GetGameTime() >= g_flReviveTime[client])
+							{
+								EmitSoundToAll("weapons/tau/gauss_undercharge.wav", client, SNDCHAN_AUTO, SNDLEVEL_NORMAL, _, _, 150);
+								
+								SetPlayerCanSpawn(g_pReviveTarget[client], true);
+								
+								g_pReviveTarget[client].Spawn();
+								g_pReviveTarget[client].Activate();
+								
+								// Fix for if player died on a ladder
+								SetEntPropEnt(g_pReviveTarget[client].GetEntIndex(), Prop_Data, "m_hLadder", -1);
+								
+								pSprite.Kill();
+								pRagdoll.Kill();
+								
+								// Delay to allow equip time
+								Handle dp = CreateDataPack();
+								WritePackCell(dp, pPlayer);
+								WritePackCell(dp, g_pReviveTarget[client]);
+								// Tested this as a CreateDataTimer, but the datapack is always empty for some reason
+								// Not going to put a TIMER_FLAG_NO_MAPCHANGE here so it can close the handle if the map changes
+								CreateTimer(0.1, DelayRespawn, dp);
+								
+								pPlayer.ModifyScore(g_pConVarReviveScore.IntValue);
+								g_pReviveTarget[client] = view_as<CBasePlayer>(-1);
+								g_flReviveTime[client] = 0.0;
+							}
 						}
 					}
 				}
@@ -210,17 +234,21 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 								CBaseEntity pRagdoll = CBaseEntity(GetEntPropEnt(i, Prop_Send, "m_hRagdoll"));
 								if (pRagdoll.IsValid())
 								{
-									pRagdoll.GetAbsOrigin(vecRagdollPosition);
-									
-									if (GetVectorDistance(vecOrigin, vecRagdollPosition, false) < 100.0)
+									CBaseEntity pSprite = CBaseEntity(GetEntPropEnt(pRagdoll.GetEntIndex(), Prop_Data, "m_hEffectEntity"));
+									if (pSprite.IsValid())
 									{
-										TR_TraceRayFilter(vecOrigin, vecEyeAngles, MASK_SOLID, RayType_Infinite, TraceEntityFilter, client);
-										TR_GetEndPosition(vecOrigin);
+										pSprite.GetAbsOrigin(vecRagdollPosition);
+										
 										if (GetVectorDistance(vecOrigin, vecRagdollPosition, false) < 100.0)
 										{
-											g_pReviveTarget[client] = CBasePlayer(i);
-											EmitSoundToAll("items/suitchargeok1.wav", client, SNDCHAN_STATIC, SNDLEVEL_NORMAL);
-											break;
+											TR_TraceRayFilter(vecOrigin, vecEyeAngles, MASK_SOLID, RayType_Infinite, TraceEntityFilter, client);
+											TR_GetEndPosition(vecOrigin);
+											if (GetVectorDistance(vecOrigin, vecRagdollPosition, false) < 100.0)
+											{
+												g_pReviveTarget[client] = CBasePlayer(i);
+												EmitSoundToAll("items/suitchargeok1.wav", client, SNDCHAN_STATIC, SNDLEVEL_NORMAL);
+												break;
+											}
 										}
 									}
 								}
