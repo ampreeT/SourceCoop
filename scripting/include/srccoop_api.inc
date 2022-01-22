@@ -50,6 +50,14 @@ native TopMenu GetCoopTopMenu();
 native bool IsCurrentMapCoop();
 
 /**
+ * Global callback after map config is loaded in OnMapStart
+ *
+ * @param kv          The configuration file imported into keyvalues. You must call kv.Rewind() first to ensure consistency.
+ * @param location    From where the config was loaded.
+ */
+forward void OnCoopMapConfigLoaded(KeyValues kv, CoopConfigLocation location);
+
+/**
  * Global callback for when a coop map actually starts,
  * that is potentially after the player wait timer completes.
  */

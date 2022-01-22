@@ -141,6 +141,7 @@ public void OnPluginStart()
 	InitializeMenus();
 	
 	g_CoopMapStartFwd = new GlobalForward("OnCoopMapStart", ET_Ignore);
+	g_CoopMapConfigLoadedFwd = new GlobalForward("OnCoopMapConfigLoaded", ET_Ignore, Param_Cell, Param_Cell);
 	
 	if (g_Engine == Engine_BlackMesa)
 	{

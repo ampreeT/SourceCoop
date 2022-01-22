@@ -242,6 +242,11 @@ enum struct CoopManager
 			if(kv != null)
 			{
 				g_SpawnSystem.ParseConfigFile(kv);
+				
+				Call_StartForward(g_CoopMapConfigLoadedFwd);
+				Call_PushCell(kv);
+				Call_PushCell(this.m_mapConfigLoc);
+				Call_Finish();
 				delete kv;
 			}
 		}
