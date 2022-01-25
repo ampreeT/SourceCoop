@@ -70,6 +70,7 @@ void LoadGameData()
 	
 		LoadDHookVirtual(pGameConfig, hkChangeTeam, "CBasePlayer::ChangeTeam");
 		LoadDHookVirtual(pGameConfig, hkShouldCollide, "CBaseEntity::ShouldCollide");
+		LoadDHookVirtual(pGameConfig, hkPlayerSpawn, "CBlackMesaPlayer::Spawn");
 	}
 		
 	if (g_Engine == Engine_BlackMesa)
@@ -119,9 +120,14 @@ public void OnPluginStart()
 	g_pConvarEndWaitFactor = CreateConVar("sourcecoop_end_wait_factor", "1.0", "Controls how much the number of finished players increases the changelevel timer speed. 1.0 means full, 0 means none (timer will run full length).", _, true, 0.0, true, 1.0);
 	g_pConvarHomeMap = CreateConVar("sourcecoop_homemap", "", "The map to return to after finishing a campaign/map.");
 	g_pConvarEndWaitDisplayMode = CreateConVar("sourcecoop_end_wait_display_mode", "0", "Sets which method to show countdown. 0 is panel, 1 is hud text.", _, true, 0.0, true, 1.0);
+	g_pConvarSurvivalMode = CreateConVar("sourcecoop_survival_mode", "0", "Sets survival mode. 1 will respawn all players if all dead. 2 will restart map if all players dead.", _, true, 0.0, true, 2.0);
+	g_pConvarPreventRespawn = CreateConVar("sourcecoop_survival_disable_respawn", "0", "Fully prevents respawning even at checkpoints.", _, true, 0.0, true, 1.0);
 	
 	mp_friendlyfire = FindConVar("mp_friendlyfire");
 	mp_flashlight = FindConVar("mp_flashlight");
+	
+	g_pConvarSurvivalMode.AddChangeHook(ConVarChanged);
+	g_pConvarPreventRespawn.AddChangeHook(ConVarChanged);
 	
 	RegAdminCmd("sourcecoop_ft", Command_SetFeature, ADMFLAG_ROOT, "Command for toggling plugin features on/off");
 	RegAdminCmd("sc_ft", Command_SetFeature, ADMFLAG_ROOT, "Command for toggling plugin features on/off");
@@ -133,6 +139,7 @@ public void OnPluginStart()
 	g_pCoopManager.Initialize();
 	g_pInstancingManager.Initialize();
 	g_pPostponedSpawns = CreateArray();
+	g_pDeadPlayerIDs = CreateArray(MAXPLAYERS+1);
 	g_pFeatureMap = new FeatureMap();
 	InitializeMenus();
 	
@@ -150,6 +157,8 @@ public void OnPluginStart()
 			HookUserMessage(iIntroCredits, Hook_IntroCreditsMsg, true);
 		}
 	}
+	
+	HookEventEx("entity_killed", Event_EntityKilled, EventHookMode_Post);
 	
 	for (int i = 1; i <= MaxClients; i++)
 	{
@@ -272,7 +281,14 @@ public void OnClientPutInServer(int client)
 	SDKHook(client, SDKHook_WeaponEquipPost, Hook_PlayerWeaponEquipPost);
 	DHookEntity(hkChangeTeam, false, client, _, Hook_PlayerChangeTeam);
 	DHookEntity(hkShouldCollide, false, client, _, Hook_PlayerShouldCollide);
+	DHookEntity(hkPlayerSpawn, false, client, _, Hook_PlayerSpawn);
 	GreetPlayer(client);
+}
+
+public void OnClientConnected(int client)
+{
+	// Ensure on connection that the player is allowed to spawn
+	g_bPlayerCanSpawn[client] = true;
 }
 
 public void OnClientDisconnect(int client)
@@ -443,6 +459,10 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 			else if (strcmp(szClassname, "player_loadsaved") == 0)
 			{
 				DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_LoadSavedAcceptInput);
+			}
+			else if (strcmp(szClassname, "logic_autosave") == 0)
+			{
+				DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_LogicAutosaveAcceptInput);
 			}
 			else if (strcmp(szClassname, "game_end") == 0)
 			{
@@ -621,6 +641,111 @@ public Action Event_BroadcastTeamsound(Event hEvent, const char[] szName, bool b
 	return Plugin_Continue;
 }
 
+public Action Event_EntityKilled(Event hEvent, const char[] szName, bool bDontBroadcast)
+{
+	if (g_pCoopManager.IsCoopModeEnabled())
+	{
+		int iVictimCheck = GetEventInt(hEvent, "entindex_killed");
+		if ((iVictimCheck > 0) && (iVictimCheck <= MaxClients))
+		{
+			if ((g_pConvarPreventRespawn.BoolValue) || (g_pConvarSurvivalMode.IntValue))
+			{
+				bool bRunAllDead = true;
+				for (int i = 1; i < MaxClients+1; i++)
+				{
+					CBasePlayer pPlayer = CBasePlayer(i);
+					if (pPlayer.IsValid())
+					{
+						if (pPlayer.IsAlive())
+						{
+							bRunAllDead = false;
+							break;
+						}
+					}
+				}
+				
+				if (bRunAllDead)
+				{
+					// Clear all dead player IDs
+					g_pDeadPlayerIDs.Clear();
+					
+					if (g_pConvarPreventRespawn.BoolValue)
+					{
+						GameOverFadeRestart();
+					}
+					else
+					{
+						switch (g_pConvarSurvivalMode.IntValue)
+						{
+							case 1:
+							{
+								// Must wait for 0.1 seconds as the last player that dies will have invalid properties set
+								CreateTimer(0.1, SurvivalModeRespawnPlayers, _, TIMER_FLAG_NO_MAPCHANGE);
+							}
+							case 2:
+							{
+								GameOverFadeRestart();
+							}
+						}
+					}
+				}
+				else
+				{
+					CBasePlayer pPlayer = CBasePlayer(iVictimCheck);
+				
+					if (pPlayer.IsValid())
+					{
+						SetPlayerCanSpawn(pPlayer, false);
+						
+						// This array must be set separately from preventing initial spawn/prevent further spawns
+						char szSteamID[32];
+						GetClientAuthId(pPlayer.GetEntIndex(), AuthId_Steam2, szSteamID, sizeof(szSteamID));
+						if (g_pDeadPlayerIDs.FindString(szSteamID) == -1) g_pDeadPlayerIDs.PushString(szSteamID);
+					}
+				}
+			}
+		}
+	}
+	return Plugin_Continue;
+}
+
+public Action SurvivalModeRespawnPlayers(Handle timer)
+{
+	g_SpawnSystem.SurvivalRespawnPlayers();
+	
+	return Plugin_Handled;
+}
+
+void GameOverFadeRestart()
+{
+	// Fade all with message, then restart map
+	SetHudTextParams(-1.0, 0.45, 6.0, 200, 200, 200, 255, 0, 0.5, 1.0, 1.0);
+	for (int i = 1; i < MaxClients+1; i++)
+	{
+		CBasePlayer pPlayer = CBasePlayer(i);
+		if (pPlayer.IsValid())
+		{
+			Client_ScreenFade(pPlayer.GetEntIndex(), 1000, FFADE_OUT|FFADE_STAYOUT, _, 0, 0, 0, 255);
+			ShowHudText(pPlayer.GetEntIndex(), 2, "#BMS_GameOver_Ally");
+		}
+	}
+	
+	CreateTimer(6.0, RestartLevel, _, TIMER_FLAG_NO_MAPCHANGE);
+	return;
+}
+
+public Action RestartLevel(Handle timer)
+{
+	char szMapName[MAX_MAPNAME];
+	GetCurrentMap(szMapName, sizeof(szMapName));
+	
+	// Workaround to restarting the map with entry point intact
+	strcopy(g_szMapName, sizeof(g_szMapName), g_szPrevMapName);
+	ForceChangeLevel(szMapName, SM_RESTART_MAPCHANGE);
+	
+	return Plugin_Handled;
+}
+
 public MRESReturn Hook_OnEquipmentTryPickUpPost(int _this, Handle hReturn, Handle hParams)
 {
 	if (g_pCoopManager.IsFeatureEnabled(FT_KEEP_EQUIPMENT))
@@ -744,4 +869,20 @@ public Action Command_DumpMapEntities(int iArgs)
 		PrintToServer("Failed opening file for writing: %s", szDumpPath);
 	}
 	return Plugin_Handled;
+}
+
+public void ConVarChanged(ConVar pConvar, const char[] oldValue, const char[] newValue)
+{
+	if ((pConvar == g_pConvarPreventRespawn) || ((pConvar == g_pConvarSurvivalMode) && (!g_pConvarPreventRespawn.BoolValue)))
+	{
+		if (!pConvar.BoolValue)
+		{
+			g_pDeadPlayerIDs.Clear();
+			for (int i = 1;i <= MaxClients; i++)
+			{
+				CBasePlayer pPlayer = CBasePlayer(i);
+				SetPlayerCanSpawn(pPlayer);
+			}
+		}
+	}
 }

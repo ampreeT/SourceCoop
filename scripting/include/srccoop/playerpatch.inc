@@ -83,7 +83,7 @@ public void Hook_PlayerPreThinkPost(int iClient)
 			{
 				PreventWeaponFiring(pWeapon, 1.0);
 			}
-			else if (pPlayer.GetWaterLevel() == WATER_LEVEL_HEAD_IN_WATER)
+			else if (pPlayer.GetWaterLevel() == WL_Eyes)
 			{
 				CBaseEntity pEntity = pPlayer.GetParent();
 				if (pEntity.IsValid())
@@ -104,16 +104,20 @@ public void Hook_PlayerPreThinkPost(int iClient)
 	}
 	else
 	{
-		if(pPlayer.GetTeam() != TEAM_SPECTATOR && g_pConvarCoopRespawnTime.FloatValue
-			&& GetGameTime() - pPlayer.GetDeathTime() > g_pConvarCoopRespawnTime.FloatValue)
+		if (PlayerCanSpawn(pPlayer))
 		{
-			int iPressed = pPlayer.GetPressedButtons();
-			if(iPressed != 0 && iPressed != IN_SCORE)
+			if(pPlayer.GetTeam() != TEAM_SPECTATOR && g_pConvarCoopRespawnTime.FloatValue
+				&& GetGameTime() - pPlayer.GetDeathTime() > g_pConvarCoopRespawnTime.FloatValue)
 			{
-				DispatchSpawn(iClient);
+				int iPressed = pPlayer.GetPressedButtons();
+				if(iPressed != 0 && iPressed != IN_SCORE)
+				{
+					DispatchSpawn(iClient);
+				}
 			}
 		}
 	}
+	return;
 }
 
 void PreventWeaponFiring(CBaseCombatWeapon pWeapon, float flDelayTime = 1.0)
@@ -171,6 +175,50 @@ public MRESReturn Hook_SetSuitUpdatePost(int _this, Handle hParams)
 	return MRES_Ignored;
 }
 
+bool g_bPlayerCanSpawn[MAXPLAYERS+1] = true;
+//------------------------------------------------------
+// Prevent spawn for survival mode
+//------------------------------------------------------
+public MRESReturn Hook_PlayerSpawn(int _this, Handle hReturn, Handle hParams)
+{
+	if (g_pCoopManager.IsCoopModeEnabled())
+	{
+		CBasePlayer pPlayer = CBasePlayer(_this);
+		if ((g_pConvarSurvivalMode.IntValue) || (g_pConvarPreventRespawn.BoolValue))
+		{
+			if (!PlayerCanSpawn(pPlayer))
+			{
+				// Ensure enabled observing players
+				pPlayer.SetViewEntity(pPlayer);
+				pPlayer.SetObserverMode(OBS_MODE_CHASE);
+				
+				// Fix for screen fade out indifnitely
+				// this is mostly being caused by player_loadsaved having FFADE_STAYOUT but it could come from other sources as well
+				Client_ScreenFade(pPlayer.GetEntIndex(), 1, FFADE_IN|FFADE_PURGE, 1, 0, 0, 0, 0);
+				
+				SetHudTextParams(0.016, 0.04, 5.0, 255, 255, 255, 255, 1, 1.0, 1.0, 1.0);
+				if (g_pConvarPreventRespawn.BoolValue)
+				{
+					ShowHudText(pPlayer.GetEntIndex(), 1, "You will respawn on next map");
+				}
+				else
+				{
+					ShowHudText(pPlayer.GetEntIndex(), 1, "You will respawn at the next checkpoint");
+				}
+				
+				return MRES_Supercede;
+			}
+			
+			// This is fired upon joining the game before selecting a team so this must be checked
+			if (pPlayer.GetTeam() > 1)
+			{
+				SetPlayerCanSpawn(pPlayer, false);
+			}
+		}
+	}
+	return MRES_Ignored;
+}
+
 //------------------------------------------------------
 // Player spawn
 //------------------------------------------------------
@@ -205,7 +253,23 @@ public void Hook_PlayerSpawnPost(int iClient)
 				StopSound(iClient, SNDCHAN_STATIC, szLastSuitSound[iClient]);
 			}
 		}
+		
+		if ((pPlayer.IsAlive()) && (pPlayer.GetTeam() != TEAM_SPECTATOR))
+		{
+			char szSteamID[32];
+			GetClientAuthId(pPlayer.GetEntIndex(), AuthId_Steam2, szSteamID, sizeof(szSteamID));
+			if (g_pDeadPlayerIDs.FindString(szSteamID) != -1)
+			{
+				ForcePlayerSuicide(pPlayer.GetEntIndex());
+			}
+			if (g_pConvarPreventRespawn.BoolValue)
+			{
+				if (g_pDeadPlayerIDs.FindString(szSteamID) == -1) g_pDeadPlayerIDs.PushString(szSteamID);
+			}
+		}
 	}
+	
+	return;
 }
 
 //------------------------------------------------------

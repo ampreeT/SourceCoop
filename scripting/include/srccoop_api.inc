@@ -62,3 +62,15 @@ forward void OnCoopMapConfigLoaded(KeyValues kv, CoopConfigLocation location);
  * that is potentially after the player wait timer completes.
  */
 forward void OnCoopMapStart();
+
+/**
+ * Allows other sources or plugins set whether a player can spawn
+ * 
+ */
+native void SetPlayerCanSpawn(CBasePlayer pPlayer, bool bSetCanSpawn = true);
+
+/**
+ * Allows other sources or plugins check whether a player can spawn
+ * 
+ */
+native bool PlayerCanSpawn(CBasePlayer pPlayer);

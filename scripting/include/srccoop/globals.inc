@@ -14,6 +14,8 @@ ConVar g_pConvarEndWaitPeriod;
 ConVar g_pConvarEndWaitFactor;
 ConVar g_pConvarHomeMap;
 ConVar g_pConvarEndWaitDisplayMode;
+ConVar g_pConvarSurvivalMode;
+ConVar g_pConvarPreventRespawn;
 
 // Existing ConVars
 ConVar mp_friendlyfire;
@@ -34,6 +36,7 @@ Handle g_pCreateServerInterface;
 Handle hkFAllowFlashlight;
 //Handle hkIsDeathmatch;
 Handle hkIsMultiplayer;
+Handle hkPlayerSpawn;
 Handle hkRestoreWorld;
 Handle hkRespawnPlayers;
 Handle hkIRelationType;
@@ -76,6 +79,7 @@ OperatingSystem g_serverOS;
 FeatureMap g_pFeatureMap;
 
 ArrayList g_pPostponedSpawns;
+ArrayList g_pDeadPlayerIDs;
 
 // represents the return value of the IsMultiplayer hook
 bool g_bIsMultiplayerOverride = true;

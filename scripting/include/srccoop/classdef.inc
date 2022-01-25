@@ -473,6 +473,11 @@ methodmap CBaseEntity
 	{
 		return view_as<WaterLevel>(GetEntProp(this.GetEntIndex(), Prop_Data, "m_nWaterLevel"));
 	}
+	
+	public int GetGroundEntity()
+	{
+		return GetEntPropEnt(this.GetEntIndex(), Prop_Data, "m_hGroundEntity");
+	}
 }
 
 enum struct FireOutputData
@@ -686,7 +691,11 @@ methodmap CBaseCombatCharacter < CBaseAnimating
 	}
 	public bool IsAlive()
 	{
-		return view_as<bool>(this.GetHealth() > 0);
+		//return view_as<bool>(this.GetHealth() > 0);
+		
+		// Any value above 0 indicates dead or other death information
+		if (GetEntProp(this.GetEntIndex(), Prop_Data, "m_lifeState")) return false;
+		return true;
 	}
 	public CBaseCombatWeapon GetActiveWeapon()
 	{
@@ -1048,6 +1057,11 @@ methodmap CBasePlayer < CBaseCombatCharacter
 	public Obs_Mode GetObserverMode()
 	{
 		return view_as<Obs_Mode>(GetEntProp(this.GetEntIndex(), Prop_Data, "m_iObserverMode"));
+	}
+	public void SetObserverMode(Obs_Mode iMode)
+	{
+		SetEntProp(this.GetEntIndex(), Prop_Data, "m_iObserverMode", iMode);
+		return;
 	}
 	public int GetTeam()
 	{

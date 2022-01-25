@@ -1462,11 +1462,54 @@ public MRESReturn Hook_LoadSavedAcceptInput(int _this, Handle hReturn, Handle hP
 				GetEntityRenderColor(_this, r, g, b, a);
 				float duration = GetEntPropFloat(_this, Prop_Data, "m_Duration");
 				Client_ScreenFade(iActivator, RoundFloat(duration * 1000), FFADE_OUT|FFADE_STAYOUT, _, r, g, b, a);
-				ForcePlayerSuicide(iActivator);
+				
+				// This breaks the spectator overlay if the player is already dead
+				if (CBasePlayer(iActivator).IsAlive()) ForcePlayerSuicide(iActivator);
 			}
 		}
 		DHookSetReturn(hReturn, true);
 		return MRES_Supercede;
+	}
+	
+	return MRES_Ignored;
+}
+
+//------------------------------------------------------
+// logic_autosave
+// survival mode hook
+// Could also be used for saving in the future
+// May need to hook logic_active_autosave at some point if it is used, most maps do not use it though
+//------------------------------------------------------
+public MRESReturn Hook_LogicAutosaveAcceptInput(int _this, Handle hReturn, Handle hParams)
+{
+	if (g_pConvarSurvivalMode.IntValue)
+	{
+		char szInputType[MAX_FORMAT];
+		DHookGetParamString(hParams, 1, szInputType, sizeof(szInputType));
+
+		if (strcmp(szInputType, "Save", false) == 0)
+		{
+			g_SpawnSystem.SurvivalRespawnPlayers();
+		}
+		if (strcmp(szInputType, "SaveDangerous", false) == 0)
+		{
+			int iMinimumHitpoints = GetEntProp(_this, Prop_Data, "m_minHitPoints");
+			for (int i = 1; i <= MaxClients; i++)
+			{
+				CBasePlayer pPlayer = CBasePlayer(i);
+				if (pPlayer.IsValid())
+				{
+					if (pPlayer.IsAlive())
+					{
+						if (pPlayer.GetHealth() >= iMinimumHitpoints)
+						{
+							g_SpawnSystem.SurvivalRespawnPlayers();
+							break;
+						}
+					}
+				}
+			}
+		}
 	}
 	
 	return MRES_Ignored;

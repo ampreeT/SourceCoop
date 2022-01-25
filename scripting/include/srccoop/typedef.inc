@@ -19,6 +19,7 @@
 
 // String which SM uses when mapchange is not triggered externally
 #define SM_NORMAL_MAPCHANGE "Normal level change"
+#define SM_RESTART_MAPCHANGE "Restart map player failed"
 
 #define SC_VOTING_MAPCHANGE_PREFIX "SourceCoop-Voting"
 #define SC_VOTING_SKIP_MAPCHANGE SC_VOTING_MAPCHANGE_PREFIX..."-IntroSkip"

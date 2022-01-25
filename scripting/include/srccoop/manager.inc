@@ -208,6 +208,7 @@ enum struct CoopManager
 		}
 		g_SpawnSystem.Clear();
 		g_pLevelLump.Clear();
+		g_pDeadPlayerIDs.Clear();
 		
 		KeyValues kv = this.LoadMapConfig(szMapName, this.m_mapConfigLoc);
 	
@@ -266,10 +267,19 @@ enum struct CoopManager
 		if(this.IsCoopModeEnabled())
 		{
 			bool bActuallySpawned = pPlayer.IsAlive();
+			
+			// Ensure view entity is player and observer mode is off
+			// Set before spawnsystem SpawnPlayer in case view entitiy is changed there
+			pPlayer.SetViewEntity(pPlayer);
+			pPlayer.SetObserverMode(OBS_MODE_NONE);
+			
 			g_SpawnSystem.SpawnPlayer(pPlayer, bActuallySpawned);
 
 			if(bActuallySpawned)
 			{
+				// Fix for if player died on a ladder
+				SetEntPropEnt(pPlayer.GetEntIndex(), Prop_Data, "m_hLadder", -1);
+				
 				this.m_bPlayerSpawned = true;
 				if(!this.m_bStarted)
 				{
@@ -420,7 +430,11 @@ enum struct CoopManager
 			if(this.m_iClientChangeLvlIndicies[j] != -1) votes++;
 		}
 		
-		int iPlayerCount = GetRealClientCount(true, false, true) - 1; // take off the 1 that we did with votes
+		// Only count dead players if survival mode and disabled respawns is off.
+		bool bCountLivingOnly = false;
+		if ((g_pConvarPreventRespawn.BoolValue) || (g_pConvarSurvivalMode.IntValue)) bCountLivingOnly = true;
+		
+		int iPlayerCount = GetRealClientCount(true, bCountLivingOnly, true) - 1; // take off the 1 that we did with votes
 		if(iPlayerCount < 1)
 		{
 			return 0.0;
@@ -450,7 +464,7 @@ enum struct CoopManager
 		{
 			char map[MAX_MAPNAME], reason[32]; int startTime;
 			GetMapHistory(0, map, sizeof(map), reason, sizeof(reason), startTime);
-			if(strcmp(reason, SM_NORMAL_MAPCHANGE) == 0)
+			if ((strcmp(reason, SM_NORMAL_MAPCHANGE) == 0) || (strcmp(reason, SM_RESTART_MAPCHANGE) == 0))
 			{
 				return false;
 			}
@@ -475,7 +489,7 @@ enum struct CoopManager
 			LogMessage("Tried to change the map, but neither home map or next map is set! Set sourcecoop_homemap or change the map manually.");
 		}
 	}
-		
+	
 	void EnableFeature(SourceCoopFeature iFeatureBits)
 	{
 		this.m_iEnabledFeatures |= view_as<int>(iFeatureBits);
