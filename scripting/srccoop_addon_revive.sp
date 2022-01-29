@@ -7,8 +7,7 @@
 #pragma semicolon 1;
 #pragma newdecls required;
 
-ConVar g_pConVarReviveTime;
-ConVar g_pConVarReviveScore;
+ConVar g_pConVarReviveTime, g_pConVarReviveScore, g_pConVarReviveMessages;
 ConVar g_pConVarSpriteMaterial, g_pConVarSpriteScale, g_pConVarSpriteColor, g_pConVarSpriteFloatDistance;
 
 CBasePlayer g_pReviveTarget[MAXPLAYERS+1] = {view_as<CBasePlayer>(-1), ...};
@@ -27,6 +26,7 @@ public void OnPluginStart()
 {
 	g_pConVarReviveTime = CreateConVar("sourcecoop_revive_time", "4.0", "Sets time that you have to hold E to revive.", _, true, 0.0, false);
 	g_pConVarReviveScore = CreateConVar("sourcecoop_revive_score", "1", "Sets score to give for reviving a player.", _, true, 0.0, false);
+	g_pConVarReviveMessages = CreateConVar("sourcecoop_revive_messages", "1", "Shows messages such as You have started reviving x.", _, true, 0.0, true, 1.0);
 	
 	// Sprite ConVars
 	g_pConVarSpriteMaterial = CreateConVar("sourcecoop_revive_sprite_material", "vgui/hud/hud_health.vmt", "Sets material of sprite used when player dies. Must be relative to materials/ directory");
@@ -127,20 +127,36 @@ public Action Command_ForceRespawn(int client, int args)
 {
 	if (args < 1)
 	{
-		PrintToConsole(client, "You must specify an index to spawn.");
+		MsgReply(client, "You must specify a player to spawn.");
 		return Plugin_Handled;
 	}
-	char szTargIndex[4];
-	GetCmdArg(1, szTargIndex, sizeof(szTargIndex));
-	CBasePlayer pTarget = CBasePlayer(StringToInt(szTargIndex));
-	if (pTarget.IsValid())
+	
+	CBasePlayer pTarget;
+	static char szTarget[64];
+	static char szClientName[64];
+	GetCmdArg(1, szTarget, sizeof(szTarget));
+	
+	for (int i = 1; i <= MaxClients; i++)
 	{
-		PrintToConsole(client, "Spawned %i", pTarget.GetEntIndex());
+		pTarget = CBasePlayer(i);
+		if (pTarget.IsValid())
+		{
+			pTarget.GetName(szClientName, sizeof(szClientName));
+			if ((StrContains(szClientName, szTarget, false) != -1) && (!pTarget.IsAlive()))
+			{
+				MsgReply(client, "Spawned %i '%s'", pTarget.GetEntIndex(), szClientName);
 		
-		SetPlayerCanSpawn(pTarget, true);
-		pTarget.Spawn();
-		pTarget.Activate();
+				SetPlayerCanSpawn(pTarget, true);
+				pTarget.Spawn();
+				pTarget.Activate();
+				
+				return Plugin_Handled;
+			}
+		}
 	}
+	
+	MsgReply(client, "Unable to find player or they are already alive.");
+	
 	return Plugin_Handled;
 }
 
@@ -163,6 +179,7 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 				{
 					g_pReviveTarget[client] = view_as<CBasePlayer>(-1);
 					g_flReviveTime[client] = 0.0;
+					if (g_pConVarReviveMessages.BoolValue) Msg(client, "Your revive target respawned...");
 				}
 				else
 				{
@@ -186,6 +203,8 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 								
 								StopSound(client, SNDCHAN_STATIC, "items/suitchargeok1.wav");
 								EmitSoundToAll("items/suitchargeno1.wav", client, SNDCHAN_AUTO, SNDLEVEL_NORMAL);
+								
+								if (g_pConVarReviveMessages.BoolValue) Msg(client, "You have canceled reviving...");
 								
 								return Plugin_Continue;
 							}
@@ -213,6 +232,7 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 								CreateTimer(0.1, DelayRespawn, dp);
 								
 								pPlayer.ModifyScore(g_pConVarReviveScore.IntValue);
+								if (g_pConVarReviveMessages.BoolValue) Msg(client, "You have revived '%N' and have gained %i score!", g_pReviveTarget[client].GetEntIndex(), g_pConVarReviveScore.IntValue);
 								g_pReviveTarget[client] = view_as<CBasePlayer>(-1);
 								g_flReviveTime[client] = 0.0;
 							}
@@ -247,6 +267,7 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 											{
 												g_pReviveTarget[client] = CBasePlayer(i);
 												EmitSoundToAll("items/suitchargeok1.wav", client, SNDCHAN_STATIC, SNDLEVEL_NORMAL);
+												if (g_pConVarReviveMessages.BoolValue) Msg(client, "You have started reviving '%N'", i);
 												break;
 											}
 										}
@@ -264,6 +285,7 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 			{
 				g_pReviveTarget[client] = view_as<CBasePlayer>(-1);
 				g_flReviveTime[client] = 0.0;
+				if (g_pConVarReviveMessages.BoolValue) Msg(client, "You have canceled reviving...");
 			}
 		}
 	}

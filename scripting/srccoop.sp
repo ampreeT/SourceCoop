@@ -122,6 +122,7 @@ public void OnPluginStart()
 	g_pConvarEndWaitDisplayMode = CreateConVar("sourcecoop_end_wait_display_mode", "0", "Sets which method to show countdown. 0 is panel, 1 is hud text.", _, true, 0.0, true, 1.0);
 	g_pConvarSurvivalMode = CreateConVar("sourcecoop_survival_mode", "0", "Sets survival mode. 1 will respawn all players if all dead. 2 will restart map if all players dead.", _, true, 0.0, true, 2.0);
 	g_pConvarPreventRespawn = CreateConVar("sourcecoop_survival_disable_respawn", "0", "Fully prevents respawning even at checkpoints.", _, true, 0.0, true, 1.0);
+	g_pConVarNextStuck = CreateConVar("sourcecoop_next_stuck", "60.0", "Prevents using stuck for this many seconds after using.", _, true, 0.0, false);
 	
 	mp_friendlyfire = FindConVar("mp_friendlyfire");
 	mp_flashlight = FindConVar("mp_flashlight");
@@ -129,6 +130,7 @@ public void OnPluginStart()
 	g_pConvarSurvivalMode.AddChangeHook(ConVarChanged);
 	g_pConvarPreventRespawn.AddChangeHook(ConVarChanged);
 	
+	RegConsoleCmd("stuck", Command_Unstuck);
 	RegAdminCmd("sourcecoop_ft", Command_SetFeature, ADMFLAG_ROOT, "Command for toggling plugin features on/off");
 	RegAdminCmd("sc_ft", Command_SetFeature, ADMFLAG_ROOT, "Command for toggling plugin features on/off");
 	RegServerCmd("sourcecoop_dump", Command_DumpMapEntities, "Command for dumping map entities to a file");
@@ -294,6 +296,7 @@ public void OnClientConnected(int client)
 public void OnClientDisconnect(int client)
 {
 	g_pInstancingManager.OnClientDisconnect(client);
+	g_flNextStuck[client] = 0.0;
 }
 
 public void OnMapEnd()
@@ -476,6 +479,10 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 			{
 				DHookEntity(hkThink, false, iEntIndex, _, Hook_MusicTrackThink);
 				DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_MusicTrackAceptInput);
+			}
+			else if (strcmp(szClassname, "player") == 0)
+			{
+				DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_PlayerAcceptInput);
 			}
 			
 			// if some explosions turn out to be damaging all players except one, this is the fix
@@ -805,6 +812,42 @@ void GreetPlayer(int client)
 	{
 		Msg(client, "This server runs SourceCoop version %s.\nPress %s=%s or type %s/coopmenu%s for extra settings.", PLUGIN_VERSION, CHAT_COLOR_SEC, CHAT_COLOR_PRI, CHAT_COLOR_SEC, CHAT_COLOR_PRI);
 	}
+}
+
+public Action Command_Unstuck(int iClient, int iArgs)
+{
+	CBasePlayer pPlayer = CBasePlayer(iClient);
+	if (pPlayer.IsValid())
+	{
+		float flGameTime = GetGameTime();
+		if (g_flNextStuck[iClient] >= flGameTime)
+		{
+			Msg(iClient, "> You cannot do that for another %1.1f seconds!", g_flNextStuck[iClient] - flGameTime);
+			return Plugin_Handled;
+		}
+		
+		// Velocity check for if people try to use it to get out of falling to their death
+		float flVerticalVelocity = GetEntPropFloat(iClient, Prop_Send, "m_vecVelocity[2]");
+		if (flVerticalVelocity < -200.0)
+		{
+			Msg(iClient, "> Can't use while falling too fast.");
+			return Plugin_Handled;
+		}
+		
+		CCoopSpawnEntry pCheckpoint;
+		if (g_SpawnSystem.GetCurrentCheckpoint(pCheckpoint))
+		{
+			g_flNextStuck[iClient] = flGameTime + g_pConVarNextStuck.FloatValue;
+			pCheckpoint.TeleportPlayer(pPlayer);
+			Msg(iClient, "> Moved to the active checkpoint.");
+		}
+		else
+		{
+			Msg(iClient, "> Unable to find a place to put you.");
+		}
+	}
+	
+	return Plugin_Handled;
 }
 
 public Action Command_SetFeature(int iClient, int iArgs)

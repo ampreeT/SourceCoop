@@ -3,6 +3,8 @@
 #endif
 #define _srccoop_playerpatch_included
 
+float g_flNextStuck[MAXPLAYERS+1];
+
 //------------------------------------------------------
 // Allow flashlight
 //------------------------------------------------------
@@ -172,6 +174,26 @@ public MRESReturn Hook_SetSuitUpdate(int _this, Handle hParams)
 public MRESReturn Hook_SetSuitUpdatePost(int _this, Handle hParams)
 {
 	g_bIsMultiplayerOverride = true;
+	return MRES_Ignored;
+}
+
+//------------------------------------------------------
+// Prevent input of kill to player as this will put the player in a hanging state
+// This can occur in some maps where a trigger is set to kill the !activator and the player so happens to be there
+//------------------------------------------------------
+public MRESReturn Hook_PlayerAcceptInput(int _this, Handle hReturn, Handle hParams)
+{
+	if (!DHookIsNullParam(hParams, 1))
+	{
+		char szInputType[MAX_FORMAT];
+		DHookGetParamString(hParams, 1, szInputType, sizeof(szInputType));
+
+		if (strcmp(szInputType, "kill", false) == 0)
+		{
+			DHookSetReturn(hReturn, true);
+			return MRES_Supercede;
+		}
+	}
 	return MRES_Ignored;
 }
 

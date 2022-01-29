@@ -16,6 +16,7 @@ ConVar g_pConvarHomeMap;
 ConVar g_pConvarEndWaitDisplayMode;
 ConVar g_pConvarSurvivalMode;
 ConVar g_pConvarPreventRespawn;
+ConVar g_pConVarNextStuck;
 
 // Existing ConVars
 ConVar mp_friendlyfire;
