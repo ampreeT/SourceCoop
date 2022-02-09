@@ -111,7 +111,8 @@ void LoadGameData()
 		LoadDHookVirtual(pGameConfig, hkIchthyosaurIdleSound, "CNPC_Ichthyosaur::IdleSound");
 		LoadDHookVirtual(pGameConfig, hkHandleAnimEvent, "CBaseAnimating::HandleAnimEvent");
 		LoadDHookVirtual(pGameConfig, hkRunAI, "CAI_BaseNPC::RunAI");
-		LoadDHookVirtual(pGameConfig, hkOnTakeDamage, "CBaseEntity::OnTakeDamage");
+		// LoadDHookVirtual(pGameConfig, hkOnTakeDamage, "CBaseEntity::OnTakeDamage");
+		LoadDHookVirtual(pGameConfig, hkEvent_Killed, "CBaseEntity::Event_Killed");
 		LoadDHookDetour(pGameConfig, hkUTIL_GetLocalPlayer, "UTIL_GetLocalPlayer", Hook_UTIL_GetLocalPlayer);
 		LoadDHookDetour(pGameConfig, hkSetSuitUpdate, "CBasePlayer::SetSuitUpdate", Hook_SetSuitUpdate, Hook_SetSuitUpdatePost);
 		LoadDHookDetour(pGameConfig, hkResolveNames, "CAI_GoalEntity::ResolveNames", Hook_ResolveNames, Hook_ResolveNamesPost);
@@ -188,11 +189,11 @@ public void OnPluginStart()
 
 #pragma dynamic ENTITYSTRING_LENGTH
 
-public MRESReturn Hook_OnLevelInit(DHookReturn hReturn, DHookParam hParams) {
+public MRESReturn Hook_OnLevelInit(DHookReturn hReturn, DHookParam hParams)
+{
 	if (!IsDedicatedServer() && MaxClients == 1)
 	{
 		SetFailState("Singleplayer detected, unloading SourceCoop (ignore this)");
-		return MRES_Ignored;
 	}
 	
 	OnMapEnd(); // this does not always get called, so call it here
@@ -308,6 +309,8 @@ public void OnClientPutInServer(int client)
 	DHookEntity(hkShouldCollide, false, client, _, Hook_PlayerShouldCollide);
 	DHookEntity(hkPlayerSpawn, false, client, _, Hook_PlayerSpawn);
 	DHookEntity(hkAcceptInput, false, client, _, Hook_PlayerAcceptInput);
+	DHookEntity(hkEvent_Killed, false, client, _, Hook_PlayerKilled);
+	DHookEntity(hkEvent_Killed, true, client, _, Hook_PlayerKilledPost);
 	GreetPlayer(client);
 }
 
@@ -493,10 +496,6 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 			{
 				SDKHook(iEntIndex, SDKHook_VPhysicsUpdatePost, Hook_BoneFollowerVPhysicsUpdatePost);
 			}
-			else if (strcmp(szClassname, "player_ragdoll") == 0)
-			{
-				OnClientRagdollCreated(pEntity);
-			}
 			else if (strcmp(szClassname, "music_track") == 0)
 			{
 				DHookEntity(hkThink, false, iEntIndex, _, Hook_MusicTrackThink);
@@ -543,7 +542,7 @@ public void Hook_EntitySpawnPost(int iEntIndex)
 			static char szModel[PLATFORM_MAX_PATH];
 			if(pEntity.GetModel(szModel, sizeof(szModel)) && strncmp(szModel, "models/gibs/humans/", 19) == 0)
 			{
-				SDKHook(iEntIndex, SDKHook_OnTakeDamage, Hook_NoGibDmg);
+				SDKHook(iEntIndex, SDKHook_OnTakeDamage, Hook_NoDmg);
 			}
 		}
 		
@@ -579,7 +578,6 @@ public Action Event_EntityKilled(Event hEvent, const char[] szName, bool bDontBr
 	CBasePlayer pVictim = CBasePlayer(GetEventInt(hEvent, "entindex_killed"));
 	if (pVictim.IsValid())
 	{
-		g_pLastKilledPlayer = pVictim;
 		SurvivalManager.HandlePlayerDeath(pVictim);
 	}
 	return Plugin_Continue;

@@ -358,11 +358,26 @@
 					}
 				}
 			}
-			"CBaseEntity::OnTakeDamage"
+			// "CBaseEntity::OnTakeDamage"
+			// {
+			// 	"offset"	"CBaseEntity::OnTakeDamage"
+			// 	"hooktype"	"entity"
+			// 	"return"	"int"
+			// 	"this"		"entity"
+			// 	"arguments"
+			// 	{
+			// 		"info"
+			// 		{
+			// 			"type"	"objectptr"
+			// 			"flags"	"byref"
+			// 		}
+			// 	}
+			// }
+			"CBaseEntity::Event_Killed"
 			{
-				"offset"	"CBaseEntity::OnTakeDamage"
+				"offset"	"CBaseEntity::Event_Killed"
 				"hooktype"	"entity"
-				"return"	"int"
+				"return"	"void"
 				"this"		"entity"
 				"arguments"
 				{
@@ -642,10 +657,15 @@
 				"windows"	"3"
 				"linux"		"3"
 			}
-			"CBaseEntity::OnTakeDamage" // CBaseEntity::OnTakeDamage(CTakeDamageInfo const&)
+			// "CBaseEntity::OnTakeDamage" // CBaseEntity::OnTakeDamage(CTakeDamageInfo const&)
+			// {
+			// 	"windows"	"68"
+			// 	"linux"		"69"
+			// }
+			"CBaseEntity::Event_Killed" // CBaseEntity::Event_Killed(CTakeDamageInfo const&)
 			{
-				"windows"	"68"
-				"linux"		"69"
+				"windows"	"72"
+				"linux"		"73"
 			}
 		}
 	}

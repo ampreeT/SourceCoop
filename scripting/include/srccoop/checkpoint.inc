@@ -100,7 +100,7 @@ enum struct CCoopSpawnEntry
 	}
 	
 	void ActivatePost()
-	{		
+	{
 		if(this.m_bBringAllPlayers)
 		{
 			SetHudTextParams(-1.0, 0.9, 1.0, 200, 200, 200, 255, 0, 1.0, 1.0, 1.0);

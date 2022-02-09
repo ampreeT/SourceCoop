@@ -288,6 +288,40 @@ public void Hook_PlayerSpawnPost(int iClient)
 }
 
 //------------------------------------------------------
+// Player death hooks
+// - Force serverside ragdolls
+//------------------------------------------------------
+CBaseEntity g_pNewRagdoll;
+
+public MRESReturn Hook_PlayerKilled(int _this, DHookParam hParams)
+{
+	CBasePlayer pPlayer = CBasePlayer(_this);
+	if (pPlayer.IsValid())
+	{		
+		Address pTakeDmgInfo = hParams.GetAddress(1);
+		g_pNewRagdoll = CBaseEntity(SDKCall(g_pCreateServerRagdoll, _this, 0, pTakeDmgInfo, COLLISION_GROUP_DEBRIS_TRIGGER, true));
+		SDKHook(g_pNewRagdoll.GetEntIndex(), SDKHook_OnTakeDamage, Hook_NoDmg);
+	}
+	return MRES_Ignored;
+}
+
+public MRESReturn Hook_PlayerKilledPost(int _this, DHookParam hParams)
+{
+	if (g_pNewRagdoll.IsValid())
+	{
+		CBasePlayer pPlayer = CBasePlayer(_this);
+		CBaseEntity pRagdoll = pPlayer.GetRagdoll();
+		if (pRagdoll.IsValid())
+		{
+			pRagdoll.Kill();
+		}
+		pPlayer.SetRagdoll(g_pNewRagdoll);
+		g_pNewRagdoll = CBaseEntity(-1);
+	}
+	return MRES_Ignored;
+}
+
+//------------------------------------------------------
 // Player TraceAttack hook
 //------------------------------------------------------
 public Action Hook_PlayerTraceAttack(int victim, int &attacker, int &inflictor, float &damage, int &damagetype, int &ammotype, int hitbox, int hitgroup)
@@ -402,46 +436,4 @@ public MRESReturn Hook_ForcePlayerToDropThisObject(Handle hParams)
 		}
 	}
 	return MRES_Supercede;
-}
-
-//------------------------------------------------------
-// Force serverside ragdolls
-//------------------------------------------------------
-void OnClientRagdollCreated(CBaseEntity pRagdoll)
-{
-	pRagdoll.Kill();
-
-	if (g_pLastKilledPlayer.IsValid())
-	{
-		int iHookId = hkOnTakeDamage.HookEntity(Hook_Post, g_pLastKilledPlayer.GetEntIndex(), Hack_ServerRagdoll);
-		SDKHooks_TakeDamage(g_pLastKilledPlayer.GetEntIndex(), 0, 0, 0.0, .bypassHooks = false);
-		DynamicHook.RemoveHook(iHookId);
-	}
-}
-
-public MRESReturn Hack_ServerRagdoll(int _this, DHookReturn hReturn, DHookParam hParams)
-{
-	Address pTakeDmgInfo = hParams.GetAddress(1);
-	CBasePlayer pPlayer = CBasePlayer(_this);
-	CBaseEntity pRagdoll = SDKCall(g_pCreateServerRagdoll, _this, 0, pTakeDmgInfo, COLLISION_GROUP_DEBRIS_TRIGGER, true);
-
-	// At this point, we could set the ragdoll on the player, but the
-	// game is still setting properties for the original ragdoll, hence the delay.
-	DataPack dp = new DataPack();
-	dp.WriteCell(pPlayer);
-	dp.WriteCell(pRagdoll);
-	dp.Reset();
-	RequestFrame(Delay_AssignRagdoll, dp);
-	return MRES_Ignored;
-}
-
-public Delay_AssignRagdoll(DataPack dp)
-{
-	CBasePlayer pPlayer = dp.ReadCell();
-	CBaseEntity pRagdoll = dp.ReadCell();
-	if(pPlayer.IsValid())
-	{
-		pPlayer.SetRagdoll(pRagdoll);
-	}
-	delete dp;
 }

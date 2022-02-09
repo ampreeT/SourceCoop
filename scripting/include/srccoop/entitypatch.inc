@@ -1433,10 +1433,10 @@ public Action Timer_FixRotatingAngles(Handle timer, CBaseEntity pEntity)
 }
 
 //------------------------------------------------------
-// Gib props
-// Disable damage - which causes physics crash on linux with specific models
+// General hook
+// Disable damage - can be used to prevent physics crashes on linux with specific models
 //------------------------------------------------------
-public Action Hook_NoGibDmg(int victim, int &attacker, int &inflictor, float &damage, int &damagetype, int &weapon, float damageForce[3], float damagePosition[3])
+public Action Hook_NoDmg(int victim, int &attacker, int &inflictor, float &damage, int &damagetype, int &weapon, float damageForce[3], float damagePosition[3])
 {
 	return Plugin_Handled;
 }
