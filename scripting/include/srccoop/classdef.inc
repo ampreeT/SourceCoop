@@ -421,11 +421,11 @@ methodmap CBaseEntity
 	}
 	public int GetEffects()
 	{
-		return GetEntProp(this.GetEntIndex(), Prop_Send, "m_fEffects");
+		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_fEffects");
 	}
 	public void SetEffects(const int iEffects)
 	{
-		SetEntProp(this.GetEntIndex(), Prop_Send, "m_fEffects", iEffects); 
+		SetEntProp(this.GetEntIndex(), Prop_Data, "m_fEffects", iEffects); 
 	}
 	public int GetTakeDamage()
 	{
@@ -437,8 +437,7 @@ methodmap CBaseEntity
 	}
 	public bool IsClassPlayer()
 	{
-		int index = this.GetEntIndex();
-		return view_as<bool>((index > 0) && (index < (MaxClients + 1)));
+		return (0 < this.GetEntIndex() <= MaxClients);
 	}
 	public bool IsClassWeapon()
 	{
@@ -474,9 +473,9 @@ methodmap CBaseEntity
 		return view_as<WaterLevel>(GetEntProp(this.GetEntIndex(), Prop_Data, "m_nWaterLevel"));
 	}
 	
-	public int GetGroundEntity()
+	public CBaseEntity GetGroundEntity()
 	{
-		return GetEntPropEnt(this.GetEntIndex(), Prop_Data, "m_hGroundEntity");
+		return CBaseEntity(GetEntPropEnt(this.GetEntIndex(), Prop_Data, "m_hGroundEntity"));
 	}
 }
 
@@ -694,8 +693,7 @@ methodmap CBaseCombatCharacter < CBaseAnimating
 		//return view_as<bool>(this.GetHealth() > 0);
 		
 		// Any value above 0 indicates dead or other death information
-		if (GetEntProp(this.GetEntIndex(), Prop_Data, "m_lifeState")) return false;
-		return true;
+		return !GetEntProp(this.GetEntIndex(), Prop_Data, "m_lifeState");
 	}
 	public CBaseCombatWeapon GetActiveWeapon()
 	{
@@ -825,11 +823,16 @@ methodmap CBasePlayer < CBaseCombatCharacter
 	}
 	public bool IsValid()
 	{
-		return view_as<bool>(this.IsClassPlayer() && IsClientInGame(this.GetEntIndex()));
+		return this.IsClassPlayer() && this.IsInGame();
 	}
 	public bool IsInGame()
 	{
-		return IsClientInGame(this.GetEntIndex());
+		int iEntIndex = this.GetEntIndex();
+		return iEntIndex != -1 && IsClientInGame(iEntIndex);
+	}
+	public bool IsAlive()
+	{
+		return IsPlayerAlive(this.GetEntIndex());
 	}
 	public bool GetName(char[] szBuffer, const int iMaxLength)
 	{
@@ -866,10 +869,6 @@ methodmap CBasePlayer < CBaseCombatCharacter
 	public void SetSprintEnabled(const bool bSprintEnabled)
 	{
 		SetEntProp(this.GetEntIndex(), Prop_Send, "m_bSprintEnabled", bSprintEnabled);
-	}
-	public bool IsAlive()
-	{
-		return IsPlayerAlive(this.GetEntIndex());
 	}
 	public CBaseCombatWeapon GetWeaponFromIndex(const int iIndex)
 	{
@@ -1046,6 +1045,14 @@ methodmap CBasePlayer < CBaseCombatCharacter
 	{
 		SetEntPropEnt(this.GetEntIndex(), Prop_Send, "m_hViewModel", pEntity.GetEntIndex());
 	}
+	public CBaseEntity GetRagdoll()
+	{
+		return CBaseEntity(GetEntPropEnt(this.GetEntIndex(), Prop_Send, "m_hRagdoll"));
+	}
+	public void SetRagdoll(CBaseEntity pEntity)
+	{
+		SetEntPropEnt(this.GetEntIndex(), Prop_Send, "m_hRagdoll", pEntity.GetEntIndex());
+	}
 	public float GetDeathTime()
 	{
 		return GetEntPropFloat(this.GetEntIndex(), Prop_Send, "m_flDeathTime");
@@ -1061,7 +1068,6 @@ methodmap CBasePlayer < CBaseCombatCharacter
 	public void SetObserverMode(Obs_Mode iMode)
 	{
 		SetEntProp(this.GetEntIndex(), Prop_Data, "m_iObserverMode", iMode);
-		return;
 	}
 	public int GetTeam()
 	{
@@ -1136,6 +1142,10 @@ methodmap CBasePlayer < CBaseCombatCharacter
 		int iNewScore = this.GetScore() + iPoints;
 		this.SetScore(iNewScore);
 		return iNewScore;
+	}
+	public void Suicide()
+	{
+		ForcePlayerSuicide(this.GetEntIndex());
 	}
 }
 

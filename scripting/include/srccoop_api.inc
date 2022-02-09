@@ -50,7 +50,7 @@ native TopMenu GetCoopTopMenu();
 native bool IsCurrentMapCoop();
 
 /**
- * Global callback after map config is loaded in OnMapStart
+ * Global callback after map config is loaded in OnMapStart.
  *
  * @param kv          The configuration file imported into keyvalues. You must call kv.Rewind() first to ensure consistency.
  * @param location    From where the config was loaded.
@@ -64,13 +64,15 @@ forward void OnCoopMapConfigLoaded(KeyValues kv, CoopConfigLocation location);
 forward void OnCoopMapStart();
 
 /**
- * Allows other sources or plugins set whether a player can spawn
- * 
+ * Respawns a dead player.
+ * @return    true if player was dead and respawned
+ * @error     Invalid CBasePlayer
  */
-native void SetPlayerCanSpawn(CBasePlayer pPlayer, bool bSetCanSpawn = true);
+native bool SurvivalRespawn(CBasePlayer pPlayer);
 
 /**
- * Allows other sources or plugins check whether a player can spawn
+ * Gets the survival mode.
  * 
+ * @return    Current survival mode (enum)
  */
-native bool PlayerCanSpawn(CBasePlayer pPlayer);
+native SurvivalMode GetSurvivalMode();

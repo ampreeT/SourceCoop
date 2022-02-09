@@ -40,6 +40,8 @@
 		}
 		"Functions"
 		{
+			// Virtual functions:
+
 			"CMultiplayRules::FAllowFlashlight"
 			{
 				"offset"	"CMultiplayRules::FAllowFlashlight"
@@ -109,9 +111,6 @@
 				"hooktype"	"entity"
 				"return"	"int"
 				"this"		"entity"
-				"arguments"
-				{
-				}
 			}
 			"CSceneEntity::FindNamedEntity"
 			{
@@ -258,9 +257,9 @@
 					}
 				}
 			}
-			"CBlackMesaPlayer::Spawn"
+			"CBasePlayer::Spawn"
 			{
-				"offset"	"CBlackMesaPlayer::Spawn"
+				"offset"	"CBasePlayer::Spawn"
 				"hooktype"	"entity"
 				"return"	"void"
 				"this"		"entity"
@@ -325,13 +324,62 @@
 //					}
 //				}
 //			}
-			
-			// Detours
-			
+			"CServerGameDLL::LevelInit"
+			{
+				"offset"	"CServerGameDLL::LevelInit"
+				"hooktype"	"raw"
+				"return"	"bool"
+				"this"		"ignore"
+				"arguments"
+				{
+					"pMapName"
+					{
+						"type"	"charptr"
+					}
+					"pMapEntities"
+					{
+						"type"	"charptr"
+					}
+					"pOldLevel"
+					{
+						"type"	"charptr"
+					}
+					"pLandmarkName"
+					{
+						"type"	"charptr"
+					}
+					"loadGame"
+					{
+						"type"	"bool"
+					}
+					"background"
+					{
+						"type"	"bool"
+					}
+				}
+			}
+			"CBaseEntity::OnTakeDamage"
+			{
+				"offset"	"CBaseEntity::OnTakeDamage"
+				"hooktype"	"entity"
+				"return"	"int"
+				"this"		"entity"
+				"arguments"
+				{
+					"info"
+					{
+						"type"	"objectptr"
+						"flags"	"byref"
+					}
+				}
+			}
+
+			// Detours:
+
 			"CBasePlayer::SetSuitUpdate"
 			{
 				"signature"	"CBasePlayer::SetSuitUpdate"
-				"callconv"	"thiscall"	// cdecl on linux, but has thisptr
+				"callconv"	"thiscall"
 				"return"	"void"
 				"this"		"entity"
 				"arguments"
@@ -446,6 +494,11 @@
 				"windows"	"\x55\x8B\xEC\x83\xEC\x5C\x53\x57\x8B\xF9"
 				"linux" 	"@_ZN11CAI_BaseNPC19SetPlayerAvoidStateEv"
 			}
+			"CreateServerRagdoll" // CBaseEntity CreateServerRagdoll(CBaseAnimating *, int, const CTakeDamageInfo *, int, bool)
+			{
+				"windows"	"\x53\x8B\xDC\x83\xEC\x08\x83\xE4\xF0\x83\xC4\x04\x55\x8B\x6B\x04\x89\x6C\x24\x04\x8B\xEC\xB8\x78\x30\x00\x00"
+				"linux" 	"@_Z19CreateServerRagdollP14CBaseAnimatingiRK15CTakeDamageInfoib"
+			}
 		}
 		"Offsets"
 		{
@@ -454,7 +507,7 @@
 				"windows"	"433"
 				"linux" 	"434"
 			}
-			"CBlackMesaPlayer::Spawn"			// CBlackMesaPlayer::Spawn(CBaseEntity*)
+			"CBasePlayer::Spawn"			// CBasePlayer::Spawn()
 			{
 				"windows"	"24"
 				"linux" 	"25"
@@ -583,6 +636,16 @@
 			{
 				"windows"	"77"
 				"linux"		"78"
+			}
+			"CServerGameDLL::LevelInit" // CServerGameDLL::LevelInit(char const*, char const*, char const*, char const*, bool, bool)
+			{
+				"windows"	"3"
+				"linux"		"3"
+			}
+			"CBaseEntity::OnTakeDamage" // CBaseEntity::OnTakeDamage(CTakeDamageInfo const&)
+			{
+				"windows"	"68"
+				"linux"		"69"
 			}
 		}
 	}

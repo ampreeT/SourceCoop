@@ -7,20 +7,20 @@
 // DHooks utils
 //------------------------------------------------------
 #if defined _dhooks_included
-stock void LoadDHookDetour(const Handle pGameConfig, Handle& pHandle, const char[] szFuncName, DHookCallback pCallbackPre = INVALID_FUNCTION, DHookCallback pCallbackPost = INVALID_FUNCTION)
+stock void LoadDHookDetour(const Handle pGameConfig, DynamicDetour& pHandle, const char[] szFuncName, DHookCallback pCallbackPre = INVALID_FUNCTION, DHookCallback pCallbackPost = INVALID_FUNCTION)
 {
-	pHandle = DHookCreateFromConf(pGameConfig, szFuncName);
+	pHandle = DynamicDetour.FromConf(pGameConfig, szFuncName);
 	if (pHandle == null)
 		SetFailState("Couldn't create hook %s", szFuncName);
-	if (pCallbackPre != INVALID_FUNCTION && !DHookEnableDetour(pHandle, false, pCallbackPre))
+	if (pCallbackPre != INVALID_FUNCTION && !pHandle.Enable(Hook_Pre, pCallbackPre))
 		SetFailState("Couldn't enable pre detour hook %s", szFuncName);
-	if (pCallbackPost != INVALID_FUNCTION && !DHookEnableDetour(pHandle, true, pCallbackPost))
+	if (pCallbackPost != INVALID_FUNCTION && !pHandle.Enable(Hook_Post, pCallbackPost))
 		SetFailState("Couldn't enable post detour hook %s", szFuncName);
 }
 
-stock void LoadDHookVirtual(const Handle pGameConfig, Handle& pHandle, const char[] szFuncName)
+stock void LoadDHookVirtual(const Handle pGameConfig, DynamicHook& pHandle, const char[] szFuncName)
 {
-	pHandle = DHookCreateFromConf(pGameConfig, szFuncName);
+	pHandle = DynamicHook.FromConf(pGameConfig, szFuncName);
 	if (pHandle == null)
 		SetFailState("Couldn't create hook %s", szFuncName);
 }
@@ -74,10 +74,11 @@ stock void MsgAll(const char[] msg, any ...)
 	int len = strlen(msg) + 255;
 	char[] formatMsg = new char[len];
 	VFormat(formatMsg, len, msg, 2);
-	PrintToServer("%s%s", CONSOLE_TAG, formatMsg);
+	PrintToServer("%s(chat) %s", CONSOLE_TAG, formatMsg);
  	PrintToChatAll("%s%s", CHAT_TAG, formatMsg);
 }
 
+#if defined _regex_included
 stock bool StrEqualsRegex(const char[] pattern, const char[] str, bool caseSensitive = false)
 {
 	int patternLength = strlen(pattern);
@@ -94,6 +95,7 @@ stock bool StrEqualsRegex(const char[] pattern, const char[] str, bool caseSensi
 	}
 	else return strcmp(pattern, str, caseSensitive) == 0;
 }
+#endif
 
 stock void FormatTimeLength(int seconds, char[] out, int size)
 {
@@ -222,7 +224,7 @@ stock int FindStringInArrayEx(const char[][] array, int len, const char[] str, b
 	return -1;
 }
 
-stock int FindValueInArrayEx(const any[][] array, int len, const any val)
+stock int FindValueInArrayEx(const any[] array, int len, const any val)
 {
 	for (int i = 0; i < len; i++)
 	{
@@ -453,6 +455,15 @@ stock bool Client_ScreenFade(int client, int duration, int mode, int holdtime=-1
 	EndMessage();
 
 	return true;
+}
+
+//------------------------------------------------------
+// Weapon utils
+//------------------------------------------------------
+stock void PreventWeaponFiring(CBaseCombatWeapon pWeapon, float flDelayTime)
+{
+	pWeapon.SetNextPrimaryAttack(GetGameTime() + flDelayTime);
+	pWeapon.SetNextSecondaryAttack(GetGameTime() + flDelayTime);
 }
 
 //------------------------------------------------------

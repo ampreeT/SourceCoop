@@ -21,6 +21,7 @@ enum struct CCoopSpawnEntry
 	float m_vecPortalPosition[3];
 	bool m_bBringAllPlayers;
 	float m_fBringAllGraceRadius;
+	bool m_bRespawnPlayers;
 	
 	void Initialize()
 	{
@@ -99,19 +100,24 @@ enum struct CCoopSpawnEntry
 	}
 	
 	void ActivatePost()
-	{
+	{		
 		if(this.m_bBringAllPlayers)
 		{
-			for (int pp = 0; pp <= MaxClients; pp++)
+			SetHudTextParams(-1.0, 0.9, 1.0, 200, 200, 200, 255, 0, 1.0, 1.0, 1.0);
+			for (int i = 1; i <= MaxClients; i++)
 			{
-				CBasePlayer pPlayer = CBasePlayer(pp);
+				CBasePlayer pPlayer = CBasePlayer(i);
 				if(pPlayer.IsValid() && pPlayer.IsAlive())
 				{
 					if(this.TeleportPlayer(pPlayer, true, true))
+					{
 						pPlayer.PlayGameSound(SND_BRINGALL);
+						ShowHudText(i, 1, "Checkpoint reached");
+					}
 				}
 			}
 		}
+		SurvivalManager.OnCheckpointActivation(this);
 	}
 }
 
@@ -155,6 +161,7 @@ enum struct CCoopSpawn
 	int m_iCurrentCheckpoint;
 	CCoopEquipment m_pDefaultEquipment;
 	bool m_bStrictOrder;
+	bool m_bRespawnOnLogicAutosave;
 	
 	void Clear()
 	{
@@ -282,9 +289,9 @@ enum struct CCoopSpawn
 	
 	void StripPlayer(CBasePlayer pPlayer)
 	{
-		if (IsFeatureEnabled(FT_STRIP_DEFAULT_EQUIPMENT))
+		if (CoopManager.IsFeatureEnabled(FT_STRIP_DEFAULT_EQUIPMENT))
 		{
-			pPlayer.RemoveAllItems(!IsFeatureEnabled(FT_STRIP_DEFAULT_EQUIPMENT_KEEPSUIT));
+			pPlayer.RemoveAllItems(!CoopManager.IsFeatureEnabled(FT_STRIP_DEFAULT_EQUIPMENT_KEEPSUIT));
 		}
 	}
 	
@@ -390,6 +397,7 @@ enum struct CCoopSpawn
 		{
 			this.m_bStrictOrder = view_as<bool>(kv.GetNum("strict_order", 1));
 		}
+		this.m_bRespawnOnLogicAutosave = view_as<bool>(kv.GetNum("respawn_on_logic_autosave", 1));
 		
 		if (kv.GotoFirstSubKey(true))
 		{
@@ -475,6 +483,10 @@ enum struct CCoopSpawn
 								else if (strcmp(szKey, "bringall_radius", false) == 0)
 								{
 									pEntry.m_fBringAllGraceRadius = StringToFloat(szValue);
+								}
+								else if (strcmp(szKey, "respawn", false) == 0)
+								{
+									pEntry.m_bRespawnPlayers = !!StringToInt(szValue);
 								}
 								else
 								{
@@ -685,33 +697,6 @@ enum struct CCoopSpawn
 		this.m_pDefaultEquipment.m_pWeaponList.PushArray(pWeaponEntry);
 		return true;
 	}
-	
-	void SurvivalRespawnPlayers()
-	{
-		// Prevent any of this running if prevented spawns
-		if (g_pConvarPreventRespawn.BoolValue) return;
-		
-		g_pDeadPlayerIDs.Clear();
-		
-		// This will be called on Saves it would be nice to use #BMS_SAVED
-		// Could maybe add a translation for Checkpoint, although most people won't pay too much attention
-		SetHudTextParams(-1.0, 0.9, 1.0, 200, 200, 200, 255, 0, 1.0, 1.0, 1.0);
-		for (int i = 1; i <= MaxClients; i++)
-		{
-			CBasePlayer pPlayer = CBasePlayer(i);
-			if (pPlayer.IsValid())
-			{
-				if (!pPlayer.IsAlive())
-				{
-					SetPlayerCanSpawn(pPlayer);
-					pPlayer.Spawn();
-					pPlayer.Activate();
-				}
-				ShowHudText(i, 2, "Checkpoint reached");
-			}
-		}
-		return;
-	}
 }
 
 CCoopSpawn g_SpawnSystem;
@@ -759,9 +744,6 @@ public void Hook_TouchCheckpoint(int iEntity, int iOther)
 			iIndex++;
 		}
 		SDKUnhook(iEntity, SDKHook_StartTouchPost, Hook_TouchCheckpoint);
-		
-		// Survival mode respawn players at trigger_autosaves
-		if (g_pConvarSurvivalMode.IntValue) g_SpawnSystem.SurvivalRespawnPlayers();
 	}
 }
 

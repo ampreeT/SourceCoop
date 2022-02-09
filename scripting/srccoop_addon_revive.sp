@@ -48,7 +48,7 @@ public void OnMapStart()
 	PrecacheSound("items/suitchargeno1.wav",true);
 }
 
-public Action Event_EntityKilled(Event hEvent, const char[] szName, bool bDontBroadcast)
+public void Event_EntityKilled(Event hEvent, const char[] szName, bool bDontBroadcast)
 {
 	int iVictimCheck = GetEventInt(hEvent, "entindex_killed");
 	if ((iVictimCheck > 0) && (iVictimCheck <= MaxClients))
@@ -145,10 +145,7 @@ public Action Command_ForceRespawn(int client, int args)
 			if ((StrContains(szClientName, szTarget, false) != -1) && (!pTarget.IsAlive()))
 			{
 				MsgReply(client, "Spawned %i '%s'", pTarget.GetEntIndex(), szClientName);
-		
-				SetPlayerCanSpawn(pTarget, true);
-				pTarget.Spawn();
-				pTarget.Activate();
+				SurvivalRespawn(pTarget);
 				
 				return Plugin_Handled;
 			}
@@ -212,7 +209,7 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 							{
 								EmitSoundToAll("weapons/tau/gauss_undercharge.wav", client, SNDCHAN_AUTO, SNDLEVEL_NORMAL, _, _, 150);
 								
-								SetPlayerCanSpawn(g_pReviveTarget[client], true);
+								SurvivalRespawn(g_pReviveTarget[client]);
 								
 								g_pReviveTarget[client].Spawn();
 								g_pReviveTarget[client].Activate();

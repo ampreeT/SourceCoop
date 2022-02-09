@@ -24,7 +24,7 @@ enum struct ItemInstancingManager
 	
 	void OnPlayerSpawned(CBlackMesaPlayer pPlayer)
 	{
-		if(!IsFeatureEnabled(FT_INSTANCE_ITEMS_NORESET))
+		if(!CoopManager.IsFeatureEnabled(FT_INSTANCE_ITEMS_NORESET))
 		{
 			this.m_pPickedUpItems[pPlayer.GetEntIndex()].Clear();
 		}
@@ -42,7 +42,7 @@ enum struct ItemInstancingManager
 		return this.m_pPickedUpItems[pPlayer.GetEntIndex()].GetValue(key, _val);
 	}
 	
-	bool ClearPickedUpItem(CBaseEntity pItem)
+	void ClearPickedUpItem(CBaseEntity pItem)
 	{
 		char key[32]; IntToString(view_as<int>(pItem), key, sizeof(key));
 		for (int i = 0; i <= MaxClients; i++) {
@@ -51,7 +51,6 @@ enum struct ItemInstancingManager
 				this.m_pPickedUpItems[i].Remove(key);
 			}
 		}
-		return true;
 	}
 }
 

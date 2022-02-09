@@ -182,6 +182,7 @@ public void MyCoopMenuHandler(TopMenu topmenu, TopMenuAction action, TopMenuObje
 public Action Timer_StartVoteSkipIntro(Handle timer)
 {
 	StartVoteSkipIntro(-1);
+	return Plugin_Handled;
 }
 
 public Action Command_VoteSkipIntro(int client, int args)
@@ -256,6 +257,8 @@ public int VoteSkipHandler(Menu menu, MenuAction action, int param1, int param2)
 		nextVoteSkip = GetTime() + VOTE_COOLDOWN;
 		delete menu;
 	}
+
+	return -1;
 }
 
 //------------------------------------------------------
@@ -322,6 +325,8 @@ public int VoteRestartHandler(Menu menu, MenuAction action, int param1, int para
 		nextVoteRestart = GetTime() + VOTE_COOLDOWN;
 		delete menu;
 	}
+
+	return -1;
 }
 
 //------------------------------------------------------
@@ -459,7 +464,7 @@ void LoadMapsInPath(const char szConfigPath[PLATFORM_MAX_PATH], StringMap duplic
 	delete dir;
 }
 
-bool LoadMap(const char[] szMap, KeyValues kv)
+void LoadMap(const char[] szMap, KeyValues kv)
 {
 	char szCampaign[64];
 	char szChapter[64];
@@ -561,6 +566,8 @@ public int MapSelectMenuHandler(Menu menu, MenuAction action, int client, int pa
 	{
 		delete menu;
 	}
+	
+	return -1;
 }
 
 void StartVoteMap(int client, const char szMap[MAX_MAPNAME])
@@ -603,6 +610,8 @@ public int VoteMapHandler(Menu menu, MenuAction action, int param1, int param2)
 		nextVoteMap = GetTime() + VOTE_COOLDOWN;
 		delete menu;
 	}
+	
+	return -1;
 }
 
 //------------------------------------------------------

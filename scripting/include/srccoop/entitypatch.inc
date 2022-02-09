@@ -547,7 +547,7 @@ public void Hook_ChangelevelSpawn(int iEntIndex)
 
 public MRESReturn Hook_ChangelevelAcceptInput(int _this, Handle hReturn, Handle hParams)
 {
-	if (g_pCoopManager.IsCoopModeEnabled())
+	if (CoopManager.IsCoopModeEnabled())
 	{
 		if (!DHookIsNullParam(hParams, 1))
 		{
@@ -566,7 +566,7 @@ public MRESReturn Hook_ChangelevelAcceptInput(int _this, Handle hReturn, Handle 
 
 public void Hook_ChangelevelOnTouch(int _this, int iOther)
 {
-	if (g_pCoopManager.IsCoopModeEnabled())
+	if (CoopManager.IsCoopModeEnabled())
 	{
 		CChangelevel pChangelevel = CChangelevel(_this);
 		CBlackMesaPlayer pPlayer = CBlackMesaPlayer(iOther);
@@ -586,7 +586,7 @@ void ChangeLevelTriggered(CChangelevel pChangelevel, CBlackMesaPlayer pActivator
 	{
 		if(pActivator.IsClassPlayer())
 		{
-			g_pCoopManager.OnTouchChangeLevel(pChangelevel, pActivator);
+			CoopManager.OnTouchChangeLevel(pChangelevel, pActivator);
 		}
 		else
 		{
@@ -599,7 +599,7 @@ void ChangeLevelTriggered(CChangelevel pChangelevel, CBlackMesaPlayer pActivator
 public Action ChangelevelEffects(Handle timer, CChangelevel pChangelevel) {
 	if (pChangelevel.IsValid())
 	{
-		if (IsFeatureEnabled(FT_CHANGELEVEL_FX)) {
+		if (CoopManager.IsFeatureEnabled(FT_CHANGELEVEL_FX)) {
 			char szMapName[MAX_MAPNAME];
 			if (!pChangelevel.IsDisabled() && pChangelevel.GetMapName(szMapName, sizeof(szMapName))
 				&& (g_pLevelLump.m_pNextMapList.Length == 0 || g_pLevelLump.m_pNextMapList.IsInMapList(szMapName)))
@@ -919,11 +919,11 @@ public MRESReturn Hook_ClientCommandAcceptInput(int _this, Handle hReturn, Handl
 				return MRES_Ignored;
 			}
 			
-			if(IsFeatureEnabled(FT_AUTODETECT_MAP_END))
+			if(CoopManager.IsFeatureEnabled(FT_AUTODETECT_MAP_END))
 			{
 				if(StrContains(szParam, "disconnect", false) != -1 || StrContains(szParam, "startupmenu", false) != -1)
 				{
-					g_pCoopManager.OnMapSeriesFinished();
+					CoopManager.OnMapSeriesFinished();
 					DHookSetReturn(hReturn, true);
 					return MRES_Supercede;
 				}
@@ -979,7 +979,7 @@ public MRESReturn Hook_ClientCommandAcceptInput(int _this, Handle hReturn, Handl
 //------------------------------------------------------
 public MRESReturn Hook_ServerCommandAcceptInput(int _this, Handle hReturn, Handle hParams)
 {
-	if (g_pCoopManager.IsCoopModeEnabled())
+	if (CoopManager.IsCoopModeEnabled())
 	{
 		if (!DHookIsNullParam(hParams, 1))
 		{
@@ -1009,7 +1009,7 @@ CBaseEntity g_pActiveMarionettist[MAXPLAYERS+1] = {view_as<CBaseEntity>(-1), ...
 
 public MRESReturn Hook_MarionettistAcceptInput(int _this, Handle hReturn, Handle hParams)
 {
-	if (g_pCoopManager.IsCoopModeEnabled())
+	if (CoopManager.IsCoopModeEnabled())
 	{
 		if (!DHookIsNullParam(hParams, 1))
 		{
@@ -1272,10 +1272,9 @@ public void Hook_ExplosionSpawn(int iEntIndex)
 // env_sprite
 // fix m_flGlowProxySize out of bounds console spam
 //------------------------------------------------------
-public void Hook_EnvSpriteSpawn(int iEntIndex)
+public void Hook_EnvSpriteSpawnPost(int iEntIndex)
 {
 	CreateTimer(0.1, Timer_EnvSpritePostSpawn, CBaseEntity(iEntIndex), TIMER_FLAG_NO_MAPCHANGE);
-	return;
 }
 
 public Action Timer_EnvSpritePostSpawn(Handle timer, CBaseEntity pEntity)
@@ -1398,7 +1397,7 @@ public MRESReturn Hook_CanSelectSchedule(Handle hReturn)
 //------------------------------------------------------
 public void Hook_OnItemSnarkDamagePost(int victim, int attacker, int inflictor, float damage, int damagetype)
 {
-	if (g_pCoopManager.IsCoopModeEnabled())
+	if (CoopManager.IsCoopModeEnabled())
 	{
 		SDKHook(victim, SDKHook_OnTakeDamage, Hook_PreventItemSnarkDamage);
 		SDKUnhook(victim, SDKHook_OnTakeDamagePost, Hook_OnItemSnarkDamagePost);
@@ -1448,6 +1447,11 @@ public Action Hook_NoGibDmg(int victim, int &attacker, int &inflictor, float &da
 //------------------------------------------------------
 public MRESReturn Hook_LoadSavedAcceptInput(int _this, Handle hReturn, Handle hParams)
 {
+	if (!CoopManager.IsCoopModeEnabled())
+	{
+		return MRES_Ignored;
+	}
+
 	char szInputType[MAX_FORMAT];
 	DHookGetParamString(hParams, 1, szInputType, sizeof(szInputType));
 
@@ -1456,7 +1460,8 @@ public MRESReturn Hook_LoadSavedAcceptInput(int _this, Handle hReturn, Handle hP
 		if (!DHookIsNullParam(hParams, 2))
 		{
 			int iActivator = DHookGetParam(hParams, 2);
-			if (CBaseEntity(iActivator).IsClassPlayer())
+			CBasePlayer pActivator = CBasePlayer(iActivator);
+			if (pActivator.IsClassPlayer())
 			{
 				int r, g, b, a;
 				GetEntityRenderColor(_this, r, g, b, a);
@@ -1464,7 +1469,8 @@ public MRESReturn Hook_LoadSavedAcceptInput(int _this, Handle hReturn, Handle hP
 				Client_ScreenFade(iActivator, RoundFloat(duration * 1000), FFADE_OUT|FFADE_STAYOUT, _, r, g, b, a);
 				
 				// This breaks the spectator overlay if the player is already dead
-				if (CBasePlayer(iActivator).IsAlive()) ForcePlayerSuicide(iActivator);
+				if (pActivator.IsAlive())
+					pActivator.Suicide();
 			}
 		}
 		DHookSetReturn(hReturn, true);
@@ -1476,42 +1482,32 @@ public MRESReturn Hook_LoadSavedAcceptInput(int _this, Handle hReturn, Handle hP
 
 //------------------------------------------------------
 // logic_autosave
-// survival mode hook
-// Could also be used for saving in the future
+// Survival mode hook
 // May need to hook logic_active_autosave at some point if it is used, most maps do not use it though
 //------------------------------------------------------
 public MRESReturn Hook_LogicAutosaveAcceptInput(int _this, Handle hReturn, Handle hParams)
 {
-	if (g_pConvarSurvivalMode.IntValue)
+	if (!CoopManager.IsCoopModeEnabled())
 	{
-		char szInputType[MAX_FORMAT];
-		DHookGetParamString(hParams, 1, szInputType, sizeof(szInputType));
-
-		if (strcmp(szInputType, "Save", false) == 0)
-		{
-			g_SpawnSystem.SurvivalRespawnPlayers();
-		}
-		if (strcmp(szInputType, "SaveDangerous", false) == 0)
-		{
-			int iMinimumHitpoints = GetEntProp(_this, Prop_Data, "m_minHitPoints");
-			for (int i = 1; i <= MaxClients; i++)
-			{
-				CBasePlayer pPlayer = CBasePlayer(i);
-				if (pPlayer.IsValid())
-				{
-					if (pPlayer.IsAlive())
-					{
-						if (pPlayer.GetHealth() >= iMinimumHitpoints)
-						{
-							g_SpawnSystem.SurvivalRespawnPlayers();
-							break;
-						}
-					}
-				}
-			}
-		}
+		return MRES_Ignored;
 	}
-	
+
+	char szInputType[MAX_FORMAT];
+	DHookGetParamString(hParams, 1, szInputType, sizeof(szInputType));
+
+	if (strcmp(szInputType, "Save", false) == 0)
+	{
+		SurvivalManager.OnLogicAutosave(_this, false);
+		DHookSetReturn(hReturn, true);
+		return MRES_Supercede;
+	}
+	if (strcmp(szInputType, "SaveDangerous", false) == 0)
+	{
+		SurvivalManager.OnLogicAutosave(_this, true);
+		DHookSetReturn(hReturn, true);
+		return MRES_Supercede;
+	}
+
 	return MRES_Ignored;
 }
 
@@ -1522,12 +1518,17 @@ public MRESReturn Hook_LogicAutosaveAcceptInput(int _this, Handle hReturn, Handl
 //------------------------------------------------------
 public MRESReturn Hook_GameEndAcceptInput(int _this, Handle hReturn, Handle hParams)
 {
+	if (!CoopManager.IsCoopModeEnabled())
+	{
+		return MRES_Ignored;
+	}
+
 	char szInputType[MAX_FORMAT];
 	DHookGetParamString(hParams, 1, szInputType, sizeof(szInputType));
 
 	if (strcmp(szInputType, "EndGame", false) == 0)
 	{
-		g_pCoopManager.OnMapSeriesFinished();
+		CoopManager.OnMapSeriesFinished();
 		DHookSetReturn(hReturn, true);
 		return MRES_Supercede;
 	}

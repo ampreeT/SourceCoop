@@ -36,8 +36,8 @@ if(StrEqual(%1, "#if", false))\
 	}\
 }
 
-#include <srccoop/checkpoint.inc>
-#include <srccoop/levellump.inc>
+#include <srccoop/checkpoint>
+#include <srccoop/levellump>
 
 /**
  * The actual function which evaluates conditions as it's parsing them.
@@ -75,7 +75,7 @@ bool ParseConditions(KeyValues kv, bool anyPass = false)
 				{
 					if(szCondition[0] == '!')
 					{
-						ReplaceStringEx(szCondition,sizeof(szCondition),"!","",-1,-1,false);
+						Format(szCondition, sizeof(szCondition), szCondition[1]);
 						bResult = !TestCondition(szCondition, szValue);
 					}
 					else
