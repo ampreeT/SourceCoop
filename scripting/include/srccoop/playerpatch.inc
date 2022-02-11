@@ -126,7 +126,7 @@ public void Hook_PlayerPreThinkPost(int iClient)
 //------------------------------------------------------
 // OnPlayerRunCmd
 //------------------------------------------------------
-public Action OnPlayerRunCmd(int iClient, int &iButtons, int &iImpulse, float fVel[3], float fAngles[3], int &iWeapon)
+public Action OnPlayerRunCmd(int iClient, int &iButtons, int &iImpulse, float fVel[3], float fAngles[3], int &iWeapon, int& subtype, int& cmdnum, int& tickcount, int& seed, int mouse[2])
 {
 	if (IsFakeClient(iClient)) {
 		return Plugin_Continue;
@@ -138,7 +138,8 @@ public Action OnPlayerRunCmd(int iClient, int &iButtons, int &iImpulse, float fV
 	if (IsClientObserver(iClient))
 	{
 		// hide bugged ctrl menu
-		ShowVGUIPanel(iClient, "specmenu", _, false);
+		if(tickcount % 10 == 0)
+			ShowVGUIPanel(iClient, "specmenu", _, false);
 
 		Obs_Mode iMode = view_as<Obs_Mode> (GetEntProp(iClient, Prop_Send, "m_iObserverMode"));
 		int iTarget = GetEntPropEnt(iClient, Prop_Send, "m_hObserverTarget");
@@ -257,13 +258,6 @@ public void Hook_PlayerSpawnPost(int iClient)
 		
 		if (g_Engine == Engine_BlackMesa)
 		{
-			if (g_pConvarDisableTeamSelect.BoolValue && GetClientTeam(iClient) == TEAM_SPECTATOR)
-			{
-				// hide team select
-				ClientCommand(iClient, "hidepanel team");
-				ClientCommand(iClient, "hidepanel deathmatch");
-				ChangeClientTeam(iClient, TEAM_SCIENTIST);
-			}
 			if (pPlayer.IsAlive())
 			{
 				// Ensure view entity is player and observer mode is off
@@ -283,6 +277,24 @@ public void Hook_PlayerSpawnPost(int iClient)
 				// Stop HEV sounds
 				StopSound(iClient, SNDCHAN_STATIC, szLastSuitSound[iClient]);
 			}
+			else // Not alive => entered the game
+			{
+				if (GetClientTeam(iClient) == TEAM_SPECTATOR)
+				{
+					if (g_pConvarDisableTeamSelect.BoolValue)
+					{
+						// hide team select
+						ClientCommand(iClient, "hidepanel team");
+						ClientCommand(iClient, "hidepanel deathmatch");
+						ChangeClientTeam(iClient, TEAM_SCIENTIST);
+					}
+					else
+					{
+						// If this was not here, the specmenu fix in OnPlayerRunCmd would periodically blink the initial team select menu for some reason.
+						ClientCommand(iClient, "chooseteam");
+					}
+				}
+			}
 		}
 	}
 }
@@ -299,7 +311,8 @@ public MRESReturn Hook_PlayerKilled(int _this, DHookParam hParams)
 	if (pPlayer.IsValid())
 	{		
 		Address pTakeDmgInfo = hParams.GetAddress(1);
-		g_pNewRagdoll = CBaseEntity(SDKCall(g_pCreateServerRagdoll, _this, 0, pTakeDmgInfo, COLLISION_GROUP_DEBRIS_TRIGGER, true));
+		int iForceBone = GetEntProp(_this, Prop_Send, "m_nForceBone");
+		g_pNewRagdoll = CBaseEntity(SDKCall(g_pCreateServerRagdoll, _this, iForceBone, pTakeDmgInfo, COLLISION_GROUP_DEBRIS_TRIGGER, false));
 		SDKHook(g_pNewRagdoll.GetEntIndex(), SDKHook_OnTakeDamage, Hook_NoDmg);
 	}
 	return MRES_Ignored;

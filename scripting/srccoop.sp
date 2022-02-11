@@ -77,7 +77,7 @@ void LoadGameData()
 		PrepSDKCall_SetReturnInfo(SDKType_CBaseEntity, SDKPass_Pointer)
 		PrepSDKCall_AddParameter(SDKType_CBaseEntity, SDKPass_Pointer); // CBaseAnimating *pAnimating
 		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain); // int forceBone
-		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Pointer); // const CTakeDamageInfo &info
+		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain); // const CTakeDamageInfo &info
 		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain); // int collisionGroup
 		PrepSDKCall_AddParameter(SDKType_Bool, SDKPass_Plain); // bool bUseLRURetirement
 		if (!(g_pCreateServerRagdoll = EndPrepSDKCall()))
