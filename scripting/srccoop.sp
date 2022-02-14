@@ -306,6 +306,7 @@ public void OnClientPutInServer(int client)
 	SDKHook(client, SDKHook_OnTakeDamage, Hook_PlayerTakeDamage);
 	SDKHook(client, SDKHook_WeaponEquipPost, Hook_PlayerWeaponEquipPost);
 	DHookEntity(hkChangeTeam, false, client, _, Hook_PlayerChangeTeam);
+	DHookEntity(hkChangeTeam, true, client, _, Hook_PlayerChangeTeamPost);
 	DHookEntity(hkShouldCollide, false, client, _, Hook_PlayerShouldCollide);
 	DHookEntity(hkPlayerSpawn, false, client, _, Hook_PlayerSpawn);
 	DHookEntity(hkAcceptInput, false, client, _, Hook_PlayerAcceptInput);
@@ -314,9 +315,10 @@ public void OnClientPutInServer(int client)
 	GreetPlayer(client);
 }
 
-public void OnClientDisconnect(int client)
+public void OnClientDisconnect_Post(int client)
 {
 	g_pInstancingManager.OnClientDisconnect(client);
+	SurvivalManager.GameOverCheck();
 	g_flNextStuck[client] = 0.0;
 }
 

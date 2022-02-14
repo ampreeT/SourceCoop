@@ -145,7 +145,7 @@ public Action OnPlayerRunCmd(int iClient, int &iButtons, int &iImpulse, float fV
 		int iTarget = GetEntPropEnt(iClient, Prop_Send, "m_hObserverTarget");
 
 		// force free-look where appropriate - this removes the extra (pointless) third person spec mode
-		if (iMode == OBS_MODE_POI || iTarget <= 0 || !IsClientInGame(iTarget)) {
+		if (iMode == OBS_MODE_POI || iTarget <= 0 || !IsClientInGame(iTarget) || IsClientObserver(iTarget)) {
 			SetEntProp(iClient, Prop_Data, "m_iObserverMode", OBS_MODE_ROAMING);
 		}
 
@@ -161,6 +161,7 @@ public Action OnPlayerRunCmd(int iClient, int &iButtons, int &iImpulse, float fV
 
 	return Plugin_Continue;
 }
+
 //------------------------------------------------------
 // Player sounds
 //------------------------------------------------------
@@ -207,6 +208,7 @@ public MRESReturn Hook_SetSuitUpdatePost(int _this, Handle hParams)
 }
 
 //------------------------------------------------------
+// Player AcceptInput hook
 // Prevent input of kill to player as this will put the player in a hanging state
 // This can occur in some maps where a trigger is set to kill the !activator and the player so happens to be there
 //------------------------------------------------------
@@ -369,7 +371,8 @@ public Action Hook_PlayerTakeDamage(int victim, int &attacker, int &inflictor, f
 }
 
 //------------------------------------------------------
-// Force everyone to one team in TDM
+// Player team change hooks
+// - Force everyone to single team in TDM
 //------------------------------------------------------
 public MRESReturn Hook_PlayerChangeTeam(int _this, Handle hParams)
 {
@@ -396,6 +399,15 @@ public MRESReturn Hook_PlayerChangeTeam(int _this, Handle hParams)
 				}
 			}
 		}
+	}
+	return MRES_Ignored;
+}
+
+public MRESReturn Hook_PlayerChangeTeamPost(int _this, Handle hParams)
+{
+	if (CoopManager.IsCoopModeEnabled())
+	{
+		SurvivalManager.GameOverCheck();
 	}
 	return MRES_Ignored;
 }

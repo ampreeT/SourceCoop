@@ -13,6 +13,7 @@ enum struct SurvivalManagerData
 	ConVar m_pConvarMode;
 	ConVar m_pConvarRespawn;
 	ConVar m_pConvarSpawnTimeout;
+	Handle m_pRestartTimer;
 	bool m_bRespawning;
 }
 
@@ -34,6 +35,7 @@ methodmap SurvivalManager {
 	public static void Clear()
 	{
 		SurvivalManager.ClearDead();
+		data.m_pRestartTimer = null;
 	}
 	
 	public static SurvivalMode GetMode()
@@ -94,13 +96,13 @@ methodmap SurvivalManager {
 		{
 			if (!data.m_bRespawning && (!SurvivalManager.CheckSpawnTimeout() || SurvivalManager.IsDead(pPlayer)))
 			{
-				// Ensure enabled observing players
+				// Enable spectator mode
 				pPlayer.SetViewEntity(pPlayer);
 				pPlayer.SetObserverMode(OBS_MODE_CHASE);
-				
-				// Fix for screen fade out indifnitely
-				// this is mostly being caused by player_loadsaved having FFADE_STAYOUT but it could come from other sources as well
-				Client_ScreenFade(pPlayer.GetEntIndex(), 1, FFADE_IN|FFADE_PURGE, 1, 0, 0, 0, 0);
+				// Do not touch things when spectating
+				pPlayer.SetSolidFlags(pPlayer.GetSolidFlags() | FSOLID_NOT_SOLID);
+				// Remove previous fades
+				Client_ScreenFade(pPlayer.GetEntIndex(), 1500, FFADE_IN|FFADE_PURGE, 1, 0, 0, 0, 255);
 				
 				SetHudTextParams(0.016, 0.04, 5.0, 255, 255, 255, 255, 1, 1.0, 1.0, 1.0);
 				if (SurvivalManager.GetRespawnAtCheckpoints())
@@ -129,23 +131,7 @@ methodmap SurvivalManager {
 		if (SurvivalManager.GetMode())
 		{
 			SurvivalManager.SetDead(pVictim, true);
-			
-			if (!GetRealClientCount(true, true))
-			{
-				SurvivalManager.GameOverFade();
-
-				switch (SurvivalManager.GetMode())
-				{
-					case SURVIVAL_RESPAWN:
-					{
-						CreateTimer(6.0, Timer_SurvivalRespawnPlayers, _, TIMER_FLAG_NO_MAPCHANGE);
-					}
-					case SURVIVAL_RESTART:
-					{
-						CreateTimer(6.0, Timer_SurvivalRestartLevel, _, TIMER_FLAG_NO_MAPCHANGE);
-					}
-				}
-			}
+			SurvivalManager.GameOverCheck();
 		}
 	}
 	
@@ -187,7 +173,7 @@ methodmap SurvivalManager {
 	public static void RespawnPlayers(const char[] szHudText = "Checkpoint reached")
 	{
 		SurvivalManager.ClearDead();
-		SetHudTextParams(-1.0, 0.9, 1.0, 200, 200, 200, 255, 0, 1.0, 1.0, 1.0);
+		SetHudTextParams(-1.0, 0.9, 1.5, 200, 200, 200, 255, 0, 1.0, 1.0, 1.0);
 		
 		for (int i = 1; i <= MaxClients; i++)
 		{
@@ -218,13 +204,33 @@ methodmap SurvivalManager {
 		return false;
 	}
 
+	public static void GameOverCheck()
+	{
+		if (SurvivalManager.GetMode() && data.m_pRestartTimer == null && g_pCoopManagerData.m_bStarted && !GetRealClientCount(true, true))
+		{
+			SurvivalManager.GameOverFade();
+
+			switch (SurvivalManager.GetMode())
+			{
+				case SURVIVAL_RESPAWN:
+				{
+					data.m_pRestartTimer = CreateTimer(6.0, Timer_SurvivalRespawnPlayers, _, TIMER_FLAG_NO_MAPCHANGE);
+				}
+				case SURVIVAL_RESTART:
+				{
+					data.m_pRestartTimer = CreateTimer(6.0, Timer_SurvivalRestartLevel, _, TIMER_FLAG_NO_MAPCHANGE);
+				}
+			}
+		}
+	}
+
 	public static void GameOverFade()
 	{
 		SetHudTextParams(-1.0, 0.45, 6.0, 200, 200, 200, 255, 0, 0.5, 1.0, 1.0);
 		for (int i = 1; i <= MaxClients; i++)
 		{
 			CBasePlayer pPlayer = CBasePlayer(i);
-			if (pPlayer.IsInGame())
+			if (pPlayer.IsInGame() && pPlayer.GetTeam() > TEAM_SPECTATOR)
 			{
 				Client_ScreenFade(i, 1000, FFADE_OUT|FFADE_STAYOUT, _, 0, 0, 0, 255);
 				ShowHudText(i, 2, "#BMS_GameOver_Ally");
@@ -235,12 +241,15 @@ methodmap SurvivalManager {
 
 public Action Timer_SurvivalRespawnPlayers(Handle timer)
 {
-	SurvivalManager.RespawnPlayers("");
+	data.m_pRestartTimer = null;
+	SurvivalManager.RespawnPlayers("Try again! Starting at last checkpoint...");
 	return Plugin_Handled;
 }
 
 public Action Timer_SurvivalRestartLevel(Handle timer)
 {
+	data.m_pRestartTimer = null;
+
 	char szMapName[MAX_MAPNAME];
 	GetCurrentMap(szMapName, sizeof(szMapName));
 	
