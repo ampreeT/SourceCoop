@@ -20,16 +20,13 @@ public void Hook_CameraDeathSpawn(int iEntIndex)
 	if (CoopManager.IsFeatureEnabled(FT_FIRSTPERSON_DEATHCAM))
 	{
 		CBaseEntity pEntity = CBaseEntity(iEntIndex);
-		if (pEntity.IsValid())
+		CBlackMesaPlayer pOwner = view_as<CBlackMesaPlayer>(pEntity.GetOwner());
+		if (pOwner.IsValid())
 		{
-			CBlackMesaPlayer pOwner = view_as<CBlackMesaPlayer>(pEntity.GetOwner());
-			if (pOwner.IsValid() && pOwner.IsClassPlayer())
+			CBaseEntity pViewEntity = pOwner.GetViewEntity();
+			if (!pViewEntity.IsValid() || pViewEntity == pOwner)
 			{
-				CBaseEntity pViewEntity = pOwner.GetViewEntity();
-				if (!pViewEntity.IsValid() || pViewEntity == pOwner)
-				{
-					pOwner.SetViewEntity(pEntity);
-				}
+				pOwner.SetViewEntity(pEntity);
 			}
 		}
 	}
@@ -77,7 +74,6 @@ public void Hook_PlayerPreThinkPost(int iClient)
 	if (!CoopManager.IsCoopModeEnabled())
 		return;
 	
-	
 	CBlackMesaPlayer pPlayer = CBlackMesaPlayer(iClient);
 	if (pPlayer.IsAlive())
 	{
@@ -115,8 +111,7 @@ public void Hook_PlayerPreThinkPost(int iClient)
 	else // Dead
 	{
 		float flRespawnTime = g_pConvarCoopRespawnTime.FloatValue;
-		if (pPlayer.GetTeam() != TEAM_SPECTATOR && !SurvivalManager.IsDead(pPlayer)
-			&& flRespawnTime && GetGameTime() - pPlayer.GetDeathTime() > flRespawnTime)
+		if (pPlayer.GetTeam() > TEAM_SPECTATOR && !SurvivalManager.IsDead(pPlayer) && flRespawnTime && GetGameTime() - pPlayer.GetDeathTime() > flRespawnTime)
 		{
 			int iPressed = pPlayer.GetPressedButtons();
 			if (iPressed != 0 && iPressed != IN_SCORE)
@@ -149,7 +144,7 @@ public Action OnPlayerRunCmd(int iClient, int &iButtons, int &iImpulse, float fV
 		int iTarget = GetEntPropEnt(iClient, Prop_Send, "m_hObserverTarget");
 
 		// force free-look where appropriate - this removes the extra (pointless) third person spec mode
-		if (iMode == OBS_MODE_POI || iTarget <= 0 || !IsClientInGame(iTarget) || IsClientObserver(iTarget)) {
+		if (iMode == OBS_MODE_POI || (iTarget != iClient && (iTarget <= 0 || !IsClientInGame(iTarget) || IsClientObserver(iTarget)))) {
 			SetEntProp(iClient, Prop_Data, "m_iObserverMode", OBS_MODE_ROAMING);
 		}
 
@@ -157,10 +152,6 @@ public Action OnPlayerRunCmd(int iClient, int &iButtons, int &iImpulse, float fV
 		if (iMode == OBS_MODE_ROAMING) {
 			SetEntityMoveType(iClient, MOVETYPE_NOCLIP);
 		}
-
-		// block spectator sprinting
-		iButtons &= ~IN_SPEED;
-		return Plugin_Changed;
 	}
 
 	return Plugin_Continue;
@@ -313,12 +304,15 @@ CBaseEntity g_pNewRagdoll;
 
 public MRESReturn Hook_PlayerKilled(int _this, DHookParam hParams)
 {
+	if (!CoopManager.IsCoopModeEnabled())
+		return MRES_Ignored;
+	
 	CBasePlayer pPlayer = CBasePlayer(_this);
 	if (pPlayer.IsValid())
 	{		
 		Address pTakeDmgInfo = hParams.GetAddress(1);
 		int iForceBone = GetEntProp(_this, Prop_Send, "m_nForceBone");
-		g_pNewRagdoll = CBaseEntity(SDKCall(g_pCreateServerRagdoll, _this, iForceBone, pTakeDmgInfo, COLLISION_GROUP_DEBRIS_TRIGGER, false));
+		g_pNewRagdoll = CBaseEntity(SDKCall(g_pCreateServerRagdoll, _this, iForceBone, pTakeDmgInfo, COLLISION_GROUP_PLAYER, false));
 		SDKHook(g_pNewRagdoll.GetEntIndex(), SDKHook_OnTakeDamage, Hook_NoDmg);
 	}
 	return MRES_Ignored;
@@ -330,25 +324,22 @@ public MRESReturn Hook_PlayerKilledPost(int _this, DHookParam hParams)
 	{
 		CBasePlayer pPlayer = CBasePlayer(_this);
 		CBaseEntity pRagdoll = pPlayer.GetRagdoll();
+		CBaseEntity pViewEnt = pPlayer.GetViewEntity();
+		
 		if (pRagdoll.IsValid())
 		{
 			pRagdoll.Kill();
 		}
+		pPlayer.SetRagdoll(g_pNewRagdoll);
 		
-		if ((pPlayer.GetViewEntity().IsValid()) && (pPlayer.GetViewEntity().GetEntIndex() > MaxClients))
+		if (pViewEnt.IsValid() && !pViewEnt.IsClassPlayer())
 		{
-			// Only set the ragdoll if the view entity is what should be expected
-			pPlayer.SetRagdoll(g_pNewRagdoll);
-			
-			// Fix for first person death camera on server-side ragdoll
-			pPlayer.GetViewEntity().SetParent(pPlayer.GetRagdoll());
-			pPlayer.GetViewEntity().SetParentAttachment("eyes");
+			// Parent death camera to server-side ragdoll
+			pViewEnt.SetParent(g_pNewRagdoll);
+			pViewEnt.SetParentAttachment("eyes");
 		}
-		else
-		{
-			// Used to stop spectator camera going crazy in these edge cases
-			pPlayer.SetRagdoll(CBaseEntity(-1));
-		}
+
+		g_pNewRagdoll = CBaseEntity(-1);
 	}
 	return MRES_Ignored;
 }
