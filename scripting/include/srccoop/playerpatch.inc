@@ -33,6 +33,10 @@ public void Hook_CameraDeathSpawn(int iEntIndex)
 			}
 		}
 	}
+	else
+	{
+		AcceptEntityInput(iEntIndex, "Kill");
+	}
 }
 
 void OnEntityDestroyed_CameraDeath(CBaseEntity pEntity)
@@ -325,13 +329,26 @@ public MRESReturn Hook_PlayerKilledPost(int _this, DHookParam hParams)
 	if (g_pNewRagdoll.IsValid())
 	{
 		CBasePlayer pPlayer = CBasePlayer(_this);
-		CBaseEntity pRagdoll = pPlayer.GetRagdoll();
-		if (pRagdoll.IsValid())
+		
+		if ((pPlayer.GetViewEntity().IsValid()) && (pPlayer.GetViewEntity().GetEntIndex() > MaxClients))
 		{
-			pRagdoll.Kill();
+			// Only set the ragdoll if the view entity is what should be expected
+			CBaseEntity pRagdoll = pPlayer.GetRagdoll();
+			if (pRagdoll.IsValid())
+			{
+				pRagdoll.Kill();
+			}
+			pPlayer.SetRagdoll(g_pNewRagdoll);
+			
+			// Fix for first person death camera on server-side ragdoll
+			pPlayer.GetViewEntity().SetParent(pPlayer.GetRagdoll());
+			pPlayer.GetViewEntity().SetParentAttachment("eyes");
 		}
-		pPlayer.SetRagdoll(g_pNewRagdoll);
-		g_pNewRagdoll = CBaseEntity(-1);
+		else
+		{
+			// Used to stop spectator camera going crazy in these edge cases
+			pPlayer.SetRagdoll(CBaseEntity(-1));
+		}
 	}
 	return MRES_Ignored;
 }

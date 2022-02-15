@@ -173,6 +173,9 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 							g_pReviveTarget[client].Spawn();
 							g_pReviveTarget[client].Activate();
 							
+							// Fix for if player died on a ladder
+							SetEntPropEnt(g_pReviveTarget[client].GetEntIndex(), Prop_Data, "m_hLadder", -1);
+							
 							g_pReviveTarget[client].GetRagdoll().Kill();
 							
 							// Delay to allow equip time

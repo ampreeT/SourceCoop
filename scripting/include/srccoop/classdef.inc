@@ -1052,6 +1052,7 @@ methodmap CBasePlayer < CBaseCombatCharacter
 	public void SetRagdoll(CBaseEntity pEntity)
 	{
 		SetEntPropEnt(this.GetEntIndex(), Prop_Send, "m_hRagdoll", pEntity.GetEntIndex());
+		ChangeEdictState(this.GetEntIndex());
 	}
 	public float GetDeathTime()
 	{
