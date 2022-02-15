@@ -126,10 +126,9 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 						g_flReviveTime[client] = GetGameTime() + g_pConVarReviveTime.FloatValue;
 					}
 					
-					CBaseEntity pRagdoll = CBaseEntity(GetEntPropEnt(g_pReviveTarget[client].GetEntIndex(), Prop_Send, "m_hRagdoll"));
-					if (pRagdoll.IsValid())
+					if (g_pReviveTarget[client].GetRagdoll().IsValid())
 					{
-						pRagdoll.GetAbsOrigin(vecRagdollPosition);
+						g_pReviveTarget[client].GetRagdoll().GetAbsOrigin(vecRagdollPosition);
 						
 						if (GetVectorDistance(vecOrigin, vecRagdollPosition, false) > 120.0)
 						{
@@ -174,7 +173,7 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 							g_pReviveTarget[client].Spawn();
 							g_pReviveTarget[client].Activate();
 							
-							pRagdoll.Kill();
+							g_pReviveTarget[client].GetRagdoll().Kill();
 							
 							// Delay to allow equip time
 							Handle dp = CreateDataPack();
@@ -202,10 +201,9 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 						{
 							if (!pTarget.IsAlive())
 							{
-								CBaseEntity pRagdoll = CBaseEntity(GetEntPropEnt(i, Prop_Send, "m_hRagdoll"));
-								if (pRagdoll.IsValid())
+								if (pTarget.GetRagdoll().IsValid())
 								{
-									pRagdoll.GetAbsOrigin(vecRagdollPosition);
+									pTarget.GetRagdoll().GetAbsOrigin(vecRagdollPosition);
 									
 									if (GetVectorDistance(vecOrigin, vecRagdollPosition, false) < 100.0)
 									{
