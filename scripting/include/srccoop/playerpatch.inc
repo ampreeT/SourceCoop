@@ -329,15 +329,15 @@ public MRESReturn Hook_PlayerKilledPost(int _this, DHookParam hParams)
 	if (g_pNewRagdoll.IsValid())
 	{
 		CBasePlayer pPlayer = CBasePlayer(_this);
+		CBaseEntity pRagdoll = pPlayer.GetRagdoll();
+		if (pRagdoll.IsValid())
+		{
+			pRagdoll.Kill();
+		}
 		
 		if ((pPlayer.GetViewEntity().IsValid()) && (pPlayer.GetViewEntity().GetEntIndex() > MaxClients))
 		{
 			// Only set the ragdoll if the view entity is what should be expected
-			CBaseEntity pRagdoll = pPlayer.GetRagdoll();
-			if (pRagdoll.IsValid())
-			{
-				pRagdoll.Kill();
-			}
 			pPlayer.SetRagdoll(g_pNewRagdoll);
 			
 			// Fix for first person death camera on server-side ragdoll
