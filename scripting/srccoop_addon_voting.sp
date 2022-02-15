@@ -21,14 +21,20 @@ public Plugin myinfo =
 #define MENUITEM_SKIPINTRO "SkipIntroVote"
 #define MENUITEM_RESTARTMAP "RestartMapVote"
 #define MENUITEM_MAPVOTE "MapVote"
+#define MENUITEM_SURVIVAL "SurvivalVote"
 
 int nextVoteSkip;
 int nextVoteRestart;
 int nextVoteMap;
+int nextVoteSurvival;
 char szSkipTo[MAX_MAPNAME];
 bool bAutoVoteSkip;
 
 ConVar pReloadMapsOnMapchange;
+ConVar pAllowVoteSkipIntro;
+ConVar pAllowVoteRestartMap;
+ConVar pAllowVoteChangeMap;
+ConVar pAllowVoteSurvival;
 
 public void OnPluginStart()
 {
@@ -36,8 +42,13 @@ public void OnPluginStart()
 	RegConsoleCmd("sm_skipintro", Command_VoteSkipIntro, "Starts a skip intro vote");
 	RegConsoleCmd("sm_restartmap", Command_VoteRestartMap, "Starts a restart map vote");
 	RegConsoleCmd("sm_changemap", Command_ChangeMap, "Shows a menu for changing maps");
+	RegConsoleCmd("sm_survival", Command_VoteSurvival, "Starts a survival vote");
 	RegAdminCmd("sc_reload_maps", Command_ReloadMaps, ADMFLAG_ROOT, "Reloads all entries in the votemap menu from storage");
 	pReloadMapsOnMapchange = CreateConVar("sourcecoop_voting_autoreload", "0", "Sets whether to reload all votemap menu entries on mapchange, which can prolong map loading times.", _, true, 0.0, true, 1.0);
+	pAllowVoteSkipIntro = CreateConVar("sourcecoop_voting_skipintro", "1", "Allow skip intro voting?", _, true, 0.0, true, 1.0);
+	pAllowVoteRestartMap = CreateConVar("sourcecoop_voting_restartmap", "1", "Allow restart map voting?", _, true, 0.0, true, 1.0);
+	pAllowVoteChangeMap = CreateConVar("sourcecoop_voting_changemap", "1", "Allow change map voting?", _, true, 0.0, true, 1.0);
+	pAllowVoteSurvival = CreateConVar("sourcecoop_voting_survival", "2", "Allow survival mode voting? Use one of values from sourcecoop_survival_mode to select the mode to vote for.", _, true, 0.0);
 	
 	InitSourceCoopAddon();
 	
@@ -71,6 +82,7 @@ void OnSourceCoopStarted()
 		pCoopMenu.AddItem(MENUITEM_SKIPINTRO, MyCoopMenuHandler, pMenuCategory);
 		pCoopMenu.AddItem(MENUITEM_RESTARTMAP, MyCoopMenuHandler, pMenuCategory);
 		pCoopMenu.AddItem(MENUITEM_MAPVOTE, MyCoopMenuHandler, pMenuCategory);
+		pCoopMenu.AddItem(MENUITEM_SURVIVAL, MyCoopMenuHandler, pMenuCategory);
 	}
 }
 
@@ -146,6 +158,10 @@ public void MyCoopMenuHandler(TopMenu topmenu, TopMenuAction action, TopMenuObje
 		{
 			Format(buffer, maxlength, "Change map");
 		}
+		else if(StrEqual(szItem, MENUITEM_SURVIVAL))
+		{
+			Format(buffer, maxlength, "Toggle survival mode");
+		}
 	}
 	else if (action == TopMenuAction_SelectOption)
 	{
@@ -172,6 +188,13 @@ public void MyCoopMenuHandler(TopMenu topmenu, TopMenuAction action, TopMenuObje
 				topmenu.Display(param, TopMenuPosition_LastCategory);
 			}
 		}
+		else if (StrEqual(szItem, MENUITEM_SURVIVAL))
+		{
+			if (!StartVoteSurvival(param))
+			{
+				topmenu.Display(param, TopMenuPosition_LastCategory);
+			}
+		}
 	}
 }
 
@@ -193,6 +216,12 @@ public Action Command_VoteSkipIntro(int client, int args)
 
 bool StartVoteSkipIntro(int client)
 {
+	if (!pAllowVoteSkipIntro.BoolValue)
+	{
+		if (client != -1)
+			MsgReply(client, "Skip intro vote is disabled on this server");
+		return false;
+	}
 	if (!szSkipTo[0])
 	{
 		if (client != -1)
@@ -273,6 +302,11 @@ public Action Command_VoteRestartMap(int client, int args)
 
 bool StartVoteRestartMap(int client)
 {
+	if (!pAllowVoteRestartMap.BoolValue)
+	{
+		MsgReply(client, "Restart vote is disabled on this server");
+		return false;
+	}
 	if (IsVoteInProgress())
 	{
 		MsgReply(client, "Another vote is already in progress");
@@ -323,6 +357,95 @@ public int VoteRestartHandler(Menu menu, MenuAction action, int param1, int para
 	else if (action == MenuAction_End)
 	{
 		nextVoteRestart = GetTime() + VOTE_COOLDOWN;
+		delete menu;
+	}
+
+	return -1;
+}
+
+//------------------------------------------------------
+// Survival voting
+//------------------------------------------------------
+
+public Action Command_VoteSurvival(int client, int args)
+{
+	StartVoteSurvival(client);
+	return Plugin_Handled;
+}
+
+bool StartVoteSurvival(int client)
+{
+	if (!pAllowVoteSurvival.IntValue)
+	{
+		MsgReply(client, "Survival vote is disabled on this server");
+		return false;
+	}
+	if (IsVoteInProgress())
+	{
+		MsgReply(client, "Another vote is already in progress");
+		return false;
+	}
+	if (GetTime() < nextVoteSurvival)
+	{
+		char sTime[32];
+		FormatTimeLengthLong(nextVoteSurvival - GetTime(), sTime, sizeof(sTime));
+		MsgReply(client, "Survival vote is not available for another %s", sTime);
+		return false;
+	}
+	Menu menu = new Menu(VoteSurvivalHandler);
+	menu.SetTitle(GetSurvivalMode() ? "Disable survival mode" : "Enable survival mode");
+	menu.AddItem("0", "Yes");
+	menu.AddItem("1", "No");
+	menu.ExitButton = false;
+	menu.DisplayVoteToAll(VOTE_DURATION);
+	MsgAll("%N started a survival vote!", client);
+	return true;
+}
+
+public int VoteSurvivalHandler(Menu menu, MenuAction action, int param1, int param2)
+{
+	if (action == MenuAction_Select)
+	{
+		MsgAll("%N voted %s", param1, param2 == 0? "[YES]" : "[NO]");
+	}
+	if (action == MenuAction_VoteEnd)
+	{
+		if (param1 == 0)
+		{
+			ConVar pSurivalMode = FindConVar("sourcecoop_survival_mode");
+			if (pSurivalMode == null)
+			{
+				ThrowError("sourcecoop_survival_mode does not exist!");
+			}
+
+			int mode = pAllowVoteSurvival.IntValue;
+			if (mode)
+			{
+				char szTitle[2]; menu.GetTitle(szTitle, sizeof(szTitle));
+				if (szTitle[0] == 'E' ) // Enable
+				{
+					pSurivalMode.IntValue = mode;
+					MsgAll("Survival enabled!");
+				}
+				else
+				{
+					pSurivalMode.IntValue = 0;
+					MsgAll("Survival disabled!");
+				}
+			}
+		}
+		else
+		{
+			MsgAll("Vote failed!");
+		}
+	}
+	else if (action == MenuAction_VoteCancel)
+	{
+		MsgAll("Vote cancelled!");
+	}
+	else if (action == MenuAction_End)
+	{
+		nextVoteSurvival = GetTime() + VOTE_COOLDOWN;
 		delete menu;
 	}
 
@@ -485,6 +608,11 @@ public Action Command_ChangeMap(int client, int args)
 
 bool OpenMapSelectMenu(int client)
 {
+	if (!pAllowVoteChangeMap.BoolValue)
+	{
+		MsgReply(client, "Votemap is disabled on this server");
+		return false;
+	}
 	if (IsVoteInProgress())
 	{
 		MsgReply(client, "Another vote is already in progress");
