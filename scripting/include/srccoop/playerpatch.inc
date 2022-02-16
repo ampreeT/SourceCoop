@@ -127,7 +127,7 @@ public void Hook_PlayerPreThinkPost(int iClient)
 //------------------------------------------------------
 public Action OnPlayerRunCmd(int iClient, int &iButtons, int &iImpulse, float fVel[3], float fAngles[3], int &iWeapon, int& subtype, int& cmdnum, int& tickcount, int& seed, int mouse[2])
 {
-	if (IsFakeClient(iClient)) {
+	if (IsFakeClient(iClient) || !CoopManager.IsCoopModeEnabled()) {
 		return Plugin_Continue;
 	}
 
@@ -141,10 +141,12 @@ public Action OnPlayerRunCmd(int iClient, int &iButtons, int &iImpulse, float fV
 			ShowVGUIPanel(iClient, "specmenu", _, false);
 
 		Obs_Mode iMode = view_as<Obs_Mode> (GetEntProp(iClient, Prop_Send, "m_iObserverMode"));
-		int iTarget = GetEntPropEnt(iClient, Prop_Send, "m_hObserverTarget");
+		CBasePlayer pTarget = CBasePlayer(GetEntPropEnt(iClient, Prop_Send, "m_hObserverTarget"));
+		CBasePlayer pClient = CBasePlayer(iClient);
 
+		// Make sure target is not an info_observer_menu
 		// force free-look where appropriate - this removes the extra (pointless) third person spec mode
-		if (iMode == OBS_MODE_POI || (iTarget != iClient && (iTarget <= 0 || !IsClientInGame(iTarget) || IsClientObserver(iTarget)))) {
+		if (iMode == OBS_MODE_POI && pTarget != pClient && (!pTarget.IsValid() || pTarget.IsClassPlayer())) {
 			SetEntProp(iClient, Prop_Data, "m_iObserverMode", OBS_MODE_ROAMING);
 		}
 
@@ -246,7 +248,7 @@ public void Hook_PlayerSpawnPost(int iClient)
 {
 	if (!CoopManager.IsCoopModeEnabled())
 		return;
-	
+
 	CBlackMesaPlayer pPlayer = CBlackMesaPlayer(iClient);
 	if (pPlayer.IsValid())
 	{
@@ -300,7 +302,7 @@ public void Hook_PlayerSpawnPost(int iClient)
 // Player death hooks
 // - Force serverside ragdolls
 //------------------------------------------------------
-CBaseEntity g_pNewRagdoll;
+CBaseEntity g_pNewRagdoll = view_as<CBaseEntity>(-1);
 
 public MRESReturn Hook_PlayerKilled(int _this, DHookParam hParams)
 {
