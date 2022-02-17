@@ -69,6 +69,7 @@ IServerGameDLL g_ServerGameDLL;
 char g_szMapName[MAX_MAPNAME];
 char g_szPrevMapName[MAX_MAPNAME];
 char g_szEntityString[ENTITYSTRING_LENGTH];
+char g_szSteamIds[MAXPLAYERS+1][32];
 bool g_bTempDontHookEnts;
 bool g_bMapStarted;
 EngineVersion g_Engine;

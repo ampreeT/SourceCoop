@@ -273,11 +273,13 @@ public void OnClientPutInServer(int client)
 	DHookEntity(hkChangeTeam, false, client, _, Hook_PlayerChangeTeam);
 	DHookEntity(hkShouldCollide, false, client, _, Hook_PlayerShouldCollide);
 	GreetPlayer(client);
+	SetSteamId(client);
 }
 
 public void OnClientDisconnect(int client)
 {
 	g_pInstancingManager.OnClientDisconnect(client);
+	ClearSteamId(client);
 }
 
 public void OnMapEnd()
@@ -681,6 +683,21 @@ void GreetPlayer(int client)
 		Msg(client, "This server runs SourceCoop version %s.\nPress %s=%s or type %s/coopmenu%s for extra settings.", PLUGIN_VERSION, CHAT_COLOR_SEC, CHAT_COLOR_PRI, CHAT_COLOR_SEC, CHAT_COLOR_PRI);
 	}
 }
+
+void SetSteamId(int client){
+	char steamId[32];
+	if(GetClientAuthId(client, AuthId_SteamID64, steamId, 32, true)){
+		g_szSteamIds[client] = steamId;
+	}else{
+		Msg(client, "Could not retrieve Steam ID - Progress will not be saved.");
+	}
+}
+
+void ClearSteamId(int client){
+	g_szSteamIds[client] = "";
+}
+
+
 
 public Action Command_SetFeature(int iClient, int iArgs)
 {
