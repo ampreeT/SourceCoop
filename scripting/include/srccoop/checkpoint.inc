@@ -322,7 +322,16 @@ enum struct CCoopSpawn
 
 		if(strlen(g_szSteamIds[pPlayer.GetEntIndex()]) > 0 && g_pEquipmentManager.GetEquipment(g_szSteamIds[pPlayer.GetEntIndex()], existingEquipment)){
 			this.EquipPlayer(pPlayer, existingEquipment);
+			
+			//For some reason, changes to SpawnPlayerEquipment prevented the player from getting the hev suit...
+			//so below i just manually give the player the suit, as long as its not before the player would get the suit.
+			if(strcmp(g_szMapName, "bm_c0a0a") == 0 || strcmp(g_szMapName, "bm_c0a0b") == 0 || strcmp(g_szMapName, "bm_c0a0c") == 0 || strcmp(g_szMapName, "bm_c1a0a") == 0)
+				return;
+			
+			pPlayer.GiveItem("item_suit");
+			pPlayer.SetSuit(true);
 			return;
+			
 		}
 
 		this.EquipPlayer(pPlayer, this.m_pDefaultEquipment);
@@ -381,7 +390,6 @@ enum struct CCoopSpawn
 						pWeaponEntry.m_iPrimaryAmmo = -1;
 						pWeaponEntry.m_iSecondaryAmmo = -1;
 						playerEquipment.m_pWeaponList.PushArray(pWeaponEntry, sizeof(pWeaponEntry));
-						Msg(iClient, weaponClassName);
 					}
 				}
 			}
