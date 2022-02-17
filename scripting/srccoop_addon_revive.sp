@@ -10,7 +10,6 @@
 ConVar g_pConVarReviveTime, g_pConVarReviveScore, g_pConVarReviveMessages;
 
 int g_BeamSprite = -1;
-int g_HaloSprite = -1;
 int g_ColorGreen[4] = {0, 255, 0, 255};
 
 CBasePlayer g_pReviveTarget[MAXPLAYERS+1] = {view_as<CBasePlayer>(-1), ...};
@@ -52,10 +51,6 @@ public void OnMapStart()
 		if (gameConfig.GetKeyValue("SpriteBeam", buffer, sizeof(buffer)) && buffer[0])
 		{
 			g_BeamSprite = PrecacheModel(buffer);
-		}
-		if (gameConfig.GetKeyValue("SpriteHalo", buffer, sizeof(buffer)) && buffer[0])
-		{
-			g_HaloSprite = PrecacheModel(buffer);
 		}
 	}
 }
@@ -105,9 +100,6 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 			static float vecEyeAngles[3];
 			static float vecOrigin[3];
 			static float vecRagdollPosition[3];
-			static float vecStart[3];
-			static float vecEnd[3];
-			static float angAdjust;
 			
 			pPlayer.GetEyePosition(vecOrigin);
 			pPlayer.GetEyeAngles(vecEyeAngles);
@@ -146,20 +138,19 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 						// This delay is only here to prevent massive spam of tempents
 						if (g_flLastSpriteUpdate[client] <= GetGameTime())
 						{
-							vecStart[0] = (vecOrigin[0] + (8 * Cosine(DegToRad(vecEyeAngles[1]+20.0))));
-							vecStart[1] = (vecOrigin[1] + (8 * Sine(DegToRad(vecEyeAngles[1]+20.0))));
-							vecStart[2] = (vecOrigin[2] - (8 * Tangent(DegToRad(vecEyeAngles[0]))));
+							/*
+							// IN VALUES
+							CBasePlayer pPlayer
+							float flTimeToComplete = 4.0;
+							float flLengthBeam = 40.0;
+							float flWidthBeam = 0.3;
+							int Color[4];
+							float flDistFromPly = 10.0;
+							*/
 							
-							angAdjust = (40.0 * (g_flReviveTime[client] - GetGameTime()) / g_pConVarReviveTime.FloatValue) - 20.0;
+							Client_ProgressBar(pPlayer, g_pConVarReviveTime.FloatValue, 40.0, 0.3, g_ColorGreen, 10.0);
 							
-							vecEnd[0] = (vecOrigin[0] + (8 * Cosine(DegToRad(vecEyeAngles[1]+angAdjust))));
-							vecEnd[1] = (vecOrigin[1] + (8 * Sine(DegToRad(vecEyeAngles[1]+angAdjust))));
-							vecEnd[2] = vecStart[2];
-							
-							TE_SetupBeamPoints(vecStart, vecEnd, g_BeamSprite, g_HaloSprite, 0, 0, 0.1, 0.2, 0.2, 0, 0.0, g_ColorGreen, 0);
-							TE_SendToClient(client, 0.0);
-							
-							g_flLastSpriteUpdate[client] = GetGameTime() + 0.02;
+							g_flLastSpriteUpdate[client] = GetGameTime() + g_pConVarReviveTime.FloatValue;
 						}
 						
 						if (GetGameTime() >= g_flReviveTime[client])
@@ -244,6 +235,8 @@ void ResetReviveStatus(int client)
 {
 	g_pReviveTarget[client] = view_as<CBasePlayer>(-1);
 	g_flReviveTime[client] = 0.0;
+	g_flLastSpriteUpdate[client] = 0.0;
+	Client_RemoveProgressBar(client);
 }
 
 public Action DelayRespawn(Handle timer, Handle dp)
@@ -270,13 +263,128 @@ public Action DelayRespawn(Handle timer, Handle dp)
 
 public void OnClientDisconnect_Post(int client)
 {
-	g_pReviveTarget[client] = view_as<CBasePlayer>(-1);
-	g_flReviveTime[client] = 0.0;
-	g_flLastSpriteUpdate[client] = 0.0;
+	ResetReviveStatus(client);
 }
 
 public bool TraceEntityFilter(int entity, int mask, any data)
 {
 	if (entity == data) return false;
 	return true;
+}
+
+
+//------------------------------------------------------
+// Progress bar rendering
+//------------------------------------------------------
+CBaseEntity g_pProgressBar[MAXPLAYERS+1] = {view_as<CBaseEntity>(-1), ...};
+stock void Client_ProgressBar(CBasePlayer pPlayer, float flTime = 4.0, float flBarLength = 40.0, float flBarWidth = 0.3, int Color[4] = {0, 255, 0, 255}, float flDistFromPlayer = 10.0)
+{
+	// Always remove previous bar if there is one
+	Client_RemoveProgressBar(pPlayer.GetEntIndex());
+	
+	static float vecEyePosition[3];
+	
+	if (pPlayer.IsValid())
+	{
+		int iBeam = CreateEntityByName("beam");
+		if (IsValidEntity(iBeam))
+		{
+			pPlayer.GetEyePosition(vecEyePosition);
+			
+			DispatchKeyValue(iBeam, "model", "sprites/laser.vmt");
+			DispatchKeyValue(iBeam, "texture", "sprites/halo01.vmt");
+			SetEntProp(iBeam, Prop_Data, "m_nModelIndex", g_BeamSprite);
+			SetEntProp(iBeam, Prop_Data, "m_nHaloIndex", 0);
+			TeleportEntity(iBeam, vecEyePosition, NULL_VECTOR, NULL_VECTOR);
+			DispatchSpawn(iBeam);
+			ActivateEntity(iBeam);
+			
+			SetEntityRenderColor(iBeam, Color[0], Color[1], Color[2], Color[3]);
+			SetEntProp(iBeam, Prop_Data, "m_nBeamType", 1);
+			SetEntProp(iBeam, Prop_Data, "m_nBeamFlags", 0);
+			SetEntProp(iBeam, Prop_Data, "m_nNumBeamEnts", 2);
+			SetEntPropVector(iBeam, Prop_Data, "m_vecEndPos", vecEyePosition);
+			SetEntPropFloat(iBeam, Prop_Data, "m_fWidth", flBarWidth);
+			SetEntPropFloat(iBeam, Prop_Data, "m_fEndWidth", flBarWidth);
+			SetEntPropFloat(iBeam, Prop_Data, "m_fSpeed", 0.0);
+			SetEntPropFloat(iBeam, Prop_Data,"m_flFrameRate", 0.0);
+			SetEntPropFloat(iBeam, Prop_Data,"m_flHDRColorScale", 1.0);
+			SetEntProp(iBeam, Prop_Data, "m_nDissolveType", -1);
+			SetEntProp(iBeam, Prop_Data, "m_nRenderMode", 2);
+			SetEntPropFloat(iBeam, Prop_Data, "m_fHaloScale", 0.0);
+			SetEntPropEnt(iBeam, Prop_Data, "m_hEffectEntity", pPlayer.GetEntIndex());
+			
+			g_pProgressBar[pPlayer.GetEntIndex()] = CBaseEntity(iBeam);
+			static float vecStats[3];
+			vecStats[0] = flTime;
+			vecStats[1] = flBarLength;
+			vecStats[2] = flDistFromPlayer;
+			SetEntPropVector(iBeam, Prop_Data, "m_vecMaxs", vecStats);
+			SetEntPropFloat(iBeam, Prop_Data, "m_flLocalTime", GetGameTime() + flTime);
+			
+			SDKHookEx(iBeam, SDKHook_SetTransmit, Transmit_ProgressBar);
+		}
+	}
+	
+	return;
+}
+
+stock void Client_RemoveProgressBar(int iPlayer)
+{
+	if (g_pProgressBar[iPlayer].IsValid())
+	{
+		g_pProgressBar[iPlayer].Kill();
+		g_pProgressBar[iPlayer] = CBaseEntity(-1);
+	}
+	
+	return;
+}
+
+public Action Transmit_ProgressBar(int entity, int client)
+{
+	if (GetEntPropEnt(entity, Prop_Data, "m_hEffectEntity") == client)
+	{
+		static float vecStats[3];
+		static float vecStart[3], vecEnd[3], vecBeamOrigin[3];
+		static float vecEyeAngles[3], vecEyePosition[3];
+		static float flAdjustPosition, angAdjust, flEndTime;
+		
+		if (IsValidEntity(entity))
+		{
+			CBasePlayer pPlayer = CBasePlayer(client);
+			if (pPlayer.IsValid())
+			{
+				flEndTime = GetEntPropFloat(entity, Prop_Data, "m_flLocalTime");
+				if (GetGameTime() >= flEndTime) AcceptEntityInput(entity, "Kill");
+				
+				pPlayer.GetEyePosition(vecEyePosition);
+				pPlayer.GetEyeAngles(vecEyeAngles);
+				GetEntPropVector(entity, Prop_Data, "m_vecAbsOrigin", vecBeamOrigin);
+				
+				GetEntPropVector(entity, Prop_Data, "m_vecMaxs", vecStats);
+				
+				vecStart[0] = (vecEyePosition[0] + (vecStats[2] * Cosine(DegToRad(vecEyeAngles[1]+vecStats[1]))));
+				vecStart[1] = (vecEyePosition[1] + (vecStats[2] * Sine(DegToRad(vecEyeAngles[1]+vecStats[1]))));
+				vecStart[2] = (vecEyePosition[2] - (vecStats[2] * Tangent(DegToRad(vecEyeAngles[0]))));
+				
+				vecEnd[0] = (vecEyePosition[0] + (vecStats[2] * Cosine(DegToRad(vecEyeAngles[1]-vecStats[1]))));
+				vecEnd[1] = (vecEyePosition[1] + (vecStats[2] * Sine(DegToRad(vecEyeAngles[1]-vecStats[1]))));
+				vecEnd[2] = vecStart[2];
+				
+				flAdjustPosition = GetVectorDistance(vecStart, vecEnd, false);
+				angAdjust = (flAdjustPosition * (flEndTime - GetGameTime()) / vecStats[0]) - flAdjustPosition;
+				
+				vecEnd[0] = (vecStart[0] + (angAdjust * Cosine(DegToRad(vecEyeAngles[1]+90.0))));
+				vecEnd[1] = (vecStart[1] + (angAdjust * Sine(DegToRad(vecEyeAngles[1]+90.0))));
+				vecEnd[2] = vecStart[2];
+				
+				TeleportEntity(entity, vecStart, NULL_VECTOR, NULL_VECTOR);
+				SetEntPropVector(entity, Prop_Data, "m_vecEndPos", vecEnd);
+				
+				return Plugin_Continue;
+			}
+			else AcceptEntityInput(entity, "Kill");
+		}
+	}
+	return Plugin_Handled;
 }
