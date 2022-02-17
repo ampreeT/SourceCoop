@@ -149,6 +149,32 @@ enum struct CCoopEquipment
 	}
 }
 
+enum struct EquipmentManager 
+{
+    StringMap m_smEquipmentMap;
+
+
+    void Initialize()
+    {
+        this.m_smEquipmentMap = new StringMap();
+    }
+
+    void Clear()
+    {
+        this.m_smEquipmentMap.Clear();
+    }
+
+    void StoreEquipment(char[] steamId, CCoopEquipment equipment){
+        this.m_smEquipmentMap.SetArray(steamId, equipment, sizeof(equipment), true);
+    }
+
+    bool GetEquipment(char[] steamId, CCoopEquipment equipment){
+        return this.m_smEquipmentMap.GetArray(steamId, equipment, sizeof(equipment));
+    }
+}
+
+EquipmentManager g_pEquipmentManager;
+
 enum struct CCoopSpawn
 {
 	Array_t m_pCheckpointList;
@@ -290,22 +316,84 @@ enum struct CCoopSpawn
 	
 	void SpawnPlayerEquipment(CBasePlayer pPlayer)
 	{
-		if(this.m_pDefaultEquipment.m_iHealth > 0)
-			pPlayer.SetHealth(this.m_pDefaultEquipment.m_iHealth);
-		if(this.m_pDefaultEquipment.m_iArmor > 0)
-			pPlayer.SetArmor(this.m_pDefaultEquipment.m_iArmor);
+		float flStartTime = GetEngineTime();
+		CCoopEquipment existingEquipment;
+		existingEquipment.Initialize();
+
+		if(strlen(g_szSteamIds[pPlayer.GetEntIndex()]) > 0 && g_pEquipmentManager.GetEquipment(g_szSteamIds[pPlayer.GetEntIndex()], existingEquipment)){
+			this.EquipPlayer(pPlayer, existingEquipment);
+			return;
+		}
+
+		this.EquipPlayer(pPlayer, this.m_pDefaultEquipment);
+		LogDebug("SpawnPlayerEquipment took %f", GetEngineTime() - flStartTime);
+	}
+
+	void EquipPlayer(CBasePlayer pPlayer, CCoopEquipment equipment)
+	{
+		if(equipment.m_iHealth > 0)
+			pPlayer.SetHealth(equipment.m_iHealth);
+		if(equipment.m_iArmor > 0)
+			pPlayer.SetArmor(equipment.m_iArmor);
 		for (int i = 0; i < MAX_AMMO_TYPES; i++)
 		{
-			if(this.m_pDefaultEquipment.m_iAmmoCount[i] >= 0)
-				pPlayer.SetAmmoFromIndex(i, this.m_pDefaultEquipment.m_iAmmoCount[i]);
+			if(equipment.m_iAmmoCount[i] >= 0)
+				pPlayer.SetAmmoFromIndex(i, equipment.m_iAmmoCount[i]);
 		}
-		for (int i = 0; i < this.m_pDefaultEquipment.m_pWeaponList.Length; i++)
+		for (int i = 0; i < equipment.m_pWeaponList.Length; i++)
 		{
 			CCoopWeaponEntry pWeaponEntry;
-			if (this.m_pDefaultEquipment.m_pWeaponList.GetArray(i, pWeaponEntry, sizeof(pWeaponEntry)))
+			if (equipment.m_pWeaponList.GetArray(i, pWeaponEntry, sizeof(pWeaponEntry)))
 			{
 				pPlayer.GiveItem(pWeaponEntry.m_szClassname);
 			}
+		}
+	}
+
+	void SavePlayerEquipment()
+	{
+		float flStartTime = GetEngineTime();
+		for(int iClient = 0; iClient < MAXPLAYERS + 1; iClient++)
+		{
+			if(strlen(g_szSteamIds[iClient]) == 0)
+				continue;
+
+			CBasePlayer pPlayer = CBasePlayer(iClient);
+			if(!pPlayer.IsValid() || !pPlayer.IsInGame())
+				continue;
+			
+			CCoopEquipment playerEquipment;
+			playerEquipment.Initialize();
+
+			playerEquipment.m_iHealth = pPlayer.GetHealth();
+			playerEquipment.m_iArmor = pPlayer.GetArmor();
+
+			for(int iWeapon = 0; iWeapon < MAX_WEAPONS; iWeapon++)
+			{
+				CBaseCombatWeapon pWeapon = pPlayer.GetWeaponFromIndex(iWeapon);
+				char weaponClassName[MAX_CLASSNAME];
+				if(pWeapon.IsValid() && pWeapon.GetClassname(weaponClassName, sizeof(weaponClassName)))
+				{
+					if(pPlayer.HasWeapon(weaponClassName))
+					{
+						CCoopWeaponEntry pWeaponEntry;
+						strcopy(pWeaponEntry.m_szClassname, sizeof(pWeaponEntry.m_szClassname), weaponClassName);
+						pWeaponEntry.m_iPrimaryAmmo = -1;
+						pWeaponEntry.m_iSecondaryAmmo = -1;
+						playerEquipment.m_pWeaponList.PushArray(pWeaponEntry, sizeof(pWeaponEntry));
+						Msg(iClient, weaponClassName);
+					}
+				}
+			}
+
+			for(int iAmmo = 0; iAmmo < MAX_AMMO_TYPES; iAmmo++)
+			{
+				playerEquipment.m_iAmmoCount[iAmmo] = pPlayer.GetAmmoFromIndex(iAmmo);
+			}
+
+			g_pEquipmentManager.StoreEquipment(g_szSteamIds[iClient], playerEquipment);
+
+			LogDebug("SavePlayerEquipment took %f", GetEngineTime() - flStartTime);
 		}
 	}
 	
@@ -731,6 +819,8 @@ public void Hook_TouchCheckpoint(int iEntity, int iOther)
 			
 			iIndex++;
 		}
+
+		g_SpawnSystem.SavePlayerEquipment();
 		SDKUnhook(iEntity, SDKHook_StartTouchPost, Hook_TouchCheckpoint);
 	}
 }

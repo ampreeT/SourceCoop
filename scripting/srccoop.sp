@@ -134,6 +134,7 @@ public void OnPluginStart()
 	g_pInstancingManager.Initialize();
 	g_pPostponedSpawns = CreateArray();
 	g_pFeatureMap = new FeatureMap();
+	g_pEquipmentManager.Initialize();
 	InitializeMenus();
 	
 	g_CoopMapStartFwd = new GlobalForward("OnCoopMapStart", ET_Ignore);

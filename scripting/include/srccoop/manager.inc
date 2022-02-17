@@ -149,6 +149,7 @@ methodmap ChangeLevelManager < Array_t
 		ChangeLevelManager pSorted = this.Sorted();
 		ChangeLevelVoteLump pChangeLvlLump;
 		pSorted.GetArray(0, pChangeLvlLump);
+		g_SpawnSystem.SavePlayerEquipment();
 		pChangeLvlLump.m_pChangeLevel.ChangeLevelNow();
 		delete pSorted;
 	}
