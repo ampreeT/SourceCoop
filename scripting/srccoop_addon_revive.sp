@@ -10,7 +10,6 @@
 ConVar g_pConVarReviveTime, g_pConVarReviveScore, g_pConVarReviveMessages;
 
 int g_BeamSprite = -1;
-int g_HaloSprite = -1;
 int g_ColorGreen[4] = {0, 255, 0, 255};
 
 CBasePlayer g_pReviveTarget[MAXPLAYERS+1] = {view_as<CBasePlayer>(-1), ...};
@@ -52,10 +51,6 @@ public void OnMapStart()
 		if (gameConfig.GetKeyValue("SpriteBeam", buffer, sizeof(buffer)) && buffer[0])
 		{
 			g_BeamSprite = PrecacheModel(buffer);
-		}
-		if (gameConfig.GetKeyValue("SpriteHalo", buffer, sizeof(buffer)) && buffer[0])
-		{
-			g_HaloSprite = PrecacheModel(buffer);
 		}
 	}
 }
