@@ -326,7 +326,7 @@ enum struct CCoopSpawn
 		}
 		else
 		{
-			this.EquipPlayer(pPlayer, this.m_pDefaultEquipment, null);
+			this.EquipPlayer(pPlayer, this.m_pDefaultEquipment, this.m_pDefaultEquipment);
 		}
 
 		LogDebug("SpawnPlayerEquipment took %f", GetEngineTime() - flStartTime);
@@ -338,7 +338,7 @@ enum struct CCoopSpawn
 		{
 			pPlayer.SetHealth(equipment.m_iHealth);
 		}
-		else if(defaultEquipment != null)
+		else
 		{
 			pPlayer.SetHealth(defaultEquipment.m_iHealth);
 		}
@@ -347,7 +347,7 @@ enum struct CCoopSpawn
 		{
 			pPlayer.SetArmor(equipment.m_iArmor);
 		}
-		else if(defaultEquipment != null)
+		else
 		{
 			pPlayer.SetArmor(defaultEquipment.m_iArmor);
 		}
