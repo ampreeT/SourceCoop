@@ -127,6 +127,7 @@ public void OnPluginStart()
 	RegAdminCmd("sc_ft", Command_SetFeature, ADMFLAG_ROOT, "Command for toggling plugin features on/off");
 	RegAdminCmd("sc_save", Command_Save, ADMFLAG_ROOT, "Exports last saved player equipment state. Equipment state is saved at the end of a map, so this wil record the state as of the start of a map.");
 	RegAdminCmd("sc_load", Command_Load, ADMFLAG_ROOT, "Imports saved data from file and attempts to equip each player (if they were present when the data was saved).");
+	RegAdminCmd("sc_clear_equipment", Command_Clear_Equipment, ADMFLAG_ROOT, "Clear persisted equipment and equip players with the map defaults.");
 	RegServerCmd("sourcecoop_dump", Command_DumpMapEntities, "Command for dumping map entities to a file");
 	RegServerCmd("sc_dump", Command_DumpMapEntities, "Command for dumping map entities to a file");
 	
@@ -944,4 +945,30 @@ public Action Command_Load(int iClient, int iArgs){
 	}
 
 	return Plugin_Handled;
+}
+
+public Action Command_Clear_Equipment(int iClient, int iArgs){
+	if(iArgs != 0)
+	{
+		MsgReply(iClient, "Format: sc_clear_equipment");
+		return Plugin_Handled;
+	}
+
+	g_pEquipmentManager.Clear();
+
+	for(int i = 0; i < MAXPLAYERS + 1; i++)
+	{
+		if(strlen(g_szSteamIds[i]) == 0)
+			continue;
+
+		CBasePlayer pPlayer = CBasePlayer(i);
+		if(!pPlayer.IsValid() || !pPlayer.IsInGame())
+			continue;
+
+		g_SpawnSystem.StripPlayer(pPlayer);
+		g_SpawnSystem.SpawnPlayerEquipment(pPlayer);
+	}
+
+	return Plugin_Handled;
+	
 }
