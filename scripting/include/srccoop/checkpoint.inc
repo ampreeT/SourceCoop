@@ -320,7 +320,7 @@ enum struct CCoopSpawn
 		CCoopEquipment existingEquipment;
 		existingEquipment.Initialize();
 
-		if(strlen(g_szSteamIds[pPlayer.GetEntIndex()]) > 0 && g_pEquipmentManager.GetEquipment(g_szSteamIds[pPlayer.GetEntIndex()], existingEquipment))
+		if(g_pPersistEquipment.BoolValue && strlen(g_szSteamIds[pPlayer.GetEntIndex()]) > 0 && g_pEquipmentManager.GetEquipment(g_szSteamIds[pPlayer.GetEntIndex()], existingEquipment))
 		{
 			this.EquipPlayer(pPlayer, existingEquipment, this.m_pDefaultEquipment);
 		}
@@ -844,8 +844,13 @@ public void Hook_TouchCheckpoint(int iEntity, int iOther)
 			
 			iIndex++;
 		}
+		
+		//May be of use for survival mode, but leaving it out for now
+		// if(g_pPersistEquipment.BoolValue)
+		// {
+		// 	g_SpawnSystem.SavePlayerEquipment();
+		// }
 
-		g_SpawnSystem.SavePlayerEquipment();
 		SDKUnhook(iEntity, SDKHook_StartTouchPost, Hook_TouchCheckpoint);
 	}
 }
