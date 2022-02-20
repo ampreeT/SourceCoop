@@ -127,8 +127,11 @@ public void OnPluginStart()
 	RegAdminCmd("sourcecoop_ft", Command_SetFeature, ADMFLAG_ROOT, "Command for toggling plugin features on/off");
 	RegAdminCmd("sc_ft", Command_SetFeature, ADMFLAG_ROOT, "Command for toggling plugin features on/off");
 	RegAdminCmd("sc_save", Command_Save, ADMFLAG_ROOT, "Exports last saved player equipment state. Equipment state is saved at the end of a map, so this wil record the state as of the start of a map.");
+	RegAdminCmd("sourcecoop_save", Command_Save, ADMFLAG_ROOT, "Exports last saved player equipment state. Equipment state is saved at the end of a map, so this wil record the state as of the start of a map.");
 	RegAdminCmd("sc_load", Command_Load, ADMFLAG_ROOT, "Imports saved data from file and attempts to equip each player (if they were present when the data was saved).");
+	RegAdminCmd("sourcecoop_load", Command_Load, ADMFLAG_ROOT, "Imports saved data from file and attempts to equip each player (if they were present when the data was saved).");
 	RegAdminCmd("sc_clear_equipment", Command_Clear_Equipment, ADMFLAG_ROOT, "Clear persisted equipment and equip players with the map defaults.");
+	RegAdminCmd("sourcecoop_clear_equipment", Command_Clear_Equipment, ADMFLAG_ROOT, "Clear persisted equipment and equip players with the map defaults.");
 	RegServerCmd("sourcecoop_dump", Command_DumpMapEntities, "Command for dumping map entities to a file");
 	RegServerCmd("sc_dump", Command_DumpMapEntities, "Command for dumping map entities to a file");
 	
