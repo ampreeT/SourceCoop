@@ -14,6 +14,7 @@ ConVar g_pConvarEndWaitPeriod;
 ConVar g_pConvarEndWaitFactor;
 ConVar g_pConvarHomeMap;
 ConVar g_pConvarEndWaitDisplayMode;
+ConVar g_pPersistEquipment;
 
 // Existing ConVars
 ConVar mp_friendlyfire;
