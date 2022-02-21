@@ -119,12 +119,19 @@ public void OnPluginStart()
 	g_pConvarEndWaitFactor = CreateConVar("sourcecoop_end_wait_factor", "1.0", "Controls how much the number of finished players increases the changelevel timer speed. 1.0 means full, 0 means none (timer will run full length).", _, true, 0.0, true, 1.0);
 	g_pConvarHomeMap = CreateConVar("sourcecoop_homemap", "", "The map to return to after finishing a campaign/map.");
 	g_pConvarEndWaitDisplayMode = CreateConVar("sourcecoop_end_wait_display_mode", "0", "Sets which method to show countdown. 0 is panel, 1 is hud text.", _, true, 0.0, true, 1.0);
+	g_pPersistEquipment = CreateConVar("sourcecoop_persist_equipment", "1", "Determines whether equipment is persisted from map to map. 0 means use default map equipment, 1 means maintain equipment between maps", _, true, 0.0, true, 1.0);
 	
 	mp_friendlyfire = FindConVar("mp_friendlyfire");
 	mp_flashlight = FindConVar("mp_flashlight");
 	
 	RegAdminCmd("sourcecoop_ft", Command_SetFeature, ADMFLAG_ROOT, "Command for toggling plugin features on/off");
 	RegAdminCmd("sc_ft", Command_SetFeature, ADMFLAG_ROOT, "Command for toggling plugin features on/off");
+	RegAdminCmd("sc_save", Command_Save, ADMFLAG_ROOT, "Exports last saved player equipment state. Equipment state is saved at the end of a map, so this wil record the state as of the start of a map.");
+	RegAdminCmd("sourcecoop_save", Command_Save, ADMFLAG_ROOT, "Exports last saved player equipment state. Equipment state is saved at the end of a map, so this wil record the state as of the start of a map.");
+	RegAdminCmd("sc_load", Command_Load, ADMFLAG_ROOT, "Imports saved data from file and attempts to equip each player (if they were present when the data was saved).");
+	RegAdminCmd("sourcecoop_load", Command_Load, ADMFLAG_ROOT, "Imports saved data from file and attempts to equip each player (if they were present when the data was saved).");
+	RegAdminCmd("sc_clear_equipment", Command_Clear_Equipment, ADMFLAG_ROOT, "Clear persisted equipment and equip players with the map defaults.");
+	RegAdminCmd("sourcecoop_clear_equipment", Command_Clear_Equipment, ADMFLAG_ROOT, "Clear persisted equipment and equip players with the map defaults.");
 	RegServerCmd("sourcecoop_dump", Command_DumpMapEntities, "Command for dumping map entities to a file");
 	RegServerCmd("sc_dump", Command_DumpMapEntities, "Command for dumping map entities to a file");
 	
@@ -134,6 +141,7 @@ public void OnPluginStart()
 	g_pInstancingManager.Initialize();
 	g_pPostponedSpawns = CreateArray();
 	g_pFeatureMap = new FeatureMap();
+	g_pEquipmentManager.Initialize();
 	InitializeMenus();
 	
 	g_CoopMapStartFwd = new GlobalForward("OnCoopMapStart", ET_Ignore);
@@ -273,11 +281,13 @@ public void OnClientPutInServer(int client)
 	DHookEntity(hkChangeTeam, false, client, _, Hook_PlayerChangeTeam);
 	DHookEntity(hkShouldCollide, false, client, _, Hook_PlayerShouldCollide);
 	GreetPlayer(client);
+	SetSteamId(client);
 }
 
 public void OnClientDisconnect(int client)
 {
 	g_pInstancingManager.OnClientDisconnect(client);
+	ClearSteamId(client);
 }
 
 public void OnMapEnd()
@@ -682,6 +692,21 @@ void GreetPlayer(int client)
 	}
 }
 
+void SetSteamId(int client){
+	char steamId[32];
+	if(GetClientAuthId(client, AuthId_SteamID64, steamId, 32, true)){
+		g_szSteamIds[client] = steamId;
+	}else{
+		Msg(client, "Could not retrieve Steam ID - Progress will not be saved.");
+	}
+}
+
+void ClearSteamId(int client){
+	g_szSteamIds[client] = "";
+}
+
+
+
 public Action Command_SetFeature(int iClient, int iArgs)
 {
 	if(iArgs != 2)
@@ -744,4 +769,210 @@ public Action Command_DumpMapEntities(int iArgs)
 		PrintToServer("Failed opening file for writing: %s", szDumpPath);
 	}
 	return Plugin_Handled;
+}
+
+void GetSaveDataPath(char buffer[PLATFORM_MAX_PATH], char szFileName[64]){
+	char szFolder[10] = "SaveData/";
+
+	char relativePath[PLATFORM_MAX_PATH + 64];
+	strcopy(relativePath, sizeof(relativePath), szFolder);
+	StrCat(relativePath, sizeof(relativePath), szFileName);
+
+	BuildPath(Path_SM, buffer, sizeof(buffer), relativePath);
+}
+
+public Action Command_Save(int iClient, int iArgs)
+{
+	if(iArgs != 1)
+	{
+		MsgReply(iClient, "Format: sc_save <FILENAME>");
+		return Plugin_Handled;
+	}
+
+	char szFileName[64];
+	GetCmdArg(1, szFileName, sizeof(szFileName));
+
+	char szFullPath[PLATFORM_MAX_PATH];
+	GetSaveDataPath(szFullPath, szFileName);
+
+	KeyValues kv = new KeyValues("SaveData");
+	bool shouldSave = false;
+	for(int i = 0; i < MAXPLAYERS + 1; i++)
+	{
+		if(strlen(g_szSteamIds[i]) == 0)
+			continue;
+		
+		CCoopEquipment equipment; 
+		equipment.Initialize();
+
+		if(!g_pEquipmentManager.GetEquipment(g_szSteamIds[i], equipment))
+			continue;
+
+
+		kv.JumpToKey(g_szSteamIds[i], true);
+		kv.SetNum("hp", equipment.m_iHealth);
+		kv.SetNum("armor", equipment.m_iArmor);
+		kv.JumpToKey("weapons", true);
+
+		for(int j = 0; j < equipment.m_pWeaponList.Length; j++)
+		{
+			CCoopWeaponEntry pWeaponEntry;
+			if (equipment.m_pWeaponList.GetArray(j, pWeaponEntry, sizeof(pWeaponEntry)))
+			{
+				kv.SetNum(pWeaponEntry.m_szClassname, 1);
+			}
+
+		}
+
+		kv.GoBack();
+		kv.JumpToKey("ammo", true);
+		for(int k = 0; k < MAX_AMMO_TYPES; k++)
+		{
+			char key[3];
+			IntToString(k, key, sizeof(key));
+			kv.SetNum(key, equipment.m_iAmmoCount[k]);
+		}
+
+		shouldSave = true;
+	}
+
+	if(!shouldSave)
+	{
+		MsgReply(iClient, "No valid players found. Could not save data");
+		return Plugin_Handled;
+	}
+
+	kv.Rewind();
+	kv.ExportToFile(szFullPath);
+	delete kv;
+	return Plugin_Handled;
+}
+
+public Action Command_Load(int iClient, int iArgs){
+	if(iArgs != 1)
+	{
+		MsgReply(iClient, "Format: sc_load <FILENAME>");
+		return Plugin_Handled;
+	}
+
+	char szFileName[64];
+	GetCmdArg(1, szFileName, sizeof(szFileName));
+
+	char szFullPath[PLATFORM_MAX_PATH];
+	GetSaveDataPath(szFullPath, szFileName);
+
+	if(!FileExists(szFullPath))
+	{
+		MsgReply(iClient, "Could not find specified save file %s", szFullPath);
+		return Plugin_Handled;
+	}
+
+	
+	KeyValues kv = new KeyValues("SaveData");
+	if(!kv.ImportFromFile(szFullPath))
+	{
+		MsgReply(iClient, "Failed to parse KeyValues file %s", szFullPath);
+		return Plugin_Handled;	
+	}
+
+	for(int i = 0; i < MAXPLAYERS + 1; i++)
+	{
+		if(strlen(g_szSteamIds[i]) == 0)
+			continue;
+
+		if(!kv.JumpToKey(g_szSteamIds[i]))
+			continue;
+
+		CBasePlayer pPlayer = CBasePlayer(i);
+		if(!pPlayer.IsValid() || !pPlayer.IsInGame())
+			continue;
+
+		CCoopEquipment equipment;
+		equipment.Initialize();
+
+		equipment.m_iHealth = kv.GetNum("hp");
+		equipment.m_iArmor = kv.GetNum("armor");
+
+		if(!kv.JumpToKey("weapons"))
+		{
+			MsgReply(iClient, "Unable to find weapons section in KeyValues file");
+			return Plugin_Handled;	
+		}
+
+		if(kv.GotoFirstSubKey(false))
+		{
+			do
+			{
+				char weaponName[MAX_CLASSNAME];
+				if(kv.GetSectionName(weaponName, sizeof(weaponName)))
+				{
+					CCoopWeaponEntry pWeaponEntry;
+					strcopy(pWeaponEntry.m_szClassname, sizeof(pWeaponEntry.m_szClassname), weaponName);
+					pWeaponEntry.m_iPrimaryAmmo = -1;
+					pWeaponEntry.m_iSecondaryAmmo = -1;
+					equipment.m_pWeaponList.PushArray(pWeaponEntry, sizeof(pWeaponEntry));
+				}
+			}
+			while(kv.GotoNextKey(false));
+
+			kv.GoBack(); //return to weapons node
+		}
+
+		kv.GoBack(); //return to player node
+		
+		if(!kv.JumpToKey("ammo"))
+		{
+			MsgReply(iClient, "Unable to find ammo section in KeyValues file");
+			return Plugin_Handled;	
+		}
+
+		if(kv.GotoFirstSubKey(false))
+		{
+			do 
+			{
+				char ammoKey[3];
+				if(kv.GetSectionName(ammoKey, sizeof(ammoKey)))
+				{
+					int index = StringToInt(ammoKey);
+					int count = kv.GetNum(ammoKey);
+					equipment.m_iAmmoCount[index] = count;
+				}
+			}
+			while(kv.GotoNextKey(false));
+		}
+
+		g_pEquipmentManager.StoreEquipment(g_szSteamIds[i], equipment);
+		g_SpawnSystem.StripPlayer(pPlayer);
+		g_SpawnSystem.SpawnPlayerEquipment(pPlayer);
+
+		PrintToServer("Loaded Equipment for player %s", g_szSteamIds[i]);
+	}
+
+	return Plugin_Handled;
+}
+
+public Action Command_Clear_Equipment(int iClient, int iArgs){
+	if(iArgs != 0)
+	{
+		MsgReply(iClient, "Format: sc_clear_equipment");
+		return Plugin_Handled;
+	}
+
+	g_pEquipmentManager.Clear();
+
+	for(int i = 0; i < MAXPLAYERS + 1; i++)
+	{
+		if(strlen(g_szSteamIds[i]) == 0)
+			continue;
+
+		CBasePlayer pPlayer = CBasePlayer(i);
+		if(!pPlayer.IsValid() || !pPlayer.IsInGame())
+			continue;
+
+		g_SpawnSystem.StripPlayer(pPlayer);
+		g_SpawnSystem.SpawnPlayerEquipment(pPlayer);
+	}
+
+	return Plugin_Handled;
+	
 }

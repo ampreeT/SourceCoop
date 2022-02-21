@@ -14,6 +14,7 @@ ConVar g_pConvarEndWaitPeriod;
 ConVar g_pConvarEndWaitFactor;
 ConVar g_pConvarHomeMap;
 ConVar g_pConvarEndWaitDisplayMode;
+ConVar g_pPersistEquipment;
 
 // Existing ConVars
 ConVar mp_friendlyfire;
@@ -69,6 +70,7 @@ IServerGameDLL g_ServerGameDLL;
 char g_szMapName[MAX_MAPNAME];
 char g_szPrevMapName[MAX_MAPNAME];
 char g_szEntityString[ENTITYSTRING_LENGTH];
+char g_szSteamIds[MAXPLAYERS+1][32];
 bool g_bTempDontHookEnts;
 bool g_bMapStarted;
 EngineVersion g_Engine;
