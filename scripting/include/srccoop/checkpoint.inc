@@ -845,11 +845,10 @@ public void Hook_TouchCheckpoint(int iEntity, int iOther)
 			iIndex++;
 		}
 		
-		//May be of use for survival mode, but leaving it out for now
-		// if(g_pPersistEquipment.BoolValue)
-		// {
-		// 	g_SpawnSystem.SavePlayerEquipment();
-		// }
+		if(g_pPersistEquipment.BoolValue)
+		{
+			g_SpawnSystem.SavePlayerEquipment();
+		}
 
 		SDKUnhook(iEntity, SDKHook_StartTouchPost, Hook_TouchCheckpoint);
 	}
