@@ -772,7 +772,7 @@ public Action Command_DumpMapEntities(int iArgs)
 }
 
 void GetSaveDataPath(char buffer[PLATFORM_MAX_PATH], char szFileName[64]){
-	char szFolder[10] = "SaveData/";
+	char szFolder[10] = "savedata/";
 
 	char relativePath[PLATFORM_MAX_PATH + 64];
 	strcopy(relativePath, sizeof(relativePath), szFolder);
