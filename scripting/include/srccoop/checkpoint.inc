@@ -322,36 +322,36 @@ enum struct CCoopSpawn
 
 		if(g_pPersistEquipment.BoolValue && strlen(g_szSteamIds[pPlayer.GetEntIndex()]) > 0 && g_pEquipmentManager.GetEquipment(g_szSteamIds[pPlayer.GetEntIndex()], existingEquipment))
 		{
-			this.EquipPlayer(pPlayer, existingEquipment, this.m_pDefaultEquipment);
+			this.EquipPlayer(pPlayer, existingEquipment);
 		}
 		else
 		{
-			this.EquipPlayer(pPlayer, this.m_pDefaultEquipment, this.m_pDefaultEquipment);
+			this.EquipPlayer(pPlayer, this.m_pDefaultEquipment);
 		}
 
 		LogDebug("SpawnPlayerEquipment took %f", GetEngineTime() - flStartTime);
 	}
 
-	void EquipPlayer(CBasePlayer pPlayer, CCoopEquipment equipment, CCoopEquipment defaultEquipment)
+	void EquipPlayer(CBasePlayer pPlayer, CCoopEquipment equipment)
 	{
 		if(equipment.m_iHealth > 0)
 		{
 			pPlayer.SetHealth(equipment.m_iHealth);
 		}
-		else
+		else if(this.m_pDefaultEquipment.m_iHealth > 0)
 		{
-			pPlayer.SetHealth(defaultEquipment.m_iHealth);
+			pPlayer.SetHealth(this.m_pDefaultEquipment.m_iHealth);
 		}
 
 		if(equipment.m_iArmor > 0)
 		{
-			pPlayer.SetArmor(equipment.m_iArmor);
+			pPlayer.SetArmor(equipment.m_iArmor);	
 		}
-		else
+		else if(this.m_pDefaultEquipment.m_iArmor > 0)
 		{
-			pPlayer.SetArmor(defaultEquipment.m_iArmor);
+			pPlayer.SetArmor(this.m_pDefaultEquipment.m_iArmor);
 		}
-
+		
 		for (int i = 0; i < MAX_AMMO_TYPES; i++)
 		{
 			if(equipment.m_iAmmoCount[i] >= 0)
