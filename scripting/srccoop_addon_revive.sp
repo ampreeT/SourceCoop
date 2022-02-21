@@ -295,6 +295,8 @@ stock void Client_ProgressBar(CBasePlayer pPlayer, float flTime = 4.0, float flB
 			if (IsValidEntity(iBarBox))
 			{
 				SetEntPropEnt(iBeam, Prop_Data, "m_hEffectEntity", iBarBox);
+				SetEntPropEnt(iBarBox, Prop_Data, "m_hEffectEntity", pPlayer.GetEntIndex());
+				SDKHookEx(iBarBox, SDKHook_SetTransmit, Transmit_ProgressBarBox);
 			}
 			
 			g_pProgressBar[pPlayer.GetEntIndex()] = CBaseEntity(iBeam);
@@ -358,6 +360,15 @@ stock void Client_RemoveProgressBar(int iPlayer)
 	}
 	
 	return;
+}
+
+public Action Transmit_ProgressBarBox(int entity, int client)
+{
+	if (GetEntPropEnt(entity, Prop_Data, "m_hEffectEntity") == client)
+	{
+		return Plugin_Continue;
+	}
+	return Plugin_Handled;
 }
 
 public Action Transmit_ProgressBar(int entity, int client)
