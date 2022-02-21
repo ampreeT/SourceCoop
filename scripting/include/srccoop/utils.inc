@@ -280,11 +280,6 @@ stock int FindEntityByOwner(int startEnt, CBaseEntity pOwnerEntity, const char[]
 	return -1;
 }
 
-stock CBaseEntity CreateByClassname(const char[] szClassname)
-{
-	return CBaseEntity(CreateEntityByName(szClassname));
-}
-
 //------------------------------------------------------
 // Player utils
 //------------------------------------------------------

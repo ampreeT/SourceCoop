@@ -117,6 +117,11 @@ enum
 	SF_TRIGGER_DISALLOW_BOTS                = 0x1000,   // Bots are not allowed to fire this trigger
 };
 
+// Sprite spawnflags
+#define SF_SPRITE_STARTON		0x0001
+#define SF_SPRITE_ONCE			0x0002
+#define SF_SPRITE_TEMPORARY		0x8000
+
 //------------------------------------------------------
 // Effects flags
 //------------------------------------------------------

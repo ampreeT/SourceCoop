@@ -252,7 +252,7 @@ public void OnConfigsExecutedPost()
 	{
 		if (CoopManager.IsFeatureEnabled(FT_STRIP_DEFAULT_EQUIPMENT))
 		{
-			CBaseEntity pGameEquip = CreateByClassname("game_player_equip");	// will spawn players with nothing if it exists
+			CBaseEntity pGameEquip = CBaseEntity.Create("game_player_equip");	// will spawn players with nothing if it exists
 			if (pGameEquip.IsValid())
 			{
 				if(!CoopManager.IsFeatureEnabled(FT_STRIP_DEFAULT_EQUIPMENT_KEEPSUIT))
@@ -264,7 +264,7 @@ public void OnConfigsExecutedPost()
 		}
 		if (CoopManager.IsFeatureEnabled(FT_DISABLE_CANISTER_DROPS))
 		{
-			CBaseEntity pGameGamerules = CreateByClassname("game_mp_gamerules");
+			CBaseEntity pGameGamerules = CBaseEntity.Create("game_mp_gamerules");
 			if (pGameGamerules.IsValid())
 			{
 				pGameGamerules.Spawn();

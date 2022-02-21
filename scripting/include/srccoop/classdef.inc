@@ -117,6 +117,11 @@ methodmap CBaseEntity
 	{
 		return view_as<CBaseEntity>(iEntIndex > -1 ? EntIndexToEntRef(iEntIndex) : iEntIndex);
 	}
+	public static CBaseEntity Create(const char[] szClassname)
+	{
+		return CBaseEntity(CreateEntityByName(szClassname));
+	}
+
 	public int GetEntIndex()
 	{
 		return EntRefToEntIndex(view_as<int>(this));
@@ -175,21 +180,26 @@ methodmap CBaseEntity
 	{
 		ActivateEntity(this.GetEntIndex());
 	}
+	public bool AcceptInput(const char[] szInput, CBaseEntity pActivator = view_as<CBaseEntity>(-1), CBaseEntity pCaller = view_as<CBaseEntity>(-1), const int iOutputID = 0)
+	{
+		return AcceptEntityInput(this.GetEntIndex(), szInput, pActivator.GetEntIndex(), pCaller.GetEntIndex(), iOutputID);
+	}
 	public bool AcceptInputStr(const char[] szInput, const char[] szBuffer = "", CBaseEntity pActivator = view_as<CBaseEntity>(-1), CBaseEntity pCaller = view_as<CBaseEntity>(-1), const int iOutputID = 0)
 	{
 		SetVariantString(szBuffer);
-		return AcceptEntityInput(this.GetEntIndex(), szInput, pActivator.GetEntIndex(), pCaller.GetEntIndex(), iOutputID);
+		return this.AcceptInput(szInput, pActivator, pCaller, iOutputID);
 	}
 	public bool AcceptInputInt(const char[] szInput, const int iValue, CBaseEntity pActivator = view_as<CBaseEntity>(-1), CBaseEntity pCaller = view_as<CBaseEntity>(-1), const int iOutputID = 0)
 	{
-		char szBuffer[MAX_FORMAT];
-		Format(szBuffer, sizeof(szBuffer), "%d", iValue);
-		return this.AcceptInputStr(szInput, szBuffer, pActivator, pCaller, iOutputID);
+		SetVariantInt(iValue);
+		return this.AcceptInput(szInput, pActivator, pCaller, iOutputID);
 	}
 	public bool AcceptInputVector(const char[] szInput, const float vecValue[3], CBaseEntity pActivator = view_as<CBaseEntity>(-1), CBaseEntity pCaller = view_as<CBaseEntity>(-1), const int iOutputID = 0)
 	{
+		// ToDo: Should this use SetVariantPosVector3D or SetVariantVector3D?
 		char szBuffer[MAX_FORMAT];
 		Format(szBuffer, sizeof(szBuffer), "%f %f %f", vecValue[0], vecValue[1], vecValue[2]);
+		SetVariantString(szBuffer);
 		return this.AcceptInputStr(szInput, szBuffer, pActivator, pCaller, iOutputID);
 	}
 	public bool OutputAdd(const char[] szOutput, const char[] szTarget, const char[] szTargetInput, const char[] szParameter = "", float flDelay)
@@ -418,6 +428,40 @@ methodmap CBaseEntity
 	public void SetModelIndex(int nModelIndex)
 	{
 		SetEntProp(this.GetEntIndex(), Prop_Send, "m_nModelIndex", nModelIndex);
+	}
+	public RenderMode GetRenderMode()
+	{
+		return GetEntityRenderMode(this.GetEntIndex());
+	}
+	public void SetRenderMode(RenderMode rendermode)
+	{
+		SetEntityRenderMode(this.GetEntIndex(), rendermode);
+	}
+	public RenderFx GetRenderFx()
+	{
+		return GetEntityRenderFx(this.GetEntIndex());
+	}
+	public void SetRenderFx(RenderFx renderfx)
+	{
+		SetEntityRenderFx(this.GetEntIndex(), renderfx);
+	}
+	public void GetRenderColor(int &r, int &g, int &b, int &a)
+	{
+		GetEntityRenderColor(this.GetEntIndex(), r, g, b, a);
+	}
+	public void SetRenderColor(int r=255, int g=255, int b=255, int a=255)
+	{
+		SetEntityRenderColor(this.GetEntIndex(), r, g, b, a);
+	}
+	public int GetRenderAlpha()
+	{
+		int a; this.GetRenderColor(a, a, a, a);
+		return a;
+	}
+	public void SetRenderAlpha(int iAmount)
+	{
+		int r, g, b, a; this.GetRenderColor(r, g, b, a);
+		this.SetRenderColor(r, g, b, iAmount);
 	}
 	public int GetEffects()
 	{
@@ -1166,9 +1210,74 @@ methodmap CBlackMesaPlayer < CBasePlayer
 	}
 }
 
-public bool Callback_GetAimTarget(int iEntity, int iMask, any pData)
+methodmap CSprite < CBaseEntity
 {
-	return !view_as<bool>(iEntity == pData);
+	public CSprite(const int iEntIndex = -1)
+	{
+		return view_as<CSprite>(CBaseEntity(iEntIndex));
+	}
+	public static CSprite Create()
+	{
+		return CSprite(CreateEntityByName("env_sprite"));
+	}
+
+	public float GetScale()
+	{
+		return GetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flSpriteScale");
+	}
+	public void SetScale(float val)
+	{
+		SetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flSpriteScale", val);
+	}
+	public float GetFramerate()
+	{
+		return GetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flSpriteFramerate");
+	}
+	public void SetFramerate(float val)
+	{
+		SetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flSpriteFramerate", val);
+	}
+	public float GetFrame()
+	{
+		return GetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flFrame");
+	}
+	public void SetFrame(float val)
+	{
+		SetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flFrame", val);
+	}
+	public float Frames()
+	{
+		return GetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flMaxFrame");
+	}
+	public float GetGlowProxySize()
+	{
+		return GetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flGlowProxySize");
+	}
+	public void SetGlowProxySize(float val)
+	{
+		SetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flGlowProxySize", val);
+	}
+	public void SetAttachment(CBaseEntity pEntity, int attachment)
+	{
+		if (pEntity.IsValid())
+		{
+			SetEntPropEnt(this.GetEntIndex(), Prop_Data, "m_hAttachedToEntity", pEntity.GetEntIndex());
+			SetEntProp(this.GetEntIndex(), Prop_Data, "m_nAttachment", attachment);
+			this.SetParent(pEntity);
+		}
+	}
+	public void TurnOff()
+	{
+		this.AcceptInput("HideSprite");
+	}
+	public void TurnOn()
+	{
+		this.AcceptInput("ShowSprite");
+	}
+	public bool IsOn()
+	{
+		return !(this.GetEffects() & EF_NODRAW);
+	}
 }
 
 methodmap CBM_MP_GameRules
@@ -1231,4 +1340,9 @@ methodmap IServerGameDLL
 	{
 		SDKCall(g_pGameShutdown, this); // GameShutdown() just resets global states
 	}
+}
+
+public bool Callback_GetAimTarget(int iEntity, int iMask, any pData)
+{
+	return !view_as<bool>(iEntity == pData);
 }
