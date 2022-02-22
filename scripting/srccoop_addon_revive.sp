@@ -75,7 +75,7 @@ public Action Command_ForceRespawn(int client, int args)
 		CBasePlayer pTarget = CBasePlayer(iTarget);
 		if (SurvivalRespawn(pTarget))
 		{
-			MsgReply(client, "Spawned '%N'.", iTarget, iTarget);
+			MsgReply(client, "Spawned '%N'.", iTarget);
 		}
 		else
 		{
