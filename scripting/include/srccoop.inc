@@ -28,6 +28,7 @@
 #include <srccoop/entitypatch.inc>
 #include <srccoop/instancing.inc>
 #include <srccoop/playerpatch.inc>
+#include <srccoop/manager_persistence>
 #include <srccoop/menu.inc>
 
 

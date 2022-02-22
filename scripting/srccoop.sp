@@ -153,7 +153,7 @@ public void OnPluginStart()
 		AddTempEntHook("BlackMesa Shot", BlackMesaFireBulletsTEHook);
 		AddNormalSoundHook(PlayerSoundListener);
 		UserMsg iIntroCredits = GetUserMessageId("IntroCredits");
-		if(iIntroCredits != INVALID_MESSAGE_ID)
+		if (iIntroCredits != INVALID_MESSAGE_ID)
 		{
 			HookUserMessage(iIntroCredits, Hook_IntroCreditsMsg, true);
 		}
@@ -228,7 +228,7 @@ public void OnConfigsExecutedPost()
 			CBaseEntity pGameEquip = CreateByClassname("game_player_equip");	// will spawn players with nothing if it exists
 			if (pGameEquip.IsValid())
 			{
-				if(!g_pCoopManager.IsFeatureEnabled(FT_STRIP_DEFAULT_EQUIPMENT_KEEPSUIT))
+				if (!g_pCoopManager.IsFeatureEnabled(FT_STRIP_DEFAULT_EQUIPMENT_KEEPSUIT))
 				{
 					pGameEquip.SetSpawnFlags(SF_PLAYER_EQUIP_STRIP_SUIT);
 				}
@@ -263,7 +263,7 @@ public void OnClientPutInServer(int client)
 	// fixes visual bug for players which had different view ent at mapchange
 	pPlayer.SetViewEntity(pPlayer);
 	
-	if(g_Engine == Engine_BlackMesa)
+	if (g_Engine == Engine_BlackMesa)
 	{
 		// fixes bugged trigger_teleport prediction (camera jerking around as if being teleported)
 		ClientCommand(client, "cl_predicttriggers 0");
@@ -281,13 +281,25 @@ public void OnClientPutInServer(int client)
 	DHookEntity(hkChangeTeam, false, client, _, Hook_PlayerChangeTeam);
 	DHookEntity(hkShouldCollide, false, client, _, Hook_PlayerShouldCollide);
 	GreetPlayer(client);
-	SetSteamId(client);
+}
+
+public void OnClientAuthorized(int client, const char[] auth)
+{
+	char steamId[32];
+	if (GetClientAuthId(client, AuthId_SteamID64, steamId, 32, true))
+	{
+		g_szSteamIds[client] = steamId;
+	}
+	else
+	{
+		Msg(client, "Could not retrieve Steam ID - Equipment will not be retained.");
+	}
 }
 
 public void OnClientDisconnect(int client)
 {
 	g_pInstancingManager.OnClientDisconnect(client);
-	ClearSteamId(client);
+	g_szSteamIds[client] = "";
 }
 
 public void OnMapEnd()
@@ -298,7 +310,7 @@ public void OnMapEnd()
 
 public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 {
-	if(g_bTempDontHookEnts) {
+	if (g_bTempDontHookEnts) {
 		return;
 	}
 	
@@ -310,7 +322,7 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 		
 		if (g_Engine == Engine_BlackMesa)
 		{
-			if(pEntity.IsClassNPC())
+			if (pEntity.IsClassNPC())
 			{
 				SDKHook(iEntIndex, SDKHook_SpawnPost, Hook_BaseNPCSpawnPost);
 				DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_BaseNPCAcceptInput);
@@ -503,26 +515,26 @@ public void Hook_EntitySpawnPost(int iEntIndex)
 		CBaseEntity pEntity = CBaseEntity(iEntIndex);
 		
 		// fix linux physics crashes
-		if(g_Engine == Engine_BlackMesa && g_serverOS == OS_Linux)
+		if (g_Engine == Engine_BlackMesa && g_serverOS == OS_Linux)
 		{
 			static char szModel[PLATFORM_MAX_PATH];
-			if(pEntity.GetModel(szModel, sizeof(szModel)) && strncmp(szModel, "models/gibs/humans/", 19) == 0)
+			if (pEntity.GetModel(szModel, sizeof(szModel)) && strncmp(szModel, "models/gibs/humans/", 19) == 0)
 			{
 				SDKHook(iEntIndex, SDKHook_OnTakeDamage, Hook_NoGibDmg);
 			}
 		}
 		
 		// find and hook output hooks for entity
-		if(!g_pCoopManager.m_bStarted)
+		if (!g_pCoopManager.m_bStarted)
 		{
 			Array_t pOutputHookList = g_pLevelLump.GetOutputHooksForEntity(pEntity);
-			if(pOutputHookList.Length > 0)
+			if (pOutputHookList.Length > 0)
 			{
-				if(pEntity.IsClassname("logic_auto"))
+				if (pEntity.IsClassname("logic_auto"))
 				{
 					// do not let it get killed, so the output can fire later
 					int iSpawnFlags = pEntity.GetSpawnFlags();
-					if(iSpawnFlags & SF_AUTO_FIREONCE)
+					if (iSpawnFlags & SF_AUTO_FIREONCE)
 						pEntity.SetSpawnFlags(iSpawnFlags &~ SF_AUTO_FIREONCE);
 				}
 				for (int i = 0; i < pOutputHookList.Length; i++)
@@ -542,7 +554,7 @@ public Action Hook_ItemSpawnDelay(int iEntIndex)
 	SDKUnhook(iEntIndex, SDKHook_Spawn, Hook_ItemSpawnDelay);
 	
 	CBaseEntity pEnt = CBaseEntity(iEntIndex);
-	if(g_bMapStarted)
+	if (g_bMapStarted)
 	{
 		RequestFrame(SpawnPostponedItem, pEnt);
 	}
@@ -555,7 +567,7 @@ public Action Hook_ItemSpawnDelay(int iEntIndex)
 
 public void SpawnPostponedItem(CBaseEntity pEntity)
 {
-	if(pEntity.IsValid())
+	if (pEntity.IsValid())
 	{
 		SDKHook(pEntity.GetEntIndex(), SDKHook_SpawnPost, Hook_Instancing_ItemSpawn);
 		g_bIsMultiplayerOverride = false; // IsMultiplayer=false will spawn items with physics
@@ -566,7 +578,7 @@ public void SpawnPostponedItem(CBaseEntity pEntity)
 
 public Action OutputCallbackForDelay(const char[] output, int caller, int activator, float delay)
 {
-	if(g_pCoopManager.m_bStarted)
+	if (g_pCoopManager.m_bStarted)
 	{
 		return Plugin_Continue;
 	}
@@ -577,17 +589,17 @@ public Action OutputCallbackForDelay(const char[] output, int caller, int activa
 	pFireOutputData.m_flDelay = delay;
 	g_pCoopManager.AddDelayedOutput(pFireOutputData);
 	
-	if(pFireOutputData.m_pCaller.IsValid())
+	if (pFireOutputData.m_pCaller.IsValid())
 	{
 		// stop from deleting itself
-		if(pFireOutputData.m_pCaller.IsClassname("trigger_once"))
+		if (pFireOutputData.m_pCaller.IsClassname("trigger_once"))
 		{
 			RequestFrame(RequestStopThink, pFireOutputData.m_pCaller);
 		}
-		if(pFireOutputData.m_pCaller.IsClassname("logic_relay"))
+		if (pFireOutputData.m_pCaller.IsClassname("logic_relay"))
 		{
 			int sf = pFireOutputData.m_pCaller.GetSpawnFlags();
-			if(sf & SF_REMOVE_ON_FIRE)
+			if (sf & SF_REMOVE_ON_FIRE)
 			{
 				pFireOutputData.m_pCaller.SetSpawnFlags(sf &~ SF_REMOVE_ON_FIRE);
 				UnhookSingleEntityOutput(caller, output, OutputCallbackForDelay);
@@ -601,7 +613,7 @@ public Action OutputCallbackForDelay(const char[] output, int caller, int activa
 
 public Action DeleteEntOnDelayedOutputFire(const char[] output, int caller, int activator, float delay)
 {
-	if(g_pCoopManager.m_bStarted)
+	if (g_pCoopManager.m_bStarted)
 	{
 		RemoveEntity(caller);
 		return Plugin_Continue;
@@ -614,7 +626,7 @@ public Action DeleteEntOnDelayedOutputFire(const char[] output, int caller, int 
 
 public void RequestStopThink(CBaseEntity pEntity)
 {
-	if(pEntity.IsValid())
+	if (pEntity.IsValid())
 	{
 		pEntity.SetNextThinkTick(0);
 	}
@@ -636,10 +648,10 @@ public MRESReturn Hook_OnEquipmentTryPickUpPost(int _this, Handle hReturn, Handl
 	if (g_pCoopManager.IsFeatureEnabled(FT_KEEP_EQUIPMENT))
 	{
 		bool bPickedUp = DHookGetReturn(hReturn);
-		if(bPickedUp)
+		if (bPickedUp)
 		{
 			CBasePlayer pPlayer = CBasePlayer(DHookGetParam(hParams, 1));
-			if(pPlayer.IsClassPlayer())
+			if (pPlayer.IsClassPlayer())
 			{
 				CBaseEntity pItem = CBaseEntity(_this);
 				char szClass[MAX_CLASSNAME];
@@ -692,24 +704,9 @@ void GreetPlayer(int client)
 	}
 }
 
-void SetSteamId(int client){
-	char steamId[32];
-	if(GetClientAuthId(client, AuthId_SteamID64, steamId, 32, true)){
-		g_szSteamIds[client] = steamId;
-	}else{
-		Msg(client, "Could not retrieve Steam ID - Progress will not be saved.");
-	}
-}
-
-void ClearSteamId(int client){
-	g_szSteamIds[client] = "";
-}
-
-
-
 public Action Command_SetFeature(int iClient, int iArgs)
 {
-	if(iArgs != 2)
+	if (iArgs != 2)
 	{
 		MsgReply(iClient, "Format: sourcecoop_ft <FEATURE> <1/0>");
 		return Plugin_Handled;
@@ -744,7 +741,7 @@ public Action Command_SetFeature(int iClient, int iArgs)
 
 public Action Command_DumpMapEntities(int iArgs)
 {
-	if(g_szEntityString[0] == '\0')
+	if (g_szEntityString[0] == '\0')
 	{
 		PrintToServer("No entity data recorded for current map.");
 		return Plugin_Handled;
@@ -758,7 +755,7 @@ public Action Command_DumpMapEntities(int iArgs)
 	Format(szDumpPath, sizeof(szDumpPath), "%s/%s-%s.txt", szDumpPath, g_szMapName, szTime);
 	
 	File pDumpFile = OpenFile(szDumpPath, "w");
-	if(pDumpFile != null)
+	if (pDumpFile != null)
 	{
 		pDumpFile.WriteString(g_szEntityString, false);
 		CloseHandle(pDumpFile);
@@ -769,210 +766,4 @@ public Action Command_DumpMapEntities(int iArgs)
 		PrintToServer("Failed opening file for writing: %s", szDumpPath);
 	}
 	return Plugin_Handled;
-}
-
-void GetSaveDataPath(char buffer[PLATFORM_MAX_PATH], char szFileName[64]){
-	char szFolder[10] = "savedata/";
-
-	char relativePath[PLATFORM_MAX_PATH + 64];
-	strcopy(relativePath, sizeof(relativePath), szFolder);
-	StrCat(relativePath, sizeof(relativePath), szFileName);
-
-	BuildPath(Path_SM, buffer, sizeof(buffer), relativePath);
-}
-
-public Action Command_Save(int iClient, int iArgs)
-{
-	if(iArgs != 1)
-	{
-		MsgReply(iClient, "Format: sc_save <FILENAME>");
-		return Plugin_Handled;
-	}
-
-	char szFileName[64];
-	GetCmdArg(1, szFileName, sizeof(szFileName));
-
-	char szFullPath[PLATFORM_MAX_PATH];
-	GetSaveDataPath(szFullPath, szFileName);
-
-	KeyValues kv = new KeyValues("SaveData");
-	bool shouldSave = false;
-	for(int i = 0; i < MAXPLAYERS + 1; i++)
-	{
-		if(strlen(g_szSteamIds[i]) == 0)
-			continue;
-		
-		CCoopEquipment equipment; 
-		equipment.Initialize();
-
-		if(!g_pEquipmentManager.GetEquipment(g_szSteamIds[i], equipment))
-			continue;
-
-
-		kv.JumpToKey(g_szSteamIds[i], true);
-		kv.SetNum("hp", equipment.m_iHealth);
-		kv.SetNum("armor", equipment.m_iArmor);
-		kv.JumpToKey("weapons", true);
-
-		for(int j = 0; j < equipment.m_pWeaponList.Length; j++)
-		{
-			CCoopWeaponEntry pWeaponEntry;
-			if (equipment.m_pWeaponList.GetArray(j, pWeaponEntry, sizeof(pWeaponEntry)))
-			{
-				kv.SetNum(pWeaponEntry.m_szClassname, 1);
-			}
-
-		}
-
-		kv.GoBack();
-		kv.JumpToKey("ammo", true);
-		for(int k = 0; k < MAX_AMMO_TYPES; k++)
-		{
-			char key[3];
-			IntToString(k, key, sizeof(key));
-			kv.SetNum(key, equipment.m_iAmmoCount[k]);
-		}
-
-		shouldSave = true;
-	}
-
-	if(!shouldSave)
-	{
-		MsgReply(iClient, "No valid players found. Could not save data");
-		return Plugin_Handled;
-	}
-
-	kv.Rewind();
-	kv.ExportToFile(szFullPath);
-	delete kv;
-	return Plugin_Handled;
-}
-
-public Action Command_Load(int iClient, int iArgs){
-	if(iArgs != 1)
-	{
-		MsgReply(iClient, "Format: sc_load <FILENAME>");
-		return Plugin_Handled;
-	}
-
-	char szFileName[64];
-	GetCmdArg(1, szFileName, sizeof(szFileName));
-
-	char szFullPath[PLATFORM_MAX_PATH];
-	GetSaveDataPath(szFullPath, szFileName);
-
-	if(!FileExists(szFullPath))
-	{
-		MsgReply(iClient, "Could not find specified save file %s", szFullPath);
-		return Plugin_Handled;
-	}
-
-	
-	KeyValues kv = new KeyValues("SaveData");
-	if(!kv.ImportFromFile(szFullPath))
-	{
-		MsgReply(iClient, "Failed to parse KeyValues file %s", szFullPath);
-		return Plugin_Handled;	
-	}
-
-	for(int i = 0; i < MAXPLAYERS + 1; i++)
-	{
-		if(strlen(g_szSteamIds[i]) == 0)
-			continue;
-
-		if(!kv.JumpToKey(g_szSteamIds[i]))
-			continue;
-
-		CBasePlayer pPlayer = CBasePlayer(i);
-		if(!pPlayer.IsValid() || !pPlayer.IsInGame())
-			continue;
-
-		CCoopEquipment equipment;
-		equipment.Initialize();
-
-		equipment.m_iHealth = kv.GetNum("hp");
-		equipment.m_iArmor = kv.GetNum("armor");
-
-		if(!kv.JumpToKey("weapons"))
-		{
-			MsgReply(iClient, "Unable to find weapons section in KeyValues file");
-			return Plugin_Handled;	
-		}
-
-		if(kv.GotoFirstSubKey(false))
-		{
-			do
-			{
-				char weaponName[MAX_CLASSNAME];
-				if(kv.GetSectionName(weaponName, sizeof(weaponName)))
-				{
-					CCoopWeaponEntry pWeaponEntry;
-					strcopy(pWeaponEntry.m_szClassname, sizeof(pWeaponEntry.m_szClassname), weaponName);
-					pWeaponEntry.m_iPrimaryAmmo = -1;
-					pWeaponEntry.m_iSecondaryAmmo = -1;
-					equipment.m_pWeaponList.PushArray(pWeaponEntry, sizeof(pWeaponEntry));
-				}
-			}
-			while(kv.GotoNextKey(false));
-
-			kv.GoBack(); //return to weapons node
-		}
-
-		kv.GoBack(); //return to player node
-		
-		if(!kv.JumpToKey("ammo"))
-		{
-			MsgReply(iClient, "Unable to find ammo section in KeyValues file");
-			return Plugin_Handled;	
-		}
-
-		if(kv.GotoFirstSubKey(false))
-		{
-			do 
-			{
-				char ammoKey[3];
-				if(kv.GetSectionName(ammoKey, sizeof(ammoKey)))
-				{
-					int index = StringToInt(ammoKey);
-					int count = kv.GetNum(ammoKey);
-					equipment.m_iAmmoCount[index] = count;
-				}
-			}
-			while(kv.GotoNextKey(false));
-		}
-
-		g_pEquipmentManager.StoreEquipment(g_szSteamIds[i], equipment);
-		g_SpawnSystem.StripPlayer(pPlayer);
-		g_SpawnSystem.SpawnPlayerEquipment(pPlayer);
-
-		PrintToServer("Loaded Equipment for player %s", g_szSteamIds[i]);
-	}
-
-	return Plugin_Handled;
-}
-
-public Action Command_Clear_Equipment(int iClient, int iArgs){
-	if(iArgs != 0)
-	{
-		MsgReply(iClient, "Format: sc_clear_equipment");
-		return Plugin_Handled;
-	}
-
-	g_pEquipmentManager.Clear();
-
-	for(int i = 0; i < MAXPLAYERS + 1; i++)
-	{
-		if(strlen(g_szSteamIds[i]) == 0)
-			continue;
-
-		CBasePlayer pPlayer = CBasePlayer(i);
-		if(!pPlayer.IsValid() || !pPlayer.IsInGame())
-			continue;
-
-		g_SpawnSystem.StripPlayer(pPlayer);
-		g_SpawnSystem.SpawnPlayerEquipment(pPlayer);
-	}
-
-	return Plugin_Handled;
-	
 }

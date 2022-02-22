@@ -52,18 +52,18 @@ enum struct CCoopSpawnEntry
 			vecPosition = this.m_vecPosition;
 			vecAngles = this.m_vecAngles;
 		}
-		if(bIsBringAllTP && this.m_fBringAllGraceRadius > 0)
+		if (bIsBringAllTP && this.m_fBringAllGraceRadius > 0)
 		{
 			float vecPlayerPos[3]; pPlayer.GetAbsOrigin(vecPlayerPos);
-			if(GetVectorDistance(vecPosition, vecPlayerPos) <= this.m_fBringAllGraceRadius)
+			if (GetVectorDistance(vecPosition, vecPlayerPos) <= this.m_fBringAllGraceRadius)
 			{
 				return false;
 			}
 		}
 		CanTeleportResult res;
-		if((res = CanTeleportPlayer(pPlayer, vecPosition)) || bForceTeleport)
+		if ((res = CanTeleportPlayer(pPlayer, vecPosition)) || bForceTeleport)
 		{
-			if(res == CAN_TP_MUSTDUCK)
+			if (res == CAN_TP_MUSTDUCK)
 			{
 				pPlayer.StartDucking();
 			}
@@ -80,15 +80,15 @@ enum struct CCoopSpawnEntry
 	bool ActivatePre(CBasePlayer pActivator)
 	{
 		bool bChanged;
-		if(!this.m_pFollowEnt.IsValid())
+		if (!this.m_pFollowEnt.IsValid())
 		{
-			if(!this.m_bHasPosition)
+			if (!this.m_bHasPosition)
 			{
 				pActivator.GetAbsOrigin(this.m_vecPosition);
 				this.m_bHasPosition = true;
 				bChanged = true;
 			}
-			if(!this.m_bHasAngles)
+			if (!this.m_bHasAngles)
 			{
 				pActivator.GetAbsAngles(this.m_vecAngles);
 				this.m_bHasAngles = true;
@@ -100,14 +100,14 @@ enum struct CCoopSpawnEntry
 	
 	void ActivatePost()
 	{
-		if(this.m_bBringAllPlayers)
+		if (this.m_bBringAllPlayers)
 		{
 			for (int pp = 0; pp <= MaxClients; pp++)
 			{
 				CBasePlayer pPlayer = CBasePlayer(pp);
-				if(pPlayer.IsValid() && pPlayer.IsAlive())
+				if (pPlayer.IsValid() && pPlayer.IsAlive())
 				{
-					if(this.TeleportPlayer(pPlayer, true, true))
+					if (this.TeleportPlayer(pPlayer, true, true))
 						pPlayer.PlayGameSound(SND_BRINGALL);
 				}
 			}
@@ -159,17 +159,29 @@ enum struct EquipmentManager
         this.m_smEquipmentMap = new StringMap();
     }
 
-    void Clear()
-    {
-        this.m_smEquipmentMap.Clear();
-    }
+	void Clear(char[] steamId)
+	{
+		CCoopEquipment equipment;
+		if (!this.GetEquipment(steamId, equipment))
+			return;
 
-    void StoreEquipment(char[] steamId, CCoopEquipment equipment){
-        this.m_smEquipmentMap.SetArray(steamId, equipment, sizeof(equipment), true);
-    }
+		PrintToServer("[SRCCOOP] Clearing equipment for %s", steamId);
 
-    bool GetEquipment(char[] steamId, CCoopEquipment equipment){
-        return this.m_smEquipmentMap.GetArray(steamId, equipment, sizeof(equipment));
+		CloseHandle(equipment.m_pWeaponList);
+		this.m_smEquipmentMap.Remove(steamId);
+	}
+
+    void StoreEquipment(char[] steamId, CCoopEquipment equipment)
+	{
+		this.m_smEquipmentMap.SetArray(steamId, equipment, sizeof(equipment), true);
+		PrintToServer("[SRCCOOP] Saved equipment for %s", steamId);
+    }
+	
+	bool GetEquipment(char[] steamId, CCoopEquipment equipment)
+	{
+		bool success = this.m_smEquipmentMap.GetArray(steamId, equipment, sizeof(equipment));
+		PrintToServer("[SRCCOOP] Equipment %s found for %s", success ? "" : "not", steamId);
+		return success;
     }
 }
 
@@ -199,7 +211,7 @@ enum struct CCoopSpawn
 	
 	bool GetCheckpointByIndex(int iIndex, CCoopSpawnEntry pCheckpoint)
 	{
-		if(0 <= iIndex < this.m_pCheckpointList.Length)
+		if (0 <= iIndex < this.m_pCheckpointList.Length)
 		{
 			this.m_pCheckpointList.GetArray(iIndex, pCheckpoint);
 			return true;
@@ -258,7 +270,7 @@ enum struct CCoopSpawn
 			bHasTrigger = true;
 		}
 		
-		if(!bHasTrigger)
+		if (!bHasTrigger)
 		{
 			this.ActivateCheckpoint(iIndex);
 		}
@@ -266,22 +278,22 @@ enum struct CCoopSpawn
 	
 	bool ActivateCheckpoint(int iIndex, CBasePlayer pActivator = view_as<CBasePlayer>(-1))
 	{
-		if(this.m_iCurrentCheckpoint < iIndex < this.m_pCheckpointList.Length)
+		if (this.m_iCurrentCheckpoint < iIndex < this.m_pCheckpointList.Length)
 		{
 			CCoopSpawnEntry pCheckpoint;
 			
-			if(this.m_bStrictOrder)
+			if (this.m_bStrictOrder)
 			{
 				for (int i = this.m_iCurrentCheckpoint+1; ; i++)
 				{
 					this.m_pCheckpointList.GetArray(i, pCheckpoint);
 					
-					if(pCheckpoint.m_bHasPortal)
+					if (pCheckpoint.m_bHasPortal)
 					{
 						this.CreatePortal(pCheckpoint.m_vecPortalPosition);
 					}
 					
-					if(i == iIndex)
+					if (i == iIndex)
 					{
 						this.m_iCurrentCheckpoint = i;
 						pCheckpoint.ActivatePost();
@@ -295,7 +307,7 @@ enum struct CCoopSpawn
 				this.m_pCheckpointList.SwapAt(iIndex, this.m_iCurrentCheckpoint);
 				this.m_pCheckpointList.GetArray(this.m_iCurrentCheckpoint, pCheckpoint);
 				
-				if(pCheckpoint.m_bHasPortal)
+				if (pCheckpoint.m_bHasPortal)
 				{
 					this.CreatePortal(pCheckpoint.m_vecPortalPosition);
 				}
@@ -317,15 +329,18 @@ enum struct CCoopSpawn
 	void SpawnPlayerEquipment(CBasePlayer pPlayer)
 	{
 		float flStartTime = GetEngineTime();
-		CCoopEquipment existingEquipment;
-		existingEquipment.Initialize();
+		CCoopEquipment equipment;
 
-		if(g_pPersistEquipment.BoolValue && strlen(g_szSteamIds[pPlayer.GetEntIndex()]) > 0 && g_pEquipmentManager.GetEquipment(g_szSteamIds[pPlayer.GetEntIndex()], existingEquipment))
+		PrintToServer("[SRCCOOP] Equipment persistence is %s.", g_pPersistEquipment.BoolValue ? "on" : "off");
+
+		if (g_pPersistEquipment.BoolValue && strlen(g_szSteamIds[pPlayer.GetEntIndex()]) > 0 && g_pEquipmentManager.GetEquipment(g_szSteamIds[pPlayer.GetEntIndex()], equipment))
 		{
-			this.EquipPlayer(pPlayer, existingEquipment);
+			PrintToServer("[SRCCOOP] Using saved equipment for %s", g_szSteamIds[pPlayer.GetEntIndex()]);
+			this.EquipPlayer(pPlayer, equipment);
 		}
 		else
 		{
+			PrintToServer("[SRCCOOP] Using default equipment for %s", g_szSteamIds[pPlayer.GetEntIndex()]);
 			this.EquipPlayer(pPlayer, this.m_pDefaultEquipment);
 		}
 
@@ -334,27 +349,19 @@ enum struct CCoopSpawn
 
 	void EquipPlayer(CBasePlayer pPlayer, CCoopEquipment equipment)
 	{
-		if(equipment.m_iHealth > 0)
+		if (equipment.m_iHealth > 0)
 		{
 			pPlayer.SetHealth(equipment.m_iHealth);
 		}
-		else if(this.m_pDefaultEquipment.m_iHealth > 0)
-		{
-			pPlayer.SetHealth(this.m_pDefaultEquipment.m_iHealth);
-		}
 
-		if(equipment.m_iArmor > 0)
+		if (equipment.m_iArmor > 0)
 		{
 			pPlayer.SetArmor(equipment.m_iArmor);	
-		}
-		else if(this.m_pDefaultEquipment.m_iArmor > 0)
-		{
-			pPlayer.SetArmor(this.m_pDefaultEquipment.m_iArmor);
 		}
 		
 		for (int i = 0; i < MAX_AMMO_TYPES; i++)
 		{
-			if(equipment.m_iAmmoCount[i] >= 0)
+			if (equipment.m_iAmmoCount[i] >= 0)
 				pPlayer.SetAmmoFromIndex(i, equipment.m_iAmmoCount[i]);
 		}
 		for (int i = 0; i < equipment.m_pWeaponList.Length; i++)
@@ -370,13 +377,13 @@ enum struct CCoopSpawn
 	void SavePlayerEquipment()
 	{
 		float flStartTime = GetEngineTime();
-		for(int iClient = 0; iClient < MAXPLAYERS + 1; iClient++)
+		for (int iClient = 1; iClient < MaxClients; iClient++)
 		{
-			if(strlen(g_szSteamIds[iClient]) == 0)
+			if (strlen(g_szSteamIds[iClient]) == 0)
 				continue;
 
 			CBasePlayer pPlayer = CBasePlayer(iClient);
-			if(!pPlayer.IsValid() || !pPlayer.IsInGame())
+			if (!pPlayer.IsValid())
 				continue;
 			
 			CCoopEquipment playerEquipment;
@@ -385,13 +392,13 @@ enum struct CCoopSpawn
 			playerEquipment.m_iHealth = pPlayer.GetHealth();
 			playerEquipment.m_iArmor = pPlayer.GetArmor();
 
-			for(int iWeapon = 0; iWeapon < MAX_WEAPONS; iWeapon++)
+			for (int iWeapon = 0; iWeapon < MAX_WEAPONS; iWeapon++)
 			{
 				CBaseCombatWeapon pWeapon = pPlayer.GetWeaponFromIndex(iWeapon);
 				char weaponClassName[MAX_CLASSNAME];
-				if(pWeapon.IsValid() && pWeapon.GetClassname(weaponClassName, sizeof(weaponClassName)))
+				if (pWeapon.IsValid() && pWeapon.GetClassname(weaponClassName, sizeof(weaponClassName)))
 				{
-					if(pPlayer.HasWeapon(weaponClassName))
+					if (pPlayer.HasWeapon(weaponClassName))
 					{
 						CCoopWeaponEntry pWeaponEntry;
 						strcopy(pWeaponEntry.m_szClassname, sizeof(pWeaponEntry.m_szClassname), weaponClassName);
@@ -402,7 +409,7 @@ enum struct CCoopSpawn
 				}
 			}
 
-			if(pPlayer.HasSuit())
+			if (pPlayer.HasSuit())
 			{
 				CCoopWeaponEntry pSuitEntry;
 				pSuitEntry.m_szClassname = "item_suit";
@@ -411,15 +418,15 @@ enum struct CCoopSpawn
 				playerEquipment.m_pWeaponList.PushArray(pSuitEntry, sizeof(pSuitEntry));
 			}
 
-			for(int iAmmo = 0; iAmmo < MAX_AMMO_TYPES; iAmmo++)
+			for (int iAmmo = 0; iAmmo < MAX_AMMO_TYPES; iAmmo++)
 			{
 				playerEquipment.m_iAmmoCount[iAmmo] = pPlayer.GetAmmoFromIndex(iAmmo);
 			}
 
 			g_pEquipmentManager.StoreEquipment(g_szSteamIds[iClient], playerEquipment);
-
-			LogDebug("SavePlayerEquipment took %f", GetEngineTime() - flStartTime);
 		}
+
+		LogDebug("SavePlayerEquipment took %f", GetEngineTime() - flStartTime);
 	}
 	
 	void SpawnPlayer(CBasePlayer pPlayer, bool bSpawnEquipment = true)
@@ -429,7 +436,7 @@ enum struct CCoopSpawn
 		{
 			pCheckpoint.TeleportPlayer(pPlayer, true);
 		}
-		if(bSpawnEquipment)
+		if (bSpawnEquipment)
 		{
 			if (g_Engine != Engine_BlackMesa) // bm uses game_player_equip
 			{
@@ -490,11 +497,11 @@ enum struct CCoopSpawn
 
 	void ParseCheckpoint(KeyValues kv)
 	{
-		if(view_as<bool>(kv.GetNum("use_map_spawnpoint")))
+		if (view_as<bool>(kv.GetNum("use_map_spawnpoint")))
 		{
 			this.AddSpawnPointFromMap();
 		}
-		if(view_as<bool>(kv.GetNum("use_map_autosave")))
+		if (view_as<bool>(kv.GetNum("use_map_autosave")))
 		{
 			this.m_bStrictOrder = false;
 			this.AddCheckpointsFromMap();
@@ -612,7 +619,7 @@ enum struct CCoopSpawn
 		if (StringToIntEx(szValue, iHammerID))
 		{
 			CBaseEntity pEntity = CBaseEntity(FindEntityByHammerID(iHammerID));
-			if(pEntity.IsValid())
+			if (pEntity.IsValid())
 			{
 				return pEntity;
 			}
@@ -776,7 +783,7 @@ enum struct CCoopSpawn
 	
 	bool AddSpawnItem(const char[] szItem, bool bAllowDuplicates = false)
 	{
-		if(!bAllowDuplicates)
+		if (!bAllowDuplicates)
 		{
 			for (int i = 0; i < this.m_pDefaultEquipment.m_pWeaponList.Length; i++)
 			{
@@ -784,7 +791,7 @@ enum struct CCoopSpawn
 				if (this.m_pDefaultEquipment.m_pWeaponList.GetArray(i, pWeaponEntry, sizeof(pWeaponEntry)))
 				{
 					// does basic checking of item_weapon vs weapon_ strings
-					if(StrContains(pWeaponEntry.m_szClassname, szItem, false) != -1 || StrContains(szItem, pWeaponEntry.m_szClassname, false) != -1)
+					if (StrContains(pWeaponEntry.m_szClassname, szItem, false) != -1 || StrContains(szItem, pWeaponEntry.m_szClassname, false) != -1)
 					{
 						return false;
 					}
@@ -811,7 +818,7 @@ public void Hook_OutputCheckpoint(const char[] szName, int iCaller, int iActivat
 	
 	while ((iIndex = g_SpawnSystem.FindCheckpointByOutput(pCaller, szName, pCheckpoint, iIndex)) != -1)
 	{
-		if(pActivator.IsClassPlayer() && pCheckpoint.ActivatePre(view_as<CBasePlayer>(pActivator)))
+		if (pActivator.IsClassPlayer() && pCheckpoint.ActivatePre(view_as<CBasePlayer>(pActivator)))
 		{
 			g_SpawnSystem.m_pCheckpointList.SetArray(iIndex, pCheckpoint);
 		}
@@ -834,7 +841,7 @@ public void Hook_TouchCheckpoint(int iEntity, int iOther)
 		
 		while ((iIndex = g_SpawnSystem.FindCheckpointByTouchEnt(pTouched, pCheckpoint, iIndex)) != -1)
 		{
-			if(pCheckpoint.ActivatePre(pActivator))
+			if (pCheckpoint.ActivatePre(pActivator))
 			{
 				g_SpawnSystem.m_pCheckpointList.SetArray(iIndex, pCheckpoint);
 			}
@@ -845,7 +852,7 @@ public void Hook_TouchCheckpoint(int iEntity, int iOther)
 			iIndex++;
 		}
 		
-		if(g_pPersistEquipment.BoolValue)
+		if (g_pPersistEquipment.BoolValue)
 		{
 			g_SpawnSystem.SavePlayerEquipment();
 		}
