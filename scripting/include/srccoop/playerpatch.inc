@@ -233,9 +233,14 @@ public MRESReturn Hook_PlayerSpawn(int _this, Handle hReturn, Handle hParams)
 	if (CoopManager.IsCoopModeEnabled())
 	{
 		CBasePlayer pPlayer = CBasePlayer(_this);
-		if (!SurvivalManager.HandlePlayerSpawn(pPlayer))
+		
+		// ignore initial in-game spawn
+		if (pPlayer.GetTeam() != TEAM_UNASSIGNED)
 		{
-			return MRES_Supercede;
+			if (!SurvivalManager.HandlePlayerSpawn(pPlayer))
+			{
+				return MRES_Supercede;
+			}
 		}
 	}
 	return MRES_Ignored;
@@ -314,7 +319,7 @@ public MRESReturn Hook_PlayerKilled(int _this, DHookParam hParams)
 	{		
 		Address pTakeDmgInfo = hParams.GetAddress(1);
 		int iForceBone = GetEntProp(_this, Prop_Send, "m_nForceBone");
-		g_pNewRagdoll = CBaseEntity(SDKCall(g_pCreateServerRagdoll, _this, iForceBone, pTakeDmgInfo, COLLISION_GROUP_PLAYER, false));
+		g_pNewRagdoll = CBaseEntity(SDKCall(g_pCreateServerRagdoll, _this, iForceBone, pTakeDmgInfo, COLLISION_GROUP_DEBRIS_TRIGGER, false));
 		SDKHook(g_pNewRagdoll.GetEntIndex(), SDKHook_OnTakeDamage, Hook_NoDmg);
 	}
 	return MRES_Ignored;

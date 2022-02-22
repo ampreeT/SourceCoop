@@ -33,16 +33,17 @@ public void OnPluginStart()
 	g_pConVarReviveScore = CreateConVar("sourcecoop_revive_score", "1", "Sets score to give for reviving a player.", _, true, 0.0, false);
 	g_pConVarReviveMessages = CreateConVar("sourcecoop_revive_messages", "0", "Shows messages such as You have started reviving x.", _, true, 0.0, true, 1.0);
 	
-	RegAdminCmd("sourcecoop_revive", Command_ForceRespawn, ADMFLAG_ROOT, "Force respawn by client index.");
+	RegAdminCmd("sourcecoop_revive", Command_ForceRespawn, ADMFLAG_ROOT, "Force respawn player.");
+	RegAdminCmd("sc_revive", Command_ForceRespawn, ADMFLAG_ROOT, "Force respawn player.");
 	
 	AutoExecConfig(true, "srccoop_addon_revive");
 }
 
 public void OnMapStart()
 {
-	PrecacheSound("weapons/tau/gauss_undercharge.wav",true);
-	PrecacheSound("items/suitchargeok1.wav",true);
-	PrecacheSound("items/suitchargeno1.wav",true);
+	PrecacheSound("weapons/tau/gauss_undercharge.wav", true);
+	PrecacheSound("items/suitchargeok1.wav", true);
+	PrecacheSound("items/suitchargeno1.wav", true);
 	
 	GameData gameConfig = new GameData("funcommands.games");
 	if (gameConfig != null)
@@ -52,13 +53,13 @@ public void OnMapStart()
 		{
 			g_BeamSprite = PrecacheModel(buffer);
 		}
+		CloseHandle(gameConfig);
 	}
 }
 
 public Action Command_ForceRespawn(int client, int args)
 {
 	static char szTarget[64];
-	static char szClientName[64];
 	
 	if (args < 1)
 	{
@@ -68,24 +69,19 @@ public Action Command_ForceRespawn(int client, int args)
 	
 	GetCmdArg(1, szTarget, sizeof(szTarget));
 	
-	CBasePlayer pTarget = CBasePlayer(FindTarget(client, szTarget, false));
-	if (pTarget.IsValid())
+	int iTarget = FindTarget(client, szTarget, false);
+	if (iTarget > 0)
 	{
-		if (!pTarget.IsAlive())
+		CBasePlayer pTarget = CBasePlayer(iTarget);
+		if (SurvivalRespawn(pTarget))
 		{
-			pTarget.GetName(szClientName, sizeof(szClientName));
-			
-			MsgReply(client, "Spawned %i '%s'", pTarget.GetEntIndex(), szClientName);
-			SurvivalRespawn(pTarget);
-
-			return Plugin_Handled;
+			MsgReply(client, "Spawned '%N'.", iTarget, iTarget);
 		}
 		else
 		{
-			MsgReply(client, "Player is already alive.");
+			MsgReply(client, "Player '%N' could not be respawned.", iTarget);
 		}
 	}
-	
 	
 	return Plugin_Handled;
 }
@@ -155,31 +151,29 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 						
 						if (GetGameTime() >= g_flReviveTime[client])
 						{
-							// Sounds/effects
-							EmitSoundToAll("weapons/tau/gauss_undercharge.wav", client, SNDCHAN_AUTO, SNDLEVEL_NORMAL, _, _, 150);
-							Client_ScreenFade(g_pReviveTarget[client].GetEntIndex(), 256, FFADE_PURGE|FFADE_IN, 1, 0, 0, 200, 255);
-							
-							SurvivalRespawn(g_pReviveTarget[client]);
-							
-							g_pReviveTarget[client].Spawn();
-							g_pReviveTarget[client].Activate();
-							
-							// Fix for if player died on a ladder
-							SetEntPropEnt(g_pReviveTarget[client].GetEntIndex(), Prop_Data, "m_hLadder", -1);
-							
-							g_pReviveTarget[client].GetRagdoll().Kill();
-							
-							// Delay to allow equip time
-							Handle dp = CreateDataPack();
-							CreateDataTimer(0.1, DelayRespawn, dp, TIMER_FLAG_NO_MAPCHANGE);
-							WritePackCell(dp, pPlayer);
-							WritePackCell(dp, g_pReviveTarget[client]);
-							
-							// Give score to reviver
-							pPlayer.ModifyScore(g_pConVarReviveScore.IntValue);
-							if (g_pConVarReviveMessages.BoolValue) Msg(client, "You have revived '%N' and have gained %i score!", g_pReviveTarget[client].GetEntIndex(), g_pConVarReviveScore.IntValue);
-							
-							ResetReviveStatus(client);
+							if (SurvivalRespawn(g_pReviveTarget[client]))
+							{
+								// Sounds/effects
+								EmitSoundToAll("weapons/tau/gauss_undercharge.wav", client, SNDCHAN_AUTO, SNDLEVEL_NORMAL, _, _, 150);
+								Client_ScreenFade(g_pReviveTarget[client].GetEntIndex(), 256, FFADE_PURGE|FFADE_IN, 1, 0, 0, 200, 255);
+								
+								// Fix for if player died on a ladder
+								SetEntPropEnt(g_pReviveTarget[client].GetEntIndex(), Prop_Data, "m_hLadder", -1);
+								
+								g_pReviveTarget[client].GetRagdoll().Kill();
+								
+								// Delay to allow equip time
+								Handle dp = CreateDataPack();
+								CreateDataTimer(0.1, DelayRespawn, dp, TIMER_FLAG_NO_MAPCHANGE);
+								WritePackCell(dp, pPlayer);
+								WritePackCell(dp, g_pReviveTarget[client]);
+								
+								// Give score to reviver
+								pPlayer.ModifyScore(g_pConVarReviveScore.IntValue);
+								if (g_pConVarReviveMessages.BoolValue) Msg(client, "You have revived '%N' and have gained %i score!", g_pReviveTarget[client].GetEntIndex(), g_pConVarReviveScore.IntValue);
+								
+								ResetReviveStatus(client);
+							}
 						}
 					}
 				}
