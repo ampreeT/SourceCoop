@@ -101,6 +101,8 @@ methodmap SurvivalManager {
 				pPlayer.SetObserverMode(OBS_MODE_CHASE);
 				// Do not touch things when spectating
 				pPlayer.SetSolidFlags(pPlayer.GetSolidFlags() | FSOLID_NOT_SOLID);
+				// Do not render by FX, RenderMode is constantly reset
+				pPlayer.SetRenderFx(RENDERFX_FADE_FAST);
 				// Remove previous fades
 				Client_ScreenFade(pPlayer.GetEntIndex(), 1500, FFADE_IN|FFADE_PURGE, 1, 0, 0, 0, 255);
 				

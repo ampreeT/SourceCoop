@@ -153,8 +153,7 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 						{
 							if (SurvivalRespawn(g_pReviveTarget[client]))
 							{
-								// Sounds/effects
-								EmitSoundToAll("weapons/tau/gauss_undercharge.wav", client, SNDCHAN_AUTO, SNDLEVEL_NORMAL, _, _, 150);
+								// Effects
 								Client_ScreenFade(g_pReviveTarget[client].GetEntIndex(), 256, FFADE_PURGE|FFADE_IN, 1, 0, 0, 200, 255);
 								
 								// Fix for if player died on a ladder
@@ -200,7 +199,11 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 										if (GetVectorDistance(vecOrigin, vecRagdollPosition, false) < 100.0)
 										{
 											g_pReviveTarget[client] = CBasePlayer(i);
+											
+											// Prevent multiple sounds if player is spamming E
+											StopSound(client, SNDCHAN_STATIC, "items/suitchargeok1.wav");
 											EmitSoundToAll("items/suitchargeok1.wav", client, SNDCHAN_STATIC, SNDLEVEL_NORMAL);
+											
 											if (g_pConVarReviveMessages.BoolValue) Msg(client, "You have started reviving '%N'", i);
 											
 											break;
@@ -250,6 +253,8 @@ public Action DelayRespawn(Handle timer, Handle dp)
 			pPlayer.GetEyeAngles(vecEyeAngles);
 			
 			pTarget.Teleport(vecOrigin, vecEyeAngles, NULL_VECTOR);
+			
+			EmitSoundToAll("weapons/tau/gauss_undercharge.wav", pPlayer.GetEntIndex(), SNDCHAN_AUTO, SNDLEVEL_NORMAL, _, _, 150);
 		}
 	}
 	return Plugin_Handled;
