@@ -122,11 +122,6 @@ methodmap SurvivalManager {
 		}
 		return true;
 	}
-
-	public static void OnPlayerSpawned(CBasePlayer pPlayer, bool bActuallySpawned)
-	{
-
-	}
 	
 	public static void HandlePlayerDeath(CBasePlayer pVictim)
 	{
@@ -175,7 +170,6 @@ methodmap SurvivalManager {
 	public static void RespawnPlayers(const char[] szHudText = "Checkpoint reached")
 	{
 		SurvivalManager.ClearDead();
-		SetHudTextParams(-1.0, 0.9, 1.5, 200, 200, 200, 255, 0, 1.0, 1.0, 1.0);
 		
 		for (int i = 1; i <= MaxClients; i++)
 		{
@@ -186,6 +180,7 @@ methodmap SurvivalManager {
 				{
 					if (szHudText[0])
 					{
+						SetHudTextParams(-1.0, 0.9, 1.5, 200, 200, 200, 255, 0, 1.0, 1.0, 1.0);
 						ShowHudText(i, 2, szHudText);
 					}
 				}

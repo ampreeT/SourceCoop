@@ -137,7 +137,6 @@ methodmap CoopManager {
 		bool bActuallySpawned = pPlayer.IsAlive();
 		
 		g_SpawnSystem.SpawnPlayer(pPlayer, bActuallySpawned);
-		SurvivalManager.OnPlayerSpawned(pPlayer, bActuallySpawned);
 		
 		if(bActuallySpawned)
 		{				

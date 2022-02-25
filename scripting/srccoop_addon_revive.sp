@@ -35,8 +35,6 @@ public void OnPluginStart()
 	
 	RegAdminCmd("sourcecoop_revive", Command_ForceRespawn, ADMFLAG_ROOT, "Force respawn player.");
 	RegAdminCmd("sc_revive", Command_ForceRespawn, ADMFLAG_ROOT, "Force respawn player.");
-	
-	AutoExecConfig(true, "srccoop_addon_revive");
 }
 
 public void OnMapStart()
@@ -162,7 +160,7 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 								g_pReviveTarget[client].GetRagdoll().Kill();
 								
 								// Delay to allow equip time
-								Handle dp = CreateDataPack();
+								DataPack dp;
 								CreateDataTimer(0.1, DelayRespawn, dp, TIMER_FLAG_NO_MAPCHANGE);
 								WritePackCell(dp, pPlayer);
 								WritePackCell(dp, g_pReviveTarget[client]);
@@ -236,26 +234,23 @@ void ResetReviveStatus(int client)
 	Client_RemoveProgressBar(client);
 }
 
-public Action DelayRespawn(Handle timer, Handle dp)
+public Action DelayRespawn(Handle timer, DataPack dp)
 {
-	if (dp != INVALID_HANDLE)
+	ResetPack(dp);
+	CBasePlayer pPlayer = ReadPackCell(dp);
+	CBasePlayer pTarget = ReadPackCell(dp);
+	
+	if ((pTarget.IsValid()) && (pPlayer.IsValid()))
 	{
-		ResetPack(dp);
-		CBasePlayer pPlayer = ReadPackCell(dp);
-		CBasePlayer pTarget = ReadPackCell(dp);
+		float vecOrigin[3];
+		float vecEyeAngles[3];
 		
-		if ((pTarget.IsValid()) && (pPlayer.IsValid()))
-		{
-			float vecOrigin[3];
-			float vecEyeAngles[3];
-			
-			pPlayer.GetAbsOrigin(vecOrigin);
-			pPlayer.GetEyeAngles(vecEyeAngles);
-			
-			pTarget.Teleport(vecOrigin, vecEyeAngles, NULL_VECTOR);
-			
-			EmitSoundToAll("weapons/tau/gauss_undercharge.wav", pPlayer.GetEntIndex(), SNDCHAN_AUTO, SNDLEVEL_NORMAL, _, _, 150);
-		}
+		pPlayer.GetAbsOrigin(vecOrigin);
+		pPlayer.GetEyeAngles(vecEyeAngles);
+		
+		pTarget.Teleport(vecOrigin, vecEyeAngles, NULL_VECTOR);
+		
+		EmitSoundToAll("weapons/tau/gauss_undercharge.wav", pPlayer.GetEntIndex(), SNDCHAN_ITEM, SNDLEVEL_NORMAL, _, _, 150);
 	}
 	return Plugin_Handled;
 }

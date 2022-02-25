@@ -160,7 +160,7 @@ public void MyCoopMenuHandler(TopMenu topmenu, TopMenuAction action, TopMenuObje
 		}
 		else if(StrEqual(szItem, MENUITEM_SURVIVAL))
 		{
-			Format(buffer, maxlength, "Toggle survival mode");
+			Format(buffer, maxlength, GetSurvivalMode()? "Disable survival mode" : "Enable survival mode");
 		}
 	}
 	else if (action == TopMenuAction_SelectOption)

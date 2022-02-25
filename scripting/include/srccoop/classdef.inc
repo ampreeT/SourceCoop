@@ -199,7 +199,6 @@ methodmap CBaseEntity
 		// ToDo: Should this use SetVariantPosVector3D or SetVariantVector3D?
 		char szBuffer[MAX_FORMAT];
 		Format(szBuffer, sizeof(szBuffer), "%f %f %f", vecValue[0], vecValue[1], vecValue[2]);
-		SetVariantString(szBuffer);
 		return this.AcceptInputStr(szInput, szBuffer, pActivator, pCaller, iOutputID);
 	}
 	public bool OutputAdd(const char[] szOutput, const char[] szTarget, const char[] szTargetInput, const char[] szParameter = "", float flDelay)
@@ -460,7 +459,8 @@ methodmap CBaseEntity
 	}
 	public void SetRenderAlpha(int iAmount)
 	{
-		int r, g, b, a; this.GetRenderColor(r, g, b, a);
+		int r, g, b, a;
+		this.GetRenderColor(r, g, b, a);
 		this.SetRenderColor(r, g, b, iAmount);
 	}
 	public int GetEffects()
@@ -1173,7 +1173,7 @@ methodmap CBasePlayer < CBaseCombatCharacter
 		// Force server to actually recognize the score update
 		CBaseEntity pTempGameScore = CBaseEntity(CreateEntityByName("game_score"));
 		pTempGameScore.Spawn();
-		pTempGameScore.AcceptInputStr("ApplyScore", "", this);
+		pTempGameScore.AcceptInput("ApplyScore", this);
 		pTempGameScore.Kill();
 	}
 	/**
