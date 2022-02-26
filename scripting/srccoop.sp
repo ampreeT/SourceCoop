@@ -647,7 +647,17 @@ public void Event_PlayerDisconnect(Event hEvent, const char[] szName, bool bDont
 {
 	int userId = GetEventInt(hEvent,"userid");
 	int iClient = GetClientOfUserId(userId);
-	PrintToServer("[SRCCOOP] A Player (%d) has disconnected!", iClient);
+	char eventReason[64];
+	char name[64];
+	GetEventString(hEvent, "reason", eventReason, sizeof(eventReason));
+	if(!GetClientName(iClient, name, sizeof(name))){
+		PrintToServer("[SRCCOOP] A Player (%d) has disconnected (%s)", iClient, eventReason);
+	}
+	else
+	{
+		PrintToServer("[SRCCOOP] %s has disconnected (%s)", name, eventReason);
+	}
+		
 	if (strlen(g_szSteamIds[iClient]) > 0)
 	{
 		g_pEquipmentManager.Clear(g_szSteamIds[iClient]);
