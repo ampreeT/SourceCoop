@@ -77,9 +77,9 @@ public Action Command_Save(int iClient, int iArgs)
 
 public Action Command_Load(int iClient, int iArgs)
 {
-	if (iArgs != 1)
+	if (iArgs != 1 && iArgs != 2)
 	{
-		MsgReply(iClient, "Format: sc_load <FILENAME>");
+		MsgReply(iClient, "Format: sc_load <FILENAME> [<PlayerName>]");
 		return Plugin_Handled;
 	}
 
@@ -104,81 +104,34 @@ public Action Command_Load(int iClient, int iArgs)
 		return Plugin_Handled;	
 	}
 
+	if (iArgs == 2)
+	{
+		char szPlayerName[64];
+		GetCmdArg(2, szPlayerName, sizeof(szPlayerName));
+		int clientId = GetClientIdFromName(szPlayerName);
+		if (clientId == -1)
+		{
+			MsgReply(iClient, "Player %s not found", szPlayerName);
+			return Plugin_Handled;
+		}
+
+		CBasePlayer pPlayer = CBasePlayer(clientId);
+		if (!pPlayer.IsValid())
+		{
+			MsgReply(iClient, "Failed to load data for invalid player: %s", szPlayerName);
+			return Plugin_Handled;
+		}	
+		if (!LoadPlayerEquipmentFromFile(kv, iClient, clientId))
+		{
+			MsgReply(iClient, "Failed to load data for player: %s", szPlayerName);
+		}
+		return Plugin_Handled;
+		
+	}
+
 	for (int i = 1; i < MaxClients; i++)
 	{
-		if (strlen(g_szSteamIds[i]) == 0)
-			continue;
-
-		if (!kv.JumpToKey(g_szSteamIds[i]))
-			continue;
-
-		CBasePlayer pPlayer = CBasePlayer(i);
-		if (!pPlayer.IsValid())
-			continue;
-
-		CCoopEquipment equipment;
-		equipment.Initialize();
-
-		equipment.m_iHealth = kv.GetNum("hp");
-		equipment.m_iArmor = kv.GetNum("armor");
-
-		if (!kv.JumpToKey("weapons"))
-		{
-			MsgReply(iClient, "Unable to find weapons section in KeyValues file");
-			delete kv;
-			CloseHandle(equipment.m_pWeaponList);
-			return Plugin_Handled;	
-		}
-
-		if (kv.GotoFirstSubKey(false))
-		{
-			do
-			{
-				char weaponName[MAX_CLASSNAME];
-				if (kv.GetSectionName(weaponName, sizeof(weaponName)))
-				{
-					CCoopWeaponEntry pWeaponEntry;
-					strcopy(pWeaponEntry.m_szClassname, sizeof(pWeaponEntry.m_szClassname), weaponName);
-					pWeaponEntry.m_iPrimaryAmmo = -1;
-					pWeaponEntry.m_iSecondaryAmmo = -1;
-					equipment.m_pWeaponList.PushArray(pWeaponEntry, sizeof(pWeaponEntry));
-				}
-			}
-			while (kv.GotoNextKey(false));
-
-			kv.GoBack(); //return to weapons node
-		}
-
-		kv.GoBack(); //return to player node
-		
-		if (!kv.JumpToKey("ammo"))
-		{
-			MsgReply(iClient, "Unable to find ammo section in KeyValues file");
-			delete kv;
-			CloseHandle(equipment.m_pWeaponList);
-			return Plugin_Handled;	
-		}
-
-		if (kv.GotoFirstSubKey(false))
-		{
-			do 
-			{
-				char ammoKey[3];
-				if (kv.GetSectionName(ammoKey, sizeof(ammoKey)))
-				{
-					int index = StringToInt(ammoKey);
-					int count = kv.GetNum(ammoKey);
-					equipment.m_iAmmoCount[index] = count;
-				}
-			}
-			while (kv.GotoNextKey(false));
-		}
-
-		g_pEquipmentManager.StoreEquipment(g_szSteamIds[i], equipment);
-		g_SpawnSystem.StripPlayer(pPlayer);
-		g_SpawnSystem.SpawnPlayerEquipment(pPlayer);
-
-		MsgReply(iClient, "Loaded Equipment for player %s", g_szSteamIds[i]);
+		LoadPlayerEquipmentFromFile(kv, iClient, i);
 	}
 
 	return Plugin_Handled;
@@ -209,4 +162,109 @@ public Action Command_Clear_Equipment(int iClient, int iArgs)
 
 	return Plugin_Handled;
 	
+}
+
+int GetClientIdFromName(char[] szName)
+{
+	for (int i = 1; i < MaxClients; i++)
+	{
+		if (!IsClientConnected(i))
+			continue;
+			
+		char name[64];
+		if (GetClientName(i, name, sizeof(name)))
+		{
+			if (strcmp(name, szName, false) == 0)
+			{
+				return i;
+			}
+		}
+	}
+
+	return -1;
+}
+
+bool LoadPlayerEquipmentFromFile(KeyValues kv, int iClient, int clientId)
+{
+	if (strlen(g_szSteamIds[clientId]) == 0)
+		return false;
+
+	CBasePlayer pPlayer = CBasePlayer(clientId);
+	if (!pPlayer.IsValid())
+	{
+		MsgReply(iClient, "Failed to load data: invalid player");
+		return false;
+	}
+
+	if (!kv.JumpToKey(g_szSteamIds[clientId]))
+	{
+		MsgReply(iClient, "Save data not found for steam id %s", g_szSteamIds[clientId]);
+		return false;
+	}
+
+	CCoopEquipment equipment;
+	equipment.Initialize();
+
+	equipment.m_iHealth = kv.GetNum("hp");
+	equipment.m_iArmor = kv.GetNum("armor");
+
+	if (!kv.JumpToKey("weapons"))
+	{
+		MsgReply(iClient, "Unable to find weapons section in KeyValues file");
+		delete kv;
+		CloseHandle(equipment.m_pWeaponList);
+		return false;	
+	}
+
+	if (kv.GotoFirstSubKey(false))
+	{
+		do
+		{
+			char weaponName[MAX_CLASSNAME];
+			if (kv.GetSectionName(weaponName, sizeof(weaponName)))
+			{
+				CCoopWeaponEntry pWeaponEntry;
+				strcopy(pWeaponEntry.m_szClassname, sizeof(pWeaponEntry.m_szClassname), weaponName);
+				pWeaponEntry.m_iPrimaryAmmo = -1;
+				pWeaponEntry.m_iSecondaryAmmo = -1;
+				equipment.m_pWeaponList.PushArray(pWeaponEntry, sizeof(pWeaponEntry));
+			}
+		}
+		while (kv.GotoNextKey(false));
+
+		kv.GoBack(); //return to weapons node
+	}
+
+	kv.GoBack(); //return to player node
+	
+	if (!kv.JumpToKey("ammo"))
+	{
+		MsgReply(iClient, "Unable to find ammo section in KeyValues file");
+		delete kv;
+		CloseHandle(equipment.m_pWeaponList);
+		return false;	
+	}
+
+	if (kv.GotoFirstSubKey(false))
+	{
+		do 
+		{
+			char ammoKey[3];
+			if (kv.GetSectionName(ammoKey, sizeof(ammoKey)))
+			{
+				int index = StringToInt(ammoKey);
+				int count = kv.GetNum(ammoKey);
+				equipment.m_iAmmoCount[index] = count;
+			}
+		}
+		while (kv.GotoNextKey(false));
+	}
+
+	g_pEquipmentManager.StoreEquipment(g_szSteamIds[clientId], equipment);
+	g_SpawnSystem.StripPlayer(pPlayer);
+	g_SpawnSystem.SpawnPlayerEquipment(pPlayer);
+
+	MsgReply(iClient, "Loaded Equipment for player %s", g_szSteamIds[clientId]);
+
+	return true;
 }
