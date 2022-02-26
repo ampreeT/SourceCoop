@@ -150,6 +150,7 @@ public void OnPluginStart()
 	if (g_Engine == Engine_BlackMesa)
 	{
 		HookEvent("broadcast_teamsound", Event_BroadcastTeamsound, EventHookMode_Pre);
+		HookEvent("player_disconnect", Event_PlayerDisconnect);
 		AddTempEntHook("BlackMesa Shot", BlackMesaFireBulletsTEHook);
 		AddNormalSoundHook(PlayerSoundListener);
 		UserMsg iIntroCredits = GetUserMessageId("IntroCredits");
@@ -299,7 +300,6 @@ public void OnClientAuthorized(int client, const char[] auth)
 public void OnClientDisconnect(int client)
 {
 	g_pInstancingManager.OnClientDisconnect(client);
-	g_szSteamIds[client] = "";
 }
 
 public void OnMapEnd()
@@ -641,6 +641,18 @@ public Action Event_BroadcastTeamsound(Event hEvent, const char[] szName, bool b
 		return Plugin_Changed;
 	}
 	return Plugin_Continue;
+}
+
+public void Event_PlayerDisconnect(Event hEvent, const char[] szName, bool bDontBroadcast)
+{
+	int userId = GetEventInt(hEvent,"userid");
+	int iClient = GetClientOfUserId(userId);
+	PrintToServer("[SRCCOOP] A Player (%d) has disconnected!", iClient);
+	if (strlen(g_szSteamIds[iClient]) > 0)
+	{
+		g_pEquipmentManager.Clear(g_szSteamIds[iClient]);
+		g_szSteamIds[iClient] = "";
+	}
 }
 
 public MRESReturn Hook_OnEquipmentTryPickUpPost(int _this, Handle hReturn, Handle hParams)
