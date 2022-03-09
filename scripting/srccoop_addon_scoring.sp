@@ -280,7 +280,7 @@ public void Event_EntKilled(Event event, const char[] name, bool dontBroadcast)
 				pClient.ModifyScore(iPointsToAward);
 
 				// Loop through clients, printing in chat the amount of damage each player inflicted to this NPC.
-				float[] attackers = new float[MaxClients];
+				float[] attackers = new float[MaxClients + 1];
 				float fTotalDamage = 0.0;
 				lNpcDamageTracker.GetArray(pKilled.GetEntIndex(), attackers);
 
@@ -382,7 +382,7 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 	CBaseEntity pEntity = CBaseEntity(iEntIndex);
 	if(pEntity.IsClassNPC())
 	{
-		float[] clients = new float[MaxClients];
+		float[] clients = new float[MaxClients + 1];
 		for(int iClientIndex = 0; iClientIndex <= MaxClients; iClientIndex++) {
 			clients[iClientIndex] = 0.0;
 		}
@@ -399,7 +399,7 @@ public void InitComboTracker()
 {
 	if(hDmgTimer == null)
 	{
-		lNpcDamageTracker = CreateArray(MaxClients, GetMaxEntities());
+		lNpcDamageTracker = CreateArray(MaxClients + 1, GetMaxEntities());
 		hDmgTimer = CreateTimer(0.1, Timer_DamageUpdate, _, TIMER_REPEAT);
 		hDmgTrie = new StringMap();
 		hComboTimeTrie = new StringMap();
@@ -481,7 +481,7 @@ public Action Hook_OnNpcTakeDamage(int iVictim, int &iAttacker, int &iInflictor,
 
 	// If the damage was done by a player, add it to the NPC's damage list
 	if(pAttacker.IsClassPlayer()) {
-		float[] attackers = new float[MaxClients];
+		float[] attackers = new float[MaxClients + 1];
 		lNpcDamageTracker.GetArray(iVictim, attackers);
 		
 		float fDamageToAward = fDamage;

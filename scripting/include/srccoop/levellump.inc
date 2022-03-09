@@ -50,15 +50,13 @@ enum struct CEntityOutputLump
 		this.m_szTargetEntity, OUTPUT_SEPARATOR, this.m_szInputName, OUTPUT_SEPARATOR, this.m_szParameter, OUTPUT_SEPARATOR, this.m_flDelay, OUTPUT_SEPARATOR, this.m_iTimesToFire);
 	}
 	
-	// Note: pOther is passed as array to work around a bug in compiler
-	// In SM 1.11-git6837 it must be formatted: CEntityOutputLump pOther[1]
-	bool Matches(CEntityOutputLump[1] pOther, bool bMatchTarget, bool bMatchInput, bool bMatchParameter, bool bMatchDelay, bool bMatchTTF)
+	bool Matches(CEntityOutputLump pOther, bool bMatchTarget, bool bMatchInput, bool bMatchParameter, bool bMatchDelay, bool bMatchTTF)
 	{
-		if(bMatchTarget && !StrEqualsRegex(this.m_szTargetEntity, pOther[0].m_szTargetEntity, false)
-			|| bMatchInput && !StrEqualsRegex(this.m_szInputName, pOther[0].m_szInputName, false)
-			|| bMatchParameter && !StrEqualsRegex(this.m_szParameter, pOther[0].m_szParameter, false)
-			|| bMatchDelay && this.m_flDelay != pOther[0].m_flDelay
-			|| bMatchTTF && this.m_iTimesToFire != pOther[0].m_iTimesToFire)
+		if(bMatchTarget && !StrEqualsRegex(this.m_szTargetEntity, pOther.m_szTargetEntity, false)
+			|| bMatchInput && !StrEqualsRegex(this.m_szInputName, pOther.m_szInputName, false)
+			|| bMatchParameter && !StrEqualsRegex(this.m_szParameter, pOther.m_szParameter, false)
+			|| bMatchDelay && this.m_flDelay != pOther.m_flDelay
+			|| bMatchTTF && this.m_iTimesToFire != pOther.m_iTimesToFire)
 		{
 			return false;
 		}
@@ -571,11 +569,11 @@ enum struct CGlobalLevelLump
 						{
 							if(kv.GetNum(NULL_STRING))
 							{
-								EnableFeature(feature);
+								CoopManager.EnableFeature(feature);
 							}
 							else
 							{
-								DisableFeature(feature);
+								CoopManager.DisableFeature(feature);
 							}
 						}
 					}
@@ -1032,8 +1030,7 @@ enum struct CGlobalLevelLump
 					CEntityOutputLump pEntityOutputLump;
 					if(pEntityOutputLump.LoadFromEntityKeyLump(pEditedKeyInfo))
 					{
-						CEntityOutputLump _pEntityOutputLump[1]; _pEntityOutputLump[0] = pEntityOutputLump;
-						if(pMatchOutputLump.Matches(_pEntityOutputLump, bFoundTarget, bFoundInput, bFoundParameter, bFoundDelay, bFoundTTF))
+						if(pMatchOutputLump.Matches(pEntityOutputLump, bFoundTarget, bFoundInput, bFoundParameter, bFoundDelay, bFoundTTF))
 						{
 							// skip any outputs that dont match the target entity
 							if(pTargetEvaluatedList.IsValid())

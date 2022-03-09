@@ -14,6 +14,7 @@ ConVar g_pConvarEndWaitPeriod;
 ConVar g_pConvarEndWaitFactor;
 ConVar g_pConvarHomeMap;
 ConVar g_pConvarEndWaitDisplayMode;
+ConVar g_pConVarNextStuck;
 
 // Existing ConVars
 ConVar mp_friendlyfire;
@@ -24,38 +25,40 @@ ConVar mp_flashlight;
 // ----------------------------
 Handle g_pCreateEngineInterface;
 Handle g_pCreateServerInterface;
-
-//Handle g_pPickupObject;
-//Handle g_pSendWeaponAnim;
+Handle g_pCreateServerRagdoll;
 
 // ----------------------------
 // DHooks
 // ----------------------------
-Handle hkFAllowFlashlight;
-//Handle hkIsDeathmatch;
-Handle hkIsMultiplayer;
-Handle hkRestoreWorld;
-Handle hkRespawnPlayers;
-Handle hkIRelationType;
-Handle hkIsPlayerAlly;
-Handle hkProtoSniperSelectSchedule;
-Handle hkFindNamedEntity;
-Handle hkFindNamedEntityClosest;
-Handle hkSetModel;
-Handle hkAcceptInput;
-Handle hkSetSuitUpdate;
-Handle hkOnTryPickUp;
-Handle hkThink;
-Handle hkChangeTeam;
-Handle hkShouldCollide;
-Handle hkIchthyosaurIdleSound;
-Handle hkUTIL_GetLocalPlayer;
-Handle hkResolveNames;
-Handle hkCanSelectSchedule;
-Handle hkPickup_ForcePlayerToDropThisObject;
-Handle hkHandleAnimEvent;
-Handle hkRunAI;
-//Handle hkSetPlayerAvoidState;
+DynamicHook hkFAllowFlashlight;
+//DynamicHook hkIsDeathmatch;
+DynamicHook hkIsMultiplayer;
+DynamicHook hkPlayerSpawn;
+DynamicHook hkRestoreWorld;
+DynamicHook hkRespawnPlayers;
+DynamicHook hkIRelationType;
+DynamicHook hkIsPlayerAlly;
+DynamicHook hkProtoSniperSelectSchedule;
+DynamicHook hkFindNamedEntity;
+DynamicHook hkFindNamedEntityClosest;
+DynamicHook hkSetModel;
+DynamicHook hkAcceptInput;
+DynamicHook hkOnTryPickUp;
+DynamicHook hkThink;
+DynamicHook hkChangeTeam;
+DynamicHook hkShouldCollide;
+DynamicHook hkIchthyosaurIdleSound;
+DynamicHook hkHandleAnimEvent;
+DynamicHook hkRunAI;
+// DynamicHook hkOnTakeDamage;
+DynamicHook hkLevelInit;
+DynamicHook hkEvent_Killed;
+DynamicDetour hkSetSuitUpdate;
+DynamicDetour hkUTIL_GetLocalPlayer;
+DynamicDetour hkResolveNames;
+DynamicDetour hkCanSelectSchedule;
+DynamicDetour hkPickup_ForcePlayerToDropThisObject;
+//DynamicDetour hkSetPlayerAvoidState;
 
 // ----------------------------
 // Adresses, Interfaces
@@ -71,6 +74,7 @@ char g_szPrevMapName[MAX_MAPNAME];
 char g_szEntityString[ENTITYSTRING_LENGTH];
 bool g_bTempDontHookEnts;
 bool g_bMapStarted;
+float g_flNextStuck[MAXPLAYERS+1];
 EngineVersion g_Engine;
 OperatingSystem g_serverOS;
 FeatureMap g_pFeatureMap;

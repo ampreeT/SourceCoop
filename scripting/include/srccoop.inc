@@ -15,20 +15,22 @@
 
 #include <logdebug>
 
-#include <srccoop/typedef.inc>
-#include <srccoop/typedef_game.inc>
-#include <srccoop/features.inc>
-#include <srccoop/classdef.inc>
-#include <srccoop/utils.inc>
+#include <srccoop/typedef>
+#include <srccoop/typedef_game>
+#include <srccoop/features>
+#include <srccoop/classdef>
+#include <srccoop/utils>
 #include <srccoop_api>
 
-#include <srccoop/globals.inc>
-#include <srccoop/kv_shared.inc>
-#include <srccoop/manager.inc>
-#include <srccoop/entitypatch.inc>
-#include <srccoop/instancing.inc>
-#include <srccoop/playerpatch.inc>
-#include <srccoop/menu.inc>
+#include <srccoop/globals>
+#include <srccoop/kv_shared>
+#include <srccoop/manager_changelevel>
+#include <srccoop/manager>
+#include <srccoop/manager_survival>
+#include <srccoop/entitypatch>
+#include <srccoop/instancing>
+#include <srccoop/playerpatch>
+#include <srccoop/menu>
 
 
 //------------------------------------------------------
@@ -38,6 +40,8 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 {
 	CreateNative("GetCoopTopMenu", Native_GetCoopTopMenu);
 	CreateNative("IsCurrentMapCoop", Native_IsCurrentMapCoop);
+	CreateNative("SurvivalRespawn", Native_SurvivalRespawn);
+	CreateNative("GetSurvivalMode", Native_GetSurvivalMode);
 	RegPluginLibrary(SRCCOOP_LIBRARY);
 	return APLRes_Success;
 }
@@ -49,5 +53,18 @@ public any Native_GetCoopTopMenu(Handle plugin, int numParams)
 
 public any Native_IsCurrentMapCoop(Handle plugin, int numParams)
 {
-	return g_pCoopManager.m_bIsCoopMap;
+	return g_pCoopManagerData.m_bIsCoopMap;
+}
+
+public any Native_SurvivalRespawn(Handle plugin, int numParams)
+{
+	CBasePlayer pPlayer = GetNativeCell(1);
+	if (!pPlayer.IsValid())
+		ThrowNativeError(0, "Passed CBasePlayer is invalid!");
+	return SurvivalManager.RespawnPlayer(pPlayer);
+}
+
+public any Native_GetSurvivalMode(Handle plugin, int numParams)
+{
+	return SurvivalManager.GetMode();
 }

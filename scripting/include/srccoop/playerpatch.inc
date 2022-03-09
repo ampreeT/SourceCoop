@@ -17,21 +17,22 @@ public MRESReturn Hook_FAllowFlashlight(Handle hReturn, Handle hParams)
 //------------------------------------------------------
 public void Hook_CameraDeathSpawn(int iEntIndex)
 {
-	if (g_pCoopManager.IsFeatureEnabled(FT_FIRSTPERSON_DEATHCAM))
+	if (CoopManager.IsFeatureEnabled(FT_FIRSTPERSON_DEATHCAM))
 	{
 		CBaseEntity pEntity = CBaseEntity(iEntIndex);
-		if (pEntity.IsValid())
+		CBlackMesaPlayer pOwner = view_as<CBlackMesaPlayer>(pEntity.GetOwner());
+		if (pOwner.IsValid())
 		{
-			CBlackMesaPlayer pOwner = view_as<CBlackMesaPlayer>(pEntity.GetOwner());
-			if (pOwner.IsValid() && pOwner.IsClassPlayer())
+			CBaseEntity pViewEntity = pOwner.GetViewEntity();
+			if (!pViewEntity.IsValid() || pViewEntity == pOwner)
 			{
-				CBaseEntity pViewEntity = pOwner.GetViewEntity();
-				if (!pViewEntity.IsValid() || pViewEntity == pOwner)
-				{
-					pOwner.SetViewEntity(pEntity);
-				}
+				pOwner.SetViewEntity(pEntity);
 			}
 		}
+	}
+	else
+	{
+		AcceptEntityInput(iEntIndex, "Kill");
 	}
 }
 
@@ -58,10 +59,10 @@ void OnEntityDestroyed_CameraDeath(CBaseEntity pEntity)
 //------------------------------------------------------
 public void Hook_PlayerPreThink(int iClient)
 {
-	if(!g_pCoopManager.IsCoopModeEnabled())
+	if (!CoopManager.IsCoopModeEnabled())
 		return;
 	
-	if(IsPlayerAlive(iClient))
+	if (IsPlayerAlive(iClient))
 	{
 		g_bIsMultiplayerOverride = false;
 	}
@@ -70,31 +71,36 @@ public void Hook_PlayerPreThink(int iClient)
 public void Hook_PlayerPreThinkPost(int iClient)
 {
 	g_bIsMultiplayerOverride = true;
-	if(!g_pCoopManager.IsCoopModeEnabled())
+	if (!CoopManager.IsCoopModeEnabled())
 		return;
 	
 	CBlackMesaPlayer pPlayer = CBlackMesaPlayer(iClient);
-	if(pPlayer.IsAlive())
+	if (pPlayer.IsAlive())
 	{
-		CBaseCombatWeapon pWeapon = pPlayer.GetActiveWeapon();
-		if (pWeapon.IsValid())
+		if (g_Engine == Engine_BlackMesa)
 		{
-			if(pPlayer.GetCarriedObject().IsValid())
+			CBaseCombatWeapon pWeapon = pPlayer.GetActiveWeapon();
+			if (pWeapon.IsValid())
 			{
-				PreventWeaponFiring(pWeapon, 1.0);
-			}
-			else if (pPlayer.GetWaterLevel() == WATER_LEVEL_HEAD_IN_WATER)
-			{
-				CBaseEntity pEntity = pPlayer.GetParent();
-				if (pEntity.IsValid())
+				if (pPlayer.GetCarriedObject().IsValid())
 				{
-					if (HasEntProp(pEntity.GetEntIndex(), Prop_Data, "m_hPrey"))
+					// fix clientside prediction errors when dropping objects
+					PreventWeaponFiring(pWeapon, 1.0);
+				}
+				else if (pPlayer.GetWaterLevel() == WL_Eyes)
+				{
+					// fix clientside firing weapons when dragged by beneathticle
+					CBaseEntity pParent = pPlayer.GetParent();
+					if (pParent.IsValid())
 					{
-						if (GetEntPropEnt(pEntity.GetEntIndex(), Prop_Data, "m_hPrey") == pPlayer.GetEntIndex())
+						if (HasEntProp(pParent.GetEntIndex(), Prop_Data, "m_hPrey"))
 						{
-							if ((!pWeapon.m_bFiresUnderwater()) && (pWeapon.GetPrimaryAmmoType() != -1))
+							if (GetEntPropEnt(pParent.GetEntIndex(), Prop_Data, "m_hPrey") == pPlayer.GetEntIndex())
 							{
-								PreventWeaponFiring(pPlayer.GetActiveWeapon(), 0.2);
+								if (!pWeapon.m_bFiresUnderwater() && pWeapon.GetPrimaryAmmoType() != -1)
+								{
+									PreventWeaponFiring(pWeapon, 0.2);
+								}
 							}
 						}
 					}
@@ -102,13 +108,13 @@ public void Hook_PlayerPreThinkPost(int iClient)
 			}
 		}
 	}
-	else
+	else // Dead
 	{
-		if(pPlayer.GetTeam() != TEAM_SPECTATOR && g_pConvarCoopRespawnTime.FloatValue
-			&& GetGameTime() - pPlayer.GetDeathTime() > g_pConvarCoopRespawnTime.FloatValue)
+		float flRespawnTime = g_pConvarCoopRespawnTime.FloatValue;
+		if (pPlayer.GetTeam() > TEAM_SPECTATOR && !SurvivalManager.IsDead(pPlayer) && flRespawnTime && GetGameTime() - pPlayer.GetDeathTime() > flRespawnTime)
 		{
 			int iPressed = pPlayer.GetPressedButtons();
-			if(iPressed != 0 && iPressed != IN_SCORE)
+			if (iPressed != 0 && iPressed != IN_SCORE)
 			{
 				DispatchSpawn(iClient);
 			}
@@ -116,14 +122,41 @@ public void Hook_PlayerPreThinkPost(int iClient)
 	}
 }
 
-void PreventWeaponFiring(CBaseCombatWeapon pWeapon, float flDelayTime = 1.0)
+//------------------------------------------------------
+// OnPlayerRunCmd
+//------------------------------------------------------
+public Action OnPlayerRunCmd(int iClient, int &iButtons, int &iImpulse, float fVel[3], float fAngles[3], int &iWeapon, int& subtype, int& cmdnum, int& tickcount, int& seed, int mouse[2])
 {
-	if (pWeapon.IsValid())
-	{
-		pWeapon.SetNextPrimaryAttack(GetGameTime() + flDelayTime);
-		pWeapon.SetNextSecondaryAttack(GetGameTime() + flDelayTime);
+	if (IsFakeClient(iClient) || !CoopManager.IsCoopModeEnabled()) {
+		return Plugin_Continue;
 	}
-	return;
+
+	// Spectator fixes
+	// Credit: harper
+
+	if (IsClientObserver(iClient))
+	{
+		// hide bugged ctrl menu
+		if(tickcount % 10 == 0)
+			ShowVGUIPanel(iClient, "specmenu", _, false);
+
+		Obs_Mode iMode = view_as<Obs_Mode> (GetEntProp(iClient, Prop_Send, "m_iObserverMode"));
+		CBasePlayer pTarget = CBasePlayer(GetEntPropEnt(iClient, Prop_Send, "m_hObserverTarget"));
+		CBasePlayer pClient = CBasePlayer(iClient);
+
+		// Make sure target is not an info_observer_menu
+		// force free-look where appropriate - this removes the extra (pointless) third person spec mode
+		if (iMode == OBS_MODE_POI && pTarget != pClient && (!pTarget.IsValid() || pTarget.IsClassPlayer())) {
+			SetEntProp(iClient, Prop_Data, "m_iObserverMode", OBS_MODE_ROAMING);
+		}
+
+		// fix bug where spectator can't move while free-looking
+		if (iMode == OBS_MODE_ROAMING) {
+			SetEntityMoveType(iClient, MOVETYPE_NOCLIP);
+		}
+	}
+
+	return Plugin_Continue;
 }
 
 //------------------------------------------------------
@@ -133,20 +166,20 @@ char szLastSuitSound[MAXPLAYERS+1][PLATFORM_MAX_PATH];
 
 public Action PlayerSoundListener(int clients[MAXPLAYERS], int &numClients, char sample[PLATFORM_MAX_PATH], int &entity, int &channel, float &volume, int &level, int &pitch, int &flags, char soundEntry[PLATFORM_MAX_PATH], int &seed)
 {
-	if(strncmp(sample, "!HEV_", 5) == 0)
+	if (strncmp(sample, "!HEV_", 5) == 0)
 	{
 		// Here we save last played HEV sound so we can stop it on respawn
-		for(int i = 0; i < numClients; i++)
+		for (int i = 0; i < numClients; i++)
 		{
 			szLastSuitSound[clients[i]] = sample;
 		}
 	}
-	else if(strncmp(sample, "physics\\footsteps\\", 18) == 0 || strncmp(sample, "player/suit_sprint.wav", 22) == 0)
+	else if (strncmp(sample, "physics\\footsteps\\", 18) == 0 || strncmp(sample, "player/suit_sprint.wav", 22) == 0)
 	{
 		// Footsteps are emitted on the server but not sent to client, because the client usually plays them on its own - but not when sprinting in MP mode (actually just pressing +speed!)
 		// We can resolve this by sending the footsteps, which are already generated on the server, to the client.
 		CBlackMesaPlayer pPlayer = CBlackMesaPlayer(entity);
-		if(pPlayer.IsValid() && pPlayer.GetButtons() & IN_SPEED)
+		if (pPlayer.IsValid() && pPlayer.GetButtons() & IN_SPEED)
 		{
 			clients[0] = entity;
 			numClients = 1;
@@ -158,7 +191,7 @@ public Action PlayerSoundListener(int clients[MAXPLAYERS], int &numClients, char
 
 public MRESReturn Hook_SetSuitUpdate(int _this, Handle hParams)
 {
-	if (g_pCoopManager.IsFeatureEnabled(FT_HEV_SOUNDS))
+	if (CoopManager.IsFeatureEnabled(FT_HEV_SOUNDS))
 	{
 		g_bIsMultiplayerOverride = false;
 	}
@@ -172,40 +205,150 @@ public MRESReturn Hook_SetSuitUpdatePost(int _this, Handle hParams)
 }
 
 //------------------------------------------------------
+// Player AcceptInput hook
+// Prevent input of kill to player as this will put the player in a hanging state
+// This can occur in some maps where a trigger is set to kill the !activator and the player so happens to be there
+//------------------------------------------------------
+public MRESReturn Hook_PlayerAcceptInput(int _this, Handle hReturn, Handle hParams)
+{
+	if (!DHookIsNullParam(hParams, 1))
+	{
+		char szInputType[MAX_FORMAT];
+		DHookGetParamString(hParams, 1, szInputType, sizeof(szInputType));
+
+		if (strcmp(szInputType, "kill", false) == 0)
+		{
+			DHookSetReturn(hReturn, true);
+			return MRES_Supercede;
+		}
+	}
+	return MRES_Ignored;
+}
+
+//------------------------------------------------------
 // Player spawn
+//------------------------------------------------------
+public MRESReturn Hook_PlayerSpawn(int _this, Handle hReturn, Handle hParams)
+{
+	if (CoopManager.IsCoopModeEnabled())
+	{
+		CBasePlayer pPlayer = CBasePlayer(_this);
+		
+		// ignore initial in-game spawn
+		if (pPlayer.GetTeam() != TEAM_UNASSIGNED)
+		{
+			if (!SurvivalManager.HandlePlayerSpawn(pPlayer))
+			{
+				return MRES_Supercede;
+			}
+		}
+	}
+	return MRES_Ignored;
+}
+
+//------------------------------------------------------
+// Player spawn post
 //------------------------------------------------------
 public void Hook_PlayerSpawnPost(int iClient)
 {
-	if(!g_pCoopManager.IsCoopModeEnabled())
+	if (!CoopManager.IsCoopModeEnabled())
 		return;
-	
+
 	CBlackMesaPlayer pPlayer = CBlackMesaPlayer(iClient);
-	if(pPlayer.IsValid())
+	if (pPlayer.IsValid())
 	{
-		g_pCoopManager.OnPlayerSpawned(pPlayer);
+		CoopManager.OnPlayerSpawned(pPlayer);
 		g_pInstancingManager.OnPlayerSpawned(pPlayer);
 		
 		if (g_Engine == Engine_BlackMesa)
 		{
-			if(g_pConvarDisableTeamSelect.BoolValue && GetClientTeam(iClient) == TEAM_SPECTATOR)
+			if (pPlayer.IsAlive())
 			{
-				// hide team select
-				ClientCommand(iClient, "hidepanel team");
-				ClientCommand(iClient, "hidepanel deathmatch");
-				ChangeClientTeam(iClient, TEAM_SCIENTIST);
-			}
-			if(pPlayer.IsAlive())
-			{
+				// Ensure view entity is player and observer mode is off
+				// Set before spawnsystem SpawnPlayer in case view entitiy is changed there
+				pPlayer.SetViewEntity(pPlayer);
+				pPlayer.SetObserverMode(OBS_MODE_NONE);
+
+				// Fix for if player died on a ladder
+				SetEntPropEnt(pPlayer.GetEntIndex(), Prop_Data, "m_hLadder", -1);
+				
 				// Correct the 'damages' from the prethink hook hack
 				pPlayer.SetSuit(false);
 				pPlayer.SetMaxSpeed(190.0);
 				pPlayer.SetIsSprinting(false);
 				pPlayer.SetSolidFlags(pPlayer.GetSolidFlags() & ~FSOLID_NOT_SOLID);
+				
 				// Stop HEV sounds
 				StopSound(iClient, SNDCHAN_STATIC, szLastSuitSound[iClient]);
 			}
+			else // Not alive => entered the game
+			{
+				if (GetClientTeam(iClient) == TEAM_SPECTATOR)
+				{
+					if (g_pConvarDisableTeamSelect.BoolValue)
+					{
+						// hide team select
+						ClientCommand(iClient, "hidepanel team");
+						ClientCommand(iClient, "hidepanel deathmatch");
+						ChangeClientTeam(iClient, TEAM_SCIENTIST);
+					}
+					else
+					{
+						// If this was not here, the specmenu fix in OnPlayerRunCmd would periodically blink the initial team select menu for some reason.
+						ClientCommand(iClient, "chooseteam");
+					}
+				}
+			}
 		}
 	}
+}
+
+//------------------------------------------------------
+// Player death hooks
+// - Force serverside ragdolls
+//------------------------------------------------------
+CBaseEntity g_pNewRagdoll = view_as<CBaseEntity>(-1);
+
+public MRESReturn Hook_PlayerKilled(int _this, DHookParam hParams)
+{
+	if (!CoopManager.IsCoopModeEnabled())
+		return MRES_Ignored;
+	
+	CBasePlayer pPlayer = CBasePlayer(_this);
+	if (pPlayer.IsValid())
+	{		
+		Address pTakeDmgInfo = hParams.GetAddress(1);
+		int iForceBone = GetEntProp(_this, Prop_Send, "m_nForceBone");
+		g_pNewRagdoll = CBaseEntity(SDKCall(g_pCreateServerRagdoll, _this, iForceBone, pTakeDmgInfo, COLLISION_GROUP_DEBRIS_TRIGGER, false));
+		SDKHook(g_pNewRagdoll.GetEntIndex(), SDKHook_OnTakeDamage, Hook_NoDmg);
+	}
+	return MRES_Ignored;
+}
+
+public MRESReturn Hook_PlayerKilledPost(int _this, DHookParam hParams)
+{
+	if (g_pNewRagdoll.IsValid())
+	{
+		CBasePlayer pPlayer = CBasePlayer(_this);
+		CBaseEntity pRagdoll = pPlayer.GetRagdoll();
+		CBaseEntity pViewEnt = pPlayer.GetViewEntity();
+		
+		if (pRagdoll.IsValid())
+		{
+			pRagdoll.Kill();
+		}
+		pPlayer.SetRagdoll(g_pNewRagdoll);
+		
+		if (pViewEnt.IsValid() && !pViewEnt.IsClassPlayer())
+		{
+			// Parent death camera to server-side ragdoll
+			pViewEnt.SetParent(g_pNewRagdoll);
+			pViewEnt.SetParentAttachment("eyes");
+		}
+
+		g_pNewRagdoll = CBaseEntity(-1);
+	}
+	return MRES_Ignored;
 }
 
 //------------------------------------------------------
@@ -213,10 +356,10 @@ public void Hook_PlayerSpawnPost(int iClient)
 //------------------------------------------------------
 public Action Hook_PlayerTraceAttack(int victim, int &attacker, int &inflictor, float &damage, int &damagetype, int &ammotype, int hitbox, int hitgroup)
 {
-	if (g_pCoopManager.IsCoopModeEnabled() && !mp_friendlyfire.BoolValue)
+	if (CoopManager.IsCoopModeEnabled() && !mp_friendlyfire.BoolValue)
 	{
 		// Disable FF
-		if(attacker != victim && CBlackMesaPlayer(attacker).IsClassPlayer())
+		if (attacker != victim && CBlackMesaPlayer(attacker).IsClassPlayer())
 		{
 			return Plugin_Handled;
 		}
@@ -229,12 +372,12 @@ public Action Hook_PlayerTraceAttack(int victim, int &attacker, int &inflictor, 
 //------------------------------------------------------
 public Action Hook_PlayerTakeDamage(int victim, int &attacker, int &inflictor, float &damage, int &damagetype)
 {
-	if(g_pCoopManager.IsFeatureEnabled(FT_NO_TELEFRAGGING))
+	if (CoopManager.IsFeatureEnabled(FT_NO_TELEFRAGGING))
 	{
 		CBaseEntity pInflictor = CBaseEntity(inflictor);
 		
 		// Disable telefragging (CTriggerTeleport::TelefragEntities)
-		if(pInflictor.IsValid() && pInflictor.IsClassname("trigger_teleport"))
+		if (pInflictor.IsValid() && pInflictor.IsClassname("trigger_teleport"))
 		{
 			return Plugin_Handled;
 		}
@@ -243,27 +386,28 @@ public Action Hook_PlayerTakeDamage(int victim, int &attacker, int &inflictor, f
 }
 
 //------------------------------------------------------
-// Force everyone to one team in TDM
+// Player team change hooks
+// - Force everyone to single team in TDM
 //------------------------------------------------------
 public MRESReturn Hook_PlayerChangeTeam(int _this, Handle hParams)
 {
-	if(g_pCoopManager.IsCoopModeEnabled())
+	if (CoopManager.IsCoopModeEnabled())
 	{
 		int iTeamNum = DHookGetParam(hParams, 1);
-		if(iTeamNum == TEAM_SCIENTIST || iTeamNum == TEAM_MARINES)
+		if (iTeamNum == TEAM_SCIENTIST || iTeamNum == TEAM_MARINES)
 		{
 			char szTeam[16]; g_pConvarCoopTeam.GetString(szTeam, sizeof(szTeam));
-			if(StrEqual(szTeam, "scientist", false))
+			if (StrEqual(szTeam, "scientist", false))
 			{
-				if(iTeamNum == TEAM_MARINES)
+				if (iTeamNum == TEAM_MARINES)
 				{
 					DHookSetParam(hParams, 1, TEAM_SCIENTIST);
 					return MRES_ChangedHandled;
 				}
 			}
-			else if(StrEqual(szTeam, "marines", false))
+			else if (StrEqual(szTeam, "marines", false))
 			{
-				if(iTeamNum == TEAM_SCIENTIST)
+				if (iTeamNum == TEAM_SCIENTIST)
 				{
 					DHookSetParam(hParams, 1, TEAM_MARINES);
 					return MRES_ChangedHandled;
@@ -274,15 +418,24 @@ public MRESReturn Hook_PlayerChangeTeam(int _this, Handle hParams)
 	return MRES_Ignored;
 }
 
+public MRESReturn Hook_PlayerChangeTeamPost(int _this, Handle hParams)
+{
+	if (CoopManager.IsCoopModeEnabled())
+	{
+		SurvivalManager.GameOverCheck();
+	}
+	return MRES_Ignored;
+}
+
 //------------------------------------------------------
 // NoBlock
 //------------------------------------------------------
 public MRESReturn Hook_PlayerShouldCollide(int _this, Handle hReturn, Handle hParams)
 {
-	if(g_pCoopManager.IsFeatureEnabled(FT_NOBLOCK))
+	if (CoopManager.IsFeatureEnabled(FT_NOBLOCK))
 	{
 		int iCollisionGroup = DHookGetParam(hParams, 1);
-		if(iCollisionGroup == COLLISION_GROUP_PLAYER || iCollisionGroup == COLLISION_GROUP_PLAYER_MOVEMENT)
+		if (iCollisionGroup == COLLISION_GROUP_PLAYER || iCollisionGroup == COLLISION_GROUP_PLAYER_MOVEMENT)
 		{
 			DHookSetReturn(hReturn, false);
 			return MRES_Supercede;
@@ -297,23 +450,23 @@ public MRESReturn Hook_PlayerShouldCollide(int _this, Handle hReturn, Handle hPa
 //------------------------------------------------------
 public MRESReturn Hook_ForcePlayerToDropThisObject(Handle hParams)
 {
-	if(!DHookIsNullParam(hParams, 1))
+	if (!DHookIsNullParam(hParams, 1))
 	{
 		// singleplayer doesn't care what's passed in so we have to check for both player or item
 		CBaseEntity pParam = CBaseEntity(DHookGetParam(hParams, 1));
-		if(pParam.IsClassPlayer())
+		if (pParam.IsClassPlayer())
 		{
 			view_as<CBlackMesaPlayer>(pParam).ForceDropOfCarriedPhysObjects();
 		}
 		else
 		{
-			for(int i = 1; i <= MaxClients; i++)
+			for (int i = 1; i <= MaxClients; i++)
 			{
-				if(IsClientInGame(i))
+				if (IsClientInGame(i))
 				{
 					// is this player carrying the required item?
 					CBlackMesaPlayer pPlayer = CBlackMesaPlayer(i);
-					if(pPlayer.GetCarriedObject() == pParam)
+					if (pPlayer.GetCarriedObject() == pParam)
 					{
 						pPlayer.ForceDropOfCarriedPhysObjects();
 						break;

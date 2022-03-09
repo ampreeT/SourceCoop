@@ -89,6 +89,14 @@
 				}
 			}
 		}
+		"modify"
+		{
+			"targetname" "shockwave_camera"
+			"set"
+			{
+				"spawnflags" "12"
+			}
+		}
 	}
 	"checkpoint"
 	{

@@ -7,11 +7,9 @@ __If you are someone who is looking to play on a server__, you are already compl
 
 __If you are a server operator who is looking to host your own cooperative server__, then follow the instructions below.
 - Install the latest release version of [Metamod:Source](https://www.sourcemm.net/downloads.php?branch=stable)
-	- latest tested working build is __1143__
+	- Recommended build -> __1143__
 - Install a development version of [SourceMod](https://www.sourcemod.net/downloads.php?branch=dev)
-	- latest tested working build is __6645__
-- Install the latest release version of [DHooks with Detours support](https://github.com/peace-maker/DHooks2/releases)
-	- latest tested working build is __dhooks-2.2.0-detours15-sm110__
+	- Recommended build -> __6851__
 - Install the latest release of SourceCoop from the [releases page](https://github.com/ampreeT/SourceCoop/releases)
 
 A step-by-step guide is also available on [Steam](https://steamcommunity.com/sharedfiles/filedetails/?id=2200247356).
@@ -43,6 +41,8 @@ If you are interested in helping us, create a pull request above or contact __am
 	- [Steam](https://steamcommunity.com/id/Rock48/) | [GitHub](https://github.com/Rock48)
 - __Krozis Kane__ | map editing
 	- [Steam](https://steamcommunity.com/id/Krozis_Kane/) | [GitHub](https://github.com/KrozisKane)
+- __Balimbanana__ | programming, reverse engineering
+	- [Steam](https://steamcommunity.com/id/Balimbanana/) | [GitHub](https://github.com/Balimbanana)
 ### Playtesters
 - [Lear](https://steamcommunity.com/id/SKGNick)
 - [bddu](https://steamcommunity.com/id/bddu/)
