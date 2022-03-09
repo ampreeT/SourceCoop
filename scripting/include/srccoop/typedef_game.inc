@@ -117,6 +117,11 @@ enum
 	SF_TRIGGER_DISALLOW_BOTS                = 0x1000,   // Bots are not allowed to fire this trigger
 };
 
+// Sprite spawnflags
+#define SF_SPRITE_STARTON		0x0001
+#define SF_SPRITE_ONCE			0x0002
+#define SF_SPRITE_TEMPORARY		0x8000
+
 //------------------------------------------------------
 // Effects flags
 //------------------------------------------------------
@@ -147,14 +152,24 @@ enum
 #define DAMAGE_AIM			3
 
 //------------------------------------------------------
-// Settings for m_nWaterLevel
+// m_lifeState values
 //------------------------------------------------------
+#define	LIFE_ALIVE				0 // alive
+#define	LIFE_DYING				1 // playing death animation or still falling off of a ledge waiting to hit ground
+#define	LIFE_DEAD				2 // dead. lying still.
+#define LIFE_RESPAWNABLE		3
+#define LIFE_DISCARDBODY		4
+
+//-----------------------------------------------------------------------------
+// m_nWaterLevel enumeration
+// Purpose: Identifies how submerged in water a player is.
+//-----------------------------------------------------------------------------
 enum WaterLevel
 {
-	WATER_LEVEL_NOT_IN_WATER = 0,
-	WATER_LEVEL_FEET_IN_WATER,
-	WATER_LEVEL_WAIST_IN_WATER,
-	WATER_LEVEL_HEAD_IN_WATER
+	WL_NotInWater = 0,
+	WL_Feet,
+	WL_Waist,
+	WL_Eyes
 };
 
 //------------------------------------------------------
@@ -227,6 +242,7 @@ enum
 	AMMO_SNIPERPENETRATEDROUND = 16
 }
 
+// Spectator Movement modes
 enum Obs_Mode
 {
 	OBS_MODE_NONE = 0,	// not in spectator mode
@@ -235,6 +251,7 @@ enum Obs_Mode
 	OBS_MODE_FIXED,		// view from a fixed camera position
 	OBS_MODE_IN_EYE,	// follow a player in first person view
 	OBS_MODE_CHASE,		// follow a player in third person view
+	OBS_MODE_POI,		// PASSTIME point of interest - game objective, big fight, anything interesting; added in the middle of the enum due to tons of hard-coded "<ROAMING" enum compares
 	OBS_MODE_ROAMING,	// free roaming
 
 	NUM_OBSERVER_MODES

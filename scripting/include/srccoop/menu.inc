@@ -65,7 +65,7 @@ public Action Command_CoopMenu(int client, int args)
 	{
 		return Plugin_Handled;
 	}
-	if(!g_pCoopManager.IsCoopModeEnabled())
+	if(!CoopManager.IsCoopModeEnabled())
 	{
 		MsgReply(client, "Coop menu is currently unavailable.");
 		return Plugin_Handled;

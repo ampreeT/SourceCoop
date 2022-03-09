@@ -39,20 +39,22 @@ void LoadGameData()
 		char szCreateEngineInterface[] = "CreateEngineInterface";
 		StartPrepSDKCall(SDKCall_Static);
 		if (!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Signature, szCreateEngineInterface))
-			SetFailState("Could not obtain game offset %s", szCreateEngineInterface);
+			SetFailState("Could not obtain game signature %s", szCreateEngineInterface);
 		PrepSDKCall_AddParameter(SDKType_String, SDKPass_Pointer);
 		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Pointer, VDECODE_FLAG_ALLOWNULL);
 		PrepSDKCall_SetReturnInfo(SDKType_PlainOldData, SDKPass_Plain);
-		if (!(g_pCreateEngineInterface = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szCreateEngineInterface);
+		if (!(g_pCreateEngineInterface = EndPrepSDKCall()))
+			SetFailState("Could not prep SDK call %s", szCreateEngineInterface);
 		
 		char szCreateServerInterface[] = "CreateServerInterface";
 		StartPrepSDKCall(SDKCall_Static);
 		if (!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Signature, szCreateServerInterface))
-			SetFailState("Could not obtain game offset %s", szCreateServerInterface);
+			SetFailState("Could not obtain game signature %s", szCreateServerInterface);
 		PrepSDKCall_AddParameter(SDKType_String, SDKPass_Pointer);
 		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Pointer, VDECODE_FLAG_ALLOWNULL);
 		PrepSDKCall_SetReturnInfo(SDKType_PlainOldData, SDKPass_Plain);
-		if (!(g_pCreateServerInterface = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szCreateServerInterface);
+		if (!(g_pCreateServerInterface = EndPrepSDKCall()))
+			SetFailState("Could not prep SDK call %s", szCreateServerInterface);
 		
 		/*
 		char szInterfaceEngine[64];
@@ -67,9 +69,27 @@ void LoadGameData()
 			SetFailState("Could not get interface verison for %s", "IServerGameDLL");
 		if (!(g_ServerGameDLL = IServerGameDLL(GetServerInterface(szInterfaceGame))))
 			SetFailState("Could not get interface for %s", "g_ServerGameDLL");
+		
+		char szCreateServerRagdoll[] = "CreateServerRagdoll";
+		StartPrepSDKCall(SDKCall_Static);
+		if(!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Signature, szCreateServerRagdoll))
+			SetFailState("Could not obtain gamedata signature %s", szCreateServerRagdoll);
+		PrepSDKCall_SetReturnInfo(SDKType_CBaseEntity, SDKPass_Pointer)
+		PrepSDKCall_AddParameter(SDKType_CBaseEntity, SDKPass_Pointer); // CBaseAnimating *pAnimating
+		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain); // int forceBone
+		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain); // const CTakeDamageInfo &info
+		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain); // int collisionGroup
+		PrepSDKCall_AddParameter(SDKType_Bool, SDKPass_Plain); // bool bUseLRURetirement
+		if (!(g_pCreateServerRagdoll = EndPrepSDKCall()))
+			SetFailState("Could not prep SDK call %s", szCreateServerRagdoll);
 	
 		LoadDHookVirtual(pGameConfig, hkChangeTeam, "CBasePlayer::ChangeTeam");
 		LoadDHookVirtual(pGameConfig, hkShouldCollide, "CBaseEntity::ShouldCollide");
+		LoadDHookVirtual(pGameConfig, hkPlayerSpawn, "CBasePlayer::Spawn");
+		LoadDHookVirtual(pGameConfig, hkLevelInit, "CServerGameDLL::LevelInit");
+			
+		if (hkLevelInit.HookRaw(Hook_Pre, view_as<Address>(g_ServerGameDLL), Hook_OnLevelInit) == INVALID_HOOK_ID)
+			SetFailState("Could not hook CServerGameDLL::LevelInit");
 	}
 		
 	if (g_Engine == Engine_BlackMesa)
@@ -91,6 +111,8 @@ void LoadGameData()
 		LoadDHookVirtual(pGameConfig, hkIchthyosaurIdleSound, "CNPC_Ichthyosaur::IdleSound");
 		LoadDHookVirtual(pGameConfig, hkHandleAnimEvent, "CBaseAnimating::HandleAnimEvent");
 		LoadDHookVirtual(pGameConfig, hkRunAI, "CAI_BaseNPC::RunAI");
+		// LoadDHookVirtual(pGameConfig, hkOnTakeDamage, "CBaseEntity::OnTakeDamage");
+		LoadDHookVirtual(pGameConfig, hkEvent_Killed, "CBaseEntity::Event_Killed");
 		LoadDHookDetour(pGameConfig, hkUTIL_GetLocalPlayer, "UTIL_GetLocalPlayer", Hook_UTIL_GetLocalPlayer);
 		LoadDHookDetour(pGameConfig, hkSetSuitUpdate, "CBasePlayer::SetSuitUpdate", Hook_SetSuitUpdate, Hook_SetSuitUpdatePost);
 		LoadDHookDetour(pGameConfig, hkResolveNames, "CAI_GoalEntity::ResolveNames", Hook_ResolveNames, Hook_ResolveNamesPost);
@@ -120,6 +142,7 @@ public void OnPluginStart()
 	g_pConvarHomeMap = CreateConVar("sourcecoop_homemap", "", "The map to return to after finishing a campaign/map.");
 	g_pConvarEndWaitDisplayMode = CreateConVar("sourcecoop_end_wait_display_mode", "0", "Sets which method to show countdown. 0 is panel, 1 is hud text.", _, true, 0.0, true, 1.0);
 	g_pPersistEquipment = CreateConVar("sourcecoop_persist_equipment", "1", "Determines whether equipment is persisted from map to map. 0 means use default map equipment, 1 means maintain equipment between maps", _, true, 0.0, true, 1.0);
+	g_pConVarNextStuck = CreateConVar("sourcecoop_next_stuck", "60.0", "Prevents using stuck for this many seconds after using.", _, true, 0.0, false);
 	
 	mp_friendlyfire = FindConVar("mp_friendlyfire");
 	mp_flashlight = FindConVar("mp_flashlight");
@@ -134,10 +157,12 @@ public void OnPluginStart()
 	RegAdminCmd("sourcecoop_clear_equipment", Command_Clear_Equipment, ADMFLAG_ROOT, "Clear persisted equipment and equip players with the map defaults.");
 	RegServerCmd("sourcecoop_dump", Command_DumpMapEntities, "Command for dumping map entities to a file");
 	RegServerCmd("sc_dump", Command_DumpMapEntities, "Command for dumping map entities to a file");
+	RegConsoleCmd("stuck", Command_Unstuck);
+	RegConsoleCmd("unstuck", Command_Unstuck);
 	
 	g_pLevelLump.Initialize();
 	g_SpawnSystem.Initialize();
-	g_pCoopManager.Initialize();
+	CoopManager.Initialize();
 	g_pInstancingManager.Initialize();
 	g_pPostponedSpawns = CreateArray();
 	g_pFeatureMap = new FeatureMap();
@@ -147,6 +172,8 @@ public void OnPluginStart()
 	g_CoopMapStartFwd = new GlobalForward("OnCoopMapStart", ET_Ignore);
 	g_CoopMapConfigLoadedFwd = new GlobalForward("OnCoopMapConfigLoaded", ET_Ignore, Param_Cell, Param_Cell);
 	
+	HookEvent("entity_killed", Event_EntityKilled, EventHookMode_Post);
+
 	if (g_Engine == Engine_BlackMesa)
 	{
 		HookEvent("broadcast_teamsound", Event_BroadcastTeamsound, EventHookMode_Pre);
@@ -170,31 +197,39 @@ public void OnPluginStart()
 }
 
 #pragma dynamic ENTITYSTRING_LENGTH
-public Action OnLevelInit(const char[] szMapName, char szMapEntities[ENTITYSTRING_LENGTH])
+
+public MRESReturn Hook_OnLevelInit(DHookReturn hReturn, DHookParam hParams)
 {
 	if (!IsDedicatedServer() && MaxClients == 1)
 	{
 		SetFailState("Singleplayer detected, unloading SourceCoop (ignore this)");
-		return Plugin_Continue;
 	}
 	
 	OnMapEnd(); // this does not always get called, so call it here
-	strcopy(g_szPrevMapName, sizeof(g_szPrevMapName), g_szMapName);
-	strcopy(g_szMapName, sizeof(g_szMapName), szMapName);
-	if (strlen(szMapEntities) < 4)
-	{
-		SetFailState("Failed to get map entities string! Most likely this version of SourceMod is too new...");
-		return Plugin_Continue;
-	}
-	else g_szEntityString = szMapEntities;
-	g_pCoopManager.OnLevelInit(szMapName, szMapEntities);
 
-	return Plugin_Changed;
+	char szMapName[MAX_MAPNAME];
+	hParams.GetString(1, szMapName, sizeof(szMapName));
+	g_szPrevMapName = g_szMapName;
+	g_szMapName = szMapName;
+
+	static char szMapEntities[ENTITYSTRING_LENGTH];
+	hParams.GetString(2, szMapEntities, sizeof(szMapEntities));
+
+	// save original string for dumps
+	g_szEntityString = szMapEntities;
+
+	if (CoopManager.OnLevelInit(szMapEntities))
+	{
+		hParams.SetString(2, szMapEntities);
+		return MRES_ChangedHandled;
+	}
+
+	return MRES_Ignored;
 }
 
 public void OnMapStart()
 {
-	g_pCoopManager.OnMapStart();
+	CoopManager.OnMapStart();
 	
 	if (g_Engine == Engine_BlackMesa)
 	{
@@ -224,21 +259,21 @@ public void OnConfigsExecutedPost()
 {
 	if (g_Engine == Engine_BlackMesa)
 	{
-		if (g_pCoopManager.IsFeatureEnabled(FT_STRIP_DEFAULT_EQUIPMENT))
+		if (CoopManager.IsFeatureEnabled(FT_STRIP_DEFAULT_EQUIPMENT))
 		{
-			CBaseEntity pGameEquip = CreateByClassname("game_player_equip");	// will spawn players with nothing if it exists
+			CBaseEntity pGameEquip = CBaseEntity.Create("game_player_equip");	// will spawn players with nothing if it exists
 			if (pGameEquip.IsValid())
 			{
-				if (!g_pCoopManager.IsFeatureEnabled(FT_STRIP_DEFAULT_EQUIPMENT_KEEPSUIT))
+				if (!CoopManager.IsFeatureEnabled(FT_STRIP_DEFAULT_EQUIPMENT_KEEPSUIT))
 				{
 					pGameEquip.SetSpawnFlags(SF_PLAYER_EQUIP_STRIP_SUIT);
 				}
 				pGameEquip.Spawn();
 			}
 		}
-		if (g_pCoopManager.IsFeatureEnabled(FT_DISABLE_CANISTER_DROPS))
+		if (CoopManager.IsFeatureEnabled(FT_DISABLE_CANISTER_DROPS))
 		{
-			CBaseEntity pGameGamerules = CreateByClassname("game_mp_gamerules");
+			CBaseEntity pGameGamerules = CBaseEntity.Create("game_mp_gamerules");
 			if (pGameGamerules.IsValid())
 			{
 				pGameGamerules.Spawn();
@@ -270,7 +305,7 @@ public void OnClientPutInServer(int client)
 		ClientCommand(client, "cl_predicttriggers 0");
 	}
 	
-	g_pCoopManager.OnClientPutInServer(pPlayer);
+	CoopManager.OnClientPutInServer(pPlayer);
 	g_pInstancingManager.OnClientPutInServer(client);
 	
 	SDKHook(client, SDKHook_PreThinkPost, Hook_PlayerPreThinkPost);
@@ -280,7 +315,12 @@ public void OnClientPutInServer(int client)
 	SDKHook(client, SDKHook_OnTakeDamage, Hook_PlayerTakeDamage);
 	SDKHook(client, SDKHook_WeaponEquipPost, Hook_PlayerWeaponEquipPost);
 	DHookEntity(hkChangeTeam, false, client, _, Hook_PlayerChangeTeam);
+	DHookEntity(hkChangeTeam, true, client, _, Hook_PlayerChangeTeamPost);
 	DHookEntity(hkShouldCollide, false, client, _, Hook_PlayerShouldCollide);
+	DHookEntity(hkPlayerSpawn, false, client, _, Hook_PlayerSpawn);
+	DHookEntity(hkAcceptInput, false, client, _, Hook_PlayerAcceptInput);
+	DHookEntity(hkEvent_Killed, false, client, _, Hook_PlayerKilled);
+	DHookEntity(hkEvent_Killed, true, client, _, Hook_PlayerKilledPost);
 	GreetPlayer(client);
 }
 
@@ -297,9 +337,11 @@ public void OnClientAuthorized(int client, const char[] auth)
 	}
 }
 
-public void OnClientDisconnect(int client)
+public void OnClientDisconnect_Post(int client)
 {
 	g_pInstancingManager.OnClientDisconnect(client);
+	SurvivalManager.GameOverCheck();
+	g_flNextStuck[client] = 0.0;
 }
 
 public void OnMapEnd()
@@ -384,7 +426,7 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 			}
 			else if (strncmp(szClassname, "item_", 5) == 0 && pEntity.IsPickupItem())
 			{
-				if (g_pCoopManager.IsFeatureEnabled(FT_INSTANCE_ITEMS))
+				if (CoopManager.IsFeatureEnabled(FT_INSTANCE_ITEMS))
 				{
 					SDKHook(iEntIndex, SDKHook_Spawn, Hook_ItemSpawnDelay);
 				}
@@ -443,7 +485,7 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 			}
 			else if (strcmp(szClassname, "env_sprite") == 0)
 			{
-				SDKHook(iEntIndex, SDKHook_SpawnPost, Hook_EnvSpriteSpawn);
+				SDKHook(iEntIndex, SDKHook_SpawnPost, Hook_EnvSpriteSpawnPost);
 			}
 			else if (strcmp(szClassname, "ai_script_conditions") == 0)
 			{
@@ -465,6 +507,10 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 			else if (strcmp(szClassname, "player_loadsaved") == 0)
 			{
 				DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_LoadSavedAcceptInput);
+			}
+			else if (strcmp(szClassname, "logic_autosave") == 0)
+			{
+				DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_LogicAutosaveAcceptInput);
 			}
 			else if (strcmp(szClassname, "game_end") == 0)
 			{
@@ -510,22 +556,22 @@ public void OnEntityDestroyed(int iEntIndex)
 
 public void Hook_EntitySpawnPost(int iEntIndex)
 {
-	if (g_pCoopManager.IsCoopModeEnabled())
+	if (CoopManager.IsCoopModeEnabled())
 	{
 		CBaseEntity pEntity = CBaseEntity(iEntIndex);
-		
+
 		// fix linux physics crashes
 		if (g_Engine == Engine_BlackMesa && g_serverOS == OS_Linux)
 		{
 			static char szModel[PLATFORM_MAX_PATH];
 			if (pEntity.GetModel(szModel, sizeof(szModel)) && strncmp(szModel, "models/gibs/humans/", 19) == 0)
 			{
-				SDKHook(iEntIndex, SDKHook_OnTakeDamage, Hook_NoGibDmg);
+				SDKHook(iEntIndex, SDKHook_OnTakeDamage, Hook_NoDmg);
 			}
 		}
 		
 		// find and hook output hooks for entity
-		if (!g_pCoopManager.m_bStarted)
+		if (!g_pCoopManagerData.m_bStarted)
 		{
 			Array_t pOutputHookList = g_pLevelLump.GetOutputHooksForEntity(pEntity);
 			if (pOutputHookList.Length > 0)
@@ -546,6 +592,19 @@ public void Hook_EntitySpawnPost(int iEntIndex)
 			pOutputHookList.Close();
 		}
 	}
+}
+
+public Action Event_EntityKilled(Event hEvent, const char[] szName, bool bDontBroadcast)
+{
+	if (!CoopManager.IsCoopModeEnabled())
+		return Plugin_Continue;
+	
+	CBasePlayer pVictim = CBasePlayer(GetEventInt(hEvent, "entindex_killed"));
+	if (pVictim.IsValid())
+	{
+		SurvivalManager.HandlePlayerDeath(pVictim);
+	}
+	return Plugin_Continue;
 }
 
 // Postpone items' Spawn() until Gamerules IsMultiplayer() gets hooked in OnMapStart()
@@ -578,7 +637,7 @@ public void SpawnPostponedItem(CBaseEntity pEntity)
 
 public Action OutputCallbackForDelay(const char[] output, int caller, int activator, float delay)
 {
-	if (g_pCoopManager.m_bStarted)
+	if (g_pCoopManagerData.m_bStarted)
 	{
 		return Plugin_Continue;
 	}
@@ -587,7 +646,7 @@ public Action OutputCallbackForDelay(const char[] output, int caller, int activa
 	pFireOutputData.m_pCaller = CBaseEntity(caller);
 	pFireOutputData.m_pActivator = CBaseEntity(activator);
 	pFireOutputData.m_flDelay = delay;
-	g_pCoopManager.AddDelayedOutput(pFireOutputData);
+	CoopManager.AddDelayedOutput(pFireOutputData);
 	
 	if (pFireOutputData.m_pCaller.IsValid())
 	{
@@ -613,7 +672,7 @@ public Action OutputCallbackForDelay(const char[] output, int caller, int activa
 
 public Action DeleteEntOnDelayedOutputFire(const char[] output, int caller, int activator, float delay)
 {
-	if (g_pCoopManager.m_bStarted)
+	if (g_pCoopManagerData.m_bStarted)
 	{
 		RemoveEntity(caller);
 		return Plugin_Continue;
@@ -634,7 +693,7 @@ public void RequestStopThink(CBaseEntity pEntity)
 
 public Action Event_BroadcastTeamsound(Event hEvent, const char[] szName, bool bDontBroadcast)
 {
-	if (g_pCoopManager.IsCoopModeEnabled())
+	if (CoopManager.IsCoopModeEnabled())
 	{
 		// block multiplayer announcer
 		hEvent.BroadcastDisabled = true;
@@ -667,7 +726,7 @@ public void Event_PlayerDisconnect(Event hEvent, const char[] szName, bool bDont
 
 public MRESReturn Hook_OnEquipmentTryPickUpPost(int _this, Handle hReturn, Handle hParams)
 {
-	if (g_pCoopManager.IsFeatureEnabled(FT_KEEP_EQUIPMENT))
+	if (CoopManager.IsFeatureEnabled(FT_KEEP_EQUIPMENT))
 	{
 		bool bPickedUp = DHookGetReturn(hReturn);
 		if (bPickedUp)
@@ -687,7 +746,7 @@ public MRESReturn Hook_OnEquipmentTryPickUpPost(int _this, Handle hReturn, Handl
 
 public void Hook_PlayerWeaponEquipPost(int client, int weapon)
 {
-	if (g_pCoopManager.IsFeatureEnabled(FT_KEEP_EQUIPMENT))
+	if (CoopManager.IsFeatureEnabled(FT_KEEP_EQUIPMENT))
 	{
 		CBaseEntity pItem = CBaseEntity(weapon);
 		char szClass[MAX_CLASSNAME];
@@ -698,7 +757,7 @@ public void Hook_PlayerWeaponEquipPost(int client, int weapon)
 
 public MRESReturn Hook_RestoreWorld(Handle hReturn)
 {
-	if (g_pCoopManager.IsCoopModeEnabled())
+	if (CoopManager.IsCoopModeEnabled())
 	{
 		// disable gamerules resetting the world on 'round start', this caused crashes
 		DHookSetReturn(hReturn, 0);
@@ -709,7 +768,7 @@ public MRESReturn Hook_RestoreWorld(Handle hReturn)
 
 public MRESReturn Hook_RespawnPlayers(Handle hReturn)
 {
-	if (g_pCoopManager.IsCoopModeEnabled())
+	if (CoopManager.IsCoopModeEnabled())
 	{
 		// disable gamerules respawning players on 'round start'
 		DHookSetReturn(hReturn, 0);
@@ -720,10 +779,52 @@ public MRESReturn Hook_RespawnPlayers(Handle hReturn)
 
 void GreetPlayer(int client)
 {
-	if (g_pCoopManager.IsFeatureEnabled(FT_SHOW_WELCOME_MESSAGE))
+	if (CoopManager.IsFeatureEnabled(FT_SHOW_WELCOME_MESSAGE))
 	{
 		Msg(client, "This server runs SourceCoop version %s.\nPress %s=%s or type %s/coopmenu%s for extra settings.", PLUGIN_VERSION, CHAT_COLOR_SEC, CHAT_COLOR_PRI, CHAT_COLOR_SEC, CHAT_COLOR_PRI);
 	}
+}
+
+public Action Command_Unstuck(int iClient, int iArgs)
+{
+	if (!CoopManager.IsCoopModeEnabled())
+	{
+		MsgReply(iClient, "Unstuck is currently unavailable.");
+		return Plugin_Handled;
+	}
+
+	CBasePlayer pPlayer = CBasePlayer(iClient);
+	if (pPlayer.IsValid())
+	{
+		float flGameTime = GetGameTime();
+		if (g_flNextStuck[iClient] >= flGameTime)
+		{
+			MsgReply(iClient, "You cannot unstuck for another %1.1f seconds!", g_flNextStuck[iClient] - flGameTime);
+			return Plugin_Handled;
+		}
+		
+		// Velocity check for if people try to use it to get out of falling to their death
+		float flVerticalVelocity = GetEntPropFloat(iClient, Prop_Send, "m_vecVelocity[2]");
+		if (flVerticalVelocity < -200.0)
+		{
+			MsgReply(iClient, "Can't unstuck while falling.");
+			return Plugin_Handled;
+		}
+		
+		CCoopSpawnEntry pCheckpoint;
+		if (g_SpawnSystem.GetCurrentCheckpoint(pCheckpoint))
+		{
+			g_flNextStuck[iClient] = flGameTime + g_pConVarNextStuck.FloatValue;
+			pCheckpoint.TeleportPlayer(pPlayer, true);
+			MsgReply(iClient, "Moved to the active checkpoint.");
+		}
+		else
+		{
+			MsgReply(iClient, "Unable to find a place to put you.");
+		}
+	}
+	
+	return Plugin_Handled;
 }
 
 public Action Command_SetFeature(int iClient, int iArgs)
@@ -745,12 +846,12 @@ public Action Command_SetFeature(int iClient, int iArgs)
 		
 		if (StrEqual(szVal, "1") || IsEnableSynonym(szVal))
 		{
-			g_pCoopManager.EnableFeature(feature);
+			CoopManager.EnableFeature(feature);
 			MsgReply(iClient, "Enabled feature %s", szFeature);
 		}
 		else if (StrEqual(szVal, "0") || IsDisableSynonym(szVal))
 		{
-			g_pCoopManager.DisableFeature(feature);
+			CoopManager.DisableFeature(feature);
 			MsgReply(iClient, "Disabled feature %s", szFeature);
 		}
 	}
