@@ -25,7 +25,7 @@ public Action Command_Save(int iClient, int iArgs)
 
 	KeyValues kv = new KeyValues("SaveData");
 	bool shouldSave = false;
-	for (int i = 1; i < MaxClients; i++)
+	for (int i = 1; i <= MaxClients; i++)
 	{
 		if (strlen(g_szSteamIds[i]) == 0)
 			continue;
@@ -129,7 +129,7 @@ public Action Command_Load(int iClient, int iArgs)
 		
 	}
 
-	for (int i = 1; i < MaxClients; i++)
+	for (int i = 1; i <= MaxClients; i++)
 	{
 		LoadPlayerEquipmentFromFile(kv, iClient, i);
 	}
@@ -145,7 +145,7 @@ public Action Command_Clear_Equipment(int iClient, int iArgs)
 		return Plugin_Handled;
 	}
 
-	for (int i = 1; i < MaxClients; i++)
+	for (int i = 1; i <= MaxClients; i++)
 	{
 		if (strlen(g_szSteamIds[i]) == 0)
 			continue;
@@ -166,7 +166,7 @@ public Action Command_Clear_Equipment(int iClient, int iArgs)
 
 int GetClientIdFromName(char[] szName)
 {
-	for (int i = 1; i < MaxClients; i++)
+	for (int i = 1; i <= MaxClients; i++)
 	{
 		if (!IsClientConnected(i))
 			continue;
@@ -212,7 +212,7 @@ bool LoadPlayerEquipmentFromFile(KeyValues kv, int iClient, int clientId)
 	{
 		MsgReply(iClient, "Unable to find weapons section in KeyValues file");
 		delete kv;
-		CloseHandle(equipment.m_pWeaponList);
+		equipment.Close();
 		return false;	
 	}
 
@@ -241,7 +241,7 @@ bool LoadPlayerEquipmentFromFile(KeyValues kv, int iClient, int clientId)
 	{
 		MsgReply(iClient, "Unable to find ammo section in KeyValues file");
 		delete kv;
-		CloseHandle(equipment.m_pWeaponList);
+		equipment.Close();
 		return false;	
 	}
 

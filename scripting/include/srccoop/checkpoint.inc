@@ -153,17 +153,19 @@ enum struct CCoopEquipment
 		
 		strcopy(this.m_szActiveWeapon, MAX_CLASSNAME, "");
 	}
+	void Close(){
+		CloseHandle(this.m_pWeaponList);
+	}
 }
 
 enum struct EquipmentManager 
 {
     StringMap m_smEquipmentMap;
-
-
-    void Initialize()
-    {
-        this.m_smEquipmentMap = new StringMap();
-    }
+	
+	void Initialize()
+	{
+		this.m_smEquipmentMap = new StringMap();
+	}
 
 	void Clear(char[] steamId)
 	{
@@ -171,22 +173,24 @@ enum struct EquipmentManager
 		if (!this.GetEquipment(steamId, equipment))
 			return;
 
-		PrintToServer("[SRCCOOP] Clearing equipment for %s", steamId);
-
-		CloseHandle(equipment.m_pWeaponList);
+		equipment.Close();
 		this.m_smEquipmentMap.Remove(steamId);
 	}
 
     void StoreEquipment(char[] steamId, CCoopEquipment equipment)
 	{
-		this.m_smEquipmentMap.SetArray(steamId, equipment, sizeof(equipment), true);
-		PrintToServer("[SRCCOOP] Saved equipment for %s", steamId);
+		CCoopEquipment existingEquipment;
+		if (this.GetEquipment(steamId, existingEquipment))
+		{
+			existingEquipment.Close();
+			this.m_smEquipmentMap.Remove(steamId);
+		}
+		this.m_smEquipmentMap.SetArray(steamId, equipment, sizeof(equipment), false);
     }
 	
 	bool GetEquipment(char[] steamId, CCoopEquipment equipment)
 	{
 		bool success = this.m_smEquipmentMap.GetArray(steamId, equipment, sizeof(equipment));
-		PrintToServer("[SRCCOOP] Equipment %s found for %s", success ? "" : "not", steamId);
 		return success;
     }
 }
@@ -338,16 +342,12 @@ enum struct CCoopSpawn
 		float flStartTime = GetEngineTime();
 		CCoopEquipment equipment;
 
-		PrintToServer("[SRCCOOP] Equipment persistence is %s.", g_pPersistEquipment.BoolValue ? "on" : "off");
-
 		if (g_pPersistEquipment.BoolValue && strlen(g_szSteamIds[pPlayer.GetEntIndex()]) > 0 && g_pEquipmentManager.GetEquipment(g_szSteamIds[pPlayer.GetEntIndex()], equipment))
 		{
-			PrintToServer("[SRCCOOP] Using saved equipment for %s", g_szSteamIds[pPlayer.GetEntIndex()]);
 			this.EquipPlayer(pPlayer, equipment);
 		}
 		else
 		{
-			PrintToServer("[SRCCOOP] Using default equipment for %s", g_szSteamIds[pPlayer.GetEntIndex()]);
 			this.EquipPlayer(pPlayer, this.m_pDefaultEquipment);
 		}
 
@@ -384,7 +384,7 @@ enum struct CCoopSpawn
 	void SavePlayerEquipment()
 	{
 		float flStartTime = GetEngineTime();
-		for (int iClient = 1; iClient < MaxClients; iClient++)
+		for (int iClient = 1; iClient <= MaxClients; iClient++)
 		{
 			if (strlen(g_szSteamIds[iClient]) == 0)
 				continue;
