@@ -130,7 +130,7 @@ methodmap ChangeLevelManager < Array_t
 		pSorted.GetArray(0, pChangeLvlLump);
 		if(g_pPersistEquipment.BoolValue)
 		{
-			g_SpawnSystem.SavePlayerEquipment();
+			EquipmentManager.SavePlayerEquipment();
 		}
 		pChangeLvlLump.m_pChangeLevel.ChangeLevelNow();
 		delete pSorted;

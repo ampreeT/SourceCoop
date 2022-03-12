@@ -166,7 +166,7 @@ public void OnPluginStart()
 	g_pInstancingManager.Initialize();
 	g_pPostponedSpawns = CreateArray();
 	g_pFeatureMap = new FeatureMap();
-	g_pEquipmentManager.Initialize();
+	EquipmentManager.Initialize();
 	InitializeMenus();
 	
 	g_CoopMapStartFwd = new GlobalForward("OnCoopMapStart", ET_Ignore);
@@ -709,7 +709,7 @@ public void Event_PlayerDisconnect(Event hEvent, const char[] szName, bool bDont
 		
 	if (strlen(g_szSteamIds[iClient]) > 0)
 	{
-		g_pEquipmentManager.Clear(g_szSteamIds[iClient]);
+		EquipmentManager.Clear(g_szSteamIds[iClient]);
 		g_szSteamIds[iClient] = "";
 	}
 }

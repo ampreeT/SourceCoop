@@ -158,45 +158,6 @@ enum struct CCoopEquipment
 	}
 }
 
-enum struct EquipmentManager 
-{
-    StringMap m_smEquipmentMap;
-	
-	void Initialize()
-	{
-		this.m_smEquipmentMap = new StringMap();
-	}
-
-	void Clear(char[] steamId)
-	{
-		CCoopEquipment equipment;
-		if (!this.GetEquipment(steamId, equipment))
-			return;
-
-		equipment.Close();
-		this.m_smEquipmentMap.Remove(steamId);
-	}
-
-    void StoreEquipment(char[] steamId, CCoopEquipment equipment)
-	{
-		CCoopEquipment existingEquipment;
-		if (this.GetEquipment(steamId, existingEquipment))
-		{
-			existingEquipment.Close();
-			this.m_smEquipmentMap.Remove(steamId);
-		}
-		this.m_smEquipmentMap.SetArray(steamId, equipment, sizeof(equipment), false);
-    }
-	
-	bool GetEquipment(char[] steamId, CCoopEquipment equipment)
-	{
-		bool success = this.m_smEquipmentMap.GetArray(steamId, equipment, sizeof(equipment));
-		return success;
-    }
-}
-
-EquipmentManager g_pEquipmentManager;
-
 enum struct CCoopSpawn
 {
 	Array_t m_pCheckpointList;
@@ -342,7 +303,7 @@ enum struct CCoopSpawn
 		float flStartTime = GetEngineTime();
 		CCoopEquipment equipment;
 
-		if (g_pPersistEquipment.BoolValue && strlen(g_szSteamIds[pPlayer.GetEntIndex()]) > 0 && g_pEquipmentManager.GetEquipment(g_szSteamIds[pPlayer.GetEntIndex()], equipment))
+		if (g_pPersistEquipment.BoolValue && strlen(g_szSteamIds[pPlayer.GetEntIndex()]) > 0 && EquipmentManager.GetEquipment(g_szSteamIds[pPlayer.GetEntIndex()], equipment))
 		{
 			this.EquipPlayer(pPlayer, equipment);
 		}
@@ -376,64 +337,20 @@ enum struct CCoopSpawn
 			CCoopWeaponEntry pWeaponEntry;
 			if (equipment.m_pWeaponList.GetArray(i, pWeaponEntry, sizeof(pWeaponEntry)))
 			{
-				pPlayer.GiveItem(pWeaponEntry.m_szClassname);
-			}
-		}
-	}
-
-	void SavePlayerEquipment()
-	{
-		float flStartTime = GetEngineTime();
-		for (int iClient = 1; iClient <= MaxClients; iClient++)
-		{
-			if (strlen(g_szSteamIds[iClient]) == 0)
-				continue;
-
-			CBasePlayer pPlayer = CBasePlayer(iClient);
-			if (!pPlayer.IsValid())
-				continue;
-			
-			CCoopEquipment playerEquipment;
-			playerEquipment.Initialize();
-
-			playerEquipment.m_iHealth = pPlayer.GetHealth();
-			playerEquipment.m_iArmor = pPlayer.GetArmor();
-
-			for (int iWeapon = 0; iWeapon < MAX_WEAPONS; iWeapon++)
-			{
-				CBaseCombatWeapon pWeapon = pPlayer.GetWeaponFromIndex(iWeapon);
-				char weaponClassName[MAX_CLASSNAME];
-				if (pWeapon.IsValid() && pWeapon.GetClassname(weaponClassName, sizeof(weaponClassName)))
+				if (StrContains(pWeaponEntry.m_szClassname, "weapon_", false) == 0)
 				{
-					if (pPlayer.HasWeapon(weaponClassName))
+					CBaseCombatWeapon pWeapon = pPlayer.GiveWeapon(pWeaponEntry.m_szClassname);
+					if (pWeapon.GetPrimaryAmmoType() != -1)
 					{
-						CCoopWeaponEntry pWeaponEntry;
-						strcopy(pWeaponEntry.m_szClassname, sizeof(pWeaponEntry.m_szClassname), weaponClassName);
-						pWeaponEntry.m_iPrimaryAmmo = -1;
-						pWeaponEntry.m_iSecondaryAmmo = -1;
-						playerEquipment.m_pWeaponList.PushArray(pWeaponEntry, sizeof(pWeaponEntry));
+						pWeapon.SetPrimaryAmmo(pWeaponEntry.m_iPrimaryAmmo);
 					}
 				}
+				else
+				{
+					pPlayer.GiveItem(pWeaponEntry.m_szClassname)
+				}
 			}
-
-			if (pPlayer.HasSuit())
-			{
-				CCoopWeaponEntry pSuitEntry;
-				pSuitEntry.m_szClassname = "item_suit";
-				pSuitEntry.m_iPrimaryAmmo = -1;
-				pSuitEntry.m_iSecondaryAmmo = -1;
-				playerEquipment.m_pWeaponList.PushArray(pSuitEntry, sizeof(pSuitEntry));
-			}
-
-			for (int iAmmo = 0; iAmmo < MAX_AMMO_TYPES; iAmmo++)
-			{
-				playerEquipment.m_iAmmoCount[iAmmo] = pPlayer.GetAmmoFromIndex(iAmmo);
-			}
-
-			g_pEquipmentManager.StoreEquipment(g_szSteamIds[iClient], playerEquipment);
 		}
-
-		LogDebug("SavePlayerEquipment took %f", GetEngineTime() - flStartTime);
 	}
 	
 	void SpawnPlayer(CBasePlayer pPlayer, bool bSpawnEquipment = true)
@@ -866,7 +783,7 @@ public void Hook_TouchCheckpoint(int iEntity, int iOther)
 		
 		if (g_pPersistEquipment.BoolValue)
 		{
-			g_SpawnSystem.SavePlayerEquipment();
+			EquipmentManager.SavePlayerEquipment();
 		}
 
 		SDKUnhook(iEntity, SDKHook_StartTouchPost, Hook_TouchCheckpoint);
