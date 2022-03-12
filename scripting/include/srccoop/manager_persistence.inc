@@ -103,8 +103,7 @@ methodmap EquipmentManager
 						CCoopWeaponEntry pWeaponEntry;
 						strcopy(pWeaponEntry.m_szClassname, sizeof(pWeaponEntry.m_szClassname), weaponClassName);
 						pWeaponEntry.m_iPrimaryAmmo = pWeapon.GetPrimaryAmmo();
-						int iSecondaryAmmoIndex = pWeapon.GetSecondaryAmmoType();
-						pWeaponEntry.m_iSecondaryAmmo = iSecondaryAmmoIndex == -1 ? -1 : pPlayer.GetAmmoFromIndex(iSecondaryAmmoIndex);
+						pWeaponEntry.m_iSecondaryAmmo = -1;
 						playerEquipment.m_pWeaponList.PushArray(pWeaponEntry, sizeof(pWeaponEntry));
 					}
 				}
@@ -170,7 +169,6 @@ methodmap EquipmentManager
 					CCoopWeaponEntry pWeaponEntry;
 					strcopy(pWeaponEntry.m_szClassname, sizeof(pWeaponEntry.m_szClassname), weaponName);
 					pWeaponEntry.m_iPrimaryAmmo = kv.GetNum("primaryammo", 0);
-					pWeaponEntry.m_iSecondaryAmmo = kv.GetNum("secondaryammo", 0);
 					equipment.m_pWeaponList.PushArray(pWeaponEntry, sizeof(pWeaponEntry));
 				}
 			}
@@ -254,7 +252,6 @@ public Action Command_Save(int iClient, int iArgs)
 			{
 				kv.JumpToKey(pWeaponEntry.m_szClassname, true);
 				kv.SetNum("primaryammo", pWeaponEntry.m_iPrimaryAmmo);
-				kv.SetNum("secondaryammo", pWeaponEntry.m_iSecondaryAmmo);
 				kv.GoBack();
 			}
 
