@@ -159,7 +159,14 @@ methodmap EquipmentManager
 			return false;	
 		}
 
-		if (kv.GotoFirstSubKey(true))
+		if (!kv.GotoFirstSubKey(true))
+		{
+			MsgReply(iClient, "Unable to find any weapons in KeyValues file");
+			delete kv;
+			equipment.Close();
+			return false;	
+		}
+		else
 		{
 			do
 			{
@@ -187,19 +194,11 @@ methodmap EquipmentManager
 			return false;	
 		}
 
-		if (kv.GotoFirstSubKey(false))
+		for (int i = 0; i < MAX_AMMO_TYPES; i++)
 		{
-			do 
-			{
-				char ammoKey[3];
-				if (kv.GetSectionName(ammoKey, sizeof(ammoKey)))
-				{
-					int index = StringToInt(ammoKey);
-					int count = kv.GetNum(ammoKey);
-					equipment.m_iAmmoCount[index] = count;
-				}
-			}
-			while (kv.GotoNextKey(false));
+			char key[3];
+			IntToString(i, key, sizeof(key));
+			equipment.m_iAmmoCount[i] = kv.GetNum(key, 0);	
 		}
 
 		EquipmentManager.StoreEquipment(g_szSteamIds[clientId], equipment);
