@@ -75,7 +75,7 @@ methodmap EquipmentManager
 		return -1;
 	}
 
-	public static void SavePlayerEquipment()
+	public static void SavePlayerEquipment(bool IsCheckpoint)
 	{
 		for (int iClient = 1; iClient <= MaxClients; iClient++)
 		{
@@ -85,6 +85,16 @@ methodmap EquipmentManager
 			CBasePlayer pPlayer = CBasePlayer(iClient);
 			if (!pPlayer.IsValid())
 				continue;
+			
+			if (SurvivalManager.GetMode() && SurvivalManager.IsDead(pPlayer))
+			{
+				if (!IsCheckpoint)
+				{
+					EquipmentManager.Clear(g_szSteamIds[iClient]);
+				}
+
+				continue;
+			}
 			
 			CCoopEquipment playerEquipment;
 			playerEquipment.Initialize();
@@ -238,6 +248,12 @@ public Action Command_Save(int iClient, int iArgs)
 		if (!EquipmentManager.GetEquipment(g_szSteamIds[i], equipment))
 			continue;
 
+		CBasePlayer pPlayer = CBasePlayer(i);
+		if(!pPlayer.IsValid())
+			continue;
+		
+		if(SurvivalManager.GetMode() && SurvivalManager.IsDead(pPlayer))
+			continue;
 
 		kv.JumpToKey(g_szSteamIds[i], true);
 		kv.SetNum("hp", equipment.m_iHealth);
@@ -264,7 +280,8 @@ public Action Command_Save(int iClient, int iArgs)
 			IntToString(k, key, sizeof(key));
 			kv.SetNum(key, equipment.m_iAmmoCount[k]);
 		}
-
+		
+		kv.Rewind();
 		shouldSave = true;
 	}
 

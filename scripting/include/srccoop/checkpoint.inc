@@ -783,7 +783,8 @@ public void Hook_TouchCheckpoint(int iEntity, int iOther)
 		
 		if (g_pPersistEquipment.BoolValue)
 		{
-			EquipmentManager.SavePlayerEquipment();
+			if (SurvivalManager.GetMode() != SURVIVAL_RESTART)
+				EquipmentManager.SavePlayerEquipment(true);
 		}
 
 		SDKUnhook(iEntity, SDKHook_StartTouchPost, Hook_TouchCheckpoint);
