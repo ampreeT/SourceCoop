@@ -14,20 +14,20 @@ __If you are a server operator who is looking to host your own cooperative serve
 
 A step-by-step guide is also available on [Steam](https://steamcommunity.com/sharedfiles/filedetails/?id=2200247356).
 
-## Server configuration
+## Additional information
+- [Features & Configuration](https://github.com/ampreeT/SourceCoop/wiki/Features-&-Configuration)
+- [Server running tips](https://github.com/ampreeT/SourceCoop/wiki/Server-running-tips)
+- [Authoring maps for SourceCoop](https://github.com/ampreeT/SourceCoop/wiki/Authoring-maps-for-SourceCoop)
+- [EDT Map script format](https://github.com/ampreeT/SourceCoop/wiki/EDT---Map-script-format)
+- [Developing](https://github.com/ampreeT/SourceCoop/wiki/Developing)
+- [Public Servers](https://github.com/ampreeT/SourceCoop/wiki/Public-Servers)
 
-### General recommendations
-- Setting convar __mp_teamplay__ to __1__ will provide lag-free noblock
-- Setting convar __sv_always_run__ to __1__ will avoid glitchy sprinting weapon animations
-
-### Plugin Configuration
-Configuration can be found on the [wiki page](https://github.com/ampreeT/SourceCoop/wiki/Features-&-Configuration).
-
-## Other Information
+## Contributing
 __If you are looking to help with the development of the project__, we are always looking for more help! Heres some ways you can help:
 - Debugging and tracking down crashes
+- Adding features
 - Adding configs for new campaigns or levels
-- Simply playing on a server to help us test
+- Spreading the word
 
 If you are interested in helping us, create a pull request above or contact __ampreeT__ or __Alienmario__ below.
 ## Credits
@@ -43,7 +43,7 @@ If you are interested in helping us, create a pull request above or contact __am
 	- [Steam](https://steamcommunity.com/id/Krozis_Kane/) | [GitHub](https://github.com/KrozisKane)
 - __Balimbanana__ | programming, reverse engineering
 	- [Steam](https://steamcommunity.com/id/Balimbanana/) | [GitHub](https://github.com/Balimbanana)
-### Playtesters
+#### Playtesters
 - [Lear](https://steamcommunity.com/id/SKGNick)
 - [bddu](https://steamcommunity.com/id/bddu/)
 - [Foo-Fighter](https://steamcommunity.com/id/GumpForest/)
