@@ -27,10 +27,10 @@
 #include <srccoop/manager_changelevel>
 #include <srccoop/manager>
 #include <srccoop/manager_survival>
+#include <srccoop/manager_persistence>
 #include <srccoop/entitypatch>
 #include <srccoop/instancing>
 #include <srccoop/playerpatch>
-#include <srccoop/manager_persistence>
 #include <srccoop/menu>
 
 

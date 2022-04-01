@@ -139,22 +139,63 @@ enum struct CCoopEquipment
 	void Initialize()
 	{
 		this.m_pWeaponList = new Array_t(CreateArray(sizeof(CCoopWeaponEntry)));
+		this.Clear();
 	}
+
 	void Clear()
 	{
 		this.m_pWeaponList.Clear();
 		this.m_iHealth = -1;
 		this.m_iArmor = -1;
+		this.m_szActiveWeapon = "";
 		
 		for (int i = 0; i < MAX_AMMO_TYPES; i++)
 		{
 			this.m_iAmmoCount[i] = -1;
 		}
-		
-		strcopy(this.m_szActiveWeapon, MAX_CLASSNAME, "");
 	}
-	void Close(){
+
+	void Close()
+	{
 		CloseHandle(this.m_pWeaponList);
+	}
+
+	void Equip(CBasePlayer pPlayer)
+	{
+		if (this.m_iHealth > 0)
+		{
+			pPlayer.SetHealth(this.m_iHealth);
+		}
+
+		if (this.m_iArmor >= 0)
+		{
+			pPlayer.SetArmor(this.m_iArmor);	
+		}
+		
+		for (int i = 0; i < MAX_AMMO_TYPES; i++)
+		{
+			if (this.m_iAmmoCount[i] >= 0)
+				pPlayer.SetAmmoFromIndex(i, this.m_iAmmoCount[i]);
+		}
+		for (int i = 0; i < this.m_pWeaponList.Length; i++)
+		{
+			CCoopWeaponEntry pWeaponEntry;
+			if (this.m_pWeaponList.GetArray(i, pWeaponEntry, sizeof(pWeaponEntry)))
+			{
+				if (StrContains(pWeaponEntry.m_szClassname, "weapon_", false) == 0)
+				{
+					CBaseCombatWeapon pWeapon = pPlayer.GiveWeapon(pWeaponEntry.m_szClassname);
+					if (pWeapon.GetPrimaryAmmoType() != -1)
+					{
+						pWeapon.SetPrimaryAmmo(pWeaponEntry.m_iPrimaryAmmo);
+					}
+				}
+				else
+				{
+					pPlayer.GiveItem(pWeaponEntry.m_szClassname)
+				}
+			}
+		}
 	}
 }
 
@@ -166,19 +207,19 @@ enum struct CCoopSpawn
 	bool m_bStrictOrder;
 	bool m_bRespawnOnLogicAutosave;
 	
-	void Clear()
-	{
-		this.m_iCurrentCheckpoint = -1;
-		this.m_pCheckpointList.Clear();
-		this.m_pDefaultEquipment.Clear();
-	}
-	
 	void Initialize()
 	{
 		PrecacheScriptSound(SND_BRINGALL);
 		PrecacheScriptSound(SND_PORTAL);
 		this.m_pCheckpointList = new Array_t(CreateArray(sizeof(CCoopSpawnEntry)));
 		this.m_pDefaultEquipment.Initialize();
+	}
+	
+	void Clear()
+	{
+		this.m_iCurrentCheckpoint = -1;
+		this.m_pCheckpointList.Clear();
+		this.m_pDefaultEquipment.Clear();
 	}
 	
 	bool GetCheckpointByIndex(int iIndex, CCoopSpawnEntry pCheckpoint)
@@ -301,56 +342,18 @@ enum struct CCoopSpawn
 	void SpawnPlayerEquipment(CBasePlayer pPlayer)
 	{
 		float flStartTime = GetEngineTime();
-		CCoopEquipment equipment;
 
-		if (g_pPersistEquipment.BoolValue && strlen(g_szSteamIds[pPlayer.GetEntIndex()]) > 0 && EquipmentManager.GetEquipment(g_szSteamIds[pPlayer.GetEntIndex()], equipment))
+		CCoopEquipment savedEquipment;
+		if (EquipmentManager.Enabled() && EquipmentManager.GetEquipment(pPlayer, savedEquipment))
 		{
-			this.EquipPlayer(pPlayer, equipment);
+			savedEquipment.Equip(pPlayer);
 		}
 		else
 		{
-			this.EquipPlayer(pPlayer, this.m_pDefaultEquipment);
+			this.m_pDefaultEquipment.Equip(pPlayer);
 		}
 
 		LogDebug("SpawnPlayerEquipment took %f", GetEngineTime() - flStartTime);
-	}
-
-	void EquipPlayer(CBasePlayer pPlayer, CCoopEquipment equipment)
-	{
-		if (equipment.m_iHealth > 0)
-		{
-			pPlayer.SetHealth(equipment.m_iHealth);
-		}
-
-		if (equipment.m_iArmor > 0)
-		{
-			pPlayer.SetArmor(equipment.m_iArmor);	
-		}
-		
-		for (int i = 0; i < MAX_AMMO_TYPES; i++)
-		{
-			if (equipment.m_iAmmoCount[i] >= 0)
-				pPlayer.SetAmmoFromIndex(i, equipment.m_iAmmoCount[i]);
-		}
-		for (int i = 0; i < equipment.m_pWeaponList.Length; i++)
-		{
-			CCoopWeaponEntry pWeaponEntry;
-			if (equipment.m_pWeaponList.GetArray(i, pWeaponEntry, sizeof(pWeaponEntry)))
-			{
-				if (StrContains(pWeaponEntry.m_szClassname, "weapon_", false) == 0)
-				{
-					CBaseCombatWeapon pWeapon = pPlayer.GiveWeapon(pWeaponEntry.m_szClassname);
-					if (pWeapon.GetPrimaryAmmoType() != -1)
-					{
-						pWeapon.SetPrimaryAmmo(pWeaponEntry.m_iPrimaryAmmo);
-					}
-				}
-				else
-				{
-					pPlayer.GiveItem(pWeaponEntry.m_szClassname)
-				}
-			}
-		}
 	}
 	
 	void SpawnPlayer(CBasePlayer pPlayer, bool bSpawnEquipment = true)
@@ -781,7 +784,7 @@ public void Hook_TouchCheckpoint(int iEntity, int iOther)
 			iIndex++;
 		}
 		
-		if (g_pPersistEquipment.BoolValue)
+		if (EquipmentManager.Enabled())
 		{
 			if (SurvivalManager.GetMode() != SURVIVAL_RESTART)
 				EquipmentManager.SavePlayerEquipment(true);

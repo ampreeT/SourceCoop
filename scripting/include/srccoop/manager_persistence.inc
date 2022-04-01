@@ -7,6 +7,7 @@
 enum struct EquipmentManagerData
 {
 	StringMap m_smEquipmentMap;
+	ConVar m_pConvarPersistEquipment;
 }
 
 EquipmentManagerData g_pEquipmentManagerData;
@@ -16,40 +17,58 @@ EquipmentManagerData g_pEquipmentManagerData;
 methodmap EquipmentManager 
 {
     
-	
 	public static void Initialize()
 	{
 		data.m_smEquipmentMap = new StringMap();
+		data.m_pConvarPersistEquipment = CreateConVar("sourcecoop_persist_equipment", "1", "Determines whether equipment is persisted from map to map. 0 means use default map equipment, 1 means maintain equipment between maps", _, true, 0.0, true, 1.0);
+		RegAdminCmd("sc_save", Command_SaveEquipment, ADMFLAG_ROOT, "Exports last saved player equipment state. Equipment state is saved at the end of a map, so this wil record the state as of the start of a map.");
+		RegAdminCmd("sourcecoop_save", Command_SaveEquipment, ADMFLAG_ROOT, "Exports last saved player equipment state. Equipment state is saved at the end of a map, so this wil record the state as of the start of a map.");
+		RegAdminCmd("sc_load", Command_LoadEquipment, ADMFLAG_ROOT, "Imports saved data from file and attempts to equip each player (if they were present when the data was saved).");
+		RegAdminCmd("sourcecoop_load", Command_LoadEquipment, ADMFLAG_ROOT, "Imports saved data from file and attempts to equip each player (if they were present when the data was saved).");
+		RegAdminCmd("sc_clear_equipment", Command_ClearEquipment, ADMFLAG_ROOT, "Clear persisted equipment and equip players with the map defaults.");
+		RegAdminCmd("sourcecoop_clear_equipment", Command_ClearEquipment, ADMFLAG_ROOT, "Clear persisted equipment and equip players with the map defaults.");
 	}
 
-	public static void Clear(char[] steamId)
+	public static bool Enabled()
+	{
+		return data.m_pConvarPersistEquipment.BoolValue;
+	}
+
+	public static void Clear(const char[] szSteamId)
 	{
 		CCoopEquipment equipment;
-		if (!EquipmentManager.GetEquipment(steamId, equipment))
+		if (!EquipmentManager.GetEquipmentSteam(szSteamId, equipment))
 			return;
 
 		equipment.Close();
-		data.m_smEquipmentMap.Remove(steamId);
+		data.m_smEquipmentMap.Remove(szSteamId);
 	}
 
-    public static void StoreEquipment(char[] steamId, CCoopEquipment equipment)
+	public static void StoreEquipment(const char[] szSteamId, CCoopEquipment equipment)
 	{
 		CCoopEquipment existingEquipment;
-		if (EquipmentManager.GetEquipment(steamId, existingEquipment))
+		if (EquipmentManager.GetEquipmentSteam(szSteamId, existingEquipment))
 		{
 			existingEquipment.Close();
-			data.m_smEquipmentMap.Remove(steamId);
 		}
-		data.m_smEquipmentMap.SetArray(steamId, equipment, sizeof(equipment), false);
-    }
-	
-	public static bool GetEquipment(char[] steamId, CCoopEquipment equipment)
-	{
-		bool success = data.m_smEquipmentMap.GetArray(steamId, equipment, sizeof(equipment));
-		return success;
-    }
+		data.m_smEquipmentMap.SetArray(szSteamId, equipment, sizeof(equipment), true);
+	}
 
-	public static void GetSaveDataPath(char buffer[PLATFORM_MAX_PATH], char szFileName[64])
+	public static bool GetEquipmentSteam(const char[] szSteamId, CCoopEquipment equipment)
+	{
+		return data.m_smEquipmentMap.GetArray(szSteamId, equipment, sizeof(equipment));
+	}
+	
+	public static bool GetEquipment(CBasePlayer pPlayer, CCoopEquipment equipment)
+	{
+		if (strlen(g_szSteamIds[pPlayer.GetEntIndex()]) > 0)
+		{
+			return EquipmentManager.GetEquipmentSteam(g_szSteamIds[pPlayer.GetEntIndex()], equipment);
+		}
+		return false;
+	}
+
+	public static void GetSaveDataPath(char buffer[PLATFORM_MAX_PATH], const char szFileName[64])
 	{
 		char[] szFolder = "data/srccoop/savedata";
 		BuildPath(Path_SM, buffer, sizeof(buffer), "%s/%s", szFolder, szFileName);
@@ -222,7 +241,7 @@ methodmap EquipmentManager
 
 }
 
-public Action Command_Save(int iClient, int iArgs)
+public Action Command_SaveEquipment(int iClient, int iArgs)
 {
 	if (iArgs != 1)
 	{
@@ -240,19 +259,15 @@ public Action Command_Save(int iClient, int iArgs)
 	bool shouldSave = false;
 	for (int i = 1; i <= MaxClients; i++)
 	{
-		if (strlen(g_szSteamIds[i]) == 0)
-			continue;
-		
-		CCoopEquipment equipment; 
-
-		if (!EquipmentManager.GetEquipment(g_szSteamIds[i], equipment))
-			continue;
-
 		CBasePlayer pPlayer = CBasePlayer(i);
 		if(!pPlayer.IsValid())
 			continue;
 		
 		if(SurvivalManager.GetMode() && SurvivalManager.IsDead(pPlayer))
+			continue;
+
+		CCoopEquipment equipment;
+		if (!EquipmentManager.GetEquipment(pPlayer, equipment))
 			continue;
 
 		kv.JumpToKey(g_szSteamIds[i], true);
@@ -299,7 +314,7 @@ public Action Command_Save(int iClient, int iArgs)
 	return Plugin_Handled;
 }
 
-public Action Command_Load(int iClient, int iArgs)
+public Action Command_LoadEquipment(int iClient, int iArgs)
 {
 	if (iArgs != 1 && iArgs != 2)
 	{
@@ -361,7 +376,7 @@ public Action Command_Load(int iClient, int iArgs)
 	return Plugin_Handled;
 }
 
-public Action Command_Clear_Equipment(int iClient, int iArgs)
+public Action Command_ClearEquipment(int iClient, int iArgs)
 {
 	if (iArgs != 0)
 	{
@@ -388,14 +403,4 @@ public Action Command_Clear_Equipment(int iClient, int iArgs)
 	
 }
 
-
-
-
-
-
-
-
-
-
-
-
+#undef data

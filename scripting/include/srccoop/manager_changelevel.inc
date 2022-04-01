@@ -128,7 +128,7 @@ methodmap ChangeLevelManager < Array_t
 		ChangeLevelManager pSorted = this.Sorted();
 		ChangeLevelVoteLump pChangeLvlLump;
 		pSorted.GetArray(0, pChangeLvlLump);
-		if(g_pPersistEquipment.BoolValue)
+		if(EquipmentManager.Enabled())
 		{
 			EquipmentManager.SavePlayerEquipment(false);
 		}

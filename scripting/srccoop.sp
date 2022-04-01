@@ -141,7 +141,6 @@ public void OnPluginStart()
 	g_pConvarEndWaitFactor = CreateConVar("sourcecoop_end_wait_factor", "1.0", "Controls how much the number of finished players increases the changelevel timer speed. 1.0 means full, 0 means none (timer will run full length).", _, true, 0.0, true, 1.0);
 	g_pConvarHomeMap = CreateConVar("sourcecoop_homemap", "", "The map to return to after finishing a campaign/map.");
 	g_pConvarEndWaitDisplayMode = CreateConVar("sourcecoop_end_wait_display_mode", "0", "Sets which method to show countdown. 0 is panel, 1 is hud text.", _, true, 0.0, true, 1.0);
-	g_pPersistEquipment = CreateConVar("sourcecoop_persist_equipment", "1", "Determines whether equipment is persisted from map to map. 0 means use default map equipment, 1 means maintain equipment between maps", _, true, 0.0, true, 1.0);
 	g_pConVarNextStuck = CreateConVar("sourcecoop_next_stuck", "60.0", "Prevents using stuck for this many seconds after using.", _, true, 0.0, false);
 	
 	mp_friendlyfire = FindConVar("mp_friendlyfire");
@@ -149,12 +148,6 @@ public void OnPluginStart()
 	
 	RegAdminCmd("sourcecoop_ft", Command_SetFeature, ADMFLAG_ROOT, "Command for toggling plugin features on/off");
 	RegAdminCmd("sc_ft", Command_SetFeature, ADMFLAG_ROOT, "Command for toggling plugin features on/off");
-	RegAdminCmd("sc_save", Command_Save, ADMFLAG_ROOT, "Exports last saved player equipment state. Equipment state is saved at the end of a map, so this wil record the state as of the start of a map.");
-	RegAdminCmd("sourcecoop_save", Command_Save, ADMFLAG_ROOT, "Exports last saved player equipment state. Equipment state is saved at the end of a map, so this wil record the state as of the start of a map.");
-	RegAdminCmd("sc_load", Command_Load, ADMFLAG_ROOT, "Imports saved data from file and attempts to equip each player (if they were present when the data was saved).");
-	RegAdminCmd("sourcecoop_load", Command_Load, ADMFLAG_ROOT, "Imports saved data from file and attempts to equip each player (if they were present when the data was saved).");
-	RegAdminCmd("sc_clear_equipment", Command_Clear_Equipment, ADMFLAG_ROOT, "Clear persisted equipment and equip players with the map defaults.");
-	RegAdminCmd("sourcecoop_clear_equipment", Command_Clear_Equipment, ADMFLAG_ROOT, "Clear persisted equipment and equip players with the map defaults.");
 	RegServerCmd("sourcecoop_dump", Command_DumpMapEntities, "Command for dumping map entities to a file");
 	RegServerCmd("sc_dump", Command_DumpMapEntities, "Command for dumping map entities to a file");
 	RegConsoleCmd("stuck", Command_Unstuck);
@@ -172,12 +165,12 @@ public void OnPluginStart()
 	g_CoopMapStartFwd = new GlobalForward("OnCoopMapStart", ET_Ignore);
 	g_CoopMapConfigLoadedFwd = new GlobalForward("OnCoopMapConfigLoaded", ET_Ignore, Param_Cell, Param_Cell);
 	
-	HookEvent("entity_killed", Event_EntityKilled, EventHookMode_Post);
+	HookEvent("entity_killed", Event_EntityKilled);
+	HookEvent("player_disconnect", Event_PlayerDisconnect);
 
 	if (g_Engine == Engine_BlackMesa)
 	{
 		HookEvent("broadcast_teamsound", Event_BroadcastTeamsound, EventHookMode_Pre);
-		HookEvent("player_disconnect", Event_PlayerDisconnect);
 		AddTempEntHook("BlackMesa Shot", BlackMesaFireBulletsTEHook);
 		AddNormalSoundHook(PlayerSoundListener);
 		UserMsg iIntroCredits = GetUserMessageId("IntroCredits");
@@ -342,6 +335,17 @@ public void OnClientDisconnect_Post(int client)
 	g_pInstancingManager.OnClientDisconnect(client);
 	SurvivalManager.GameOverCheck();
 	g_flNextStuck[client] = 0.0;
+}
+
+public void Event_PlayerDisconnect(Event hEvent, const char[] szName, bool bDontBroadcast)
+{
+	int iClient = GetClientOfUserId(GetEventInt(hEvent, "userid"));
+
+	if (strlen(g_szSteamIds[iClient]) > 0)
+	{
+		EquipmentManager.Clear(g_szSteamIds[iClient]);
+		g_szSteamIds[iClient] = "";
+	}
 }
 
 public void OnMapEnd()
@@ -700,18 +704,6 @@ public Action Event_BroadcastTeamsound(Event hEvent, const char[] szName, bool b
 		return Plugin_Changed;
 	}
 	return Plugin_Continue;
-}
-
-public void Event_PlayerDisconnect(Event hEvent, const char[] szName, bool bDontBroadcast)
-{
-	int userId = GetEventInt(hEvent,"userid");
-	int iClient = GetClientOfUserId(userId);
-		
-	if (strlen(g_szSteamIds[iClient]) > 0)
-	{
-		EquipmentManager.Clear(g_szSteamIds[iClient]);
-		g_szSteamIds[iClient] = "";
-	}
 }
 
 public MRESReturn Hook_OnEquipmentTryPickUpPost(int _this, Handle hReturn, Handle hParams)
