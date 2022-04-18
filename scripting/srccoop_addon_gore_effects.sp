@@ -217,10 +217,6 @@ public Action DispatchJbEffects(int victim, int &attacker, int &inflictor, float
 	Action result = Plugin_Continue;
 	Action storeReturn = Plugin_Continue;
 
-	// Debug
-	/*MsgAll("inflictor: %d, damage: %.2f, damagetype: %d, weapon: %d, x: %.2f, y: %.2f, z: %.2f", 
-		inflictor, damage, damagetype, weapon, damageForce[0], damageForce[1], damageForce[2]);*/
-
 	result = CreateHitMarkerEffect(victim, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition);
 
 	if (result != Plugin_Continue)
