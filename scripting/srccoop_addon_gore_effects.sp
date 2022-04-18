@@ -189,23 +189,21 @@ public void HitSoundEffectMenuHandler(TopMenu topMenu, TopMenuAction action, Top
 	}
 }
 
-public void OnClientCookiesCached(int client)
+public void OnClientCookiesCached(int clientIndex)
 {
-	if (!IsCookieSet(ckGoreEffectsEnabled, client))
-		SetCookieBool(ckGoreEffectsEnabled, client, cvGoreEffectsEnabled.BoolValue);
+	if (!IsCookieSet(ckGoreEffectsEnabled, clientIndex))
+		SetCookieBool(ckGoreEffectsEnabled, clientIndex, cvGoreEffectsEnabled.BoolValue);
 
-	if (!IsCookieSet(ckHitMarkerEnabled, client))
-		SetCookieBool(ckHitMarkerEnabled, client, cvHitMarkerEnabled.BoolValue);
+	if (!IsCookieSet(ckHitMarkerEnabled, clientIndex))
+		SetCookieBool(ckHitMarkerEnabled, clientIndex, cvHitMarkerEnabled.BoolValue);
 
-	if (!IsCookieSet(ckHitSoundEnabled, client))
-		SetCookieBool(ckHitSoundEnabled, client, cvHitSoundEnabled.BoolValue);
+	if (!IsCookieSet(ckHitSoundEnabled, clientIndex))
+		SetCookieBool(ckHitSoundEnabled, clientIndex, cvHitSoundEnabled.BoolValue);
 }
 
 public void OnEntityCreated(int entityIndex, const char[] szClassname)
 {
-	CBaseEntity pEntity = CBaseEntity(entityIndex);
-	
-	if(pEntity.IsClassNPC())
+	if (CBaseEntity(entityIndex).IsClassNPC())
 		SDKHook(entityIndex, SDKHook_OnTakeDamage, DispatchJbEffects);
 }
 
@@ -276,10 +274,10 @@ public Action CreateHitMarkerEffect(int victim, int &attacker, int &inflictor, f
 	return Plugin_Continue;
 }
 
-public Action Callback_RemoveOverlay(Handle timer, any client)
+public Action Callback_RemoveOverlay(Handle timer, any clientIndex)
 {
-	if (IsClientInGame(client))
-		ClientCommand(client, "r_screenoverlay \"\"");
+	if (IsClientInGame(clientIndex))
+		ClientCommand(clientIndex, "r_screenoverlay \"\"");
 
 	return Plugin_Continue;
 }
@@ -348,6 +346,7 @@ public Action ReCreateGoreEffects(int victim, int &attacker, int &inflictor, flo
 		weapon == view_as<int>(WEAPON_CROSSBOW) ||
 		weapon == view_as<int>(WEAPON_REVOLVER))
 	{
+		// Cool headshot fx
 		if (originalDamage > 65)
 			CreateDamageEffectFromClass(damagePosition, npcVictim, szClassName, 2.0, true);
 		else
