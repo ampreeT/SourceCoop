@@ -101,8 +101,12 @@ void Save(int client)
     if (!WriteFileLine(saveFile, saveContents))
     {
         Msg(client, "Failed to save progress.");
+        CloseHandle(saveFile);
+
         return;
     }
+
+    Msg(client, "Save progress successfully, for level: %s.", saveContents);
 
     // We're done
     CloseHandle(saveFile);

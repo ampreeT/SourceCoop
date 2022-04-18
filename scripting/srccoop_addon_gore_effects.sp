@@ -95,14 +95,17 @@ public void OnConfigsExecutedPost()
 void OnSourceCoopStarted()
 {
 	TopMenu hCoopMenu = GetCoopTopMenu();
-	TopMenuObject menuCategory = hCoopMenu.FindCategory(COOPMENU_CATEGORY_OTHER);	
+	TopMenuObject playerCategory = hCoopMenu.FindCategory(COOPMENU_CATEGORY_PLAYER);
+	TopMenuObject soundsCategory = hCoopMenu.FindCategory(COOPMENU_CATEGORY_SOUNDS);
 
-	if (menuCategory != INVALID_TOPMENUOBJECT)
+	if (playerCategory != INVALID_TOPMENUOBJECT)
 	{
-		hCoopMenu.AddItem("ToggleJimbabsGoreEffects", GoreEffectsMenuHandler, menuCategory);
-		hCoopMenu.AddItem("ToggleJimbabsHitMarkerEffect", HitMarkerEffectMenuHandler, menuCategory);
-		hCoopMenu.AddItem("ToggleJimbabsHitSoundEffect", HitSoundEffectMenuHandler, menuCategory);
-	}
+		hCoopMenu.AddItem("ToggleJimbabsGoreEffects", GoreEffectsMenuHandler, playerCategory);
+		hCoopMenu.AddItem("ToggleJimbabsHitMarkerEffect", HitMarkerEffectMenuHandler, playerCategory);
+	}	
+
+	if (soundsCategory != INVALID_TOPMENUOBJECT)
+		hCoopMenu.AddItem("ToggleJimbabsHitSoundEffect", HitSoundEffectMenuHandler, soundsCategory);
 }
 
 public void GoreEffectsMenuHandler(TopMenu topMenu, TopMenuAction action, TopMenuObject topObjectId, int client, char[] buffer, int maxLength)
