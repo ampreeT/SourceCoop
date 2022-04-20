@@ -99,9 +99,31 @@ enum struct CCoopSpawnEntry
 		return bChanged;
 	}
 	
-	void ActivatePost()
+	void ActivatePost(bool bIntermediate)
 	{
-		if (this.m_bBringAllPlayers)
+		if (this.m_bHasPortal)
+		{
+			CBaseEntity pParticle = CBaseEntity(CreateEntityByName("info_particle_system"));
+			if (pParticle.IsValid())
+			{
+				pParticle.SetKeyValueStr("effect_name", "teleport_lambda_entrance");
+				pParticle.SetKeyValueStr("start_active", "1");
+				#define PORTAL_TOUCH_SIZE 16.0
+				float mins[3] = {-PORTAL_TOUCH_SIZE, -PORTAL_TOUCH_SIZE, -PORTAL_TOUCH_SIZE};
+				float maxs[3] = {PORTAL_TOUCH_SIZE, PORTAL_TOUCH_SIZE, PORTAL_TOUCH_SIZE};
+				pParticle.SetMins(mins);
+				pParticle.SetMaxs(maxs);
+				pParticle.Teleport(this.m_vecPortalPosition);
+				pParticle.Spawn();
+				pParticle.Activate();
+				pParticle.SetSolidType(SOLID_BBOX);
+				pParticle.SetSolidFlags(FSOLID_TRIGGER);
+				pParticle.SetCollisionGroup(COLLISION_GROUP_DEBRIS_TRIGGER);
+				SDKHook(pParticle.GetEntIndex(), SDKHook_StartTouchPost, Hook_TouchPortal);
+			}
+		}
+		
+		if (!bIntermediate && this.m_bBringAllPlayers)
 		{
 			SetHudTextParams(-1.0, 0.9, 1.0, 200, 200, 200, 255, 0, 1.0, 1.0, 1.0);
 			for (int i = 1; i <= MaxClients; i++)
@@ -301,16 +323,15 @@ enum struct CCoopSpawn
 				{
 					this.m_pCheckpointList.GetArray(i, pCheckpoint);
 					
-					if (pCheckpoint.m_bHasPortal)
-					{
-						this.CreatePortal(pCheckpoint.m_vecPortalPosition);
-					}
-					
 					if (i == iIndex)
 					{
+						pCheckpoint.ActivatePost(false);
 						this.m_iCurrentCheckpoint = i;
-						pCheckpoint.ActivatePost();
 						return true;
+					}
+					else
+					{
+						pCheckpoint.ActivatePost(true);
 					}
 				}
 			}
@@ -319,12 +340,8 @@ enum struct CCoopSpawn
 				this.m_iCurrentCheckpoint++;
 				this.m_pCheckpointList.SwapAt(iIndex, this.m_iCurrentCheckpoint);
 				this.m_pCheckpointList.GetArray(this.m_iCurrentCheckpoint, pCheckpoint);
-				
-				if (pCheckpoint.m_bHasPortal)
-				{
-					this.CreatePortal(pCheckpoint.m_vecPortalPosition);
-				}
-				pCheckpoint.ActivatePost();
+
+				pCheckpoint.ActivatePost(false);
 				return true;
 			}
 		}
@@ -341,19 +358,15 @@ enum struct CCoopSpawn
 	
 	void SpawnPlayerEquipment(CBasePlayer pPlayer)
 	{
-		float flStartTime = GetEngineTime();
-
-		CCoopEquipment savedEquipment;
-		if (EquipmentManager.Enabled() && EquipmentManager.GetEquipment(pPlayer, savedEquipment))
+		CCoopEquipment pSavedEquipment;
+		if (this.m_iCurrentCheckpoint == 0 && EquipmentManager.Enabled() && EquipmentManager.GetEquipment(pPlayer, pSavedEquipment))
 		{
-			savedEquipment.Equip(pPlayer);
+			pSavedEquipment.Equip(pPlayer);
 		}
 		else
 		{
 			this.m_pDefaultEquipment.Equip(pPlayer);
 		}
-
-		LogDebug("SpawnPlayerEquipment took %f", GetEngineTime() - flStartTime);
 	}
 	
 	void SpawnPlayer(CBasePlayer pPlayer, bool bSpawnEquipment = true)
@@ -370,28 +383,6 @@ enum struct CCoopSpawn
 				this.StripPlayer(pPlayer);
 			}
 			this.SpawnPlayerEquipment(pPlayer);
-		}
-	}
-	
-	void CreatePortal(const float vecPosition[3])
-	{
-		CBaseEntity pParticle = CBaseEntity(CreateEntityByName("info_particle_system"));
-		if (pParticle.IsValid())
-		{
-			pParticle.SetKeyValueStr("effect_name", "teleport_lambda_entrance");
-			pParticle.SetKeyValueStr("start_active", "1");
-			#define PORTAL_TOUCH_SIZE 16.0
-			float mins[3] = {-PORTAL_TOUCH_SIZE, -PORTAL_TOUCH_SIZE, -PORTAL_TOUCH_SIZE};
-			float maxs[3] = {PORTAL_TOUCH_SIZE, PORTAL_TOUCH_SIZE, PORTAL_TOUCH_SIZE};
-			pParticle.SetMins(mins);
-			pParticle.SetMaxs(maxs);
-			pParticle.Teleport(vecPosition);
-			pParticle.Spawn();
-			pParticle.Activate();
-			pParticle.SetSolidType(SOLID_BBOX);
-			pParticle.SetSolidFlags(FSOLID_TRIGGER);
-			pParticle.SetCollisionGroup(COLLISION_GROUP_DEBRIS_TRIGGER);
-			SDKHook(pParticle.GetEntIndex(), SDKHook_StartTouchPost, Hook_TouchPortal);
 		}
 	}
 	
@@ -782,12 +773,6 @@ public void Hook_TouchCheckpoint(int iEntity, int iOther)
 			dp.WriteCell(iIndex); dp.WriteCell(pActivator);
 			
 			iIndex++;
-		}
-		
-		if (EquipmentManager.Enabled())
-		{
-			if (SurvivalManager.GetMode() != SURVIVAL_RESTART)
-				EquipmentManager.SavePlayerEquipment(true);
 		}
 
 		SDKUnhook(iEntity, SDKHook_StartTouchPost, Hook_TouchCheckpoint);

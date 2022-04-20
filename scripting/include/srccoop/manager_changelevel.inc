@@ -130,7 +130,7 @@ methodmap ChangeLevelManager < Array_t
 		pSorted.GetArray(0, pChangeLvlLump);
 		if(EquipmentManager.Enabled())
 		{
-			EquipmentManager.SavePlayerEquipment(false);
+			EquipmentManager.SavePlayerEquipment();
 		}
 		pChangeLvlLump.m_pChangeLevel.ChangeLevelNow();
 		delete pSorted;

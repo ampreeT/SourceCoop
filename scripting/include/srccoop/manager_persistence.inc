@@ -3,11 +3,11 @@
 #endif
 #define _srccoop_manager_persistence_included
 
+#define SAVEDATA_PATH "data/srccoop/savedata"
 
 enum struct EquipmentManagerData
 {
 	StringMap m_smEquipmentMap;
-	ConVar m_pConvarPersistEquipment;
 }
 
 EquipmentManagerData g_pEquipmentManagerData;
@@ -20,18 +20,17 @@ methodmap EquipmentManager
 	public static void Initialize()
 	{
 		data.m_smEquipmentMap = new StringMap();
-		data.m_pConvarPersistEquipment = CreateConVar("sourcecoop_persist_equipment", "1", "Determines whether equipment is persisted from map to map. 0 means use default map equipment, 1 means maintain equipment between maps", _, true, 0.0, true, 1.0);
-		RegAdminCmd("sc_save", Command_SaveEquipment, ADMFLAG_ROOT, "Exports last saved player equipment state. Equipment state is saved at the end of a map, so this wil record the state as of the start of a map.");
-		RegAdminCmd("sourcecoop_save", Command_SaveEquipment, ADMFLAG_ROOT, "Exports last saved player equipment state. Equipment state is saved at the end of a map, so this wil record the state as of the start of a map.");
-		RegAdminCmd("sc_load", Command_LoadEquipment, ADMFLAG_ROOT, "Imports saved data from file and attempts to equip each player (if they were present when the data was saved).");
-		RegAdminCmd("sourcecoop_load", Command_LoadEquipment, ADMFLAG_ROOT, "Imports saved data from file and attempts to equip each player (if they were present when the data was saved).");
-		RegAdminCmd("sc_clear_equipment", Command_ClearEquipment, ADMFLAG_ROOT, "Clear persisted equipment and equip players with the map defaults.");
-		RegAdminCmd("sourcecoop_clear_equipment", Command_ClearEquipment, ADMFLAG_ROOT, "Clear persisted equipment and equip players with the map defaults.");
+		RegAdminCmd("sc_save", Command_ExportEquipment, ADMFLAG_ROOT, "Exports last saved player equipment state. Equipment state is saved at the end of a map, so this wil record the state as of the start of a map.");
+		RegAdminCmd("sourcecoop_save", Command_ExportEquipment, ADMFLAG_ROOT, "Exports last saved player equipment state. Equipment state is saved at the end of a map, so this wil record the state as of the start of a map.");
+		RegAdminCmd("sc_load", Command_ImportEquipment, ADMFLAG_ROOT, "Imports saved data from file and attempts to equip each player (if they were present when the data was saved).");
+		RegAdminCmd("sourcecoop_load", Command_ImportEquipment, ADMFLAG_ROOT, "Imports saved data from file and attempts to equip each player (if they were present when the data was saved).");
+		RegAdminCmd("sc_clear", Command_ClearEquipment, ADMFLAG_ROOT, "Clear persisted equipment and equip players with the map defaults.");
+		RegAdminCmd("sourcecoop_clear", Command_ClearEquipment, ADMFLAG_ROOT, "Clear persisted equipment and equip players with the map defaults.");
 	}
 
 	public static bool Enabled()
 	{
-		return data.m_pConvarPersistEquipment.BoolValue;
+		return CoopManager.IsFeatureEnabled(FT_TRANSFER_PLAYER_STATE);
 	}
 
 	public static void Clear(const char[] szSteamId)
@@ -42,6 +41,20 @@ methodmap EquipmentManager
 
 		equipment.Close();
 		data.m_smEquipmentMap.Remove(szSteamId);
+	}
+
+	public static void ClearAll()
+	{
+		CCoopEquipment equipment;
+		StringMapSnapshot ss = data.m_smEquipmentMap.Snapshot();
+		for (int i = 0; i < ss.Length; i++)
+		{
+			char[] szKey = new char[ss.KeyBufferSize(i)];
+			EquipmentManager.GetEquipmentSteam(szKey, equipment);
+			equipment.Close();
+		}
+		CloseHandle(ss);
+		data.m_smEquipmentMap.Clear();
 	}
 
 	public static void StoreEquipment(const char[] szSteamId, CCoopEquipment equipment)
@@ -68,33 +81,7 @@ methodmap EquipmentManager
 		return false;
 	}
 
-	public static void GetSaveDataPath(char buffer[PLATFORM_MAX_PATH], const char szFileName[64])
-	{
-		char[] szFolder = "data/srccoop/savedata";
-		BuildPath(Path_SM, buffer, sizeof(buffer), "%s/%s", szFolder, szFileName);
-	}
-
-	public static int GetClientIdFromName(char[] szName)
-	{
-		for (int i = 1; i <= MaxClients; i++)
-		{
-			if (!IsClientConnected(i))
-				continue;
-				
-			char name[64];
-			if (GetClientName(i, name, sizeof(name)))
-			{
-				if (strcmp(name, szName, false) == 0)
-				{
-					return i;
-				}
-			}
-		}
-
-		return -1;
-	}
-
-	public static void SavePlayerEquipment(bool IsCheckpoint)
+	public static void SavePlayerEquipment()
 	{
 		for (int iClient = 1; iClient <= MaxClients; iClient++)
 		{
@@ -102,18 +89,8 @@ methodmap EquipmentManager
 				continue;
 
 			CBasePlayer pPlayer = CBasePlayer(iClient);
-			if (!pPlayer.IsValid())
+			if (!pPlayer.IsValid() || !pPlayer.IsAlive())
 				continue;
-			
-			if (SurvivalManager.GetMode() && SurvivalManager.IsDead(pPlayer))
-			{
-				if (!IsCheckpoint)
-				{
-					EquipmentManager.Clear(g_szSteamIds[iClient]);
-				}
-
-				continue;
-			}
 			
 			CCoopEquipment playerEquipment;
 			playerEquipment.Initialize();
@@ -156,21 +133,14 @@ methodmap EquipmentManager
 		}
 	}
 
-	public static bool LoadPlayerEquipmentFromFile(KeyValues kv, int iClient, int clientId)
+	public static bool ImportEquipment(KeyValues kv, int iClient, int iTarget)
 	{
-		if (strlen(g_szSteamIds[clientId]) == 0)
+		if (strlen(g_szSteamIds[iTarget]) == 0)
 			return false;
 
-		CBasePlayer pPlayer = CBasePlayer(clientId);
-		if (!pPlayer.IsValid())
+		if (!kv.JumpToKey(g_szSteamIds[iTarget]))
 		{
-			MsgReply(iClient, "Failed to load data: invalid player");
-			return false;
-		}
-
-		if (!kv.JumpToKey(g_szSteamIds[clientId]))
-		{
-			MsgReply(iClient, "Save data not found for steam id %s", g_szSteamIds[clientId]);
+			MsgReply(iClient, "Save data not found for steam id %s", g_szSteamIds[iTarget]);
 			return false;
 		}
 
@@ -183,19 +153,11 @@ methodmap EquipmentManager
 		if (!kv.JumpToKey("weapons"))
 		{
 			MsgReply(iClient, "Unable to find weapons section in KeyValues file");
-			delete kv;
 			equipment.Close();
 			return false;	
 		}
 
-		if (!kv.GotoFirstSubKey(true))
-		{
-			MsgReply(iClient, "Unable to find any weapons in KeyValues file");
-			delete kv;
-			equipment.Close();
-			return false;	
-		}
-		else
+		if (kv.GotoFirstSubKey(true))
 		{
 			do
 			{
@@ -209,7 +171,6 @@ methodmap EquipmentManager
 				}
 			}
 			while (kv.GotoNextKey(true));
-
 			kv.GoBack(); //return to weapons node
 		}
 
@@ -218,7 +179,6 @@ methodmap EquipmentManager
 		if (!kv.JumpToKey("ammo"))
 		{
 			MsgReply(iClient, "Unable to find ammo section in KeyValues file");
-			delete kv;
 			equipment.Close();
 			return false;	
 		}
@@ -230,18 +190,66 @@ methodmap EquipmentManager
 			equipment.m_iAmmoCount[i] = kv.GetNum(key, 0);	
 		}
 
-		EquipmentManager.StoreEquipment(g_szSteamIds[clientId], equipment);
-		g_SpawnSystem.StripPlayer(pPlayer);
-		g_SpawnSystem.SpawnPlayerEquipment(pPlayer);
+		CBasePlayer pTarget = CBasePlayer(iTarget);
+		EquipmentManager.StoreEquipment(g_szSteamIds[iTarget], equipment);
 
-		MsgReply(iClient, "Loaded Equipment for player %s", g_szSteamIds[clientId]);
+		if (pTarget.IsAlive())
+		{
+			pTarget.RemoveAllItems();
+			equipment.Equip(pTarget);
+		}
 
+		MsgReply(iClient, "Loaded player state for %N", iTarget);
 		return true;
+	}
+
+	public static bool ExportEquipment(KeyValues kv)
+	{
+		bool shouldSave = false;
+		for (int i = 1; i <= MaxClients; i++)
+		{
+			CBasePlayer pPlayer = CBasePlayer(i);
+			if(!pPlayer.IsValid())
+				continue;
+
+			CCoopEquipment equipment;
+			if (!EquipmentManager.GetEquipment(pPlayer, equipment))
+				continue;
+
+			kv.JumpToKey(g_szSteamIds[i], true);
+			kv.SetNum("hp", equipment.m_iHealth);
+			kv.SetNum("armor", equipment.m_iArmor);
+			kv.JumpToKey("weapons", true);
+
+			for (int j = 0; j < equipment.m_pWeaponList.Length; j++)
+			{
+				CCoopWeaponEntry pWeaponEntry;
+				if (equipment.m_pWeaponList.GetArray(j, pWeaponEntry, sizeof(pWeaponEntry)))
+				{
+					kv.JumpToKey(pWeaponEntry.m_szClassname, true);
+					kv.SetNum("primaryammo", pWeaponEntry.m_iPrimaryAmmo);
+					kv.GoBack();
+				}
+			}
+
+			kv.GoBack();
+			kv.JumpToKey("ammo", true);
+			for (int k = 0; k < MAX_AMMO_TYPES; k++)
+			{
+				char key[3];
+				IntToString(k, key, sizeof(key));
+				kv.SetNum(key, equipment.m_iAmmoCount[k]);
+			}
+			
+			kv.Rewind();
+			shouldSave = true;
+		}
+		return shouldSave;
 	}
 
 }
 
-public Action Command_SaveEquipment(int iClient, int iArgs)
+public Action Command_ExportEquipment(int iClient, int iArgs)
 {
 	if (iArgs != 1)
 	{
@@ -252,69 +260,28 @@ public Action Command_SaveEquipment(int iClient, int iArgs)
 	char szFileName[64];
 	GetCmdArg(1, szFileName, sizeof(szFileName));
 
-	char szFullPath[PLATFORM_MAX_PATH];
-	EquipmentManager.GetSaveDataPath(szFullPath, szFileName);
-
 	KeyValues kv = new KeyValues("SaveData");
-	bool shouldSave = false;
-	for (int i = 1; i <= MaxClients; i++)
+	if (EquipmentManager.ExportEquipment(kv))
 	{
-		CBasePlayer pPlayer = CBasePlayer(i);
-		if(!pPlayer.IsValid())
-			continue;
-		
-		if(SurvivalManager.GetMode() && SurvivalManager.IsDead(pPlayer))
-			continue;
-
-		CCoopEquipment equipment;
-		if (!EquipmentManager.GetEquipment(pPlayer, equipment))
-			continue;
-
-		kv.JumpToKey(g_szSteamIds[i], true);
-		kv.SetNum("hp", equipment.m_iHealth);
-		kv.SetNum("armor", equipment.m_iArmor);
-		kv.JumpToKey("weapons", true);
-
-		for (int j = 0; j < equipment.m_pWeaponList.Length; j++)
-		{
-			CCoopWeaponEntry pWeaponEntry;
-			if (equipment.m_pWeaponList.GetArray(j, pWeaponEntry, sizeof(pWeaponEntry)))
-			{
-				kv.JumpToKey(pWeaponEntry.m_szClassname, true);
-				kv.SetNum("primaryammo", pWeaponEntry.m_iPrimaryAmmo);
-				kv.GoBack();
-			}
-
-		}
-
-		kv.GoBack();
-		kv.JumpToKey("ammo", true);
-		for (int k = 0; k < MAX_AMMO_TYPES; k++)
-		{
-			char key[3];
-			IntToString(k, key, sizeof(key));
-			kv.SetNum(key, equipment.m_iAmmoCount[k]);
-		}
+		char szFullPath[PLATFORM_MAX_PATH];
+		BuildPath(Path_SM, szFullPath, sizeof(szFullPath), "%s/%s", SAVEDATA_PATH, szFileName);
 		
 		kv.Rewind();
-		shouldSave = true;
+		if (kv.ExportToFile(szFullPath))
+			MsgReply(iClient, "Saved equipment successfully.");
+		else
+			MsgReply(iClient, "Issue occurred when exporting to file: %s", szFullPath);
 	}
-
-	if (!shouldSave)
+	else
 	{
-		MsgReply(iClient, "No valid players found. Could not save data");
-		return Plugin_Handled;
+		MsgReply(iClient, "No valid players found. Could not save data.");
 	}
 
-	kv.Rewind();
-	kv.ExportToFile(szFullPath);
 	delete kv;
-
-	MsgReply(iClient, "Saved equipment successfully");
 	return Plugin_Handled;
 }
 
-public Action Command_LoadEquipment(int iClient, int iArgs)
+public Action Command_ImportEquipment(int iClient, int iArgs)
 {
 	if (iArgs != 1 && iArgs != 2)
 	{
@@ -326,53 +293,48 @@ public Action Command_LoadEquipment(int iClient, int iArgs)
 	GetCmdArg(1, szFileName, sizeof(szFileName));
 
 	char szFullPath[PLATFORM_MAX_PATH];
-	EquipmentManager.GetSaveDataPath(szFullPath, szFileName);
+	BuildPath(Path_SM, szFullPath, sizeof(szFullPath), "%s/%s", SAVEDATA_PATH, szFileName);
 
 	if (!FileExists(szFullPath))
 	{
-		MsgReply(iClient, "Could not find specified save file %s", szFullPath);
+		MsgReply(iClient, "Could not find specified save file: %s", szFullPath);
 		return Plugin_Handled;
 	}
 
-	
 	KeyValues kv = new KeyValues("SaveData");
 	if (!kv.ImportFromFile(szFullPath))
 	{
-		MsgReply(iClient, "Failed to parse KeyValues file %s", szFullPath);
+		MsgReply(iClient, "Failed to parse KeyValues file: %s", szFullPath);
 		delete kv;
 		return Plugin_Handled;	
 	}
 
 	if (iArgs == 2)
 	{
-		char szPlayerName[64];
-		GetCmdArg(2, szPlayerName, sizeof(szPlayerName));
-		int clientId = EquipmentManager.GetClientIdFromName(szPlayerName);
-		if (clientId == -1)
+		char szTarget[64];
+		GetCmdArg(2, szTarget, sizeof(szTarget));
+		int iTarget = FindTarget(iClient, szTarget, true, false);
+		if (iTarget != -1)
 		{
-			MsgReply(iClient, "Player %s not found", szPlayerName);
-			return Plugin_Handled;
+			if (!EquipmentManager.ImportEquipment(kv, iClient, iTarget))
+			{
+				MsgReply(iClient, "Failed to load data for player: %N", iTarget);
+			}
 		}
-
-		CBasePlayer pPlayer = CBasePlayer(clientId);
-		if (!pPlayer.IsValid())
-		{
-			MsgReply(iClient, "Failed to load data for invalid player: %s", szPlayerName);
-			return Plugin_Handled;
-		}	
-		if (!EquipmentManager.LoadPlayerEquipmentFromFile(kv, iClient, clientId))
-		{
-			MsgReply(iClient, "Failed to load data for player: %s", szPlayerName);
-		}
-		return Plugin_Handled;
-		
 	}
-
-	for (int i = 1; i <= MaxClients; i++)
+	else
 	{
-		EquipmentManager.LoadPlayerEquipmentFromFile(kv, iClient, i);
+		for (int i = 1; i <= MaxClients; i++)
+		{
+			if (IsClientInGame(i))
+			{
+				EquipmentManager.ImportEquipment(kv, iClient, i);
+				kv.Rewind();
+			}
+		}
 	}
 
+	delete kv;
 	return Plugin_Handled;
 }
 
@@ -380,27 +342,23 @@ public Action Command_ClearEquipment(int iClient, int iArgs)
 {
 	if (iArgs != 0)
 	{
-		MsgReply(iClient, "Format: sc_clear_equipment");
+		MsgReply(iClient, "Format: sc_clear");
 		return Plugin_Handled;
 	}
 
+	EquipmentManager.ClearAll();
 	for (int i = 1; i <= MaxClients; i++)
 	{
-		if (strlen(g_szSteamIds[i]) == 0)
-			continue;
-
 		CBasePlayer pPlayer = CBasePlayer(i);
-		if (!pPlayer.IsValid())
-			continue;
-
-		EquipmentManager.Clear(g_szSteamIds[i]);
-
-		g_SpawnSystem.StripPlayer(pPlayer);
-		g_SpawnSystem.SpawnPlayerEquipment(pPlayer);
+		if (pPlayer.IsInGame() && pPlayer.IsAlive())
+		{
+			pPlayer.RemoveAllItems();
+			g_SpawnSystem.SpawnPlayerEquipment(pPlayer);
+		}
 	}
 
+	MsgReply(iClient, "Cleared player state successfully.");
 	return Plugin_Handled;
-	
 }
 
 #undef data

@@ -947,7 +947,7 @@ methodmap CBasePlayer < CBaseCombatCharacter
 	{
 		RemovePlayerItem(this.GetEntIndex(), pWeapon.GetEntIndex());
 	}
-	public void RemoveAllItems(bool bRemoveSuit)
+	public void RemoveAllItems(bool bRemoveSuit = true)
 	{
 		SDKCall(g_pRemoveAllItems, this.GetEntIndex(), bRemoveSuit);
 	}

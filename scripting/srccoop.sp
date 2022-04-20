@@ -130,6 +130,7 @@ public void OnPluginStart()
 {
 	g_Engine = GetEngineVersion();
 	LoadGameData();
+	LoadTranslations("common.phrases");
 	
 	InitDebugLog("sourcecoop_debug", "SRCCOOP", ADMFLAG_ROOT);
 	CreateConVar("sourcecoop_version", PLUGIN_VERSION, _, FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
@@ -185,6 +186,10 @@ public void OnPluginStart()
 		if (IsClientInGame(i))
 		{
 			OnClientPutInServer(i);
+			if (IsClientAuthorized(i))
+			{
+				OnClientAuthorized(i, "");
+			}
 		}
 	}
 }
@@ -319,14 +324,10 @@ public void OnClientPutInServer(int client)
 
 public void OnClientAuthorized(int client, const char[] auth)
 {
-	char steamId[32];
-	if (GetClientAuthId(client, AuthId_SteamID64, steamId, 32, true))
+	int sid = GetSteamAccountID(client);
+	if (sid)
 	{
-		g_szSteamIds[client] = steamId;
-	}
-	else
-	{
-		Msg(client, "Could not retrieve Steam ID - Equipment will not be retained.");
+		IntToString(sid, g_szSteamIds[client], sizeof(g_szSteamIds[]));
 	}
 }
 
@@ -335,16 +336,15 @@ public void OnClientDisconnect_Post(int client)
 	g_pInstancingManager.OnClientDisconnect(client);
 	SurvivalManager.GameOverCheck();
 	g_flNextStuck[client] = 0.0;
+	g_szSteamIds[client] = "";
 }
 
 public void Event_PlayerDisconnect(Event hEvent, const char[] szName, bool bDontBroadcast)
 {
 	int iClient = GetClientOfUserId(GetEventInt(hEvent, "userid"));
-
-	if (strlen(g_szSteamIds[iClient]) > 0)
+	if (strlen(g_szSteamIds[iClient]))
 	{
 		EquipmentManager.Clear(g_szSteamIds[iClient]);
-		g_szSteamIds[iClient] = "";
 	}
 }
 
@@ -659,7 +659,7 @@ public Action OutputCallbackForDelay(const char[] output, int caller, int activa
 		{
 			RequestFrame(RequestStopThink, pFireOutputData.m_pCaller);
 		}
-		if (pFireOutputData.m_pCaller.IsClassname("logic_relay"))
+		else if (pFireOutputData.m_pCaller.IsClassname("logic_relay"))
 		{
 			int sf = pFireOutputData.m_pCaller.GetSpawnFlags();
 			if (sf & SF_REMOVE_ON_FIRE)

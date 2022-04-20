@@ -82,9 +82,11 @@ methodmap CoopManager {
 	
 		if((data.m_bIsCoopMap = kv != null))
 		{
-			if(CoopManager.ShouldResetGlobalStates())
+			if(CoopManager.IsNewMapSeries())
 			{
+				// reset global states
 				g_ServerGameDLL.GameShutdown();
+				EquipmentManager.ClearAll();
 			}
 			g_pLevelLump.ParseMapEntities(szMapEntities);
 			g_pLevelLump.ParseConfigFile(kv);
@@ -308,12 +310,12 @@ methodmap CoopManager {
 		return 1.0 - (1.0 / (iPlayerCount / float(votes))) * g_pConvarEndWaitFactor.FloatValue;
 	}
 
-	public static void AddDelayedOutput(FireOutputData pFireOutputData)
+	public static void AddDelayedOutput(const FireOutputData pFireOutputData)
 	{
 		data.m_pDelayedOutputs.PushArray(pFireOutputData);
 	}
 
-	public static bool ShouldResetGlobalStates()
+	public static bool IsNewMapSeries()
 	{
 		if(g_Engine != Engine_BlackMesa)
 		{
