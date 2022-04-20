@@ -629,17 +629,9 @@ methodmap CChangelevel < CBaseTrigger
 		return view_as<CChangelevel>(CBaseEntity(iEntIndex));
 	}
 
-	public bool GetMapName(char[] szBuffer, const int iMaxLength)
+	public void GetMapName(char[] szBuffer, const int iMaxLength)
 	{
-		return view_as<bool>(GetEntPropString(this.GetEntIndex(), Prop_Data, "m_szMapName", szBuffer, iMaxLength));
-	}
-	
-	public void ChangeLevelNow()
-	{
-		char szMapName[MAX_MAPNAME];
-		this.GetMapName(szMapName, sizeof(szMapName));
-		this.FireOutput("OnChangeLevel");
-		ForceChangeLevel(szMapName, SM_NORMAL_MAPCHANGE);
+		GetEntPropString(this.GetEntIndex(), Prop_Data, "m_szMapName", szBuffer, iMaxLength);
 	}
 }
 

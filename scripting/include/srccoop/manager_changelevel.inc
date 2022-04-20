@@ -100,7 +100,7 @@ methodmap ChangeLevelManager < Array_t
 		delete pSorted;
 	}
 
-	public bool SetPlayerVote(CChangelevel pChangelevel, CBlackMesaPlayer pPlayer, int[] iClientVoteIndicies)
+	public bool SetPlayerVote(CChangelevel pChangelevel, CBasePlayer pPlayer, int[] iClientVoteIndicies)
 	{
 		int iPlayer = pPlayer.GetEntIndex();
 		ChangeLevelVoteLump pChangeLvlLump;
@@ -123,17 +123,13 @@ methodmap ChangeLevelManager < Array_t
 		return true;
 	}
 	
-	public void End()
+	public CChangelevel GetWinner()
 	{
 		ChangeLevelManager pSorted = this.Sorted();
 		ChangeLevelVoteLump pChangeLvlLump;
 		pSorted.GetArray(0, pChangeLvlLump);
-		if(EquipmentManager.Enabled())
-		{
-			EquipmentManager.SavePlayerEquipment();
-		}
-		pChangeLvlLump.m_pChangeLevel.ChangeLevelNow();
 		delete pSorted;
+		return pChangeLvlLump.m_pChangeLevel;
 	}
 }
 

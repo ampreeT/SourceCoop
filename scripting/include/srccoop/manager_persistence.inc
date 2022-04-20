@@ -133,14 +133,17 @@ methodmap EquipmentManager
 		}
 	}
 
-	public static bool ImportEquipment(KeyValues kv, int iClient, int iTarget)
+	public static bool ImportEquipment(KeyValues kv, int iClient, int iTarget, char[] error, int errorLength)
 	{
 		if (strlen(g_szSteamIds[iTarget]) == 0)
+		{
+			FormatEx(error, errorLength, "SteamID is unknown");
 			return false;
+		}
 
 		if (!kv.JumpToKey(g_szSteamIds[iTarget]))
 		{
-			MsgReply(iClient, "Save data not found for steam id %s", g_szSteamIds[iTarget]);
+			FormatEx(error, errorLength, "Save data not found for SteamID: %s", g_szSteamIds[iTarget]);
 			return false;
 		}
 
@@ -152,7 +155,7 @@ methodmap EquipmentManager
 
 		if (!kv.JumpToKey("weapons"))
 		{
-			MsgReply(iClient, "Unable to find weapons section in KeyValues file");
+			FormatEx(error, errorLength, "Unable to find weapons section in KeyValues file");
 			equipment.Close();
 			return false;	
 		}
@@ -178,7 +181,7 @@ methodmap EquipmentManager
 		
 		if (!kv.JumpToKey("ammo"))
 		{
-			MsgReply(iClient, "Unable to find ammo section in KeyValues file");
+			FormatEx(error, errorLength, "Unable to find ammo section in KeyValues file");
 			equipment.Close();
 			return false;	
 		}
@@ -199,7 +202,6 @@ methodmap EquipmentManager
 			equipment.Equip(pTarget);
 		}
 
-		MsgReply(iClient, "Loaded player state for %N", iTarget);
 		return true;
 	}
 
@@ -309,28 +311,35 @@ public Action Command_ImportEquipment(int iClient, int iArgs)
 		return Plugin_Handled;	
 	}
 
+	int i = 1, iMax = MaxClients;
+
 	if (iArgs == 2)
 	{
-		char szTarget[64];
+		char szTarget[MAX_NAME_LENGTH];
 		GetCmdArg(2, szTarget, sizeof(szTarget));
-		int iTarget = FindTarget(iClient, szTarget, true, false);
-		if (iTarget != -1)
+		
+		i = iMax = FindTarget(iClient, szTarget, true, false);
+		if (i == -1)
 		{
-			if (!EquipmentManager.ImportEquipment(kv, iClient, iTarget))
-			{
-				MsgReply(iClient, "Failed to load data for player: %N", iTarget);
-			}
+			return Plugin_Handled;
 		}
 	}
-	else
+
+	char szError[512];
+
+	for (; i <= iMax; i++)
 	{
-		for (int i = 1; i <= MaxClients; i++)
+		if (IsClientInGame(i))
 		{
-			if (IsClientInGame(i))
+			if (EquipmentManager.ImportEquipment(kv, iClient, i, szError, sizeof(szError)))
 			{
-				EquipmentManager.ImportEquipment(kv, iClient, i);
-				kv.Rewind();
+				MsgReply(iClient, "Loaded player state for: %N", i);
 			}
+			else
+			{
+				MsgReply(iClient, "Failed to load data for player: %N. %s", i, szError);
+			}
+			kv.Rewind();
 		}
 	}
 
