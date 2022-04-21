@@ -556,7 +556,7 @@ public MRESReturn Hook_ChangelevelAcceptInput(int _this, Handle hReturn, Handle 
 			if (strcmp(szInputType, "ChangeLevel", false) == 0)
 			{
 				CChangelevel pChangelevel = CChangelevel(_this);
-				ChangeLevelTriggered(pChangelevel, CBlackMesaPlayer(-1));
+				CoopManager.OnChangeLevelInput(pChangelevel);
 			}
 		}
 	}
@@ -569,40 +569,25 @@ public void Hook_ChangelevelOnTouch(int _this, int iOther)
 	if (CoopManager.IsCoopModeEnabled())
 	{
 		CChangelevel pChangelevel = CChangelevel(_this);
-		CBlackMesaPlayer pPlayer = CBlackMesaPlayer(iOther);
+		CBasePlayer pPlayer = CBasePlayer(iOther);
 
 		if (pPlayer.IsValid())
 		{
-			ChangeLevelTriggered(pChangelevel, pPlayer);
+			CoopManager.OnChangeLevelTouch(pChangelevel, pPlayer);
 		}
 	}
 }
 
-void ChangeLevelTriggered(CChangelevel pChangelevel, CBlackMesaPlayer pActivator)
+public Action ChangelevelEffects(Handle timer, CChangelevel pChangelevel)
 {
-	char szMapName[MAX_MAPNAME];
-	if (pChangelevel.GetMapName(szMapName, sizeof(szMapName))
-		&& (g_pLevelLump.m_pNextMapList.Length == 0 || g_pLevelLump.m_pNextMapList.IsInMapList(szMapName)))
-	{
-		if(pActivator.IsClassPlayer())
-		{
-			CoopManager.OnTouchChangeLevel(pChangelevel, pActivator);
-		}
-		else
-		{
-			SDKUnhook(pChangelevel.GetEntIndex(), SDKHook_Touch, Hook_ChangelevelOnTouch);
-			pChangelevel.ChangeLevelNow();
-		}
-	}
-}
-
-public Action ChangelevelEffects(Handle timer, CChangelevel pChangelevel) {
 	if (pChangelevel.IsValid())
 	{
-		if (CoopManager.IsFeatureEnabled(FT_CHANGELEVEL_FX)) {
+		if (CoopManager.IsFeatureEnabled(FT_CHANGELEVEL_FX))
+		{
 			char szMapName[MAX_MAPNAME];
-			if (!pChangelevel.IsDisabled() && pChangelevel.GetMapName(szMapName, sizeof(szMapName))
-				&& (g_pLevelLump.m_pNextMapList.Length == 0 || g_pLevelLump.m_pNextMapList.IsInMapList(szMapName)))
+			pChangelevel.GetMapName(szMapName, sizeof(szMapName))
+
+			if (!pChangelevel.IsDisabled() && CoopManager.IsMapAllowedNext(szMapName))
 			{
 				float vecMins[3], vecMaxs[3];
 				pChangelevel.GetMins(vecMins);
@@ -991,7 +976,7 @@ public MRESReturn Hook_ServerCommandAcceptInput(int _this, Handle hReturn, Handl
 				DHookGetParamObjectPtrString(hParams, 4, 0, ObjectValueType_String, szParam, sizeof(szParam));
 				if(strncmp(szParam, "changelevel ", 12, false) == 0)
 				{
-					ForceChangeLevel(szParam[12], SM_NORMAL_MAPCHANGE);
+					CoopManager.EndMap(szParam[12], SC_NORMAL_MAPCHANGE);
 					DHookSetReturn(hReturn, true);
 					return MRES_Supercede;
 				}

@@ -130,6 +130,7 @@ public void OnPluginStart()
 {
 	g_Engine = GetEngineVersion();
 	LoadGameData();
+	LoadTranslations("common.phrases");
 	
 	InitDebugLog("sourcecoop_debug", "SRCCOOP", ADMFLAG_ROOT);
 	CreateConVar("sourcecoop_version", PLUGIN_VERSION, _, FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
@@ -159,12 +160,14 @@ public void OnPluginStart()
 	g_pInstancingManager.Initialize();
 	g_pPostponedSpawns = CreateArray();
 	g_pFeatureMap = new FeatureMap();
+	EquipmentManager.Initialize();
 	InitializeMenus();
 	
 	g_CoopMapStartFwd = new GlobalForward("OnCoopMapStart", ET_Ignore);
 	g_CoopMapConfigLoadedFwd = new GlobalForward("OnCoopMapConfigLoaded", ET_Ignore, Param_Cell, Param_Cell);
 	
-	HookEvent("entity_killed", Event_EntityKilled, EventHookMode_Post);
+	HookEvent("entity_killed", Event_EntityKilled);
+	HookEvent("player_disconnect", Event_PlayerDisconnect);
 
 	if (g_Engine == Engine_BlackMesa)
 	{
@@ -172,7 +175,7 @@ public void OnPluginStart()
 		AddTempEntHook("BlackMesa Shot", BlackMesaFireBulletsTEHook);
 		AddNormalSoundHook(PlayerSoundListener);
 		UserMsg iIntroCredits = GetUserMessageId("IntroCredits");
-		if(iIntroCredits != INVALID_MESSAGE_ID)
+		if (iIntroCredits != INVALID_MESSAGE_ID)
 		{
 			HookUserMessage(iIntroCredits, Hook_IntroCreditsMsg, true);
 		}
@@ -183,6 +186,10 @@ public void OnPluginStart()
 		if (IsClientInGame(i))
 		{
 			OnClientPutInServer(i);
+			if (IsClientAuthorized(i))
+			{
+				OnClientAuthorized(i, "");
+			}
 		}
 	}
 }
@@ -255,7 +262,7 @@ public void OnConfigsExecutedPost()
 			CBaseEntity pGameEquip = CBaseEntity.Create("game_player_equip");	// will spawn players with nothing if it exists
 			if (pGameEquip.IsValid())
 			{
-				if(!CoopManager.IsFeatureEnabled(FT_STRIP_DEFAULT_EQUIPMENT_KEEPSUIT))
+				if (!CoopManager.IsFeatureEnabled(FT_STRIP_DEFAULT_EQUIPMENT_KEEPSUIT))
 				{
 					pGameEquip.SetSpawnFlags(SF_PLAYER_EQUIP_STRIP_SUIT);
 				}
@@ -290,7 +297,7 @@ public void OnClientPutInServer(int client)
 	// fixes visual bug for players which had different view ent at mapchange
 	pPlayer.SetViewEntity(pPlayer);
 	
-	if(g_Engine == Engine_BlackMesa)
+	if (g_Engine == Engine_BlackMesa)
 	{
 		// fixes bugged trigger_teleport prediction (camera jerking around as if being teleported)
 		ClientCommand(client, "cl_predicttriggers 0");
@@ -315,11 +322,30 @@ public void OnClientPutInServer(int client)
 	GreetPlayer(client);
 }
 
+public void OnClientAuthorized(int client, const char[] auth)
+{
+	int sid = GetSteamAccountID(client);
+	if (sid)
+	{
+		IntToString(sid, g_szSteamIds[client], sizeof(g_szSteamIds[]));
+	}
+}
+
 public void OnClientDisconnect_Post(int client)
 {
 	g_pInstancingManager.OnClientDisconnect(client);
 	SurvivalManager.GameOverCheck();
 	g_flNextStuck[client] = 0.0;
+	g_szSteamIds[client] = "";
+}
+
+public void Event_PlayerDisconnect(Event hEvent, const char[] szName, bool bDontBroadcast)
+{
+	int iClient = GetClientOfUserId(GetEventInt(hEvent, "userid"));
+	if (strlen(g_szSteamIds[iClient]))
+	{
+		EquipmentManager.Clear(g_szSteamIds[iClient]);
+	}
 }
 
 public void OnMapEnd()
@@ -330,7 +356,7 @@ public void OnMapEnd()
 
 public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 {
-	if(g_bTempDontHookEnts) {
+	if (g_bTempDontHookEnts) {
 		return;
 	}
 	
@@ -342,7 +368,7 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 		
 		if (g_Engine == Engine_BlackMesa)
 		{
-			if(pEntity.IsClassNPC())
+			if (pEntity.IsClassNPC())
 			{
 				SDKHook(iEntIndex, SDKHook_SpawnPost, Hook_BaseNPCSpawnPost);
 				DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_BaseNPCAcceptInput);
@@ -539,26 +565,26 @@ public void Hook_EntitySpawnPost(int iEntIndex)
 		CBaseEntity pEntity = CBaseEntity(iEntIndex);
 
 		// fix linux physics crashes
-		if(g_Engine == Engine_BlackMesa && g_serverOS == OS_Linux)
+		if (g_Engine == Engine_BlackMesa && g_serverOS == OS_Linux)
 		{
 			static char szModel[PLATFORM_MAX_PATH];
-			if(pEntity.GetModel(szModel, sizeof(szModel)) && strncmp(szModel, "models/gibs/humans/", 19) == 0)
+			if (pEntity.GetModel(szModel, sizeof(szModel)) && strncmp(szModel, "models/gibs/humans/", 19) == 0)
 			{
 				SDKHook(iEntIndex, SDKHook_OnTakeDamage, Hook_NoDmg);
 			}
 		}
 		
 		// find and hook output hooks for entity
-		if(!g_pCoopManagerData.m_bStarted)
+		if (!g_pCoopManagerData.m_bStarted)
 		{
 			Array_t pOutputHookList = g_pLevelLump.GetOutputHooksForEntity(pEntity);
-			if(pOutputHookList.Length > 0)
+			if (pOutputHookList.Length > 0)
 			{
-				if(pEntity.IsClassname("logic_auto"))
+				if (pEntity.IsClassname("logic_auto"))
 				{
 					// do not let it get killed, so the output can fire later
 					int iSpawnFlags = pEntity.GetSpawnFlags();
-					if(iSpawnFlags & SF_AUTO_FIREONCE)
+					if (iSpawnFlags & SF_AUTO_FIREONCE)
 						pEntity.SetSpawnFlags(iSpawnFlags &~ SF_AUTO_FIREONCE);
 				}
 				for (int i = 0; i < pOutputHookList.Length; i++)
@@ -591,7 +617,7 @@ public Action Hook_ItemSpawnDelay(int iEntIndex)
 	SDKUnhook(iEntIndex, SDKHook_Spawn, Hook_ItemSpawnDelay);
 	
 	CBaseEntity pEnt = CBaseEntity(iEntIndex);
-	if(g_bMapStarted)
+	if (g_bMapStarted)
 	{
 		RequestFrame(SpawnPostponedItem, pEnt);
 	}
@@ -604,7 +630,7 @@ public Action Hook_ItemSpawnDelay(int iEntIndex)
 
 public void SpawnPostponedItem(CBaseEntity pEntity)
 {
-	if(pEntity.IsValid())
+	if (pEntity.IsValid())
 	{
 		SDKHook(pEntity.GetEntIndex(), SDKHook_SpawnPost, Hook_Instancing_ItemSpawn);
 		g_bIsMultiplayerOverride = false; // IsMultiplayer=false will spawn items with physics
@@ -615,7 +641,7 @@ public void SpawnPostponedItem(CBaseEntity pEntity)
 
 public Action OutputCallbackForDelay(const char[] output, int caller, int activator, float delay)
 {
-	if(g_pCoopManagerData.m_bStarted)
+	if (g_pCoopManagerData.m_bStarted)
 	{
 		return Plugin_Continue;
 	}
@@ -626,17 +652,17 @@ public Action OutputCallbackForDelay(const char[] output, int caller, int activa
 	pFireOutputData.m_flDelay = delay;
 	CoopManager.AddDelayedOutput(pFireOutputData);
 	
-	if(pFireOutputData.m_pCaller.IsValid())
+	if (pFireOutputData.m_pCaller.IsValid())
 	{
 		// stop from deleting itself
-		if(pFireOutputData.m_pCaller.IsClassname("trigger_once"))
+		if (pFireOutputData.m_pCaller.IsClassname("trigger_once"))
 		{
 			RequestFrame(RequestStopThink, pFireOutputData.m_pCaller);
 		}
-		if(pFireOutputData.m_pCaller.IsClassname("logic_relay"))
+		else if (pFireOutputData.m_pCaller.IsClassname("logic_relay"))
 		{
 			int sf = pFireOutputData.m_pCaller.GetSpawnFlags();
-			if(sf & SF_REMOVE_ON_FIRE)
+			if (sf & SF_REMOVE_ON_FIRE)
 			{
 				pFireOutputData.m_pCaller.SetSpawnFlags(sf &~ SF_REMOVE_ON_FIRE);
 				UnhookSingleEntityOutput(caller, output, OutputCallbackForDelay);
@@ -650,7 +676,7 @@ public Action OutputCallbackForDelay(const char[] output, int caller, int activa
 
 public Action DeleteEntOnDelayedOutputFire(const char[] output, int caller, int activator, float delay)
 {
-	if(g_pCoopManagerData.m_bStarted)
+	if (g_pCoopManagerData.m_bStarted)
 	{
 		RemoveEntity(caller);
 		return Plugin_Continue;
@@ -663,7 +689,7 @@ public Action DeleteEntOnDelayedOutputFire(const char[] output, int caller, int 
 
 public void RequestStopThink(CBaseEntity pEntity)
 {
-	if(pEntity.IsValid())
+	if (pEntity.IsValid())
 	{
 		pEntity.SetNextThinkTick(0);
 	}
@@ -685,10 +711,10 @@ public MRESReturn Hook_OnEquipmentTryPickUpPost(int _this, Handle hReturn, Handl
 	if (CoopManager.IsFeatureEnabled(FT_KEEP_EQUIPMENT))
 	{
 		bool bPickedUp = DHookGetReturn(hReturn);
-		if(bPickedUp)
+		if (bPickedUp)
 		{
 			CBasePlayer pPlayer = CBasePlayer(DHookGetParam(hParams, 1));
-			if(pPlayer.IsClassPlayer())
+			if (pPlayer.IsClassPlayer())
 			{
 				CBaseEntity pItem = CBaseEntity(_this);
 				char szClass[MAX_CLASSNAME];
@@ -785,7 +811,7 @@ public Action Command_Unstuck(int iClient, int iArgs)
 
 public Action Command_SetFeature(int iClient, int iArgs)
 {
-	if(iArgs != 2)
+	if (iArgs != 2)
 	{
 		MsgReply(iClient, "Format: sourcecoop_ft <FEATURE> <1/0>");
 		return Plugin_Handled;
@@ -820,7 +846,7 @@ public Action Command_SetFeature(int iClient, int iArgs)
 
 public Action Command_DumpMapEntities(int iArgs)
 {
-	if(g_szEntityString[0] == '\0')
+	if (g_szEntityString[0] == '\0')
 	{
 		PrintToServer("No entity data recorded for current map.");
 		return Plugin_Handled;
@@ -834,7 +860,7 @@ public Action Command_DumpMapEntities(int iArgs)
 	Format(szDumpPath, sizeof(szDumpPath), "%s/%s-%s.txt", szDumpPath, g_szMapName, szTime);
 	
 	File pDumpFile = OpenFile(szDumpPath, "w");
-	if(pDumpFile != null)
+	if (pDumpFile != null)
 	{
 		pDumpFile.WriteString(g_szEntityString, false);
 		CloseHandle(pDumpFile);

@@ -82,9 +82,11 @@ methodmap CoopManager {
 	
 		if((data.m_bIsCoopMap = kv != null))
 		{
-			if(CoopManager.ShouldResetGlobalStates())
+			if(CoopManager.IsNewMapSeries())
 			{
+				// reset global states
 				g_ServerGameDLL.GameShutdown();
+				EquipmentManager.ClearAll();
 			}
 			g_pLevelLump.ParseMapEntities(szMapEntities);
 			g_pLevelLump.ParseConfigFile(kv);
@@ -268,8 +270,38 @@ methodmap CoopManager {
 		Call_Finish();
 	}
 
-	public static void OnTouchChangeLevel(CChangelevel pChangelevel, CBlackMesaPlayer pActivator)
+	public static void AddDelayedOutput(const FireOutputData pFireOutputData)
 	{
+		data.m_pDelayedOutputs.PushArray(pFireOutputData);
+	}
+
+	public static bool IsMapAllowedNext(const char[] szNextMap)
+	{
+		return g_pLevelLump.m_pNextMapList.Length == 0 || g_pLevelLump.m_pNextMapList.IsInMapList(szNextMap);
+	}
+
+	public static void OnChangeLevelInput(CChangelevel pChangelevel)
+	{
+		char szMapName[MAX_MAPNAME];
+		pChangelevel.GetMapName(szMapName, sizeof(szMapName))
+		
+		if (CoopManager.IsMapAllowedNext(szMapName))
+		{
+			pChangelevel.FireOutput("OnChangeLevel");
+			CoopManager.EndMap(szMapName, SC_NORMAL_MAPCHANGE);
+		}
+	}
+
+	public static void OnChangeLevelTouch(CChangelevel pChangelevel, CBasePlayer pActivator)
+	{
+		char szMapName[MAX_MAPNAME];
+		pChangelevel.GetMapName(szMapName, sizeof(szMapName))
+		
+		if (!CoopManager.IsMapAllowedNext(szMapName))
+		{
+			return;
+		}
+
 		if(data.m_pChangeLevelTimer == null)
 		{
 			data.m_iTicksToEnd = g_pConvarEndWaitPeriod.IntValue;
@@ -308,12 +340,7 @@ methodmap CoopManager {
 		return 1.0 - (1.0 / (iPlayerCount / float(votes))) * g_pConvarEndWaitFactor.FloatValue;
 	}
 
-	public static void AddDelayedOutput(FireOutputData pFireOutputData)
-	{
-		data.m_pDelayedOutputs.PushArray(pFireOutputData);
-	}
-
-	public static bool ShouldResetGlobalStates()
+	public static bool IsNewMapSeries()
 	{
 		if(g_Engine != Engine_BlackMesa)
 		{
@@ -322,9 +349,10 @@ methodmap CoopManager {
 		// Return false if map was changed naturally, true if externally
 		if(GetMapHistorySize() > 0)
 		{
-			char map[MAX_MAPNAME], reason[32]; int startTime;
-			GetMapHistory(0, map, sizeof(map), reason, sizeof(reason), startTime);
-			if ((strcmp(reason, SM_NORMAL_MAPCHANGE) == 0) || (strcmp(reason, SC_SURVIVAL_RESTART_MAPCHANGE) == 0))
+			char szMap[MAX_MAPNAME], szReason[32]; int startTime;
+			GetMapHistory(0, szMap, sizeof(szMap), szReason, sizeof(szReason), startTime);
+		
+			if (StrEqual(szReason, SC_NORMAL_MAPCHANGE) || StrEqual(szReason, SC_SURVIVAL_RESTART_MAPCHANGE))
 			{
 				return false;
 			}
@@ -338,11 +366,11 @@ methodmap CoopManager {
 		g_pConvarHomeMap.GetString(szNextMap, sizeof(szNextMap));
 		if(szNextMap[0] != '\0')
 		{
-			ForceChangeLevel(szNextMap, SC_FINISHED_HOMEMAP_MAPCHANGE);
+			CoopManager.EndMap(szNextMap, SC_FINISHED_HOMEMAP_MAPCHANGE);
 		}
 		else if (GetNextMap(szNextMap, sizeof(szNextMap)))
 		{
-			ForceChangeLevel(szNextMap, SC_FINISHED_NEXTMAP_MAPCHANGE);
+			CoopManager.EndMap(szNextMap, SC_FINISHED_NEXTMAP_MAPCHANGE);
 		}
 		else
 		{
@@ -351,6 +379,18 @@ methodmap CoopManager {
 		}
 	}
 	
+	public static void EndMap(const char[] szNextMap, const char[] szReason)
+	{
+		if (StrEqual(szReason, SC_NORMAL_MAPCHANGE))
+		{
+			if(EquipmentManager.Enabled())
+			{
+				EquipmentManager.SavePlayerEquipment();
+			}
+		}
+		ForceChangeLevel(szNextMap, szReason);
+	}
+
 	public static void EnableFeature(SourceCoopFeature iFeatureBits)
 	{
 		data.m_iEnabledFeatures |= view_as<int>(iFeatureBits);
@@ -428,7 +468,11 @@ public Action ChangeLevelTimerCallback(Handle pTimer)
 {
 	if(!data.m_iTicksToEnd--)
 	{
-		data.m_pChangeLevelMgr.End();
+		CChangelevel pChangelevel = data.m_pChangeLevelMgr.GetWinner();
+		char szNextMap[MAX_MAPNAME];
+		pChangelevel.GetMapName(szNextMap, sizeof(szNextMap));
+		pChangelevel.FireOutput("OnChangeLevel");
+		CoopManager.EndMap(szNextMap, SC_NORMAL_MAPCHANGE);
 	}
 	else
 	{
