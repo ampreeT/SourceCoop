@@ -53,18 +53,18 @@ enum struct CCoopSpawnEntry
 			vecPosition = this.m_vecPosition;
 			vecAngles = this.m_vecAngles;
 		}
-		if(bIsBringAllTP && this.m_fBringAllGraceRadius > 0)
+		if (bIsBringAllTP && this.m_fBringAllGraceRadius > 0)
 		{
 			float vecPlayerPos[3]; pPlayer.GetAbsOrigin(vecPlayerPos);
-			if(GetVectorDistance(vecPosition, vecPlayerPos) <= this.m_fBringAllGraceRadius)
+			if (GetVectorDistance(vecPosition, vecPlayerPos) <= this.m_fBringAllGraceRadius)
 			{
 				return false;
 			}
 		}
 		CanTeleportResult res;
-		if((res = CanTeleportPlayer(pPlayer, vecPosition)) || bForceTeleport)
+		if ((res = CanTeleportPlayer(pPlayer, vecPosition)) || bForceTeleport)
 		{
-			if(res == CAN_TP_MUSTDUCK)
+			if (res == CAN_TP_MUSTDUCK)
 			{
 				pPlayer.StartDucking();
 			}
@@ -81,15 +81,15 @@ enum struct CCoopSpawnEntry
 	bool ActivatePre(CBasePlayer pActivator)
 	{
 		bool bChanged;
-		if(!this.m_pFollowEnt.IsValid())
+		if (!this.m_pFollowEnt.IsValid())
 		{
-			if(!this.m_bHasPosition)
+			if (!this.m_bHasPosition)
 			{
 				pActivator.GetAbsOrigin(this.m_vecPosition);
 				this.m_bHasPosition = true;
 				bChanged = true;
 			}
-			if(!this.m_bHasAngles)
+			if (!this.m_bHasAngles)
 			{
 				pActivator.GetAbsAngles(this.m_vecAngles);
 				this.m_bHasAngles = true;
@@ -99,9 +99,31 @@ enum struct CCoopSpawnEntry
 		return bChanged;
 	}
 	
-	void ActivatePost()
+	void ActivatePost(bool bIntermediate)
 	{
-		if(this.m_bBringAllPlayers)
+		if (this.m_bHasPortal)
+		{
+			CBaseEntity pParticle = CBaseEntity(CreateEntityByName("info_particle_system"));
+			if (pParticle.IsValid())
+			{
+				pParticle.SetKeyValueStr("effect_name", "teleport_lambda_entrance");
+				pParticle.SetKeyValueStr("start_active", "1");
+				#define PORTAL_TOUCH_SIZE 16.0
+				float mins[3] = {-PORTAL_TOUCH_SIZE, -PORTAL_TOUCH_SIZE, -PORTAL_TOUCH_SIZE};
+				float maxs[3] = {PORTAL_TOUCH_SIZE, PORTAL_TOUCH_SIZE, PORTAL_TOUCH_SIZE};
+				pParticle.SetMins(mins);
+				pParticle.SetMaxs(maxs);
+				pParticle.Teleport(this.m_vecPortalPosition);
+				pParticle.Spawn();
+				pParticle.Activate();
+				pParticle.SetSolidType(SOLID_BBOX);
+				pParticle.SetSolidFlags(FSOLID_TRIGGER);
+				pParticle.SetCollisionGroup(COLLISION_GROUP_DEBRIS_TRIGGER);
+				SDKHook(pParticle.GetEntIndex(), SDKHook_StartTouchPost, Hook_TouchPortal);
+			}
+		}
+		
+		if (!bIntermediate && this.m_bBringAllPlayers)
 		{
 			SetHudTextParams(-1.0, 0.9, 1.0, 200, 200, 200, 255, 0, 1.0, 1.0, 1.0);
 			for (int i = 1; i <= MaxClients; i++)
@@ -109,7 +131,7 @@ enum struct CCoopSpawnEntry
 				CBasePlayer pPlayer = CBasePlayer(i);
 				if(pPlayer.IsValid() && pPlayer.IsAlive())
 				{
-					if(this.TeleportPlayer(pPlayer, true, true))
+					if (this.TeleportPlayer(pPlayer, true, true))
 					{
 						pPlayer.PlayGameSound(SND_BRINGALL);
 						ShowHudText(i, 1, "Checkpoint reached");
@@ -139,19 +161,63 @@ enum struct CCoopEquipment
 	void Initialize()
 	{
 		this.m_pWeaponList = new Array_t(CreateArray(sizeof(CCoopWeaponEntry)));
+		this.Clear();
 	}
+
 	void Clear()
 	{
 		this.m_pWeaponList.Clear();
 		this.m_iHealth = -1;
 		this.m_iArmor = -1;
+		this.m_szActiveWeapon = "";
 		
 		for (int i = 0; i < MAX_AMMO_TYPES; i++)
 		{
 			this.m_iAmmoCount[i] = -1;
 		}
+	}
+
+	void Close()
+	{
+		CloseHandle(this.m_pWeaponList);
+	}
+
+	void Equip(CBasePlayer pPlayer)
+	{
+		if (this.m_iHealth > 0)
+		{
+			pPlayer.SetHealth(this.m_iHealth);
+		}
+
+		if (this.m_iArmor >= 0)
+		{
+			pPlayer.SetArmor(this.m_iArmor);	
+		}
 		
-		strcopy(this.m_szActiveWeapon, MAX_CLASSNAME, "");
+		for (int i = 0; i < MAX_AMMO_TYPES; i++)
+		{
+			if (this.m_iAmmoCount[i] >= 0)
+				pPlayer.SetAmmoFromIndex(i, this.m_iAmmoCount[i]);
+		}
+		for (int i = 0; i < this.m_pWeaponList.Length; i++)
+		{
+			CCoopWeaponEntry pWeaponEntry;
+			if (this.m_pWeaponList.GetArray(i, pWeaponEntry, sizeof(pWeaponEntry)))
+			{
+				if (StrContains(pWeaponEntry.m_szClassname, "weapon_", false) == 0)
+				{
+					CBaseCombatWeapon pWeapon = pPlayer.GiveWeapon(pWeaponEntry.m_szClassname);
+					if (pWeapon.GetPrimaryAmmoType() != -1)
+					{
+						pWeapon.SetPrimaryAmmo(pWeaponEntry.m_iPrimaryAmmo);
+					}
+				}
+				else
+				{
+					pPlayer.GiveItem(pWeaponEntry.m_szClassname)
+				}
+			}
+		}
 	}
 }
 
@@ -163,13 +229,6 @@ enum struct CCoopSpawn
 	bool m_bStrictOrder;
 	bool m_bRespawnOnLogicAutosave;
 	
-	void Clear()
-	{
-		this.m_iCurrentCheckpoint = -1;
-		this.m_pCheckpointList.Clear();
-		this.m_pDefaultEquipment.Clear();
-	}
-	
 	void Initialize()
 	{
 		PrecacheScriptSound(SND_BRINGALL);
@@ -178,9 +237,16 @@ enum struct CCoopSpawn
 		this.m_pDefaultEquipment.Initialize();
 	}
 	
+	void Clear()
+	{
+		this.m_iCurrentCheckpoint = -1;
+		this.m_pCheckpointList.Clear();
+		this.m_pDefaultEquipment.Clear();
+	}
+	
 	bool GetCheckpointByIndex(int iIndex, CCoopSpawnEntry pCheckpoint)
 	{
-		if(0 <= iIndex < this.m_pCheckpointList.Length)
+		if (0 <= iIndex < this.m_pCheckpointList.Length)
 		{
 			this.m_pCheckpointList.GetArray(iIndex, pCheckpoint);
 			return true;
@@ -239,7 +305,7 @@ enum struct CCoopSpawn
 			bHasTrigger = true;
 		}
 		
-		if(!bHasTrigger)
+		if (!bHasTrigger)
 		{
 			this.ActivateCheckpoint(iIndex);
 		}
@@ -247,26 +313,25 @@ enum struct CCoopSpawn
 	
 	bool ActivateCheckpoint(int iIndex, CBasePlayer pActivator = view_as<CBasePlayer>(-1))
 	{
-		if(this.m_iCurrentCheckpoint < iIndex < this.m_pCheckpointList.Length)
+		if (this.m_iCurrentCheckpoint < iIndex < this.m_pCheckpointList.Length)
 		{
 			CCoopSpawnEntry pCheckpoint;
 			
-			if(this.m_bStrictOrder)
+			if (this.m_bStrictOrder)
 			{
 				for (int i = this.m_iCurrentCheckpoint+1; ; i++)
 				{
 					this.m_pCheckpointList.GetArray(i, pCheckpoint);
 					
-					if(pCheckpoint.m_bHasPortal)
+					if (i == iIndex)
 					{
-						this.CreatePortal(pCheckpoint.m_vecPortalPosition);
-					}
-					
-					if(i == iIndex)
-					{
+						pCheckpoint.ActivatePost(false);
 						this.m_iCurrentCheckpoint = i;
-						pCheckpoint.ActivatePost();
 						return true;
+					}
+					else
+					{
+						pCheckpoint.ActivatePost(true);
 					}
 				}
 			}
@@ -275,12 +340,8 @@ enum struct CCoopSpawn
 				this.m_iCurrentCheckpoint++;
 				this.m_pCheckpointList.SwapAt(iIndex, this.m_iCurrentCheckpoint);
 				this.m_pCheckpointList.GetArray(this.m_iCurrentCheckpoint, pCheckpoint);
-				
-				if(pCheckpoint.m_bHasPortal)
-				{
-					this.CreatePortal(pCheckpoint.m_vecPortalPosition);
-				}
-				pCheckpoint.ActivatePost();
+
+				pCheckpoint.ActivatePost(false);
 				return true;
 			}
 		}
@@ -297,22 +358,14 @@ enum struct CCoopSpawn
 	
 	void SpawnPlayerEquipment(CBasePlayer pPlayer)
 	{
-		if(this.m_pDefaultEquipment.m_iHealth > 0)
-			pPlayer.SetHealth(this.m_pDefaultEquipment.m_iHealth);
-		if(this.m_pDefaultEquipment.m_iArmor > 0)
-			pPlayer.SetArmor(this.m_pDefaultEquipment.m_iArmor);
-		for (int i = 0; i < MAX_AMMO_TYPES; i++)
+		CCoopEquipment pSavedEquipment;
+		if (this.m_iCurrentCheckpoint == 0 && EquipmentManager.Enabled() && EquipmentManager.GetEquipment(pPlayer, pSavedEquipment))
 		{
-			if(this.m_pDefaultEquipment.m_iAmmoCount[i] >= 0)
-				pPlayer.SetAmmoFromIndex(i, this.m_pDefaultEquipment.m_iAmmoCount[i]);
+			pSavedEquipment.Equip(pPlayer);
 		}
-		for (int i = 0; i < this.m_pDefaultEquipment.m_pWeaponList.Length; i++)
+		else
 		{
-			CCoopWeaponEntry pWeaponEntry;
-			if (this.m_pDefaultEquipment.m_pWeaponList.GetArray(i, pWeaponEntry, sizeof(pWeaponEntry)))
-			{
-				pPlayer.GiveItem(pWeaponEntry.m_szClassname);
-			}
+			this.m_pDefaultEquipment.Equip(pPlayer);
 		}
 	}
 	
@@ -323,35 +376,13 @@ enum struct CCoopSpawn
 		{
 			pCheckpoint.TeleportPlayer(pPlayer, true);
 		}
-		if(bSpawnEquipment)
+		if (bSpawnEquipment)
 		{
 			if (g_Engine != Engine_BlackMesa) // bm uses game_player_equip
 			{
 				this.StripPlayer(pPlayer);
 			}
 			this.SpawnPlayerEquipment(pPlayer);
-		}
-	}
-	
-	void CreatePortal(const float vecPosition[3])
-	{
-		CBaseEntity pParticle = CBaseEntity(CreateEntityByName("info_particle_system"));
-		if (pParticle.IsValid())
-		{
-			pParticle.SetKeyValueStr("effect_name", "teleport_lambda_entrance");
-			pParticle.SetKeyValueStr("start_active", "1");
-			#define PORTAL_TOUCH_SIZE 16.0
-			float mins[3] = {-PORTAL_TOUCH_SIZE, -PORTAL_TOUCH_SIZE, -PORTAL_TOUCH_SIZE};
-			float maxs[3] = {PORTAL_TOUCH_SIZE, PORTAL_TOUCH_SIZE, PORTAL_TOUCH_SIZE};
-			pParticle.SetMins(mins);
-			pParticle.SetMaxs(maxs);
-			pParticle.Teleport(vecPosition);
-			pParticle.Spawn();
-			pParticle.Activate();
-			pParticle.SetSolidType(SOLID_BBOX);
-			pParticle.SetSolidFlags(FSOLID_TRIGGER);
-			pParticle.SetCollisionGroup(COLLISION_GROUP_DEBRIS_TRIGGER);
-			SDKHook(pParticle.GetEntIndex(), SDKHook_StartTouchPost, Hook_TouchPortal);
 		}
 	}
 	
@@ -384,11 +415,11 @@ enum struct CCoopSpawn
 
 	void ParseCheckpoint(KeyValues kv)
 	{
-		if(view_as<bool>(kv.GetNum("use_map_spawnpoint")))
+		if (view_as<bool>(kv.GetNum("use_map_spawnpoint")))
 		{
 			this.AddSpawnPointFromMap();
 		}
-		if(view_as<bool>(kv.GetNum("use_map_autosave")))
+		if (view_as<bool>(kv.GetNum("use_map_autosave")))
 		{
 			this.m_bStrictOrder = false;
 			this.AddCheckpointsFromMap();
@@ -511,7 +542,7 @@ enum struct CCoopSpawn
 		if (StringToIntEx(szValue, iHammerID))
 		{
 			CBaseEntity pEntity = CBaseEntity(FindEntityByHammerID(iHammerID));
-			if(pEntity.IsValid())
+			if (pEntity.IsValid())
 			{
 				return pEntity;
 			}
@@ -675,7 +706,7 @@ enum struct CCoopSpawn
 	
 	bool AddSpawnItem(const char[] szItem, bool bAllowDuplicates = false)
 	{
-		if(!bAllowDuplicates)
+		if (!bAllowDuplicates)
 		{
 			for (int i = 0; i < this.m_pDefaultEquipment.m_pWeaponList.Length; i++)
 			{
@@ -683,7 +714,7 @@ enum struct CCoopSpawn
 				if (this.m_pDefaultEquipment.m_pWeaponList.GetArray(i, pWeaponEntry, sizeof(pWeaponEntry)))
 				{
 					// does basic checking of item_weapon vs weapon_ strings
-					if(StrContains(pWeaponEntry.m_szClassname, szItem, false) != -1 || StrContains(szItem, pWeaponEntry.m_szClassname, false) != -1)
+					if (StrContains(pWeaponEntry.m_szClassname, szItem, false) != -1 || StrContains(szItem, pWeaponEntry.m_szClassname, false) != -1)
 					{
 						return false;
 					}
@@ -710,7 +741,7 @@ public void Hook_OutputCheckpoint(const char[] szName, int iCaller, int iActivat
 	
 	while ((iIndex = g_SpawnSystem.FindCheckpointByOutput(pCaller, szName, pCheckpoint, iIndex)) != -1)
 	{
-		if(pActivator.IsClassPlayer() && pCheckpoint.ActivatePre(view_as<CBasePlayer>(pActivator)))
+		if (pActivator.IsClassPlayer() && pCheckpoint.ActivatePre(view_as<CBasePlayer>(pActivator)))
 		{
 			g_SpawnSystem.m_pCheckpointList.SetArray(iIndex, pCheckpoint);
 		}
@@ -733,7 +764,7 @@ public void Hook_TouchCheckpoint(int iEntity, int iOther)
 		
 		while ((iIndex = g_SpawnSystem.FindCheckpointByTouchEnt(pTouched, pCheckpoint, iIndex)) != -1)
 		{
-			if(pCheckpoint.ActivatePre(pActivator))
+			if (pCheckpoint.ActivatePre(pActivator))
 			{
 				g_SpawnSystem.m_pCheckpointList.SetArray(iIndex, pCheckpoint);
 			}
@@ -743,6 +774,7 @@ public void Hook_TouchCheckpoint(int iEntity, int iOther)
 			
 			iIndex++;
 		}
+
 		SDKUnhook(iEntity, SDKHook_StartTouchPost, Hook_TouchCheckpoint);
 	}
 }
