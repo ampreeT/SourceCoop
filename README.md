@@ -11,8 +11,6 @@ __If you are a server operator who is looking to host your own cooperative serve
 - Install a development version of [SourceMod](https://www.sourcemod.net/downloads.php?branch=dev)
 	- Recommended build -> __6851__
 - Install the latest release of SourceCoop from the [releases page](https://github.com/ampreeT/SourceCoop/releases)
-- Move all .vpk files from the 'vpk' folder into 'Black Mesa Dedicated Server/bms/custom/' (Create this folder, if it doesn't exist already)
-- Done!
 
 A step-by-step guide is also available on [Steam](https://steamcommunity.com/sharedfiles/filedetails/?id=2200247356).
 
