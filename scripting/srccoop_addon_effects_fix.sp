@@ -23,8 +23,12 @@ public void OnPluginStart()
 
 public void OnEntityCreated(int entityIndex, const char[] szClassname)
 {
-	if (CBaseEntity(entityIndex).IsClassNPC())
+	CBaseEntity entity = CBaseEntity(entityIndex);
+
+	if (entity.IsClassNPC())
+	{
 		SDKHook(entityIndex, SDKHook_OnTakeDamage, DispatchEffects);
+	}
 }
 
 public Action DispatchEffects(int victim, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3])
@@ -82,7 +86,7 @@ void CreateDamageEffect(float position[3], CBaseEntity parent)
 /*
  * Particle generator
  */
-void CreateParticleEffect(float position[3], CBaseEntity parent, char[] effectName, float lengthTime = 5.0)
+void CreateParticleSystem(float position[3], CBaseEntity parent, char[] effectName, float lengthTime = 5.0)
 {
 	CBaseEntity particle = CBaseEntity(CreateEntityByName("info_particle_system"));
 
@@ -98,25 +102,8 @@ void CreateParticleEffect(float position[3], CBaseEntity parent, char[] effectNa
 		particle.Activate();
 
 		particle.AcceptInputStr("start");
-		CreateTimer(lengthTime, Callback_DeleteParticleSystem, particle);
+		particle.KillAfterTime(lengthTime);
 	}
-}
-
-/*
- * Particle system deletion callback
- */
-public Action Callback_DeleteParticleSystem(Handle timer, CBaseEntity particle)
-{
-	if (particle.IsValid())
-	{
-		char className[64];
-		particle.GetClassname(className, sizeof(className));
-
-		if (StrEqual(className, "info_particle_system", false))
-			RemoveEdict(particle.GetEntIndex());
-	}
-
-	return Plugin_Continue;
 }
 
 /*
@@ -124,8 +111,8 @@ public Action Callback_DeleteParticleSystem(Handle timer, CBaseEntity particle)
  */
 void HandleEffects_Metal(float position[3], CBaseEntity parent)
 {
-	CreateParticleEffect(position, parent, "impact_sparks");
-	CreateParticleEffect(position, parent, "impact_spark_burst");
+	CreateParticleSystem(position, parent, "impact_sparks");
+	CreateParticleSystem(position, parent, "impact_spark_burst");
 }
 
 /*
@@ -135,16 +122,16 @@ void HandleEffects_RedBlood(float position[3], CBaseEntity parent)
 {
 	if (GetRandomInt(1, 2) == 1)
 	{
-		CreateParticleEffect(position, parent, "blood_impact_red_01");
-		CreateParticleEffect(position, parent, "blood_impact_red_01_chunk");
-		CreateParticleEffect(position, parent, "blood_impact_red_01_droplets");
-		CreateParticleEffect(position, parent, "blood_impact_red_01_smalldroplets");
+		CreateParticleSystem(position, parent, "blood_impact_red_01");
+		CreateParticleSystem(position, parent, "blood_impact_red_01_chunk");
+		CreateParticleSystem(position, parent, "blood_impact_red_01_droplets");
+		CreateParticleSystem(position, parent, "blood_impact_red_01_smalldroplets");
 	}
 	else
 	{
-		CreateParticleEffect(position, parent, "blood_impact_red_02");
-		CreateParticleEffect(position, parent, "blood_impact_red_02_droplets");
-		CreateParticleEffect(position, parent, "blood_impact_red_02_mist");
+		CreateParticleSystem(position, parent, "blood_impact_red_02");
+		CreateParticleSystem(position, parent, "blood_impact_red_02_droplets");
+		CreateParticleSystem(position, parent, "blood_impact_red_02_mist");
 	}
 }
 
@@ -153,11 +140,11 @@ void HandleEffects_RedBlood(float position[3], CBaseEntity parent)
  */
 void HandleEffects_YellowBlood(float position[3], CBaseEntity parent)
 {
-	CreateParticleEffect(position, parent, "blood_impact_yellow_01");
-	CreateParticleEffect(position, parent, "blood_impact_yellow_01_chunk");
-	CreateParticleEffect(position, parent, "blood_impact_yellow_01_goop");
-	CreateParticleEffect(position, parent, "blood_impact_yellow_01_mist");
-	CreateParticleEffect(position, parent, "blood_impact_yellow_01_smalldroplets");
+	CreateParticleSystem(position, parent, "blood_impact_yellow_01");
+	CreateParticleSystem(position, parent, "blood_impact_yellow_01_chunk");
+	CreateParticleSystem(position, parent, "blood_impact_yellow_01_goop");
+	CreateParticleSystem(position, parent, "blood_impact_yellow_01_mist");
+	CreateParticleSystem(position, parent, "blood_impact_yellow_01_smalldroplets");
 }
 
 /*
@@ -165,15 +152,15 @@ void HandleEffects_YellowBlood(float position[3], CBaseEntity parent)
  */
 void HandleEffects_GreenBlood(float position[3], CBaseEntity parent)
 {
-	CreateParticleEffect(position, parent, "blood_impact_green_01");
-	CreateParticleEffect(position, parent, "blood_impact_green_01_chunk");
-	CreateParticleEffect(position, parent, "blood_impact_green_01_droplets");
-	CreateParticleEffect(position, parent, "blood_impact_green_01_smalldroplets");
+	CreateParticleSystem(position, parent, "blood_impact_green_01");
+	CreateParticleSystem(position, parent, "blood_impact_green_01_chunk");
+	CreateParticleSystem(position, parent, "blood_impact_green_01_droplets");
+	CreateParticleSystem(position, parent, "blood_impact_green_01_smalldroplets");
 
 	if (GetRandomInt(1, 4) == 1)
-		CreateParticleEffect(position, parent, "blood_trail_green_01", 0.25);
+		CreateParticleSystem(position, parent, "blood_trail_green_01", 0.25);
 	else if (GetRandomInt(1, 4) == 1)
-		CreateParticleEffect(position, parent, "blood_trail_green_02", 0.25);
+		CreateParticleSystem(position, parent, "blood_trail_green_02", 0.25);
 }
 
 /*
@@ -183,10 +170,10 @@ void HandleEffects_SynthBlood(float position[3], CBaseEntity parent)
 {
 	int armourValue = GetEntProp(parent.GetEntIndex(), Prop_Data, "m_ArmorValue");
 
-	CreateParticleEffect(position, parent, "blood_impact_synth_01");
-	CreateParticleEffect(position, parent, "blood_impact_synth_01_droplets");
-	CreateParticleEffect(position, parent, "blood_impact_synth_01_spurt");
+	CreateParticleSystem(position, parent, "blood_impact_synth_01");
+	CreateParticleSystem(position, parent, "blood_impact_synth_01_droplets");
+	CreateParticleSystem(position, parent, "blood_impact_synth_01_spurt");
 
 	if (armourValue > 0)
-		CreateParticleEffect(position, parent, "blood_impact_synth_01_armor");
+		CreateParticleSystem(position, parent, "blood_impact_synth_01_armor");
 }

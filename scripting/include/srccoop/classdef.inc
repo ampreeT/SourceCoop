@@ -219,6 +219,14 @@ methodmap CBaseEntity
 	{
 		return this.AcceptInputStr("Kill");
 	}
+	public bool KillAfterTime(float time)
+	{
+		char szBuffer[64];
+		Format(szBuffer, sizeof szBuffer, "!self,kill,,%i,-1", time);
+
+		this.SetKeyValueStr("OnUser1", szBuffer);
+		return this.AcceptInput("FireUser1");
+	}
 	public int GetSpawnFlags()
 	{
 		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_spawnflags");
