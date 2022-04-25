@@ -39,7 +39,7 @@ enum struct CoopManagerData
 	int m_iSecondsToStart;
 	bool m_bGetReadyTimer;
 	Handle m_pStartTimer;
-	Array_t m_pDelayedOutputs;
+	ArrayList m_pDelayedOutputs;
 	int m_iClientChangeLvlIndicies[MAXPLAYERS+1];
 	Handle m_pChangeLevelTimer;
 	int m_iTicksToEnd;
@@ -55,7 +55,7 @@ methodmap CoopManager {
 
 	public static void Initialize()
 	{
-		data.m_pDelayedOutputs = new Array_t(CreateArray(sizeof(FireOutputData)));
+		data.m_pDelayedOutputs = new ArrayList(sizeof(FireOutputData));
 		data.m_pChangeLevelMgr = new ChangeLevelManager();
 		SurvivalManager.Initialize();
 	}

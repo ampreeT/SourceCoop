@@ -54,15 +54,6 @@ public MRESReturn Hook_IsMultiplayer(Handle hReturn)
 }
 
 //------------------------------------------------------
-// CMultiplayRules::IsDeathmatch
-//------------------------------------------------------
-//public MRESReturn Hook_IsDeathmatch(Handle hReturn)
-//{
-//	DHookSetReturn(hReturn, g_bIsDeathmatchOverride);
-//	return MRES_Supercede;
-//}
-
-//------------------------------------------------------
 // CNPC_Human_Scientist - npc_human_scientist*
 // crash fix when getting scared
 //------------------------------------------------------
@@ -92,6 +83,37 @@ public void Hook_BaseNPCSpawnPost(int iEntIndex)
 	// reduces occurance of random, elusive, linux only crash
 	// also assists in fixing the client crash in bm_c2a5g related to lav npc
 	pEntity.SetEdictFlags(pEntity.GetEdictFlags() | FL_EDICT_ALWAYS | FL_EDICT_CHANGED);
+}
+
+//------------------------------------------------------
+// CAI_BaseNPC - KeyValue(char)
+// Lets mappers use custom npc models
+// (Using keyvalues proves most reliable against BM overriding models with its character manifest file before Spawn())
+//------------------------------------------------------
+public MRESReturn Hook_BaseNPCKeyValuePost(int _this, Handle hReturn, Handle hParams)
+{
+	CBaseEntity pEntity = CBaseEntity(_this);
+	
+	static char szKey[MAX_FORMAT];
+	static char szVal[MAX_VALUE];
+	DHookGetParamString(hParams, 1, szKey, sizeof(szKey));
+	if (StrEqual(szKey, "model"))
+	{
+		DHookGetParamString(hParams, 2, szVal, sizeof(szVal));
+		int iModelIndex = PrecacheModel(szVal);
+		if (iModelIndex)
+		{
+			pEntity.SetModel(szVal);
+			pEntity.SetModelIndex(iModelIndex);
+			DHookEntity(hkSetModel, false, _this, _, BaseNPCSetModelBlock);
+		}
+	}
+	return MRES_Ignored;
+}
+
+public MRESReturn BaseNPCSetModelBlock(int _this, Handle hParams)
+{
+	return MRES_Supercede;
 }
 
 //------------------------------------------------------
@@ -641,7 +663,7 @@ void InitTrigger(CBaseEntity pTrigger)
 	pTrigger.SetSolidFlags(iSolidFlags | FSOLID_NOT_SOLID);
 	pTrigger.SetMoveType(MOVETYPE_NONE);
 	static char szBuffer[PLATFORM_MAX_PATH];
-	pTrigger.GetModel(szBuffer, sizeof(szBuffer));
+	pTrigger.GetModelName(szBuffer, sizeof(szBuffer));
 	pTrigger.SetModel(szBuffer); // initialize the model from name
 	pTrigger.SetEffects(pTrigger.GetEffects() | EF_NODRAW);
 }

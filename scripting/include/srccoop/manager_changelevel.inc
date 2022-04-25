@@ -13,11 +13,11 @@ enum struct ChangeLevelVoteLump
 	int votes;
 }
 
-methodmap ChangeLevelManager < Array_t
+methodmap ChangeLevelManager < ArrayList
 {
 	public ChangeLevelManager()
 	{
-		return view_as<ChangeLevelManager>(CreateArray(sizeof(ChangeLevelVoteLump)));
+		return view_as<ChangeLevelManager>(new ArrayList(sizeof(ChangeLevelVoteLump)));
 	}
 
 	public void UpdateVotes(int[] iClientVoteIndicies)

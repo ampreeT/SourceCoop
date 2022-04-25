@@ -64,9 +64,9 @@ enum struct CEntityOutputLump
 	}
 }
 
-methodmap CEntityInfoLump < Array_t
+methodmap CEntityInfoLump < ArrayList
 {
-	public CEntityInfoLump(Handle pHandle = null)
+	public CEntityInfoLump(ArrayList pHandle)
 	{
 		return view_as<CEntityInfoLump>(pHandle);
 	}
@@ -197,9 +197,9 @@ methodmap CEntityInfoLump < Array_t
 	}
 }
 
-methodmap CEntityListLump < Array_t
+methodmap CEntityListLump < ArrayList
 {
-	public CEntityListLump(Handle pHandle = null)
+	public CEntityListLump(ArrayList pHandle)
 	{
 		return view_as<CEntityListLump>(pHandle);
 	}
@@ -209,10 +209,7 @@ methodmap CEntityListLump < Array_t
 		for (int i = 0; i < this.Length; i++)
 		{
 			CEntityInfoLump pEntityInfo = this.Get(i);
-			if (pEntityInfo.IsValid())
-			{
-				pEntityInfo.Close();
-			}
+			delete pEntityInfo;
 		}
 		ClearArray(this);
 	}
@@ -224,9 +221,9 @@ enum struct CEntityOutputHook
 	char m_szOutputName[MAX_VALUE];
 }
 
-methodmap COutputHookLump < Array_t
+methodmap COutputHookLump < ArrayList
 {
-	public COutputHookLump(Handle pHandle = null)
+	public COutputHookLump(ArrayList pHandle)
 	{
 		return view_as<COutputHookLump>(pHandle);
 	}
@@ -264,9 +261,9 @@ methodmap COutputHookLump < Array_t
 	}
 }
 
-methodmap CNextMapLump < Array_t
+methodmap CNextMapLump < ArrayList
 {
-	public CNextMapLump(Handle pHandle = null)
+	public CNextMapLump(ArrayList pHandle)
 	{
 		return view_as<CNextMapLump>(pHandle);
 	}
@@ -289,7 +286,7 @@ enum struct CGlobalLevelLump
 {
 	CEntityListLump m_pEntityList;
 	CNextMapLump m_pNextMapList;
-	Array_t m_pModifiedCvarList;
+	ArrayList m_pModifiedCvarList;
 	COutputHookLump m_pOutputHookList;
 	IntroType m_iIntroType;
 	StringMap m_EdtDefinesMap;
@@ -298,7 +295,7 @@ enum struct CGlobalLevelLump
 	{
 		this.m_pEntityList = new CEntityListLump(CreateArray(sizeof(CEntityInfoLump)));
 		this.m_pNextMapList = new CNextMapLump(CreateArray(MAX_MAPNAME));
-		this.m_pModifiedCvarList = new Array_t(CreateArray());
+		this.m_pModifiedCvarList = CreateArray();
 		this.m_pOutputHookList = new COutputHookLump(CreateArray(sizeof(CEntityOutputHook)));
 		this.m_EdtDefinesMap = new StringMap();
 	}
@@ -316,7 +313,7 @@ enum struct CGlobalLevelLump
 		this.m_pEntityList.Clear();
 		float flStartTime = GetEngineTime();
 		
-		CEntityInfoLump pEntityInfo = new CEntityInfoLump();
+		CEntityInfoLump pEntityInfo;
 		CEntityKeyLump pEntityInfoKey;
 		bool bParsingValue;
 		int n;
@@ -347,18 +344,18 @@ enum struct CGlobalLevelLump
 			}
 			else if (szMapEntities[i] == '{')
 			{
-				if (pEntityInfo.IsValid())
+				if (pEntityInfo)
 					ThrowError("Found '{' when expecting '}'");
 				
 				pEntityInfo = new CEntityInfoLump(CreateArray(sizeof(CEntityKeyLump)));
 			}
 			else if (szMapEntities[i] == '}')
 			{
-				if (!pEntityInfo.IsValid())
+				if (!pEntityInfo)
 					ThrowError("Did not have valid CEntityInfoLump when finding '}'");
 				
 				this.m_pEntityList.Push(pEntityInfo);
-				pEntityInfo = new CEntityInfoLump();
+				pEntityInfo = null;
 			}
 		}
 		
@@ -373,7 +370,7 @@ enum struct CGlobalLevelLump
 		for (int i = 0; i < this.m_pEntityList.Length; i++)
 		{
 			CEntityInfoLump pEntityInfo = this.m_pEntityList.Get(i);
-			if (!pEntityInfo.IsValid()) // should be never invalid
+			if (!pEntityInfo) // should be never invalid
 				return -1;
 			if (pEntityInfo.Length <= 0) // never write if it has nothing in it to begin with
 				continue;
@@ -450,11 +447,11 @@ enum struct CGlobalLevelLump
 						{
 							this.ParseFeatures(kv);
 						}
-						else if (strcmp(szType, "console", false) == 0  || StrContains(szType, "console_base") == 0)
+						else if (strcmp(szType, "console", false) == 0)
 						{
 							this.ParseConsole(kv);
 						}
-						else if (strcmp(szType, "entity") == 0 || StrContains(szType, "entity_base") == 0)
+						else if (strcmp(szType, "entity", false) == 0 || StrContains(szType, "entity_base", false) == 0)
 						{
 							LogDebug("Processing \"%s\" block for entity lump modifications", szType);
 							this.ParseEntityEdits(kv);
@@ -1033,7 +1030,7 @@ enum struct CGlobalLevelLump
 						if(pMatchOutputLump.Matches(pEntityOutputLump, bFoundTarget, bFoundInput, bFoundParameter, bFoundDelay, bFoundTTF))
 						{
 							// skip any outputs that dont match the target entity
-							if(pTargetEvaluatedList.IsValid())
+							if(pTargetEvaluatedList)
 							{
 								bool bFoundOne;
 								for (int k = 0; k < pTargetEvaluatedList.Length; k++)
@@ -1114,9 +1111,9 @@ enum struct CGlobalLevelLump
 		}
 	}
 
-	Array_t GetOutputHooksForEntity(CBaseEntity pEntity)
+	ArrayList GetOutputHooksForEntity(CBaseEntity pEntity)
 	{
-		Array_t pResolvedOutputHookList = new Array_t(CreateArray(sizeof(CEntityOutputHook)));
+		ArrayList pResolvedOutputHookList = new ArrayList(sizeof(CEntityOutputHook));
 		for (int i = 0; i < this.m_pOutputHookList.Length; i++)
 		{
 			CEntityOutputHook pOutputHook; this.m_pOutputHookList.GetArray(i, pOutputHook);
@@ -1153,7 +1150,7 @@ public Action Hook_FixupBrushModels(int iEntIndex)
 	
 	CBaseEntity pThis = CBaseEntity(iEntIndex);
 	static char szModelName[PLATFORM_MAX_PATH];
-	pThis.GetModel(szModelName, sizeof(szModelName));
+	pThis.GetModelName(szModelName, sizeof(szModelName));
 	if(strncmp(szModelName, BRUSH_FIXUP_IDENT, BRUSH_FIXUP_IDENT_LEN) == 0)
 	{
 		if(PrecacheModel(BRUSH_FIXUP_MDL))

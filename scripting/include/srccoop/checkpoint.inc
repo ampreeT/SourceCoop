@@ -152,7 +152,7 @@ enum struct CCoopWeaponEntry
 
 enum struct CCoopEquipment
 {
-	Array_t m_pWeaponList;
+	ArrayList m_pWeaponList;
 	int m_iHealth;
 	int m_iArmor;
 	int m_iAmmoCount[MAX_AMMO_TYPES];
@@ -160,7 +160,7 @@ enum struct CCoopEquipment
 	
 	void Initialize()
 	{
-		this.m_pWeaponList = new Array_t(CreateArray(sizeof(CCoopWeaponEntry)));
+		this.m_pWeaponList = new ArrayList(sizeof(CCoopWeaponEntry));
 		this.Clear();
 	}
 
@@ -223,7 +223,7 @@ enum struct CCoopEquipment
 
 enum struct CCoopSpawn
 {
-	Array_t m_pCheckpointList;
+	ArrayList m_pCheckpointList;
 	int m_iCurrentCheckpoint;
 	CCoopEquipment m_pDefaultEquipment;
 	bool m_bStrictOrder;
@@ -233,7 +233,7 @@ enum struct CCoopSpawn
 	{
 		PrecacheScriptSound(SND_BRINGALL);
 		PrecacheScriptSound(SND_PORTAL);
-		this.m_pCheckpointList = new Array_t(CreateArray(sizeof(CCoopSpawnEntry)));
+		this.m_pCheckpointList = new ArrayList(sizeof(CCoopSpawnEntry));
 		this.m_pDefaultEquipment.Initialize();
 	}
 	

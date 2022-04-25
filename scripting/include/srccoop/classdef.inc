@@ -369,7 +369,7 @@ methodmap CBaseEntity
 	}
 	public void SetCollisionGroup(const int iCollisionGroup)
 	{
-		SetEntProp(this.GetEntIndex(), Prop_Data, "m_CollisionGroup", iCollisionGroup);
+		SetEntityCollisionGroup(this.GetEntIndex(), iCollisionGroup);
 	}
 	public int GetSolidType()
 	{
@@ -408,13 +408,13 @@ methodmap CBaseEntity
 	{
 		SetEntPropVector(this.GetEntIndex(), Prop_Data, "m_vecViewOffset", vec);
 	}
-	public bool GetModel(char[] szBuffer, const int iMaxLength)
-	{
-		return view_as<bool>(GetEntPropString(this.GetEntIndex(), Prop_Data, "m_ModelName", szBuffer, iMaxLength));
-	}
 	public void SetModel(const char[] szModel)
 	{
 		SetEntityModel(this.GetEntIndex(), szModel);
+	}
+	public bool GetModelName(char[] szBuffer, const int iMaxLength)
+	{
+		return view_as<bool>(GetEntPropString(this.GetEntIndex(), Prop_Data, "m_ModelName", szBuffer, iMaxLength));
 	}
 	public void SetModelName(const char[] szModel)
 	{
@@ -529,25 +529,6 @@ enum struct FireOutputData
 	CBaseEntity m_pCaller;
 	CBaseEntity m_pActivator;
 	float m_flDelay;
-}
-
-methodmap Array_t < ArrayList
-{
-	public Array_t(ArrayList pHandle = null)
-	{
-		return view_as<Array_t>(pHandle);
-	}
-	public bool IsValid()
-	{
-		return this != null;
-	}
-	public void Close()
-	{
-		if (this.IsValid())
-		{
-			CloseHandle(this);
-		}
-	}
 }
 
 methodmap CTraceRay

@@ -388,6 +388,24 @@
 					}
 				}
 			}
+			"CBaseEntity::KeyValue_char"
+			{
+				"offset"	"CBaseEntity::KeyValue_char"
+				"hooktype"	"entity"
+				"return"	"bool"
+				"this"		"entity"
+				"arguments"
+				{
+					"szKeyName"
+					{
+						"type"	"charptr"
+					}
+					"szValue"
+					{
+						"type"	"charptr"
+					}
+				}
+			}
 
 			// Detours:
 
@@ -666,6 +684,11 @@
 			{
 				"windows"	"72"
 				"linux"		"73"
+			}
+			"CBaseEntity::KeyValue_char" // CBaseEntity::KeyValue(char const*, char const*)
+			{
+				"windows"	"34"
+				"linux"		"33"
 			}
 		}
 	}

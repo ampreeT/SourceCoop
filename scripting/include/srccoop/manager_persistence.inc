@@ -49,11 +49,13 @@ methodmap EquipmentManager
 		StringMapSnapshot ss = data.m_smEquipmentMap.Snapshot();
 		for (int i = 0; i < ss.Length; i++)
 		{
-			char[] szKey = new char[ss.KeyBufferSize(i)];
+			int len = ss.KeyBufferSize(i);
+			char[] szKey = new char[len];
+			ss.GetKey(i, szKey, len);
 			EquipmentManager.GetEquipmentSteam(szKey, equipment);
 			equipment.Close();
 		}
-		CloseHandle(ss);
+		ss.Close();
 		data.m_smEquipmentMap.Clear();
 	}
 

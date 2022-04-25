@@ -31,7 +31,6 @@ Handle g_pCreateServerRagdoll;
 // DHooks
 // ----------------------------
 DynamicHook hkFAllowFlashlight;
-//DynamicHook hkIsDeathmatch;
 DynamicHook hkIsMultiplayer;
 DynamicHook hkPlayerSpawn;
 DynamicHook hkRestoreWorld;
@@ -53,12 +52,13 @@ DynamicHook hkRunAI;
 // DynamicHook hkOnTakeDamage;
 DynamicHook hkLevelInit;
 DynamicHook hkEvent_Killed;
+DynamicHook hkKeyValue_char;
 DynamicDetour hkSetSuitUpdate;
 DynamicDetour hkUTIL_GetLocalPlayer;
 DynamicDetour hkResolveNames;
 DynamicDetour hkCanSelectSchedule;
 DynamicDetour hkPickup_ForcePlayerToDropThisObject;
-//DynamicDetour hkSetPlayerAvoidState;
+DynamicDetour hkSetPlayerAvoidState;
 
 // ----------------------------
 // Adresses, Interfaces
@@ -84,9 +84,6 @@ ArrayList g_pPostponedSpawns;
 
 // represents the return value of the IsMultiplayer hook
 bool g_bIsMultiplayerOverride = true;
-
-// represents the return value of the IsDeathmatch hook
-//bool g_bIsDeathmatchOverride = true;
 
 // the entity which UTIL_GetLocalPlayer hook will return the closest player to, alternatively containing the player index itself
 CBaseEntity g_pLocalPlayerEntity = view_as<CBaseEntity>(-1);

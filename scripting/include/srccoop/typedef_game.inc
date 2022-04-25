@@ -53,8 +53,6 @@ enum
 
 #define SF_INFOPLAYERSTART_MASTER 1
 
-#define SF_NORESPAWN ( 1 << 30 )	// if set, item wont respawn in MP
-
 #define SF_AUTO_FIREONCE 0x01
 #define SF_REMOVE_ON_FIRE 0x001 // Relay will remove itself after being triggered.
 
@@ -64,6 +62,10 @@ enum
 #define SF_PLAYER_EQUIP_STRIP_SUIT 4
 
 #define SF_MESSAGE_ALL 0x0002
+
+// Pickupables spawnflags
+#define SF_ITEM_NORESPAWN ( 1 << 30 )	// if set, item wont respawn in MP
+#define SF_ITEM_HARDRESPAWN ( 1 << 2 )	// if set in BM, item respawns at regular interval
 
 // Phys prop spawnflags
 #define SF_PHYSPROP_START_ASLEEP				0x000001

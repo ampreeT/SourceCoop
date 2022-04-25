@@ -2,7 +2,7 @@
 
 #include <srccoop>
 
-#define PLUGIN_VERSION "1.0.4"
+#define PLUGIN_VERSION "1.1.0"
 
 public Plugin myinfo =
 {
@@ -96,7 +96,6 @@ void LoadGameData()
 	{
 		LoadDHookVirtual(pGameConfig, hkFAllowFlashlight, "CMultiplayRules::FAllowFlashlight");
 		LoadDHookVirtual(pGameConfig, hkIsMultiplayer, "CMultiplayRules::IsMultiplayer");
-		// LoadDHookVirtual(pGameConfig, hkIsDeathmatch, "CMultiplayRules::IsDeathmatch");
 		LoadDHookVirtual(pGameConfig, hkRestoreWorld, "CBM_MP_GameRules::RestoreWorld");
 		LoadDHookVirtual(pGameConfig, hkRespawnPlayers, "CBM_MP_GameRules::RespawnPlayers");
 		LoadDHookVirtual(pGameConfig, hkIRelationType, "CBaseCombatCharacter::IRelationType");
@@ -111,16 +110,14 @@ void LoadGameData()
 		LoadDHookVirtual(pGameConfig, hkIchthyosaurIdleSound, "CNPC_Ichthyosaur::IdleSound");
 		LoadDHookVirtual(pGameConfig, hkHandleAnimEvent, "CBaseAnimating::HandleAnimEvent");
 		LoadDHookVirtual(pGameConfig, hkRunAI, "CAI_BaseNPC::RunAI");
-		// LoadDHookVirtual(pGameConfig, hkOnTakeDamage, "CBaseEntity::OnTakeDamage");
 		LoadDHookVirtual(pGameConfig, hkEvent_Killed, "CBaseEntity::Event_Killed");
+		LoadDHookVirtual(pGameConfig, hkKeyValue_char, "CBaseEntity::KeyValue_char");
 		LoadDHookDetour(pGameConfig, hkUTIL_GetLocalPlayer, "UTIL_GetLocalPlayer", Hook_UTIL_GetLocalPlayer);
 		LoadDHookDetour(pGameConfig, hkSetSuitUpdate, "CBasePlayer::SetSuitUpdate", Hook_SetSuitUpdate, Hook_SetSuitUpdatePost);
 		LoadDHookDetour(pGameConfig, hkResolveNames, "CAI_GoalEntity::ResolveNames", Hook_ResolveNames, Hook_ResolveNamesPost);
 		LoadDHookDetour(pGameConfig, hkCanSelectSchedule, "CAI_LeadBehavior::CanSelectSchedule", Hook_CanSelectSchedule);
 		LoadDHookDetour(pGameConfig, hkPickup_ForcePlayerToDropThisObject, "Pickup_ForcePlayerToDropThisObject", Hook_ForcePlayerToDropThisObject);
-		
-		// Disabled until we can avoid the annoying physics mayhem bug this causes
-		//LoadDHookDetour(pGameConfig, hkSetPlayerAvoidState, "CAI_BaseNPC::SetPlayerAvoidState", Hook_SetPlayerAvoidState);
+		LoadDHookDetour(pGameConfig, hkSetPlayerAvoidState, "CAI_BaseNPC::SetPlayerAvoidState", Hook_SetPlayerAvoidState);
 	}
 	
 	CloseHandle(pGameConfig);
@@ -232,7 +229,6 @@ public void OnMapStart()
 	if (g_Engine == Engine_BlackMesa)
 	{
 		DHookGamerules(hkIsMultiplayer, false, _, Hook_IsMultiplayer);
-		//DHookGamerules(hkIsDeathmatch, false, _, Hook_IsDeathmatch);
 		DHookGamerules(hkRestoreWorld, false, _, Hook_RestoreWorld);
 		DHookGamerules(hkRespawnPlayers, false, _, Hook_RespawnPlayers);
 		DHookGamerules(hkFAllowFlashlight, false, _, Hook_FAllowFlashlight);
@@ -371,6 +367,7 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 			if (pEntity.IsClassNPC())
 			{
 				SDKHook(iEntIndex, SDKHook_SpawnPost, Hook_BaseNPCSpawnPost);
+				DHookEntity(hkKeyValue_char, true, iEntIndex, _, Hook_BaseNPCKeyValuePost);
 				DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_BaseNPCAcceptInput);
 				if (strncmp(szClassname, "npc_human_scientist", 19) == 0)
 				{
@@ -568,7 +565,7 @@ public void Hook_EntitySpawnPost(int iEntIndex)
 		if (g_Engine == Engine_BlackMesa && g_serverOS == OS_Linux)
 		{
 			static char szModel[PLATFORM_MAX_PATH];
-			if (pEntity.GetModel(szModel, sizeof(szModel)) && strncmp(szModel, "models/gibs/humans/", 19) == 0)
+			if (pEntity.GetModelName(szModel, sizeof(szModel)) && strncmp(szModel, "models/gibs/humans/", 19) == 0)
 			{
 				SDKHook(iEntIndex, SDKHook_OnTakeDamage, Hook_NoDmg);
 			}
@@ -577,7 +574,7 @@ public void Hook_EntitySpawnPost(int iEntIndex)
 		// find and hook output hooks for entity
 		if (!g_pCoopManagerData.m_bStarted)
 		{
-			Array_t pOutputHookList = g_pLevelLump.GetOutputHooksForEntity(pEntity);
+			ArrayList pOutputHookList = g_pLevelLump.GetOutputHooksForEntity(pEntity);
 			if (pOutputHookList.Length > 0)
 			{
 				if (pEntity.IsClassname("logic_auto"))
@@ -811,36 +808,52 @@ public Action Command_Unstuck(int iClient, int iArgs)
 
 public Action Command_SetFeature(int iClient, int iArgs)
 {
-	if (iArgs != 2)
+	if (iArgs == 0)
 	{
-		MsgReply(iClient, "Format: sourcecoop_ft <FEATURE> <1/0>");
+		MsgReply(iClient, "------------------------------");
+		StringMapSnapshot snapshot = g_pFeatureMap.Snapshot();
+		for (int i = 0; i < snapshot.Length; i++)
+		{
+			int len = snapshot.KeyBufferSize(i);
+			char[] szKey = new char[len];
+			snapshot.GetKey(i, szKey, len);
+			SourceCoopFeature iFeature;
+			g_pFeatureMap.GetValue(szKey, iFeature);
+			MsgReply(iClient, "%s : %s", szKey, CoopManager.IsFeatureEnabled(iFeature)? "Enabled" : "Disabled");
+		}
+		MsgReply(iClient, "------------------------------");
+		snapshot.Close();
+	}
+	else if (iArgs == 2)
+	{
+		char szFeature[MAX_FORMAT];
+		GetCmdArg(1, szFeature, sizeof(szFeature));
+		
+		SourceCoopFeature feature;
+		if (g_pFeatureMap.GetFeature(szFeature, feature))
+		{
+			char szVal[MAX_FORMAT];
+			GetCmdArg(2, szVal, sizeof(szVal));
+			
+			if (StrEqual(szVal, "1") || IsEnableSynonym(szVal))
+			{
+				CoopManager.EnableFeature(feature);
+				MsgReply(iClient, "Enabled feature %s", szFeature);
+			}
+			else if (StrEqual(szVal, "0") || IsDisableSynonym(szVal))
+			{
+				CoopManager.DisableFeature(feature);
+				MsgReply(iClient, "Disabled feature %s", szFeature);
+			}
+		}
+		else
+		{
+			MsgReply(iClient, "Unknown feature: %s", szFeature);
+		}
 		return Plugin_Handled;
 	}
 	
-	char szFeature[MAX_FORMAT];
-	GetCmdArg(1, szFeature, sizeof(szFeature));
-	
-	SourceCoopFeature feature;
-	if (g_pFeatureMap.GetFeature(szFeature, feature))
-	{
-		char szVal[MAX_FORMAT];
-		GetCmdArg(2, szVal, sizeof(szVal));
-		
-		if (StrEqual(szVal, "1") || IsEnableSynonym(szVal))
-		{
-			CoopManager.EnableFeature(feature);
-			MsgReply(iClient, "Enabled feature %s", szFeature);
-		}
-		else if (StrEqual(szVal, "0") || IsDisableSynonym(szVal))
-		{
-			CoopManager.DisableFeature(feature);
-			MsgReply(iClient, "Disabled feature %s", szFeature);
-		}
-	}
-	else
-	{
-		MsgReply(iClient, "Unknown feature: %s", szFeature);
-	}
+	MsgReply(iClient, "Format: sourcecoop_ft [<FEATURE> <1/0>]");
 	return Plugin_Handled;
 }
 
