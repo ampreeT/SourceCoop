@@ -662,7 +662,27 @@ methodmap CBaseCombatWeapon < CBaseAnimating
 	}
 	public int GetPrimaryAmmoType()
 	{
-		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_iPrimaryAmmoType");
+		return GetEntProp(this.GetEntIndex(), Prop_Send, "m_iPrimaryAmmoType");
+	}
+	public void SetPrimaryAmmoType(const int iPrimaryAmmoType)
+	{
+		SetEntProp(this.GetEntIndex(), Prop_Send, "m_iPrimaryAmmoType", iPrimaryAmmoType); 
+	}
+	public int GetSecondaryAmmo()
+	{
+		return GetEntProp(this.GetEntIndex(), Prop_Send, "m_iClip2");
+	}
+	public void SetSecondaryAmmo(const int iSecondaryAmmo)
+	{
+		SetEntProp(this.GetEntIndex(), Prop_Send, "m_iClip2", iSecondaryAmmo); 
+	}
+	public int GetSecondaryAmmoType()
+	{
+		return GetEntProp(this.GetEntIndex(), Prop_Send, "m_iSecondaryAmmoType");
+	}
+	public void SetSecondaryAmmoType(const int iSecondaryAmmoType)
+	{
+		SetEntProp(this.GetEntIndex(), Prop_Send, "m_iSecondaryAmmoType", iSecondaryAmmoType); 
 	}
 	public float GetNextPrimaryAttack()
 	{
@@ -679,10 +699,6 @@ methodmap CBaseCombatWeapon < CBaseAnimating
 	public void SetNextSecondaryAttack(const float flNextSecondaryAttack)
 	{
 		SetEntPropFloat(this.GetEntIndex(), Prop_Send, "m_flNextSecondaryAttack", flNextSecondaryAttack); 
-	}
-	public int GetSecondaryAmmoType()
-	{
-		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_iSecondaryAmmoType");
 	}
 	public bool m_bFiresUnderwater()
 	{

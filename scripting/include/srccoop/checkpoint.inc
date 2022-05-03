@@ -182,6 +182,15 @@ enum struct CCoopEquipment
 		CloseHandle(this.m_pWeaponList);
 	}
 
+	void AddItem(const char[] szClassname, int iPrimaryAmmo = -1, int iSecondaryAmmo = -1)
+	{
+		CCoopWeaponEntry pWeaponEntry;
+		strcopy(pWeaponEntry.m_szClassname, sizeof(pWeaponEntry.m_szClassname), szClassname);
+		pWeaponEntry.m_iPrimaryAmmo = iPrimaryAmmo;
+		pWeaponEntry.m_iSecondaryAmmo = iSecondaryAmmo;
+		this.m_pWeaponList.PushArray(pWeaponEntry);
+	}
+
 	void Equip(CBasePlayer pPlayer)
 	{
 		if (this.m_iHealth > 0)
@@ -194,11 +203,6 @@ enum struct CCoopEquipment
 			pPlayer.SetArmor(this.m_iArmor);	
 		}
 		
-		for (int i = 0; i < MAX_AMMO_TYPES; i++)
-		{
-			if (this.m_iAmmoCount[i] >= 0)
-				pPlayer.SetAmmoFromIndex(i, this.m_iAmmoCount[i]);
-		}
 		for (int i = 0; i < this.m_pWeaponList.Length; i++)
 		{
 			CCoopWeaponEntry pWeaponEntry;
@@ -211,6 +215,10 @@ enum struct CCoopEquipment
 					{
 						pWeapon.SetPrimaryAmmo(pWeaponEntry.m_iPrimaryAmmo);
 					}
+					if (pWeapon.GetSecondaryAmmoType() != -1)
+					{
+						pWeapon.SetSecondaryAmmo(pWeaponEntry.m_iSecondaryAmmo);
+					}
 				}
 				else
 				{
@@ -218,6 +226,14 @@ enum struct CCoopEquipment
 				}
 			}
 		}
+
+		for (int i = 0; i < MAX_AMMO_TYPES; i++)
+		{
+			if (this.m_iAmmoCount[i] >= 0)
+				pPlayer.SetAmmoFromIndex(i, this.m_iAmmoCount[i]);
+		}
+
+		ClientCommand(pPlayer.GetEntIndex(), "use %s", this.m_szActiveWeapon);
 	}
 }
 
@@ -601,11 +617,7 @@ enum struct CCoopSpawn
 						}
 						else if (strcmp(szKey, "item", false) == 0)
 						{
-							CCoopWeaponEntry pWeaponEntry;
-							strcopy(pWeaponEntry.m_szClassname, sizeof(pWeaponEntry.m_szClassname), szValue);
-							pWeaponEntry.m_iPrimaryAmmo = -1;
-							pWeaponEntry.m_iSecondaryAmmo = -1;
-							this.m_pDefaultEquipment.m_pWeaponList.PushArray(pWeaponEntry, sizeof(pWeaponEntry));
+							this.m_pDefaultEquipment.AddItem(szValue);
 						}
 						else
 						{
@@ -721,11 +733,7 @@ enum struct CCoopSpawn
 				}
 			}
 		}
-		CCoopWeaponEntry pWeaponEntry;
-		strcopy(pWeaponEntry.m_szClassname, sizeof(pWeaponEntry.m_szClassname), szItem);
-		pWeaponEntry.m_iPrimaryAmmo = -1;
-		pWeaponEntry.m_iSecondaryAmmo = -1;
-		this.m_pDefaultEquipment.m_pWeaponList.PushArray(pWeaponEntry);
+		this.m_pDefaultEquipment.AddItem(szItem);
 		return true;
 	}
 }

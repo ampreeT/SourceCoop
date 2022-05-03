@@ -20,8 +20,8 @@ methodmap EquipmentManager
 	public static void Initialize()
 	{
 		data.m_smEquipmentMap = new StringMap();
-		RegAdminCmd("sc_save", Command_ExportEquipment, ADMFLAG_ROOT, "Exports last saved player equipment state. Equipment state is saved at the end of a map, so this wil record the state as of the start of a map.");
-		RegAdminCmd("sourcecoop_save", Command_ExportEquipment, ADMFLAG_ROOT, "Exports last saved player equipment state. Equipment state is saved at the end of a map, so this wil record the state as of the start of a map.");
+		RegAdminCmd("sc_save", Command_ExportEquipment, ADMFLAG_ROOT, "Exports last saved player equipment state to a file. Equipment state is saved at the end of a map, so this wil record the state as of the start of a map.");
+		RegAdminCmd("sourcecoop_save", Command_ExportEquipment, ADMFLAG_ROOT, "Exports last saved player equipment state to a file. Equipment state is saved at the end of a map, so this wil record the state as of the start of a map.");
 		RegAdminCmd("sc_load", Command_ImportEquipment, ADMFLAG_ROOT, "Imports saved data from file and attempts to equip each player (if they were present when the data was saved).");
 		RegAdminCmd("sourcecoop_load", Command_ImportEquipment, ADMFLAG_ROOT, "Imports saved data from file and attempts to equip each player (if they were present when the data was saved).");
 		RegAdminCmd("sc_clear", Command_ClearEquipment, ADMFLAG_ROOT, "Clear persisted equipment and equip players with the map defaults.");
@@ -100,6 +100,12 @@ methodmap EquipmentManager
 			playerEquipment.m_iHealth = pPlayer.GetHealth();
 			playerEquipment.m_iArmor = pPlayer.GetArmor();
 
+			CBaseCombatWeapon pActiveWeapon = pPlayer.GetActiveWeapon();
+			if (pActiveWeapon.IsValid())
+			{
+				pActiveWeapon.GetClassname(playerEquipment.m_szActiveWeapon, sizeof(playerEquipment.m_szActiveWeapon));
+			}
+
 			for (int iWeapon = 0; iWeapon < MAX_WEAPONS; iWeapon++)
 			{
 				CBaseCombatWeapon pWeapon = pPlayer.GetWeaponFromIndex(iWeapon);
@@ -108,22 +114,21 @@ methodmap EquipmentManager
 				{
 					if (pPlayer.HasWeapon(weaponClassName))
 					{
-						CCoopWeaponEntry pWeaponEntry;
-						strcopy(pWeaponEntry.m_szClassname, sizeof(pWeaponEntry.m_szClassname), weaponClassName);
-						pWeaponEntry.m_iPrimaryAmmo = pWeapon.GetPrimaryAmmo();
-						pWeaponEntry.m_iSecondaryAmmo = -1;
-						playerEquipment.m_pWeaponList.PushArray(pWeaponEntry, sizeof(pWeaponEntry));
+						playerEquipment.AddItem(weaponClassName, pWeapon.GetPrimaryAmmo(), pWeapon.GetSecondaryAmmo());
 					}
 				}
 			}
 
 			if (pPlayer.HasSuit())
 			{
-				CCoopWeaponEntry pSuitEntry;
-				pSuitEntry.m_szClassname = "item_suit";
-				pSuitEntry.m_iPrimaryAmmo = -1;
-				pSuitEntry.m_iSecondaryAmmo = -1;
-				playerEquipment.m_pWeaponList.PushArray(pSuitEntry, sizeof(pSuitEntry));
+				playerEquipment.AddItem("item_suit");
+			}
+			if (g_Engine == Engine_BlackMesa)
+			{
+				if (view_as<CBlackMesaPlayer>(pPlayer).HasJumpModule())
+				{
+					playerEquipment.AddItem("item_longjump");
+				}
 			}
 
 			for (int iAmmo = 0; iAmmo < MAX_AMMO_TYPES; iAmmo++)
@@ -135,7 +140,7 @@ methodmap EquipmentManager
 		}
 	}
 
-	public static bool ImportEquipment(KeyValues kv, int iClient, int iTarget, char[] error, int errorLength)
+	public static bool ImportEquipment(KeyValues kv, int iTarget, char[] error, int errorLength)
 	{
 		if (strlen(g_szSteamIds[iTarget]) == 0)
 		{
@@ -169,10 +174,7 @@ methodmap EquipmentManager
 				char weaponName[MAX_CLASSNAME];
 				if (kv.GetSectionName(weaponName, sizeof(weaponName)))
 				{
-					CCoopWeaponEntry pWeaponEntry;
-					strcopy(pWeaponEntry.m_szClassname, sizeof(pWeaponEntry.m_szClassname), weaponName);
-					pWeaponEntry.m_iPrimaryAmmo = kv.GetNum("primaryammo", 0);
-					equipment.m_pWeaponList.PushArray(pWeaponEntry, sizeof(pWeaponEntry));
+					equipment.AddItem(weaponName, kv.GetNum("primaryammo"), kv.GetNum("secondaryammo"));
 				}
 			}
 			while (kv.GotoNextKey(true));
@@ -228,10 +230,11 @@ methodmap EquipmentManager
 			for (int j = 0; j < equipment.m_pWeaponList.Length; j++)
 			{
 				CCoopWeaponEntry pWeaponEntry;
-				if (equipment.m_pWeaponList.GetArray(j, pWeaponEntry, sizeof(pWeaponEntry)))
+				if (equipment.m_pWeaponList.GetArray(j, pWeaponEntry))
 				{
 					kv.JumpToKey(pWeaponEntry.m_szClassname, true);
 					kv.SetNum("primaryammo", pWeaponEntry.m_iPrimaryAmmo);
+					kv.SetNum("secondaryammo", pWeaponEntry.m_iSecondaryAmmo);
 					kv.GoBack();
 				}
 			}
@@ -333,7 +336,7 @@ public Action Command_ImportEquipment(int iClient, int iArgs)
 	{
 		if (IsClientInGame(i))
 		{
-			if (EquipmentManager.ImportEquipment(kv, iClient, i, szError, sizeof(szError)))
+			if (EquipmentManager.ImportEquipment(kv, i, szError, sizeof(szError)))
 			{
 				MsgReply(iClient, "Loaded player state for: %N", i);
 			}

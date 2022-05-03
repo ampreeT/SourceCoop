@@ -44,7 +44,7 @@ public void OnPluginStart()
 	RegConsoleCmd("sm_changemap", Command_ChangeMap, "Shows a menu for changing maps");
 	RegConsoleCmd("sm_survival", Command_VoteSurvival, "Starts a survival vote");
 	RegAdminCmd("sc_reload_maps", Command_ReloadMaps, ADMFLAG_ROOT, "Reloads all entries in the votemap menu from storage");
-	pReloadMapsOnMapchange = CreateConVar("sourcecoop_voting_autoreload", "0", "Sets whether to reload all votemap menu entries on mapchange, which can prolong map loading times.", _, true, 0.0, true, 1.0);
+	pReloadMapsOnMapchange = CreateConVar("sourcecoop_voting_autoreload", "1", "Sets whether to reload all votemap menu entries on mapchange, which can prolong map loading times.", _, true, 0.0, true, 1.0);
 	pAllowVoteSkipIntro = CreateConVar("sourcecoop_voting_skipintro", "1", "Allow skip intro voting?", _, true, 0.0, true, 1.0);
 	pAllowVoteRestartMap = CreateConVar("sourcecoop_voting_restartmap", "1", "Allow restart map voting?", _, true, 0.0, true, 1.0);
 	pAllowVoteChangeMap = CreateConVar("sourcecoop_voting_changemap", "1", "Allow change map voting?", _, true, 0.0, true, 1.0);
@@ -92,7 +92,7 @@ public void OnMapStart()
 	if (firstLoad || pReloadMapsOnMapchange.BoolValue)
 	{
 		firstLoad = false;
-		BuildMaps();
+		MapParser.BuildMaps();
 	}
 	if (!IsCurrentMapCoop())
 	{
@@ -128,7 +128,7 @@ public void OnCoopMapConfigLoaded(KeyValues kv, CoopConfigLocation location)
 public Action Command_ReloadMaps(int client, int args)
 {
 	MsgReply(client, "Reloading maps");
-	BuildMaps();
+	MapParser.BuildMaps();
 	return Plugin_Handled;
 }
 
@@ -453,7 +453,7 @@ public int VoteSurvivalHandler(Menu menu, MenuAction action, int param1, int par
 }
 
 //------------------------------------------------------
-// Map voting
+// Votemap - Structure
 //------------------------------------------------------
 
 enum struct MapMenuSection
@@ -461,63 +461,147 @@ enum struct MapMenuSection
 	char szName[32];
 	ArrayList pSubSections;
 	ArrayList pMaps;
-}
 
-void MapMenuSection_Init(MapMenuSection _this, const char[] szName)
-{
-	strcopy(_this.szName, sizeof(_this.szName), szName);
-	_this.pSubSections = new ArrayList(sizeof(MapMenuSection));
-	_this.pMaps = new ArrayList(MAX_MAPNAME);
-}
-	
-void MapMenuSection_Destroy(MapMenuSection _this)
-{
-	if (_this.pSubSections != null)
+	void Init(const char[] szName)
 	{
-		int len = _this.pSubSections.Length;
-		MapMenuSection pSubSection;
+		strcopy(this.szName, sizeof(this.szName), szName);
+		this.pSubSections = new ArrayList(sizeof(MapMenuSection));
+		this.pMaps = new ArrayList(MAX_MAPNAME);
+	}
+
+	void Close()
+	{
+		if (this.pSubSections != null)
+		{
+			int len = this.pSubSections.Length;
+			MapMenuSection pSubSection;
+			for (int i = 0; i < len; i++)
+			{
+				this.pSubSections.GetArray(i, pSubSection);
+				pSubSection.Close();
+			}
+		}
+		delete this.pSubSections;
+		delete this.pMaps;
+	}
+
+	bool GetSubSection(const char[] szSection, MapMenuSection pSubSection, bool add = true)
+	{
+		MapMenuSection pTemp;
+		int len = this.pSubSections.Length;
 		for (int i = 0; i < len; i++)
 		{
-			_this.pSubSections.GetArray(i, pSubSection);
-			MapMenuSection_Destroy(pSubSection);
+			this.pSubSections.GetArray(i, pTemp);
+			if(StrEqual(pTemp.szName, szSection))
+			{
+				pSubSection = pTemp;
+				return true;
+			}
 		}
-	}
-	delete _this.pSubSections;
-	delete _this.pMaps;
-}
-
-bool MapMenuSection_GetSubSection(MapMenuSection _this, const char[] szSection, MapMenuSection pSubSection, bool add = true)
-{
-	MapMenuSection pTemp;
-	int len = _this.pSubSections.Length;
-	for (int i = 0; i < len; i++)
-	{
-		_this.pSubSections.GetArray(i, pTemp);
-		if(StrEqual(pTemp.szName, szSection))
+		if (add)
 		{
+			pTemp.Init(szSection);
+			this.pSubSections.PushArray(pTemp);
 			pSubSection = pTemp;
 			return true;
 		}
+		return false;
 	}
-	if (add)
-	{
-		MapMenuSection_Init(pTemp, szSection);
-		_this.pSubSections.PushArray(pTemp);
-		pSubSection = pTemp;
-		return true;
-	}
-	return false;
 }
 
-MapMenuSection pRootMapSection;
-MapMenuSection pMapSection[MAXPLAYERS+1];
-ArrayStack pMapMenuNavStack[MAXPLAYERS+1];
-char szCurrentMapVote[MAX_MAPNAME];
+//------------------------------------------------------
+// Votemap - Parser
+//------------------------------------------------------
 
 #define CAMPAIGN_NONE "[Unnamed campaigns]"
 #define CHAPTER_NONE "[Unnamed chapters]"
-#define MAPMENU_SUBSECTION "0"
-#define MAPMENU_MAP "1"
+
+MapMenuSection pRootMapSection;
+
+methodmap MapParser
+{
+	public static void BuildMaps()
+	{
+		float flStartTime = GetEngineTime();
+
+		pRootMapSection.Close();
+		pRootMapSection.Init("");
+		
+		StringMap duplicityChecker = new StringMap();
+		
+		char szConfigPath[PLATFORM_MAX_PATH];
+		BuildPath(Path_SM, szConfigPath, sizeof(szConfigPath), "data/srccoop");
+		MapParser.LoadMapsInPath(szConfigPath, duplicityChecker);
+		MapParser.LoadMapsInPath("maps", duplicityChecker, true);
+		
+		MsgSrv("Scanned %d maps for voting in %f seconds.", duplicityChecker.Size, GetEngineTime() - flStartTime);
+		delete duplicityChecker;
+	}
+
+	public static void LoadMapsInPath(const char szConfigPath[PLATFORM_MAX_PATH], StringMap duplicityChecker, bool bLoadCached = false)
+	{
+		char szFile[PLATFORM_MAX_PATH], szBuffer[PLATFORM_MAX_PATH];
+		FileType fileType;
+		DirectoryListing dir = OpenDirectory(szConfigPath, true);
+		
+		while (dir.GetNext(szFile, sizeof(szFile), fileType))
+		{
+			if (fileType == FileType_File)
+			{
+				int len = strlen(szFile);
+				int extLen;
+				if (len > 4 && strcmp(szFile[len - 4], ".edt", false) == 0)
+				{
+					extLen = 4;
+				}
+				else if (bLoadCached && len > 11 && strcmp(szFile[len - 11], ".edt.cached", false) == 0)
+				{
+					extLen = 11;
+				}
+				else continue;
+				
+				FormatEx(szBuffer, sizeof(szBuffer), "%s/%s", szConfigPath, szFile);
+				szFile[len - extLen] = '\0';
+				if (!IsMapValid(szFile))
+				{
+					continue;
+				}
+				KeyValues kv = new KeyValues("");
+				kv.SetEscapeSequences(true);
+				if (kv.ImportFromFile(szBuffer) && kv.GetSectionName(szBuffer, sizeof(szBuffer)) && strcmp(szBuffer, "config", false) == 0)
+				{
+					if (duplicityChecker.SetString(szFile, "", false))
+					{
+						MapParser.LoadMap(szFile, kv);
+					}
+				}
+				delete kv;
+			}
+		}
+		delete dir;
+	}
+
+	public static void LoadMap(const char[] szMap, KeyValues kv)
+	{
+		char szCampaign[64];
+		char szChapter[64];
+		kv.GetString("campaign", szCampaign, sizeof(szCampaign), CAMPAIGN_NONE);
+		kv.GetString("chapter", szChapter, sizeof(szChapter), CHAPTER_NONE);
+
+		MapMenuSection pSection;
+		pRootMapSection.GetSubSection(szCampaign, pSection);
+		pSection.GetSubSection(szChapter, pSection);
+		pSection.pMaps.PushString(szMap);
+	}
+}
+
+//------------------------------------------------------
+// Votemap - Client menu handling
+//------------------------------------------------------
+
+MapMenuSection pMapSection[MAXPLAYERS+1];
+ArrayStack pMapMenuNavStack[MAXPLAYERS+1];
+char szCurrentMapVote[MAX_MAPNAME];
 
 public void OnClientPutInServer(int client)
 {
@@ -527,77 +611,6 @@ public void OnClientPutInServer(int client)
 public void OnClientDisconnect(int client)
 {
 	delete pMapMenuNavStack[client];
-}
-
-void BuildMaps()
-{
-	MapMenuSection_Destroy(pRootMapSection);
-	MapMenuSection_Init(pRootMapSection, "");
-	
-	StringMap duplicityChecker = new StringMap();
-	
-	char szConfigPath[PLATFORM_MAX_PATH];
-	BuildPath(Path_SM, szConfigPath, sizeof(szConfigPath), "data/srccoop");
-	LoadMapsInPath(szConfigPath, duplicityChecker);
-	LoadMapsInPath("maps", duplicityChecker, true);
-	
-	delete duplicityChecker;
-}
-
-void LoadMapsInPath(const char szConfigPath[PLATFORM_MAX_PATH], StringMap duplicityChecker, bool bLoadCached = false)
-{
-	char szFile[PLATFORM_MAX_PATH], szBuffer[PLATFORM_MAX_PATH];
-	FileType fileType;
-	DirectoryListing dir = OpenDirectory(szConfigPath, true);
-	
-	while (dir.GetNext(szFile, sizeof(szFile), fileType))
-	{
-		if (fileType == FileType_File)
-		{
-			int len = strlen(szFile);
-			int extLen;
-			if (len > 4 && strcmp(szFile[len - 4], ".edt", false) == 0)
-			{
-				extLen = 4;
-			}
-			else if (bLoadCached && len > 11 && strcmp(szFile[len - 11], ".edt.cached", false) == 0)
-			{
-				extLen = 11;
-			}
-			else continue;
-			
-			FormatEx(szBuffer, sizeof(szBuffer), "%s/%s", szConfigPath, szFile);
-			szFile[len - extLen] = '\0';
-			if(!IsMapValid(szFile))
-			{
-				continue;
-			}
-			KeyValues kv = new KeyValues("");
-			kv.SetEscapeSequences(true);
-			if (kv.ImportFromFile(szBuffer) && kv.GetSectionName(szBuffer, sizeof(szBuffer)) && strcmp(szBuffer, "config", false) == 0)
-			{
-				if (duplicityChecker.SetString(szFile, "", false))
-				{
-					LoadMap(szFile, kv);
-				}
-			}
-			delete kv;
-		}
-	}
-	delete dir;
-}
-
-void LoadMap(const char[] szMap, KeyValues kv)
-{
-	char szCampaign[64];
-	char szChapter[64];
-	kv.GetString("campaign", szCampaign, sizeof(szCampaign), CAMPAIGN_NONE);
-	kv.GetString("chapter", szChapter, sizeof(szChapter), CHAPTER_NONE);
-
-	MapMenuSection pSection;
-	MapMenuSection_GetSubSection(pRootMapSection, szCampaign, pSection);
-	MapMenuSection_GetSubSection(pSection, szChapter, pSection);
-	pSection.pMaps.PushString(szMap);
 }
 
 public Action Command_ChangeMap(int client, int args)
@@ -629,6 +642,9 @@ bool OpenMapSelectMenu(int client)
 	ShowMapSelectMenu(client);
 	return true;
 }
+
+#define MAPMENU_SUBSECTION "0"
+#define MAPMENU_MAP "1"
 
 Menu ShowMapSelectMenu(int client)
 {

@@ -71,7 +71,7 @@ public void Hook_Instancing_ItemSpawn(int iEntIndex)
 		SDKHook(iEntIndex, SDKHook_SetTransmit, Hook_Instancing_ItemTransmit);
 		SDKHook(iEntIndex, SDKHook_Use, Hook_Instancing_Use);
 	}
-	pItem.SetSpawnFlags(pItem.GetSpawnFlags & ~SF_ITEM_HARDRESPAWN);
+	pItem.SetSpawnFlags(pItem.GetSpawnFlags() & ~SF_ITEM_HARDRESPAWN);
 	DispatchKeyValue(iEntIndex, "respawntime", "0");
 }
 
