@@ -16,9 +16,14 @@ public Plugin myinfo =
 	url         = "https://github.com/ampreeT/SourceCoop"
 };
 
+ConVar cvarAlienBlood;
+ConVar cvarHumanBlood;
+
 public void OnPluginStart()
 {
 	InitSourceCoopAddon();
+	cvarAlienBlood = FindConVar("violence_ablood");
+	cvarHumanBlood = FindConVar("violence_hblood");
 }
 
 public void OnEntityCreated(int entityIndex, const char[] szClassname)
@@ -27,30 +32,24 @@ public void OnEntityCreated(int entityIndex, const char[] szClassname)
 
 	if (entity.IsClassNPC())
 	{
-		SDKHook(entityIndex, SDKHook_OnTakeDamage, DispatchEffects);
+		SDKHook(entityIndex, SDKHook_OnTakeDamagePost, DispatchEffects);
 	}
 }
 
-public Action DispatchEffects(int victim, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3])
+public void DispatchEffects(int victim, int attacker, int inflictor, float damage, int damagetype, int weapon, const float damageForce[3], const float damagePosition[3], int damagecustom)
 {
 	// Construct our entity objects based on their entity ID's
 	CBaseEntity playerAttacker = CBaseEntity(attacker);
 	CBaseEntity npcVictim = CBaseEntity(victim);
 
-	// Check victim and attacker are both npc and real player, respectively
-	if (!playerAttacker.IsClassPlayer() || !npcVictim.IsClassNPC())
-		return Plugin_Continue;
-
-	// Recreate the effects
-	CreateDamageEffect(damagePosition, npcVictim);
-
-	return Plugin_Continue;
+	if (playerAttacker.IsClassPlayer())
+		CreateDamageEffect(damagePosition, npcVictim);
 }
 
 /*
  * Do our prop checks to check what type of entity we hit.
  */
-void CreateDamageEffect(float position[3], CBaseEntity parent)
+void CreateDamageEffect(const float position[3], CBaseEntity parent)
 {
 	int bloodColour = GetEntProp(parent.GetEntIndex(), Prop_Data, "m_bloodColor");
 
@@ -63,22 +62,26 @@ void CreateDamageEffect(float position[3], CBaseEntity parent)
 
 		case (0):    // Human NPC's
 		{
-			HandleEffects_RedBlood(position, parent);
+			if (cvarHumanBlood.BoolValue)
+				HandleEffects_RedBlood(position, parent);
 		}
 
 		case (1):    // Alien NPC's (yellow blood)
 		{
-			HandleEffects_YellowBlood(position, parent);
+			if (cvarAlienBlood.BoolValue)
+				HandleEffects_YellowBlood(position, parent);
 		}
 
 		case (2):    // Alien NPC's (green blood)
 		{
-			HandleEffects_GreenBlood(position, parent);
+			if (cvarAlienBlood.BoolValue)
+				HandleEffects_GreenBlood(position, parent);
 		}
 
 		case (3):    // NPC's with synthetic blood
 		{
-			HandleEffects_SynthBlood(position, parent);
+			if (cvarAlienBlood.BoolValue)
+				HandleEffects_SynthBlood(position, parent);
 		}
 	}
 }
@@ -86,7 +89,7 @@ void CreateDamageEffect(float position[3], CBaseEntity parent)
 /*
  * Particle generator
  */
-void CreateParticleSystem(float position[3], CBaseEntity parent, char[] effectName, float lengthTime = 5.0)
+void CreateParticleSystem(const float position[3], CBaseEntity parent, char[] effectName, float lengthTime = 5.0)
 {
 	CBaseEntity particle = CBaseEntity(CreateEntityByName("info_particle_system"));
 
@@ -109,7 +112,7 @@ void CreateParticleSystem(float position[3], CBaseEntity parent, char[] effectNa
 /*
  * For all mechanical npc's
  */
-void HandleEffects_Metal(float position[3], CBaseEntity parent)
+void HandleEffects_Metal(const float position[3], CBaseEntity parent)
 {
 	CreateParticleSystem(position, parent, "impact_sparks");
 	CreateParticleSystem(position, parent, "impact_spark_burst");
@@ -118,7 +121,7 @@ void HandleEffects_Metal(float position[3], CBaseEntity parent)
 /*
  * For all humans/soldiers
  */
-void HandleEffects_RedBlood(float position[3], CBaseEntity parent)
+void HandleEffects_RedBlood(const float position[3], CBaseEntity parent)
 {
 	if (GetRandomInt(1, 2) == 1)
 	{
@@ -138,7 +141,7 @@ void HandleEffects_RedBlood(float position[3], CBaseEntity parent)
 /*
  * For all yellow blooded npc's
  */
-void HandleEffects_YellowBlood(float position[3], CBaseEntity parent)
+void HandleEffects_YellowBlood(const float position[3], CBaseEntity parent)
 {
 	CreateParticleSystem(position, parent, "blood_impact_yellow_01");
 	CreateParticleSystem(position, parent, "blood_impact_yellow_01_chunk");
@@ -150,7 +153,7 @@ void HandleEffects_YellowBlood(float position[3], CBaseEntity parent)
 /*
  * For all green blooded npc's
  */
-void HandleEffects_GreenBlood(float position[3], CBaseEntity parent)
+void HandleEffects_GreenBlood(const float position[3], CBaseEntity parent)
 {
 	CreateParticleSystem(position, parent, "blood_impact_green_01");
 	CreateParticleSystem(position, parent, "blood_impact_green_01_chunk");
@@ -166,7 +169,7 @@ void HandleEffects_GreenBlood(float position[3], CBaseEntity parent)
 /*
  * For all npc's with synthetic blood (synths)
  */
-void HandleEffects_SynthBlood(float position[3], CBaseEntity parent)
+void HandleEffects_SynthBlood(const float position[3], CBaseEntity parent)
 {
 	int armourValue = GetEntProp(parent.GetEntIndex(), Prop_Data, "m_ArmorValue");
 
