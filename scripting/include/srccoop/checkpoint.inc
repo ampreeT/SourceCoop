@@ -375,7 +375,7 @@ enum struct CCoopSpawn
 	void SpawnPlayerEquipment(CBasePlayer pPlayer)
 	{
 		CCoopEquipment pSavedEquipment;
-		if (this.m_iCurrentCheckpoint == 0 && EquipmentManager.Enabled() && EquipmentManager.GetEquipment(pPlayer, pSavedEquipment))
+		if (this.m_iCurrentCheckpoint == 0 && EquipmentManager.GetEquipment(pPlayer, pSavedEquipment))
 		{
 			pSavedEquipment.Equip(pPlayer);
 		}

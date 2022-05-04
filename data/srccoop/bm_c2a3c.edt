@@ -4,6 +4,10 @@
 {
 	"chapter" "Apprehension"
 	"nextmap" "bm_c2a4a"
+	"features"
+	{
+		"TRANSFER_PLAYER_STATE" "0"
+	}
 	"equipment"
 	{
 		"lookup"

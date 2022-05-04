@@ -51,17 +51,6 @@
 	}
 	"entity"
 	{
-		"modify"
-		{
-			"classname" "trigger_multiple"
-			"OnTrigger" "/^c4a3d_loadsaveReload/"
-			"set"
-			{
-				"classname" "trigger_hurt"
-				"damage" "400"
-				"nodmgforce" "1"
-			}
-		}
 		// delete elevator's door to prevent stuck in there
 		"delete"
 		{

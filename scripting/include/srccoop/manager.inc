@@ -383,6 +383,7 @@ methodmap CoopManager {
 	{
 		if (StrEqual(szReason, SC_NORMAL_MAPCHANGE))
 		{
+			EquipmentManager.ClearAll();
 			if(EquipmentManager.Enabled())
 			{
 				EquipmentManager.SavePlayerEquipment();

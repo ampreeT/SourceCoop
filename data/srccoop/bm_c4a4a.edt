@@ -6,6 +6,7 @@
 	"nextmap" "bm_c5a1a"
 	"features"
 	{
+		"TRANSFER_PLAYER_STATE" "0"
 	}
 	"define"
 	{
