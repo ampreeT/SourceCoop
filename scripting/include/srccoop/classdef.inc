@@ -201,10 +201,10 @@ methodmap CBaseEntity
 		Format(szBuffer, sizeof(szBuffer), "%f %f %f", vecValue[0], vecValue[1], vecValue[2]);
 		return this.AcceptInputStr(szInput, szBuffer, pActivator, pCaller, iOutputID);
 	}
-	public bool OutputAdd(const char[] szOutput, const char[] szTarget, const char[] szTargetInput, const char[] szParameter = "", float flDelay)
+	public bool OutputAdd(const char[] szOutput, const char[] szTarget, const char[] szTargetInput, const char[] szParameter = "", float flDelay = 0.0, int timesToFire = -1)
 	{
 		 char szBuffer[MAX_FORMAT];
-		 Format(szBuffer, sizeof(szBuffer), "%s %s:%s:%s:%f:-1", szOutput, szTarget, szTargetInput, szParameter, flDelay);
+		 Format(szBuffer, sizeof(szBuffer), "%s %s:%s:%s:%f:%d", szOutput, szTarget, szTargetInput, szParameter, flDelay, timesToFire);
 		 return this.AcceptInputStr("AddOutput", szBuffer);
 	}
 	public bool SetKeyValueStr(const char[] szKeyValue, const char[] szValue)
@@ -218,6 +218,11 @@ methodmap CBaseEntity
 	public bool Kill()
 	{
 		return this.AcceptInputStr("Kill");
+	}
+	public bool KillAfterTime(float flTime)
+	{
+		this.OutputAdd("OnUser1", "!self", "kill", _, flTime);
+		return this.AcceptInput("FireUser1");
 	}
 	public int GetSpawnFlags()
 	{
@@ -923,8 +928,7 @@ methodmap CBasePlayer < CBaseCombatCharacter
 		if(pItem.IsValid() && !pItem.GetOwner().IsValid())
 		{
 			// this would drop on the ground if player cant pick up any more
-			pItem.OutputAdd("OnUser1", "!self", "kill", _, 0.1);
-			pItem.AcceptInputStr("FireUser1");
+			pItem.KillAfterTime(0.1);
 		}
 		return pItem;
 	}
