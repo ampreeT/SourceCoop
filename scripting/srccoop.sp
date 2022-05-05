@@ -2,14 +2,12 @@
 
 #include <srccoop>
 
-#define PLUGIN_VERSION "1.1.0"
-
 public Plugin myinfo =
 {
 	name = "SourceCoop",
 	author = "ampreeT, Alienmario",
 	description = "SourceCoop",
-	version = PLUGIN_VERSION,
+	version = SRCCOOP_VERSION,
 	url = "https://github.com/ampreeT/SourceCoop"
 };
 
@@ -130,7 +128,7 @@ public void OnPluginStart()
 	LoadTranslations("common.phrases");
 	
 	InitDebugLog("sourcecoop_debug", "SRCCOOP", ADMFLAG_ROOT);
-	CreateConVar("sourcecoop_version", PLUGIN_VERSION, _, FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
+	CreateConVar("sourcecoop_version", SRCCOOP_VERSION, _, FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
 	g_pConvarCoopTeam = CreateConVar("sourcecoop_team", "scientist", "Sets which team to use in TDM mode. Valid values are [marines] or [scientist]. Setting anything else will not manage teams.");
 	g_pConvarDisableTeamSelect = CreateConVar("sourcecoop_disable_teamselect", "1", "Whether to skip the team select screen and spawn in instantly.", _, true, 0.0, true, 1.0);
 	g_pConvarCoopRespawnTime = CreateConVar("sourcecoop_respawntime", "2.0", "Sets player respawn time in seconds. This can only be used for making respawn times quicker, not longer. Set to 0 to use the game's default.", _, true, 0.0);
@@ -760,7 +758,7 @@ void GreetPlayer(int client)
 {
 	if (CoopManager.IsFeatureEnabled(FT_SHOW_WELCOME_MESSAGE))
 	{
-		Msg(client, "This server runs SourceCoop version %s.\nPress %s=%s or type %s/coopmenu%s for extra settings.", PLUGIN_VERSION, CHAT_COLOR_SEC, CHAT_COLOR_PRI, CHAT_COLOR_SEC, CHAT_COLOR_PRI);
+		Msg(client, "This server runs SourceCoop version %s.\nPress %s=%s or type %s/coopmenu%s for extra settings.", SRCCOOP_VERSION, CHAT_COLOR_SEC, CHAT_COLOR_PRI, CHAT_COLOR_SEC, CHAT_COLOR_PRI);
 	}
 }
 

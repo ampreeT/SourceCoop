@@ -9,7 +9,7 @@ public Plugin myinfo =
 	name = "SourceCoop Thirdperson",
 	author = "Alienmario (Original thirdperson code by Dr. McKay)",
 	description = "Thirdperson view switcher",
-	version = "1.0.0",
+	version = SRCCOOP_VERSION,
 	url = "https://github.com/ampreeT/SourceCoop"
 };
 

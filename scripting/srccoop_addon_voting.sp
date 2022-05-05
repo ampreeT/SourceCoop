@@ -9,7 +9,7 @@ public Plugin myinfo =
 	name = "SourceCoop Voting",
 	author = "Alienmario",
 	description = "Provides coop related voting",
-	version = "1.0.0",
+	version = SRCCOOP_VERSION,
 	url = "https://github.com/ampreeT/SourceCoop"
 };
 

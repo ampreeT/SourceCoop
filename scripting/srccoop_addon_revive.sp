@@ -21,7 +21,7 @@ public Plugin myinfo =
 	name = "SourceCoop Revive",
 	author = "Balimbanana",
 	description = "Enables revive by pressing E while looking at player ragdoll",
-	version = "1.0.0",
+	version = SRCCOOP_VERSION,
 	url = "https://github.com/ampreeT/SourceCoop"
 };
 

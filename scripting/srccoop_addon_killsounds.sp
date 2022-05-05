@@ -11,7 +11,7 @@ public Plugin myinfo =
 	name = "SourceCoop KillSounds",
 	author = "Alienmario",
 	description = "",
-	version = "1.0.1",
+	version = SRCCOOP_VERSION,
 	url = "https://github.com/ampreeT/SourceCoop"
 };
 

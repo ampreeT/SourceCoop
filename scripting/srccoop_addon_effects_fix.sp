@@ -12,7 +12,7 @@ public Plugin myinfo =
 	name        = "SourceCoop damage effects fix",
 	author      = "Jimbab",
 	description = "Client side damage effects fix for all weapons.",
-	version     = "1.1.0",
+	version     = SRCCOOP_VERSION,
 	url         = "https://github.com/ampreeT/SourceCoop"
 };
 

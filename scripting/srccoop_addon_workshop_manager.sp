@@ -13,7 +13,7 @@ public Plugin myinfo =
 	name = "SourceCoop Workshop Manager",
 	author = "Alienmario",
 	description = "Kicks players who are missing workshop maps with a custom message",
-	version = "1.0.0",
+	version = SRCCOOP_VERSION,
 	url = "https://github.com/ampreeT/SourceCoop"
 };
 

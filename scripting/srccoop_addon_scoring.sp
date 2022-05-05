@@ -32,7 +32,7 @@ public Plugin myinfo =
 	name = "SourceCoop Scoring",
 	author = "Rock & Alienmario",
 	description = "Player scores for killing NPCs + chat killfeed",
-	version = "1.0.0",
+	version = SRCCOOP_VERSION,
 	url = "https://github.com/ampreeT/SourceCoop"
 };
 
