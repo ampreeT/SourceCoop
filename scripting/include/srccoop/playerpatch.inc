@@ -111,7 +111,7 @@ public void Hook_PlayerPreThinkPost(int iClient)
 	else // Dead
 	{
 		float flRespawnTime = g_pConvarCoopRespawnTime.FloatValue;
-		if (pPlayer.GetTeam() > TEAM_SPECTATOR && !SurvivalManager.IsDead(pPlayer) && flRespawnTime && GetGameTime() - pPlayer.GetDeathTime() > flRespawnTime)
+		if (flRespawnTime && pPlayer.GetTeam() > TEAM_SPECTATOR && !SurvivalManager.IsDead(pPlayer) && GetGameTime() - pPlayer.GetDeathTime() > flRespawnTime)
 		{
 			int iPressed = pPlayer.GetPressedButtons();
 			if (iPressed != 0 && iPressed != IN_SCORE)
@@ -271,6 +271,9 @@ public void Hook_PlayerSpawnPost(int iClient)
 
 				// Fix for if player died on a ladder
 				SetEntPropEnt(pPlayer.GetEntIndex(), Prop_Data, "m_hLadder", -1);
+
+				// Fix for client viewmodel animation when always run is off
+				sv_always_run.ReplicateToClient(iClient, "1");
 				
 				// Correct the 'damages' from the prethink hook hack
 				pPlayer.SetSuit(false);

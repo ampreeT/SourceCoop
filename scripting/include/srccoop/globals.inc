@@ -19,6 +19,7 @@ ConVar g_pConVarNextStuck;
 // Existing ConVars
 ConVar mp_friendlyfire;
 ConVar mp_flashlight;
+ConVar sv_always_run;
 
 // ----------------------------
 // SDK Calls
