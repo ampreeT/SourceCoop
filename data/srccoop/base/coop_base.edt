@@ -28,11 +28,14 @@
 		// fix for breakmodels not appearing
 		"breakable_multiplayer" "0"
 		
-		// disables statistics and also functions as a temp crashfix (when a player drowns)
+		// disables statistics, prevents a crash when a player drowns
 		"sv_ranked" "0"
 		
 		// disable warmup intermission pause
 		"mp_warmup_intermission_time" "0"
+
+		// prevents client crash after pvp deaths due to freezecam, shortens respawn time
+		"spec_freeze_time" "0"
 	}
 	
 	"entity_base_coop"

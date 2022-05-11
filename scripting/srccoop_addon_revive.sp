@@ -7,7 +7,11 @@
 #pragma semicolon 1;
 #pragma newdecls required;
 
-ConVar g_pConVarReviveTime, g_pConVarReviveScore, g_pConVarReviveMessages;
+#define SND_START "items/suitchargeok1.wav"
+#define SND_DENY "items/suitchargeno1.wav"
+#define SND_RESPAWN "weapons/tau/gauss_undercharge.wav"
+
+ConVar g_pConVarReviveTime, g_pConVarReviveScore, g_pConVarReviveMessages, g_pConVarRagdollParticle;
 
 int g_BeamSprite = -1;
 int g_ColorGreen[4] = {0, 255, 0, 255};
@@ -15,12 +19,13 @@ int g_ColorGreen[4] = {0, 255, 0, 255};
 CBasePlayer g_pReviveTarget[MAXPLAYERS+1] = {view_as<CBasePlayer>(-1), ...};
 float g_flReviveTime[MAXPLAYERS+1];
 float g_flLastSpriteUpdate[MAXPLAYERS+1];
+bool g_bEnabled;
 
 public Plugin myinfo =
 {
 	name = "SourceCoop Revive",
 	author = "Balimbanana",
-	description = "Enables revive by pressing E while looking at player ragdoll",
+	description = "Enables revive by pressing <USE> while looking at player ragdoll",
 	version = SRCCOOP_VERSION,
 	url = "https://github.com/ampreeT/SourceCoop"
 };
@@ -32,21 +37,29 @@ public void OnPluginStart()
 	g_pConVarReviveTime = CreateConVar("sourcecoop_revive_time", "4.0", "Sets time that you have to hold E to revive.", _, true, 0.0, false);
 	g_pConVarReviveScore = CreateConVar("sourcecoop_revive_score", "1", "Sets score to give for reviving a player.", _, true, 0.0, false);
 	g_pConVarReviveMessages = CreateConVar("sourcecoop_revive_messages", "0", "Shows messages such as You have started reviving x.", _, true, 0.0, true, 1.0);
+	g_pConVarRagdollParticle = CreateConVar("sourcecoop_revive_ragdoll_particle", "water_trail_medium_b", "Particle name to improve players' ragdoll visibility. Empty to disable.");
 	
 	RegAdminCmd("sourcecoop_revive", Command_ForceRespawn, ADMFLAG_ROOT, "Force respawn player.");
 	RegAdminCmd("sc_revive", Command_ForceRespawn, ADMFLAG_ROOT, "Force respawn player.");
+
+	HookEvent("player_death", Event_PlayerDeath);
 }
 
 public void OnMapStart()
 {
-	PrecacheSound("weapons/tau/gauss_undercharge.wav", true);
-	PrecacheSound("items/suitchargeok1.wav", true);
-	PrecacheSound("items/suitchargeno1.wav", true);
+	if (!(g_bEnabled = IsCurrentMapCoop()))
+	{
+		return;
+	}
+	
+	PrecacheSound(SND_RESPAWN, true);
+	PrecacheSound(SND_START, true);
+	PrecacheSound(SND_DENY, true);
 	
 	GameData gameConfig = new GameData("funcommands.games");
-	if (gameConfig != null)
+	if (gameConfig)
 	{
-		static char buffer[PLATFORM_MAX_PATH];
+		char buffer[PLATFORM_MAX_PATH];
 		if (gameConfig.GetKeyValue("SpriteBeam", buffer, sizeof(buffer)) && buffer[0])
 		{
 			g_BeamSprite = PrecacheModel(buffer);
@@ -59,6 +72,10 @@ public Action Command_ForceRespawn(int client, int args)
 {
 	static char szTarget[64];
 	
+	if (!g_bEnabled)
+	{
+		return Plugin_Handled;
+	}
 	if (args < 1)
 	{
 		MsgReply(client, "You must specify a player to spawn.");
@@ -86,7 +103,7 @@ public Action Command_ForceRespawn(int client, int args)
 
 public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3], float angles[3], int &weapon)
 {
-	if (IsPlayerAlive(client))
+	if (g_bEnabled && IsPlayerAlive(client))
 	{
 		if (buttons & IN_USE)
 		{
@@ -121,8 +138,8 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 							// Client left range to revive, play deny sound and stop previous start sound
 							ResetReviveStatus(client);
 							
-							StopSound(client, SNDCHAN_STATIC, "items/suitchargeok1.wav");
-							EmitSoundToAll("items/suitchargeno1.wav", client, SNDCHAN_AUTO, SNDLEVEL_NORMAL);
+							StopSound(client, SNDCHAN_STATIC, SND_START);
+							EmitSoundToAll(SND_DENY, client, SNDCHAN_AUTO, SNDLEVEL_NORMAL);
 							
 							if (g_pConVarReviveMessages.BoolValue) Msg(client, "You have canceled reviving...");
 							
@@ -154,14 +171,11 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 								// Effects
 								Client_ScreenFade(g_pReviveTarget[client].GetEntIndex(), 256, FFADE_PURGE|FFADE_IN, 1, 0, 0, 200, 255);
 								
-								// Fix for if player died on a ladder
-								SetEntPropEnt(g_pReviveTarget[client].GetEntIndex(), Prop_Data, "m_hLadder", -1);
-								
 								g_pReviveTarget[client].GetRagdoll().Kill();
 								
 								// Delay to allow equip time
 								DataPack dp;
-								CreateDataTimer(0.1, DelayRespawn, dp, TIMER_FLAG_NO_MAPCHANGE);
+								CreateDataTimer(0.1, Timer_DelayRespawn, dp, TIMER_FLAG_NO_MAPCHANGE);
 								WritePackCell(dp, pPlayer);
 								WritePackCell(dp, g_pReviveTarget[client]);
 								
@@ -199,8 +213,8 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 											g_pReviveTarget[client] = CBasePlayer(i);
 											
 											// Prevent multiple sounds if player is spamming E
-											StopSound(client, SNDCHAN_STATIC, "items/suitchargeok1.wav");
-											EmitSoundToAll("items/suitchargeok1.wav", client, SNDCHAN_STATIC, SNDLEVEL_NORMAL);
+											StopSound(client, SNDCHAN_STATIC, SND_START);
+											EmitSoundToAll(SND_START, client, SNDCHAN_STATIC, SNDLEVEL_NORMAL);
 											
 											if (g_pConVarReviveMessages.BoolValue) Msg(client, "You have started reviving '%N'", i);
 											
@@ -234,7 +248,7 @@ void ResetReviveStatus(int client)
 	Client_RemoveProgressBar(client);
 }
 
-public Action DelayRespawn(Handle timer, DataPack dp)
+public Action Timer_DelayRespawn(Handle timer, DataPack dp)
 {
 	ResetPack(dp);
 	CBasePlayer pPlayer = ReadPackCell(dp);
@@ -250,7 +264,7 @@ public Action DelayRespawn(Handle timer, DataPack dp)
 		
 		pTarget.Teleport(vecOrigin, vecEyeAngles, NULL_VECTOR);
 		
-		EmitSoundToAll("weapons/tau/gauss_undercharge.wav", pPlayer.GetEntIndex(), SNDCHAN_ITEM, SNDLEVEL_NORMAL, _, _, 150);
+		EmitSoundToAll(SND_RESPAWN, pPlayer.GetEntIndex(), SNDCHAN_ITEM, SNDLEVEL_NORMAL, _, _, 150);
 	}
 	return Plugin_Handled;
 }
@@ -266,6 +280,40 @@ public bool TraceEntityFilter(int entity, int mask, any data)
 	return true;
 }
 
+public void Event_PlayerDeath(Event hEvent, const char[] szName, bool bDontBroadcast)
+{
+	if (g_bEnabled)
+	{
+		CBasePlayer pPlayer = CBasePlayer(GetClientOfUserId(hEvent.GetInt("userid")));
+		if (pPlayer.IsValid())
+		{
+			CreateTimer(3.0, Timer_SetRagdollEffects, pPlayer, TIMER_FLAG_NO_MAPCHANGE);
+		}
+	}
+}
+
+public Action Timer_SetRagdollEffects(Handle timer, CBasePlayer pPlayer)
+{
+	if (pPlayer.IsInGame())
+	{
+		CBaseEntity pRagdoll = pPlayer.GetRagdoll();
+		if (pRagdoll.IsValid())
+		{
+			pRagdoll.SetEffects(pRagdoll.GetEffects() | EF_ITEM_BLINK);
+
+			char szBuffer[128]; g_pConVarRagdollParticle.GetString(szBuffer, sizeof(szBuffer));
+			if (szBuffer[0] != '\0')
+			{
+				CParticleSystem pParticle = CParticleSystem.Create(szBuffer);
+				pParticle.SetParent(pRagdoll);
+				pParticle.Teleport(vec3_origin);
+				pParticle.Spawn();
+				pParticle.Activate();
+			}
+		}
+	}
+	return Plugin_Handled;
+}
 
 //------------------------------------------------------
 // Progress bar rendering

@@ -91,20 +91,16 @@ void CreateDamageEffect(const float position[3], CBaseEntity parent)
  */
 void CreateParticleSystem(const float position[3], CBaseEntity parent, char[] effectName, float lengthTime = 5.0)
 {
-	CBaseEntity particle = CBaseEntity(CreateEntityByName("info_particle_system"));
+	CParticleSystem particle = CParticleSystem.Create(effectName);
 
 	if (particle.IsValid())
 	{
 		particle.Teleport(position);
-
-		particle.SetKeyValueStr("targetname", "blood_particle");
-		particle.SetKeyValueStr("effect_name", effectName);
 		particle.SetParent(parent);
 
 		particle.Spawn();
 		particle.Activate();
-
-		particle.AcceptInputStr("start");
+		
 		particle.KillAfterTime(lengthTime);
 	}
 }
@@ -171,12 +167,7 @@ void HandleEffects_GreenBlood(const float position[3], CBaseEntity parent)
  */
 void HandleEffects_SynthBlood(const float position[3], CBaseEntity parent)
 {
-	int armourValue = GetEntProp(parent.GetEntIndex(), Prop_Data, "m_ArmorValue");
-
 	CreateParticleSystem(position, parent, "blood_impact_synth_01");
 	CreateParticleSystem(position, parent, "blood_impact_synth_01_droplets");
 	CreateParticleSystem(position, parent, "blood_impact_synth_01_spurt");
-
-	if (armourValue > 0)
-		CreateParticleSystem(position, parent, "blood_impact_synth_01_armor");
 }

@@ -350,6 +350,8 @@ public MRESReturn Hook_PlayerKilledPost(int _this, DHookParam hParams)
 		}
 
 		g_pNewRagdoll = CBaseEntity(-1);
+		
+		SurvivalManager.HandlePlayerDeath(pPlayer);
 	}
 	return MRES_Ignored;
 }

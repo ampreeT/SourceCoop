@@ -1273,6 +1273,85 @@ methodmap CSprite < CBaseEntity
 	}
 }
 
+methodmap CParticleSystem < CBaseEntity
+{
+	public CParticleSystem(const int iEntIndex = -1)
+	{
+		return view_as<CParticleSystem>(CBaseEntity(iEntIndex));
+	}
+	public static CParticleSystem Create(const char[] szEffectName, bool bStartActive = true)
+	{
+		CParticleSystem pParticle = CParticleSystem(CreateEntityByName("info_particle_system"));
+		pParticle.SetEffectName(szEffectName);
+		if (bStartActive)
+		{
+			pParticle.SetStartActive(bStartActive);
+		}
+		return pParticle;
+	}
+	
+	public bool IsActive()
+	{
+		return view_as<bool>(GetEntProp(this.GetEntIndex(), Prop_Data, "m_bActive"));
+	}
+	public bool GetStartActive()
+	{
+		return view_as<bool>(GetEntProp(this.GetEntIndex(), Prop_Data, "m_bStartActive"));
+	}
+	public void SetStartActive(const bool value)
+	{
+		SetEntProp(this.GetEntIndex(), Prop_Data, "m_bStartActive", value);
+	}
+	public bool GetWeatherEffect()
+	{
+		return view_as<bool>(GetEntProp(this.GetEntIndex(), Prop_Data, "m_bWeatherEffect"));
+	}
+	public void SetWeatherEffect(const bool value)
+	{
+		SetEntProp(this.GetEntIndex(), Prop_Data, "m_bWeatherEffect", value);
+	}
+	public bool GetOrientationFollowsViewer()
+	{
+		return view_as<bool>(GetEntProp(this.GetEntIndex(), Prop_Data, "m_bOrientationFollowsViewer"));
+	}
+	public void SetOrientationFollowsViewer(const bool value)
+	{
+		SetEntProp(this.GetEntIndex(), Prop_Data, "m_bOrientationFollowsViewer", value);
+	}
+	public float GetStartTime()
+	{
+		return GetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flStartTime");
+	}
+	public void SetStartTime(float value)
+	{
+		SetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flStartTime", value);
+	}
+	public bool GetEffectName(char[] szBuffer, const int iMaxLength)
+	{
+		return view_as<bool>(GetEntPropString(this.GetEntIndex(), Prop_Data, "m_iszEffectName", szBuffer, iMaxLength));
+	}
+	public int SetEffectName(const char[] value)
+	{
+		return SetEntPropString(this.GetEntIndex(), Prop_Data, "m_iszEffectName", value); 
+	}
+	public void Start()
+	{
+		this.AcceptInput("Start");
+	}
+	public void Stop()
+	{
+		this.AcceptInput("Stop");
+	}
+	public void DestroyImmediately()
+	{
+		this.AcceptInput("DestroyImmediately");
+	}
+	public void Reset()
+	{
+		this.AcceptInput("Reset");
+	}
+}
+
 methodmap CBM_MP_GameRules
 {
 	public static int GetStateIndex(const char[] szStateProp)

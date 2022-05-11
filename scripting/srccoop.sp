@@ -162,7 +162,6 @@ public void OnPluginStart()
 	g_CoopMapStartFwd = new GlobalForward("OnCoopMapStart", ET_Ignore);
 	g_CoopMapConfigLoadedFwd = new GlobalForward("OnCoopMapConfigLoaded", ET_Ignore, Param_Cell, Param_Cell);
 	
-	HookEvent("entity_killed", Event_EntityKilled);
 	HookEvent("player_disconnect", Event_PlayerDisconnect);
 
 	if (g_Engine == Engine_BlackMesa)
@@ -592,19 +591,6 @@ public void Hook_EntitySpawnPost(int iEntIndex)
 			pOutputHookList.Close();
 		}
 	}
-}
-
-public Action Event_EntityKilled(Event hEvent, const char[] szName, bool bDontBroadcast)
-{
-	if (!CoopManager.IsCoopModeEnabled())
-		return Plugin_Continue;
-	
-	CBasePlayer pVictim = CBasePlayer(GetEventInt(hEvent, "entindex_killed"));
-	if (pVictim.IsValid())
-	{
-		SurvivalManager.HandlePlayerDeath(pVictim);
-	}
-	return Plugin_Continue;
 }
 
 // Postpone items' Spawn() until Gamerules IsMultiplayer() gets hooked in OnMapStart()

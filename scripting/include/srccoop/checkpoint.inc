@@ -103,11 +103,9 @@ enum struct CCoopSpawnEntry
 	{
 		if (this.m_bHasPortal)
 		{
-			CBaseEntity pParticle = CBaseEntity(CreateEntityByName("info_particle_system"));
+			CParticleSystem pParticle = CParticleSystem.Create("teleport_lambda_entrance");
 			if (pParticle.IsValid())
 			{
-				pParticle.SetKeyValueStr("effect_name", "teleport_lambda_entrance");
-				pParticle.SetKeyValueStr("start_active", "1");
 				#define PORTAL_TOUCH_SIZE 16.0
 				float mins[3] = {-PORTAL_TOUCH_SIZE, -PORTAL_TOUCH_SIZE, -PORTAL_TOUCH_SIZE};
 				float maxs[3] = {PORTAL_TOUCH_SIZE, PORTAL_TOUCH_SIZE, PORTAL_TOUCH_SIZE};
