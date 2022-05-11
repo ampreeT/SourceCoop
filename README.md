@@ -1,3 +1,4 @@
+![Discord Shield](https://discordapp.com/api/guilds/973591793117564988/widget.png?style=shield)
 # SourceCoop
 
 SourceCoop is a cooperative plugin for [Black Mesa](https://store.steampowered.com/app/362890/Black_Mesa/ "Black Mesa") that __allows multiple players to play together on official and custom campaigns__. The plugin fixes various crashes, adjusts maps for cooperative play, re-enables single-player functionality, and __only needs to be installed on the server__.
@@ -29,8 +30,9 @@ __If you are looking to help with the development of the project__, we are alway
 - Adding configs for new campaigns or levels
 - Spreading the word
 
-If you are interested in helping us, create a pull request above or contact __ampreeT__ or __Alienmario__ below.
-## Credits
+If you are interested in helping us, contact us on [Discord](https://discord.gg/Fh77rxQaEB) or create a pull request.
+
+### Credits
 - __ampreeT__ | programming, reverse engineering, map editing
 	- [Steam](https://steamcommunity.com/id/ampreeT) | [GitHub](https://github.com/ampreeT)
 - __kasull__ | programming, reverse engineering, trailer production
