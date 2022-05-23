@@ -12,6 +12,7 @@
 #define SND_RESPAWN "weapons/tau/gauss_undercharge.wav"
 
 ConVar g_pConVarReviveTime, g_pConVarReviveScore, g_pConVarReviveMessages, g_pConVarRagdollParticle;
+ConVar g_pConVarSurvivalMode;
 
 int g_BeamSprite = -1;
 int g_ColorGreen[4] = {0, 255, 0, 255};
@@ -45,12 +46,21 @@ public void OnPluginStart()
 	HookEvent("player_death", Event_PlayerDeath);
 }
 
+public void OnAllPluginsLoaded()
+{
+	if ((g_pConVarSurvivalMode = FindConVar("sourcecoop_survival_mode")) == null)
+		SetFailState("ConVar sourcecoop_survival_mode not found.");
+	
+	g_pConVarSurvivalMode.AddChangeHook(OnSurvivalModeChanged);
+}
+
 public void OnMapStart()
 {
-	if (!(g_bEnabled = IsCurrentMapCoop()))
+	if (!IsCurrentMapCoop())
 	{
 		return;
 	}
+	SetEnabledState();
 	
 	PrecacheSound(SND_RESPAWN, true);
 	PrecacheSound(SND_START, true);
@@ -65,6 +75,25 @@ public void OnMapStart()
 			g_BeamSprite = PrecacheModel(buffer);
 		}
 		CloseHandle(gameConfig);
+	}
+}
+
+public void OnSurvivalModeChanged(ConVar convar, const char[] oldValue, const char[] newValue)
+{
+	SetEnabledState();
+}
+
+void SetEnabledState()
+{
+	if (g_pConVarSurvivalMode.IntValue && IsCurrentMapCoop())
+	{
+		g_bEnabled = true;
+	}
+	else
+	{
+		g_bEnabled = false;
+		for (int i = 1; i <= MaxClients; i++)
+			ResetReviveStatus(i);
 	}
 }
 

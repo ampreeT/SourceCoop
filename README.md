@@ -46,6 +46,10 @@ If you are interested in helping us, contact us on [Discord](https://discord.gg/
 	- [Steam](https://steamcommunity.com/id/Krozis_Kane/) | [GitHub](https://github.com/KrozisKane)
 - __Balimbanana__ | programming, reverse engineering
 	- [Steam](https://steamcommunity.com/id/Balimbanana/) | [GitHub](https://github.com/Balimbanana)
+- __raicovx__ | programming
+	- [GitHub](https://github.com/raicovx)
+- __Jimmy-Baby__ | programming
+	- [GitHub](https://github.com/Jimmy-Baby)
 #### Playtesters
 - [Lear](https://steamcommunity.com/id/SKGNick)
 - [bddu](https://steamcommunity.com/id/bddu/)

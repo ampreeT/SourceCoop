@@ -131,13 +131,18 @@ public Action OnPlayerRunCmd(int iClient, int &iButtons, int &iImpulse, float fV
 		return Plugin_Continue;
 	}
 
+	if (mouse[0] || mouse[1])
+	{
+		g_bPostTeamSelect[iClient] = true;
+	}
+
 	// Spectator fixes
 	// Credit: harper
 
 	if (IsClientObserver(iClient))
 	{
 		// hide bugged ctrl menu
-		if(tickcount % 10 == 0)
+		if (g_bPostTeamSelect[iClient] && tickcount % 64 == 0)
 			ShowVGUIPanel(iClient, "specmenu", _, false);
 
 		Obs_Mode iMode = view_as<Obs_Mode> (GetEntProp(iClient, Prop_Send, "m_iObserverMode"));
@@ -294,11 +299,13 @@ public void Hook_PlayerSpawnPost(int iClient)
 						ClientCommand(iClient, "hidepanel team");
 						ClientCommand(iClient, "hidepanel deathmatch");
 						ChangeClientTeam(iClient, TEAM_SCIENTIST);
+						g_bPostTeamSelect[iClient] = true;
 					}
 					else
 					{
-						// If this was not here, the specmenu fix in OnPlayerRunCmd would periodically blink the initial team select menu for some reason.
-						ClientCommand(iClient, "chooseteam");
+						// always show DM variant of team select
+						ClientCommand(iClient, "hidepanel team");
+						ClientCommand(iClient, "showpanel deathmatch");
 					}
 				}
 			}
@@ -330,9 +337,9 @@ public MRESReturn Hook_PlayerKilled(int _this, DHookParam hParams)
 
 public MRESReturn Hook_PlayerKilledPost(int _this, DHookParam hParams)
 {
+	CBasePlayer pPlayer = CBasePlayer(_this);
 	if (g_pNewRagdoll.IsValid())
 	{
-		CBasePlayer pPlayer = CBasePlayer(_this);
 		CBaseEntity pRagdoll = pPlayer.GetRagdoll();
 		CBaseEntity pViewEnt = pPlayer.GetViewEntity();
 		
@@ -351,6 +358,9 @@ public MRESReturn Hook_PlayerKilledPost(int _this, DHookParam hParams)
 
 		g_pNewRagdoll = CBaseEntity(-1);
 		
+	}
+	if (CoopManager.IsCoopModeEnabled())
+	{
 		SurvivalManager.HandlePlayerDeath(pPlayer);
 	}
 	return MRES_Ignored;
@@ -398,27 +408,31 @@ public MRESReturn Hook_PlayerChangeTeam(int _this, Handle hParams)
 {
 	if (CoopManager.IsCoopModeEnabled())
 	{
+		if (!CBM_MP_GameRules.IsTeamplay())
+			return MRES_Ignored;
+		
 		int iTeamNum = DHookGetParam(hParams, 1);
-		if (iTeamNum == TEAM_SCIENTIST || iTeamNum == TEAM_MARINES)
+		if (iTeamNum == TEAM_SCIENTIST || iTeamNum == TEAM_MARINES || iTeamNum == TEAM_UNASSIGNED)
 		{
 			char szTeam[16]; g_pConvarCoopTeam.GetString(szTeam, sizeof(szTeam));
 			if (StrEqual(szTeam, "scientist", false))
 			{
-				if (iTeamNum == TEAM_MARINES)
-				{
-					DHookSetParam(hParams, 1, TEAM_SCIENTIST);
-					return MRES_ChangedHandled;
-				}
+				DHookSetParam(hParams, 1, TEAM_SCIENTIST);
+				return MRES_ChangedHandled;
 			}
 			else if (StrEqual(szTeam, "marines", false))
 			{
-				if (iTeamNum == TEAM_SCIENTIST)
-				{
-					DHookSetParam(hParams, 1, TEAM_MARINES);
-					return MRES_ChangedHandled;
-				}
+				DHookSetParam(hParams, 1, TEAM_MARINES);
+				return MRES_ChangedHandled;
+			}
+			if (iTeamNum == TEAM_UNASSIGNED)
+			{
+				DHookSetParam(hParams, 1, TEAM_SCIENTIST);
+				return MRES_ChangedHandled;
 			}
 		}
+
+
 	}
 	return MRES_Ignored;
 }

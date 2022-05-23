@@ -10,7 +10,7 @@
 #include <srccoop/classdef.inc>
 #include <srccoop/utils.inc>
 
-#define SRCCOOP_VERSION "1.1.1"
+#define SRCCOOP_VERSION "1.1.2"
 
 /* The library name registered by the core plugin */
 #define SRCCOOP_LIBRARY "SRCCOOP"

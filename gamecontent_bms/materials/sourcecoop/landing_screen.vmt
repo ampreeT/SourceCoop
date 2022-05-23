@@ -1,0 +1,25 @@
+"MonitorScreen"
+{
+	"$basetexture" "sourcecoop/landing_screen"
+	"$translucent" "1"
+	"$contrast" "0"
+	
+    "Proxies"
+    {
+		"Sine"
+		{
+			"sineperiod" "4"
+			"sinemin" "0"
+			"sinemax" "10"
+			"resultVar" "$contrast"
+		}
+		
+		"Clamp"
+		{
+			"srcVar1" "$contrast"
+			"min" "0"
+			"max" "3"
+			"resultVar" "$contrast"
+		}
+	}
+}

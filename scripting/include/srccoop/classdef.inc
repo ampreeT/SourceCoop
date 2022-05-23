@@ -1381,6 +1381,11 @@ methodmap CBM_MP_GameRules
 	{
 		GameRules_SetProp(szStateProp, bInIntermission, _, STATE_ELEMENT_IS_IN_INTERMISSION);
 	}
+
+	public static bool IsTeamplay()
+	{
+		return GetTeamCount() >= 4;
+	}
 }
 
 methodmap CGlobalState

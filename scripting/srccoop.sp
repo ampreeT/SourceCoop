@@ -331,6 +331,7 @@ public void OnClientDisconnect_Post(int client)
 	SurvivalManager.GameOverCheck();
 	g_flNextStuck[client] = 0.0;
 	g_szSteamIds[client] = "";
+	g_bPostTeamSelect[client] = false;
 }
 
 public void Event_PlayerDisconnect(Event hEvent, const char[] szName, bool bDontBroadcast)
