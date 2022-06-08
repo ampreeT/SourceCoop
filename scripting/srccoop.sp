@@ -416,6 +416,10 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 					DHookEntity(hkHandleAnimEvent, false, iEntIndex, _, Hook_NihilanthHandleAnimEvent);
 					DHookEntity(hkHandleAnimEvent, true, iEntIndex, _, Hook_NihilanthHandleAnimEventPost);
 				}
+				else if (strcmp(szClassname, "npc_puffballfungus") == 0)
+				{	
+					SDKHook(iEntIndex, SDKHook_OnTakeDamage, Hook_PuffballFungusDmg);
+				}
 			}
 			else if ((strcmp(szClassname, "instanced_scripted_scene", false) == 0) ||
 					(strcmp(szClassname, "logic_choreographed_scene", false) == 0) ||

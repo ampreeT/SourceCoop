@@ -349,6 +349,18 @@ public MRESReturn Hook_NihilanthHandleAnimEventPost(int _this, Handle hParams)
 }
 
 //------------------------------------------------------
+// CAI_BaseNPC - npc_puffballfungus
+// MP TakeDamage crash fix
+//------------------------------------------------------
+public Action Hook_PuffballFungusDmg(int victim, int &attacker, int &inflictor, float &damage, int &damagetype, int &weapon, float damageForce[3], float damagePosition[3])
+{
+	attacker = 0;
+	inflictor = 0;
+	weapon = -1;
+	return Plugin_Changed;
+}
+
+//------------------------------------------------------
 // CPropRadiationCharger - prop_radiation_charger, CPropHevCharger - prop_hev_charger
 // ToDo: reimplement on serverside (avoid clientside effects)
 //------------------------------------------------------

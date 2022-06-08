@@ -37,8 +37,8 @@ public void OnPluginStart()
 	g_pConvarDifficultyAutoMin = CreateConVar("sourcecoop_difficulty_auto_min", "1", "When automatic difficulty mode is set to 0, this is the difficulty at 1 player.", _, true, 0.0);
 	g_pConvarDifficultyAutoMax = CreateConVar("sourcecoop_difficulty_auto_max", "20", "When automatic difficulty mode is set to 0, this is the difficulty at max players.", _, true, 0.0);
 	g_pConvarDifficultyAnnounce = CreateConVar("sourcecoop_difficulty_announce", "1", "Toggles announcing changes in difficulty.", _, true, 0.0, true, 1.0);
-	g_pConvarDifficultyIgnoreDamageTo = CreateConVar("sourcecoop_difficulty_ignoredmgto", "npc_headcrab;npc_barnacle", "List of classnames where player->npc damage is exempt from difficulty scaling. Separated by semicolon.");
-	g_pConvarDifficultyIgnoreDamageFrom = CreateConVar("sourcecoop_difficulty_ignoredmgfrom", "", "List of classnames where npc->player damage is exempt from difficulty scaling. Separated by semicolon.");
+	g_pConvarDifficultyIgnoreDamageTo = CreateConVar("sourcecoop_difficulty_ignoredmgto", "npc_headcrab;npc_barnacle;npc_puffballfungus", "List of classnames where player->npc damage is exempt from difficulty scaling. Separated by semicolon.");
+	g_pConvarDifficultyIgnoreDamageFrom = CreateConVar("sourcecoop_difficulty_ignoredmgfrom", "npc_puffballfungus", "List of classnames where npc->player damage is exempt from difficulty scaling. Separated by semicolon.");
 	
 	g_pConvarDifficulty.AddChangeHook(OnDifficultyChanged);
 	g_pConvarDifficultyIgnoreDamageTo.AddChangeHook(OnIgnoreDmgToChanged);
