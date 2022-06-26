@@ -82,6 +82,20 @@ public void Hook_PlayerPreThinkPost(int iClient)
 			CBaseCombatWeapon pWeapon = pPlayer.GetActiveWeapon();
 			if (pWeapon.IsValid())
 			{
+				if (pPlayer.PlayingAdmireGloves())
+				{
+					// if weapon viewmodel index is different at this point, player canceled admire animation
+					if ((GetEntProp(pWeapon.GetEntIndex(), Prop_Data, "m_nViewModelIndex") != 1) || (GetEntPropFloat(pPlayer.GetViewModel().GetEntIndex(), Prop_Data, "m_flTimeWeaponIdle") <= GetGameTime()))
+					{
+						pPlayer.PlayAdmireGloves(false);
+					}
+					else
+					{
+						// this has to be here because the active weapon cant be -1 due to tpose
+						PreventWeaponFiring(pWeapon, 1.0);
+					}
+				}
+				
 				if (pPlayer.GetCarriedObject().IsValid())
 				{
 					// fix clientside prediction errors when dropping objects

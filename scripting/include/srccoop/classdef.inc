@@ -15,6 +15,8 @@ Handle g_pShouldPlayerAvoid;
 Handle g_pRemoveAllItems;
 Handle g_pIsNPC;
 
+bool g_bPlayingAdmireGloves[MAXPLAYERS+1];
+
 void InitClassdef(GameData pGameConfig)
 {
 	// ALL Games
@@ -741,6 +743,10 @@ methodmap CBaseCombatCharacter < CBaseAnimating
 	{
 		SetEntPropEnt(this.GetEntIndex(), Prop_Send, "m_hActiveWeapon", pWeapon.GetEntIndex());
 	}
+	public CBaseCombatWeapon GetLastWeapon()
+	{
+		return CBaseCombatWeapon(GetEntPropEnt(this.GetEntIndex(), Prop_Data, "m_hLastWeapon"));
+	}
 }
 
 methodmap CAI_BaseNPC < CBaseCombatCharacter
@@ -892,6 +898,63 @@ methodmap CBasePlayer < CBaseCombatCharacter
 	{
 		SetEntProp(this.GetEntIndex(), Prop_Send, "m_bWearingSuit", bShouldHaveSuit);
 	}
+	public void PlayAdmireGloves(const bool bStartAnim)
+	{
+		CBaseEntity pViewModel = this.GetViewModel();
+		if (pViewModel.IsValid())
+		{
+			if (bStartAnim)
+			{
+				g_bPlayingAdmireGloves[this.GetEntIndex()] = true;
+				// Cant set active weapon to -1 or player goes in to tpose
+				//this.SetActiveWeapon(CBaseCombatWeapon(-1));
+				
+				if (!IsModelPrecached("models/weapons/v_hands.mdl")) PrecacheModel("models/weapons/v_hands.mdl");
+				pViewModel.SetModel("models/weapons/v_hands.mdl");
+				
+				if (this.GetActiveWeapon().IsValid())
+				{
+					// This will force weapon to not reset the sequence on viewmodel once client-side flCycle reaches 1.0
+					SetEntProp(this.GetActiveWeapon().GetEntIndex(), Prop_Send, "m_nViewModelIndex", 1);
+					SetEntProp(this.GetActiveWeapon().GetEntIndex(), Prop_Data, "m_nViewModelIndex", 1);
+					this.GetActiveWeapon().AcceptInput("HideWeapon");
+				}
+				
+				// Reset cycle and playbackrate
+				SetEntPropFloat(pViewModel.GetEntIndex(), Prop_Data, "m_flCycle", 0.0);
+				SetEntPropFloat(pViewModel.GetEntIndex(), Prop_Data, "m_flPlaybackRate", 1.0);
+				// This is an estimated time of sequence due to m_flCycle not incrementing
+				SetEntPropFloat(pViewModel.GetEntIndex(), Prop_Data, "m_flTimeWeaponIdle", GetGameTime()+6.5);
+			}
+			else
+			{
+				g_bPlayingAdmireGloves[this.GetEntIndex()] = false;
+				
+				int hVMActiveWeapon = GetEntPropEnt(pViewModel.GetEntIndex(), Prop_Data, "m_hWeapon");
+				EquipPlayerWeapon(this.GetEntIndex(), hVMActiveWeapon);
+				SetEntProp(hVMActiveWeapon, Prop_Data, "m_nViewModelIndex", 0);
+				
+				CBaseCombatWeapon pLastWeapon = this.GetLastWeapon();
+				if (pLastWeapon.IsValid())
+				{
+					SetEntProp(pLastWeapon.GetEntIndex(), Prop_Data, "m_nViewModelIndex", 0);
+				}
+				
+				if (IsValidEntity(hVMActiveWeapon))
+				{
+					// Reset viewmodel if exists
+					char szModelName[64];
+					CBaseEntity(hVMActiveWeapon).GetModelName(szModelName, sizeof(szModelName));
+					ReplaceString(szModelName, sizeof(szModelName), "/w_", "/v_", false);
+					if (FileExists(szModelName, true, NULL_STRING)) pViewModel.SetModel(szModelName);
+				}
+			}
+		}
+	}
+	public bool PlayingAdmireGloves()
+	{
+		return g_bPlayingAdmireGloves[this.GetEntIndex()];
+	}
 	public bool IsSprinting()
 	{
 		return view_as<bool>(GetEntProp(this.GetEntIndex(), Prop_Send, "m_bIsSprinting"));
@@ -927,6 +990,12 @@ methodmap CBasePlayer < CBaseCombatCharacter
 		CBaseAnimating pItem = CBaseAnimating(GivePlayerItem(this.GetEntIndex(), szItemName[iNameOffset]));
 		if(pItem.IsValid() && !pItem.GetOwner().IsValid())
 		{
+			if (strcmp(szItemName, "item_suit", false) != 0)
+			{
+				// suit is often deleted before it can be picked up on 0.1
+				this.SetSuit(true);
+			}
+			
 			// this would drop on the ground if player cant pick up any more
 			pItem.KillAfterTime(0.1);
 		}
@@ -1074,9 +1143,9 @@ methodmap CBasePlayer < CBaseCombatCharacter
 		SetEntPropEnt(this.GetEntIndex(), Prop_Data, "m_hViewEntity", (this == pEntity) ? -1 : pEntity.GetEntIndex());
 		SetClientViewEntity(this.GetEntIndex(), pEntity.GetEntIndex());
 	}
-	public CBaseEntity GetViewModel()
+	public CBaseEntity GetViewModel(int iIndex = 0)
 	{
-		return CBaseEntity(GetEntPropEnt(this.GetEntIndex(), Prop_Send, "m_hViewModel"));
+		return CBaseEntity(GetEntPropEnt(this.GetEntIndex(), Prop_Send, "m_hViewModel", iIndex));
 	}
 	public void SetViewModel(CBaseEntity pEntity)
 	{

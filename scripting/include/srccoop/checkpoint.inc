@@ -220,7 +220,7 @@ enum struct CCoopEquipment
 				}
 				else
 				{
-					pPlayer.GiveItem(pWeaponEntry.m_szClassname)
+					pPlayer.GiveItem(pWeaponEntry.m_szClassname);
 				}
 			}
 		}

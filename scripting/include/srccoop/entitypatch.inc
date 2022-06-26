@@ -1611,3 +1611,23 @@ public MRESReturn Hook_MusicTrackAceptInput(int _this, Handle hReturn, Handle hP
 	return MRES_Ignored;
 }
 
+//------------------------------------------------------
+// item_suit
+// play admire hand animation
+//------------------------------------------------------
+public Action Hook_SuitTouchPickup(const char[] output, int caller, int activator, float delay)
+{
+	static char szName[32];
+	CBaseEntity(caller).GetTargetname(szName, sizeof(szName));
+	// Only run this if it is a named item_suit
+	if (strlen(szName) > 0)
+	{
+		CBasePlayer pPlayer = CBasePlayer(activator);
+		if (pPlayer.IsValid())
+		{
+			pPlayer.PlayAdmireGloves(true);
+		}
+	}
+	
+	return Plugin_Continue;
+}
