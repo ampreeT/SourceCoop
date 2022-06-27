@@ -85,7 +85,7 @@ public void Hook_PlayerPreThinkPost(int iClient)
 				if (pPlayer.PlayingAdmireGloves())
 				{
 					// if weapon viewmodel index is different at this point, player canceled admire animation
-					if ((pWeapon.GetViewModelIndex() != 1) || (GetEntPropFloat(pPlayer.GetViewModel().GetEntIndex(), Prop_Data, "m_flTimeWeaponIdle") <= GetGameTime()))
+					if ((pWeapon.GetViewModelIndex() != 1) || (pPlayer.GetViewModel().GetWeaponTimeIdle() <= GetGameTime()))
 					{
 						pPlayer.PlayAdmireGloves(false);
 					}

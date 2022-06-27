@@ -591,6 +591,22 @@ methodmap CBaseAnimating < CBaseEntity
 	{
 		SDKCall(g_pGetSequenceLinearMotion, this, iSequence, pVec);
 	}
+	public float GetPlaybackRate()
+	{
+		return GetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flPlaybackRate");
+	}
+	public void SetPlaybackRate(const float flPlaybackRate)
+	{
+		SetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flPlaybackRate", flPlaybackRate);
+	}
+	public float GetCycle()
+	{
+		return GetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flCycle");
+	}
+	public void SetCycle(const float flCycle)
+	{
+		SetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flCycle", flCycle);
+	}
 }
 
 methodmap CBaseTrigger < CBaseEntity
@@ -718,6 +734,35 @@ methodmap CBaseCombatWeapon < CBaseAnimating
 	public void SetViewModelIndex(const int iViewModelIndex = 0)
 	{
 		SetEntProp(this.GetEntIndex(), Prop_Data, "m_nViewModelIndex", iViewModelIndex);
+	}
+	public float GetWeaponTimeIdle()
+	{
+		return GetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flTimeWeaponIdle");
+	}
+	public void SetWeaponTimeIdle(const float flTimeIdle)
+	{
+		SetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flTimeWeaponIdle", flTimeIdle);
+	}
+}
+
+methodmap CPredictedViewModel < CBaseAnimating
+{
+	public CPredictedViewModel(const int iEntIndex = -1)
+	{
+		return view_as<CPredictedViewModel>(CBaseEntity(iEntIndex));
+	}
+	
+	public float GetWeaponTimeIdle()
+	{
+		return GetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flTimeWeaponIdle");
+	}
+	public void SetWeaponTimeIdle(const float flTimeIdle)
+	{
+		SetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flTimeWeaponIdle", flTimeIdle);
+	}
+	public CBaseCombatWeapon GetOwningWeapon()
+	{
+		return view_as<CBaseCombatWeapon>(GetEntPropEnt(this.GetEntIndex(), Prop_Data, "m_hWeapon"));
 	}
 }
 
@@ -908,7 +953,7 @@ methodmap CBasePlayer < CBaseCombatCharacter
 	}
 	public void PlayAdmireGloves(const bool bStartAnim)
 	{
-		CBaseEntity pViewModel = this.GetViewModel();
+		CPredictedViewModel pViewModel = this.GetViewModel();
 		if (pViewModel.IsValid())
 		{
 			if (bStartAnim)
@@ -926,18 +971,17 @@ methodmap CBasePlayer < CBaseCombatCharacter
 				}
 				
 				// Reset cycle and playbackrate
-				SetEntPropFloat(pViewModel.GetEntIndex(), Prop_Data, "m_flCycle", 0.0);
-				SetEntPropFloat(pViewModel.GetEntIndex(), Prop_Data, "m_flPlaybackRate", 1.0);
+				pViewModel.SetCycle(0.0);
+				pViewModel.SetPlaybackRate(1.0);
 				// This is an estimated time of sequence due to m_flCycle not incrementing
-				// CBaseCombatWeapon and CBlackMesaViewModel have .Get and .SetWeaponIdleTime() but the viewmodel shouldnt be init as CBaseCombatWeapon
-				// Maybe eventually define CBlackMesaViewModel with the overlapping methodmaps
-				SetEntPropFloat(pViewModel.GetEntIndex(), Prop_Data, "m_flTimeWeaponIdle", GetGameTime()+6.5);
+				// CBaseCombatWeapon and CPredictedViewModel have .Get and .SetWeaponIdleTime()
+				pViewModel.SetWeaponTimeIdle(GetGameTime() + 6.0);
 			}
 			else
 			{
 				g_bPlayingAdmireGloves[this.GetEntIndex()] = false;
 				
-				CBaseCombatWeapon pVMActiveWeapon = CBaseCombatWeapon(GetEntPropEnt(pViewModel.GetEntIndex(), Prop_Data, "m_hWeapon"));
+				CBaseCombatWeapon pVMActiveWeapon = pViewModel.GetOwningWeapon();
 				this.EquipPlayerWeapon(pVMActiveWeapon);
 				
 				CBaseCombatWeapon pLastWeapon = this.GetLastWeapon();
@@ -1052,14 +1096,13 @@ methodmap CBasePlayer < CBaseCombatCharacter
 	}
 	public bool EquipPlayerWeapon(CBaseCombatWeapon pWeapon)
 	{
-		// still make this possible to set -1
-		
 		if (pWeapon.IsValid())
 		{
 			EquipPlayerWeapon(this.GetEntIndex(), pWeapon.GetEntIndex());
 			return true;
 		}
 		
+		// still make this possible to set -1
 		EquipPlayerWeapon(this.GetEntIndex(), -1);
 		return false;
 	}
@@ -1164,9 +1207,9 @@ methodmap CBasePlayer < CBaseCombatCharacter
 		SetEntPropEnt(this.GetEntIndex(), Prop_Data, "m_hViewEntity", (this == pEntity) ? -1 : pEntity.GetEntIndex());
 		SetClientViewEntity(this.GetEntIndex(), pEntity.GetEntIndex());
 	}
-	public CBaseEntity GetViewModel(int iIndex = 0)
+	public CPredictedViewModel GetViewModel(int iIndex = 0)
 	{
-		return CBaseEntity(GetEntPropEnt(this.GetEntIndex(), Prop_Send, "m_hViewModel", iIndex));
+		return CPredictedViewModel(GetEntPropEnt(this.GetEntIndex(), Prop_Send, "m_hViewModel", iIndex));
 	}
 	public void SetViewModel(CBaseEntity pEntity)
 	{
