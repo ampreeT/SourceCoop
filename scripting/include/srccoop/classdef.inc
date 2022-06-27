@@ -1042,14 +1042,17 @@ methodmap CBasePlayer < CBaseCombatCharacter
 		CBaseAnimating pItem = CBaseAnimating(GivePlayerItem(this.GetEntIndex(), szItemName[iNameOffset]));
 		if(pItem.IsValid() && !pItem.GetOwner().IsValid())
 		{
-			if (strcmp(szItemName, "item_suit", false) != 0)
+			if (strcmp(szItemName, "item_suit", false) == 0)
 			{
 				// suit is often deleted before it can be picked up on 0.1
 				this.SetSuit(true);
+				pItem.KillAfterTime(0.5);
 			}
-			
-			// this would drop on the ground if player cant pick up any more
-			pItem.KillAfterTime(0.1);
+			else
+			{
+				// this would drop on the ground if player cant pick up any more
+				pItem.KillAfterTime(0.1);
+			}
 		}
 		return pItem;
 	}
