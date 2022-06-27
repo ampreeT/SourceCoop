@@ -711,6 +711,14 @@ methodmap CBaseCombatWeapon < CBaseAnimating
 	{
 		return view_as<bool>(GetEntProp(this.GetEntIndex(), Prop_Data, "m_bFiresUnderwater"));
 	}
+	public int GetViewModelIndex()
+	{
+		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_nViewModelIndex");
+	}
+	public void SetViewModelIndex(const int iViewModelIndex = 0)
+	{
+		SetEntProp(this.GetEntIndex(), Prop_Data, "m_nViewModelIndex", iViewModelIndex);
+	}
 }
 
 methodmap CBaseCombatCharacter < CBaseAnimating
@@ -906,8 +914,6 @@ methodmap CBasePlayer < CBaseCombatCharacter
 			if (bStartAnim)
 			{
 				g_bPlayingAdmireGloves[this.GetEntIndex()] = true;
-				// Cant set active weapon to -1 or player goes in to tpose
-				//this.SetActiveWeapon(CBaseCombatWeapon(-1));
 				
 				if (!IsModelPrecached("models/weapons/v_hands.mdl")) PrecacheModel("models/weapons/v_hands.mdl");
 				pViewModel.SetModel("models/weapons/v_hands.mdl");
@@ -915,8 +921,7 @@ methodmap CBasePlayer < CBaseCombatCharacter
 				if (this.GetActiveWeapon().IsValid())
 				{
 					// This will force weapon to not reset the sequence on viewmodel once client-side flCycle reaches 1.0
-					SetEntProp(this.GetActiveWeapon().GetEntIndex(), Prop_Send, "m_nViewModelIndex", 1);
-					SetEntProp(this.GetActiveWeapon().GetEntIndex(), Prop_Data, "m_nViewModelIndex", 1);
+					this.GetActiveWeapon().SetViewModelIndex(1);
 					this.GetActiveWeapon().AcceptInput("HideWeapon");
 				}
 				
@@ -924,27 +929,30 @@ methodmap CBasePlayer < CBaseCombatCharacter
 				SetEntPropFloat(pViewModel.GetEntIndex(), Prop_Data, "m_flCycle", 0.0);
 				SetEntPropFloat(pViewModel.GetEntIndex(), Prop_Data, "m_flPlaybackRate", 1.0);
 				// This is an estimated time of sequence due to m_flCycle not incrementing
+				// CBaseCombatWeapon and CBlackMesaViewModel have .Get and .SetWeaponIdleTime() but the viewmodel shouldnt be init as CBaseCombatWeapon
+				// Maybe eventually define CBlackMesaViewModel with the overlapping methodmaps
 				SetEntPropFloat(pViewModel.GetEntIndex(), Prop_Data, "m_flTimeWeaponIdle", GetGameTime()+6.5);
 			}
 			else
 			{
 				g_bPlayingAdmireGloves[this.GetEntIndex()] = false;
 				
-				int hVMActiveWeapon = GetEntPropEnt(pViewModel.GetEntIndex(), Prop_Data, "m_hWeapon");
-				EquipPlayerWeapon(this.GetEntIndex(), hVMActiveWeapon);
-				SetEntProp(hVMActiveWeapon, Prop_Data, "m_nViewModelIndex", 0);
+				CBaseCombatWeapon pVMActiveWeapon = CBaseCombatWeapon(GetEntPropEnt(pViewModel.GetEntIndex(), Prop_Data, "m_hWeapon"));
+				this.EquipPlayerWeapon(pVMActiveWeapon);
 				
 				CBaseCombatWeapon pLastWeapon = this.GetLastWeapon();
 				if (pLastWeapon.IsValid())
 				{
-					SetEntProp(pLastWeapon.GetEntIndex(), Prop_Data, "m_nViewModelIndex", 0);
+					pLastWeapon.SetViewModelIndex(0);
 				}
 				
-				if (IsValidEntity(hVMActiveWeapon))
+				if (pVMActiveWeapon.IsValid())
 				{
+					pVMActiveWeapon.SetViewModelIndex(0);
+					
 					// Reset viewmodel if exists
 					char szModelName[64];
-					CBaseEntity(hVMActiveWeapon).GetModelName(szModelName, sizeof(szModelName));
+					pVMActiveWeapon.GetModelName(szModelName, sizeof(szModelName));
 					ReplaceString(szModelName, sizeof(szModelName), "/w_", "/v_", false);
 					if (FileExists(szModelName, true, NULL_STRING)) pViewModel.SetModel(szModelName);
 				}
@@ -1040,6 +1048,19 @@ methodmap CBasePlayer < CBaseCombatCharacter
 			}
 		}
 		
+		return false;
+	}
+	public bool EquipPlayerWeapon(CBaseCombatWeapon pWeapon)
+	{
+		// still make this possible to set -1
+		
+		if (pWeapon.IsValid())
+		{
+			EquipPlayerWeapon(this.GetEntIndex(), pWeapon.GetEntIndex());
+			return true;
+		}
+		
+		EquipPlayerWeapon(this.GetEntIndex(), -1);
 		return false;
 	}
 	public int GetOldButtons()
