@@ -30,6 +30,8 @@ methodmap SurvivalManager {
 		data.m_pConvarRespawn = CreateConVar("sourcecoop_survival_respawn", "1", "Whether to respawn dead players at checkpoints.", _, true, 0.0, true, 1.0);
 		data.m_pConvarSpawnTimeout = CreateConVar("sourcecoop_survival_spawn_timeout", "-1", "Number of seconds after the map starts (after initial timer) to allow spawning in, or -1 for no time limit. Do not use too low values so players have some time to join in.", _, true, -1.0);
 		data.m_pDeadPlayerIDs = CreateArray();
+		
+		data.m_pConvarMode.AddChangeHook(ConVarSurvivalModeChanged);
 	}
 	
 	public static void Clear()
@@ -254,6 +256,14 @@ public Action Timer_SurvivalRestartLevel(Handle timer)
 	ForceChangeLevel(szMapName, SC_SURVIVAL_RESTART_MAPCHANGE);
 	
 	return Plugin_Handled;
+}
+
+public void ConVarSurvivalModeChanged(ConVar hConVar, const char[] szOldValue, const char[] szNewValue)
+{
+	if ((strcmp(szNewValue, "0", false) == 0) && (strcmp(szOldValue, "1", false) == 0))
+	{
+		SurvivalManager.Clear();
+	}
 }
 
 // end shortcut
