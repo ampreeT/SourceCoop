@@ -292,7 +292,7 @@ public void Hook_PlayerSpawnPost(int iClient)
 				SetEntPropEnt(pPlayer.GetEntIndex(), Prop_Data, "m_hLadder", -1);
 
 				// Fix for client viewmodel animation when always run is off
-				sv_always_run.ReplicateToClient(iClient, "1");
+				if (!IsFakeClient(iClient)) sv_always_run.ReplicateToClient(iClient, "1");
 				
 				// Correct the 'damages' from the prethink hook hack
 				pPlayer.SetSuit(false);
