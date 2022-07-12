@@ -20,6 +20,7 @@ ConVar g_pConVarNextStuck;
 ConVar mp_friendlyfire;
 ConVar mp_flashlight;
 ConVar sv_always_run;
+ConVar mp_teamplay;
 
 // ----------------------------
 // SDK Calls
@@ -54,6 +55,7 @@ DynamicHook hkRunAI;
 DynamicHook hkLevelInit;
 DynamicHook hkEvent_Killed;
 DynamicHook hkKeyValue_char;
+DynamicHook hkBlocked;
 DynamicDetour hkSetSuitUpdate;
 DynamicDetour hkUTIL_GetLocalPlayer;
 DynamicDetour hkResolveNames;

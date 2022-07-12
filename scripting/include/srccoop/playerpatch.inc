@@ -294,6 +294,9 @@ public void Hook_PlayerSpawnPost(int iClient)
 				// Fix for client viewmodel animation when always run is off
 				if (!IsFakeClient(iClient)) sv_always_run.ReplicateToClient(iClient, "1");
 				
+				// Fix for lag no collide with mp_teamplay 0
+				if (!mp_teamplay.IntValue) pPlayer.SetCollisionGroup(3);
+				
 				// Correct the 'damages' from the prethink hook hack
 				pPlayer.SetSuit(false);
 				pPlayer.SetMaxSpeed(190.0);

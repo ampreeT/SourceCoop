@@ -1612,6 +1612,25 @@ public MRESReturn Hook_MusicTrackAceptInput(int _this, Handle hReturn, Handle hP
 }
 
 //------------------------------------------------------
+// func_trackautochange
+// Prevent track from being blocked by players and forced to go back down
+//------------------------------------------------------
+public MRESReturn Hook_TrackChangeBlocked(int _this, Handle hReturn, Handle hParams)
+{
+	if (!DHookIsNullParam(hParams, 1))
+	{
+		CBasePlayer pPlayer = DHookGetParam(hParams, 1);
+		if (pPlayer.IsValid())
+		{
+			pPlayer.Suicide();
+			DHookSetReturn(hReturn, false);
+			return MRES_Supercede;
+		}
+	}
+	return MRES_Ignored;
+}
+
+//------------------------------------------------------
 // item_suit
 // play admire hand animation
 //------------------------------------------------------
