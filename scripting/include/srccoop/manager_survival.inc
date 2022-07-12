@@ -260,7 +260,7 @@ public Action Timer_SurvivalRestartLevel(Handle timer)
 
 public void ConVarSurvivalModeChanged(ConVar hConVar, const char[] szOldValue, const char[] szNewValue)
 {
-	if ((strcmp(szNewValue, "0", false) == 0) && (strcmp(szOldValue, "1", false) == 0))
+	if (strcmp(szNewValue, "0", false) == 0)
 	{
 		SurvivalManager.Clear();
 	}
