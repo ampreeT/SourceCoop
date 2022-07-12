@@ -537,6 +537,10 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 			{
 				DHookEntity(hkBlocked, false, iEntIndex, _, Hook_TrackChangeBlocked);
 			}
+			else if (strcmp(szClassname, "func_tracktrain") == 0)
+			{
+				DHookEntity(hkBlocked, false, iEntIndex, _, Hook_TrackTrainBlocked);
+			}
 			
 			// if some explosions turn out to be damaging all players except one, this is the fix
 			//else if (strcmp(szClassname, "env_explosion") == 0)

@@ -1623,10 +1623,44 @@ public MRESReturn Hook_TrackChangeBlocked(int _this, Handle hReturn, Handle hPar
 		if (pPlayer.IsValid())
 		{
 			pPlayer.Suicide();
+			
 			DHookSetReturn(hReturn, false);
 			return MRES_Supercede;
 		}
 	}
+	
+	return MRES_Ignored;
+}
+
+//------------------------------------------------------
+// func_tracktrain
+// Prevent trains from being blocked by players
+// Moves players up if not blocked, otherwise kills blocking player
+//------------------------------------------------------
+public MRESReturn Hook_TrackTrainBlocked(int _this, Handle hReturn, Handle hParams)
+{
+	static float vecOriginAdjusted[3];
+	
+	if (!DHookIsNullParam(hParams, 1))
+	{
+		CBasePlayer pPlayer = DHookGetParam(hParams, 1);
+		if (pPlayer.IsValid())
+		{
+			pPlayer.GetAbsOrigin(vecOriginAdjusted);
+			vecOriginAdjusted[2] += 64.0;
+			if (TR_PointOutsideWorld(vecOriginAdjusted))
+			{
+				pPlayer.Suicide();
+				DHookSetReturn(hReturn, false);
+				return MRES_Supercede;
+			}
+			
+			// Move up 2 if blocking and not out of world
+			vecOriginAdjusted[2] -= 62.0;
+			pPlayer.Teleport(vecOriginAdjusted);
+		}
+	}
+	
 	return MRES_Ignored;
 }
 
