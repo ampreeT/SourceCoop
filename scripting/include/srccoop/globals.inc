@@ -20,7 +20,6 @@ ConVar g_pConVarNextStuck;
 ConVar mp_friendlyfire;
 ConVar mp_flashlight;
 ConVar sv_always_run;
-ConVar mp_teamplay;
 
 // ----------------------------
 // SDK Calls
