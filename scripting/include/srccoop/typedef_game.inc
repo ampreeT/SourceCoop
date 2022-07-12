@@ -124,6 +124,9 @@ enum
 #define SF_SPRITE_ONCE			0x0002
 #define SF_SPRITE_TEMPORARY		0x8000
 
+// item_suit spawnflags
+#define SF_BOOTSEQUENCE			( 1 << 17 )
+
 //------------------------------------------------------
 // Effects flags
 //------------------------------------------------------

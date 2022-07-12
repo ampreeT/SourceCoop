@@ -1670,10 +1670,7 @@ public MRESReturn Hook_TrackTrainBlocked(int _this, Handle hReturn, Handle hPara
 //------------------------------------------------------
 public Action Hook_SuitTouchPickup(const char[] output, int caller, int activator, float delay)
 {
-	static char szName[32];
-	CBaseEntity(caller).GetTargetname(szName, sizeof(szName));
-	// Only run this if it is a named item_suit
-	if (strlen(szName) > 0)
+	if (CBaseEntity(caller).HasSpawnFlag(SF_BOOTSEQUENCE))
 	{
 		CBasePlayer pPlayer = CBasePlayer(activator);
 		if (pPlayer.IsValid())
