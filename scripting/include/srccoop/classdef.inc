@@ -22,8 +22,6 @@ Handle g_pShouldPlayerAvoid;
 Handle g_pRemoveAllItems;
 Handle g_pIsNPC;
 
-bool g_bPlayingAdmireGloves[MAXPLAYERS+1];
-
 void InitClassdef(GameData pGameConfig)
 {
 	// ALL Games
@@ -1018,62 +1016,6 @@ methodmap CBasePlayer < CBaseCombatCharacter
 	public void SetSuit(const bool bShouldHaveSuit)
 	{
 		SetEntProp(this.GetEntIndex(), Prop_Send, "m_bWearingSuit", bShouldHaveSuit);
-	}
-	public void PlayAdmireGloves(const bool bStartAnim)
-	{
-		CPredictedViewModel pViewModel = this.GetViewModel();
-		if (pViewModel.IsValid())
-		{
-			if (bStartAnim)
-			{
-				g_bPlayingAdmireGloves[this.GetEntIndex()] = true;
-				
-				if (!IsModelPrecached("models/weapons/v_hands.mdl")) PrecacheModel("models/weapons/v_hands.mdl");
-				pViewModel.SetModel("models/weapons/v_hands.mdl");
-				
-				if (this.GetActiveWeapon().IsValid())
-				{
-					// This will force weapon to not reset the sequence on viewmodel once client-side flCycle reaches 1.0
-					this.GetActiveWeapon().SetViewModelIndex(1);
-					this.GetActiveWeapon().AcceptInput("HideWeapon");
-				}
-				
-				// Reset cycle and playbackrate
-				pViewModel.SetCycle(0.0);
-				pViewModel.SetPlaybackRate(1.0);
-				// This is an estimated time of sequence due to m_flCycle not incrementing
-				// CBaseCombatWeapon and CPredictedViewModel have .Get and .SetWeaponIdleTime()
-				pViewModel.SetWeaponTimeIdle(GetGameTime() + 6.0);
-			}
-			else
-			{
-				g_bPlayingAdmireGloves[this.GetEntIndex()] = false;
-				
-				CBaseCombatWeapon pVMActiveWeapon = pViewModel.GetOwningWeapon();
-				this.EquipPlayerWeapon(pVMActiveWeapon);
-				
-				CBaseCombatWeapon pLastWeapon = this.GetLastWeapon();
-				if (pLastWeapon.IsValid())
-				{
-					pLastWeapon.SetViewModelIndex(0);
-				}
-				
-				if (pVMActiveWeapon.IsValid())
-				{
-					pVMActiveWeapon.SetViewModelIndex(0);
-					
-					// Reset viewmodel if exists
-					char szModelName[64];
-					pVMActiveWeapon.GetModelName(szModelName, sizeof(szModelName));
-					ReplaceString(szModelName, sizeof(szModelName), "/w_", "/v_", false);
-					if (FileExists(szModelName, true, NULL_STRING)) pViewModel.SetModel(szModelName);
-				}
-			}
-		}
-	}
-	public bool PlayingAdmireGloves()
-	{
-		return g_bPlayingAdmireGloves[this.GetEntIndex()];
 	}
 	public bool IsSprinting()
 	{

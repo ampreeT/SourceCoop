@@ -1666,7 +1666,7 @@ public MRESReturn Hook_TrackTrainBlocked(int _this, Handle hReturn, Handle hPara
 
 //------------------------------------------------------
 // item_suit
-// play admire hand animation
+// play admire gloves animation
 //------------------------------------------------------
 public Action Hook_SuitTouchPickup(const char[] output, int caller, int activator, float delay)
 {
@@ -1675,7 +1675,7 @@ public Action Hook_SuitTouchPickup(const char[] output, int caller, int activato
 		CBasePlayer pPlayer = CBasePlayer(activator);
 		if (pPlayer.IsValid())
 		{
-			pPlayer.PlayAdmireGloves(true);
+			PlayAdmireGloves(pPlayer, true);
 		}
 	}
 	
