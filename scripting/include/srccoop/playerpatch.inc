@@ -414,6 +414,14 @@ public Action Hook_PlayerTakeDamage(int victim, int &attacker, int &inflictor, f
 			return Plugin_Handled;
 		}
 	}
+	if (CoopManager.IsCoopModeEnabled() && !mp_friendlyfire.BoolValue)
+	{
+		// Disable FF from other sources such as the tau cannon
+		if (attacker != victim && CBlackMesaPlayer(attacker).IsClassPlayer())
+		{
+			return Plugin_Handled;
+		}
+	}
 	return Plugin_Continue;
 }
 
