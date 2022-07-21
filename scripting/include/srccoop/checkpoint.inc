@@ -209,13 +209,16 @@ enum struct CCoopEquipment
 				if (StrContains(pWeaponEntry.m_szClassname, "weapon_", false) == 0)
 				{
 					CBaseCombatWeapon pWeapon = pPlayer.GiveWeapon(pWeaponEntry.m_szClassname);
-					if (pWeapon.GetPrimaryAmmoType() != -1)
+					if (pWeapon.IsValid())
 					{
-						pWeapon.SetPrimaryAmmo(pWeaponEntry.m_iPrimaryAmmo);
-					}
-					if (pWeapon.GetSecondaryAmmoType() != -1)
-					{
-						pWeapon.SetSecondaryAmmo(pWeaponEntry.m_iSecondaryAmmo);
+						if (pWeapon.GetPrimaryAmmoType() != -1)
+						{
+							pWeapon.SetPrimaryAmmo(pWeaponEntry.m_iPrimaryAmmo);
+						}
+						if (pWeapon.GetSecondaryAmmoType() != -1)
+						{
+							pWeapon.SetSecondaryAmmo(pWeaponEntry.m_iSecondaryAmmo);
+						}
 					}
 				}
 				else
