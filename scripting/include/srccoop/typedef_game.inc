@@ -67,6 +67,9 @@ enum
 #define SF_ITEM_NORESPAWN ( 1 << 30 )	// if set, item wont respawn in MP
 #define SF_ITEM_HARDRESPAWN ( 1 << 2 )	// if set in BM, item respawns at regular interval
 
+// item_suit spawnflags
+#define SF_BOOTSEQUENCE ( 1 << 17 )
+
 // Phys prop spawnflags
 #define SF_PHYSPROP_START_ASLEEP				0x000001
 #define SF_PHYSPROP_DONT_TAKE_PHYSICS_DAMAGE	0x000002		// this prop can't be damaged by physics collisions
@@ -123,9 +126,6 @@ enum
 #define SF_SPRITE_STARTON		0x0001
 #define SF_SPRITE_ONCE			0x0002
 #define SF_SPRITE_TEMPORARY		0x8000
-
-// item_suit spawnflags
-#define SF_BOOTSEQUENCE			( 1 << 17 )
 
 //------------------------------------------------------
 // Effects flags

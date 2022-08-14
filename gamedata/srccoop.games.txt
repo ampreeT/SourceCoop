@@ -556,11 +556,6 @@
 				"windows"	"\x55\x8B\xEC\x8B\x45\x0C\xBA\x2A\x2A\x2A\x2A\xFF\x75\x10"
 				"linux"		"@_Z16GlobalEntity_AddPKcS0_12GLOBALESTATE"
 			}
-			"V_strncpy"
-			{
-				"windows"	"\x55\x8B\xEC\x56\x8B\x75\x10\x57\x8B\x7D\x08"
-				"linux"		"@_Z9V_strncpyPcPKci"
-			}
 			"Pickup_ForcePlayerToDropThisObject" // void Pickup_ForcePlayerToDropThisObject(CBaseEntity *)
 			{
 				"windows"	"\x55\x8B\xEC\x56\x8B\x75\x08\x85\xF6\x74\x2A\x8B\x8E\xE4\x01\x00\x00"

@@ -13,7 +13,6 @@ Handle g_pGlobalEntityGetMap;
 Handle g_pGlobalEntitySetState;
 Handle g_pGlobalEntitySetCounter;
 Handle g_pGlobalEntityAdd;
-Handle g_pV_strncpy;
 Handle g_pGameShutdown;
 Handle g_pSetCollisionBounds;
 Handle g_pUpdateEnemyMemory;
@@ -69,7 +68,7 @@ void InitClassdef(GameData pGameConfig)
 		if(!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Signature, szGlobalEntity_GetName))
 			SetFailState("Could not obtain gamedata signature %s", szGlobalEntity_GetName);
 		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
-		PrepSDKCall_SetReturnInfo(SDKType_PlainOldData, SDKPass_Plain);
+		PrepSDKCall_SetReturnInfo(SDKType_String, SDKPass_Pointer);
 		if (!(g_pGlobalEntityGetName = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szGlobalEntity_GetName);
 
 		char szGlobalEntity_GetCounter[] = "GlobalEntity_GetCounter";
@@ -85,7 +84,7 @@ void InitClassdef(GameData pGameConfig)
 		if(!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Signature, szGlobalEntity_GetMap))
 			SetFailState("Could not obtain gamedata signature %s", szGlobalEntity_GetMap);
 		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
-		PrepSDKCall_SetReturnInfo(SDKType_PlainOldData, SDKPass_Plain);
+		PrepSDKCall_SetReturnInfo(SDKType_String, SDKPass_Pointer);
 		if (!(g_pGlobalEntityGetMap = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szGlobalEntity_GetMap);
 
 		char szGlobalEntity_SetState[] = "GlobalEntity_SetState";
@@ -115,15 +114,6 @@ void InitClassdef(GameData pGameConfig)
 		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
 		PrepSDKCall_SetReturnInfo(SDKType_PlainOldData, SDKPass_Plain);
 		if (!(g_pGlobalEntityAdd = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szGlobalEntity_Add);
-
-		char szV_strncpy[] = "V_strncpy";
-		StartPrepSDKCall(SDKCall_Static);
-		if(!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Signature, szV_strncpy))
-			SetFailState("Could not obtain gamedata signature %s", szV_strncpy);
-		PrepSDKCall_AddParameter(SDKType_String, SDKPass_Pointer);
-		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
-		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
-		if (!(g_pV_strncpy = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szV_strncpy);
 	}
 	
 	if (GetEngineVersion() == Engine_BlackMesa)
@@ -1551,17 +1541,14 @@ methodmap CGlobalState
 		return CGlobalState.GetStateByIndex(CGlobalState.GetIndex(szGlobalname));
 	}
 	
-	public static bool GetName(int globalIndex, const char[] szGlobalName, const int iMaxLength)
+	public static int GetName(int globalIndex, const char[] szGlobalName, const int iMaxLength)
 	{
-		// Validation in str length
-		if (SDKCall(g_pGlobalEntityGetName, globalIndex) != 0)
-		{
-			SDKCall(g_pV_strncpy, szGlobalName, SDKCall(g_pGlobalEntityGetName, globalIndex), iMaxLength);
-			
-			return true;
-		}
-		
-		return false;
+		return SDKCall(g_pGlobalEntityGetName, szGlobalName, iMaxLength, globalIndex);
+	}
+
+	public static bool IsValidIndex(int globalIndex)
+	{
+		return CGlobalState.GetName(globalIndex, NULL_STRING, 0) != -1;
 	}
 	
 	public static int GetCounter(int globalIndex)
@@ -1569,28 +1556,16 @@ methodmap CGlobalState
 		return SDKCall(g_pGlobalEntityGetCounter, globalIndex);
 	}
 	
-	public static bool GetMap(int globalIndex, const char[] szGlobalMap, const int iMaxLength)
+	public static int GetMap(int globalIndex, const char[] szGlobalMap, const int iMaxLength)
 	{
-		//SDKCall(g_pGlobalEntityGetMap, globalIndex, szGlobalMap, iMaxLength);
-		
-		// Validation in str length
-		if (SDKCall(g_pGlobalEntityGetMap, globalIndex) != 0)
-		{
-			SDKCall(g_pV_strncpy, szGlobalMap, SDKCall(g_pGlobalEntityGetMap, globalIndex), iMaxLength);
-			
-			return true;
-		}
-		
-		return false;
+		return SDKCall(g_pGlobalEntityGetMap, szGlobalMap, iMaxLength, globalIndex);
 	}
 	
 	public static bool SetState(int globalIndex, GLOBALESTATE state)
 	{
-		// Make sure it exists
-		if (SDKCall(g_pGlobalEntityGetName, globalIndex) != 0)
+		if (CGlobalState.IsValidIndex(globalIndex))
 		{
 			SDKCall(g_pGlobalEntitySetState, globalIndex, state);
-			
 			return true;
 		}
 		
@@ -1603,7 +1578,6 @@ methodmap CGlobalState
 		if (globalIndex != -1)
 		{
 			CGlobalState.SetState(globalIndex, state);
-			
 			return true;
 		}
 		
@@ -1612,10 +1586,9 @@ methodmap CGlobalState
 	
 	public static bool SetCounter(int globalIndex, int iCounter)
 	{
-		if (SDKCall(g_pGlobalEntityGetName, globalIndex) != 0)
+		if (CGlobalState.IsValidIndex(globalIndex))
 		{
 			SDKCall(g_pGlobalEntitySetCounter, globalIndex, iCounter);
-			
 			return true;
 		}
 		
@@ -1628,7 +1601,6 @@ methodmap CGlobalState
 		if (globalIndex != -1)
 		{
 			CGlobalState.SetCounter(globalIndex, iCounter);
-			
 			return true;
 		}
 		
