@@ -75,10 +75,7 @@ void LoadGameData()
 		
 		if (hkLevelInit.HookRaw(Hook_Pre, view_as<Address>(g_ServerGameDLL), Hook_OnLevelInit) == INVALID_HOOK_ID)
 			SetFailState("Could not hook CServerGameDLL::LevelInit");
-	}
 		
-	if (g_Engine == Engine_BlackMesa)
-	{
 		char szCreateServerRagdoll[] = "CreateServerRagdoll";
 		StartPrepSDKCall(SDKCall_Static);
 		if(!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Signature, szCreateServerRagdoll))
@@ -91,7 +88,10 @@ void LoadGameData()
 		PrepSDKCall_AddParameter(SDKType_Bool, SDKPass_Plain); // bool bUseLRURetirement
 		if (!(g_pCreateServerRagdoll = EndPrepSDKCall()))
 			SetFailState("Could not prep SDK call %s", szCreateServerRagdoll);
-		
+	}
+	
+	if (g_Engine == Engine_BlackMesa)
+	{
 		LoadDHookVirtual(pGameConfig, hkFAllowFlashlight, "CMultiplayRules::FAllowFlashlight");
 		LoadDHookVirtual(pGameConfig, hkIsMultiplayer, "CMultiplayRules::IsMultiplayer");
 		LoadDHookVirtual(pGameConfig, hkRestoreWorld, "CBM_MP_GameRules::RestoreWorld");

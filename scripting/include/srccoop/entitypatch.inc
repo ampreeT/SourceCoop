@@ -1647,8 +1647,9 @@ public MRESReturn Hook_TrackTrainBlocked(int _this, Handle hReturn, Handle hPara
 		if (pPlayer.IsValid())
 		{
 			pPlayer.GetAbsOrigin(vecOriginAdjusted);
-			vecOriginAdjusted[2] += 64.0;
-			if (TR_PointOutsideWorld(vecOriginAdjusted))
+			
+			CanTeleportResult CanTP = CanTeleportPlayer(pPlayer, vecOriginAdjusted);
+			if (CanTP == CAN_TP_NO)
 			{
 				pPlayer.Suicide();
 				DHookSetReturn(hReturn, false);
@@ -1656,8 +1657,13 @@ public MRESReturn Hook_TrackTrainBlocked(int _this, Handle hReturn, Handle hPara
 			}
 			
 			// Move up 2 if blocking and not out of world
-			vecOriginAdjusted[2] -= 62.0;
+			vecOriginAdjusted[2] += 2.0;
 			pPlayer.Teleport(vecOriginAdjusted);
+			
+			if ((CanTP == CAN_TP_MUSTDUCK) && (!pPlayer.IsDucked()))
+			{
+				pPlayer.StartDucking();
+			}
 		}
 	}
 	
