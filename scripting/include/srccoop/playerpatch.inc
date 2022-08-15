@@ -276,9 +276,6 @@ public void Hook_PlayerSpawnPost(int iClient)
 	CBlackMesaPlayer pPlayer = CBlackMesaPlayer(iClient);
 	if (pPlayer.IsValid())
 	{
-		CoopManager.OnPlayerSpawned(pPlayer);
-		g_pInstancingManager.OnPlayerSpawned(pPlayer);
-		
 		if (g_Engine == Engine_BlackMesa)
 		{
 			if (pPlayer.IsAlive())
@@ -327,6 +324,9 @@ public void Hook_PlayerSpawnPost(int iClient)
 				}
 			}
 		}
+		
+		CoopManager.OnPlayerSpawned(pPlayer);
+		g_pInstancingManager.OnPlayerSpawned(pPlayer);
 	}
 }
 
