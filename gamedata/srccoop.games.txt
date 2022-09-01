@@ -235,6 +235,20 @@
 				"return"	"void"
 				"this"		"entity"
 			}
+			"CBaseEntity::Blocked"
+			{
+				"offset"	"CBaseEntity::Blocked"
+				"hooktype"	"entity"
+				"return"	"bool"
+				"this"		"entity"
+				"arguments"
+				{
+					"pBlocker"
+					{
+						"type"	"cbaseentity"
+					}
+				}
+			}
 			"CBasePlayer::ChangeTeam"
 			{
 				"offset"	"CBasePlayer::ChangeTeam"
@@ -512,6 +526,36 @@
 				"windows"	"\x55\x8B\xEC\x8B\x45\x08\x85\xC0\x78\x2A\x3B\x05\x2A\x2A\x2A\x2A\x7D\x2A\x8D\x0C\x40\xA1\x2A\x2A\x2A\x2A\x8B\x44\x88\x04"
 				"linux" 	"@_Z21GlobalEntity_GetStatei"
 			}
+			"GlobalEntity_GetName" // const char *GlobalEntity_GetName( int globalIndex );
+			{
+				"windows"	"\x55\x8B\xEC\x8B\x45\x08\x85\xC0\x78\x2A\x3B\x05\x2A\x2A\x2A\x2A\x7D\x2A\x51\x8D\x0C\x40\x8B\xD4\xA1\x2A\x2A\x2A\x2A\x66\x8B\x04\x88"
+				"linux"		"@_Z20GlobalEntity_GetNamei"
+			}
+			"GlobalEntity_GetCounter" // int GlobalEntity_GetCounter( int globalIndex );
+			{
+				"windows"	"\x55\x8B\xEC\x8B\x45\x08\x85\xC0\x78\x2A\x3B\x05\x2A\x2A\x2A\x2A\x7D\x2A\x8D\x0C\x40\xA1\x2A\x2A\x2A\x2A\x8B\x44\x88\x08"
+				"linux"		"@_Z23GlobalEntity_GetCounteri"
+			}
+			"GlobalEntity_GetMap" // const char *GlobalEntity_GetMap( int globalIndex );
+			{
+				"windows"	"\x55\x8B\xEC\x8B\x45\x08\x85\xC0\x78\x2A\x3B\x05\x2A\x2A\x2A\x2A\x7D\x2A\x51\x8D\x0C\x40\x8B\xD4\xA1\x2A\x2A\x2A\x2A\x66\x8B\x44\x88\x02"
+				"linux"		"@_Z19GlobalEntity_GetMapi"
+			}
+			"GlobalEntity_SetState" // void GlobalEntity_SetState( int globalIndex, GLOBALESTATE state )
+			{
+				"windows"	"\x55\x8B\xEC\x80\x3D\x2A\x2A\x2A\x2A\x00\x75\x2A\x8B\x45\x08\x85\xC0\x78\x2A\x3B\x05\x2A\x2A\x2A\x2A\x7D\x2A\x8B\x4D\x0C\x8D\x14\x40\xA1\x2A\x2A\x2A\x2A\x89\x4C\x90\x04"
+				"linux"		"@_Z21GlobalEntity_SetStatei12GLOBALESTATE"
+			}
+			"GlobalEntity_SetCounter" // void GlobalEntity_SetCounter( int globalIndex, int counter )
+			{
+				"windows"	"\x55\x8B\xEC\x80\x3D\x2A\x2A\x2A\x2A\x00\x75\x2A\x8B\x45\x08\x85\xC0\x78\x2A\x3B\x05\x2A\x2A\x2A\x2A\x7D\x2A\x8B\x4D\x0C\x8D\x14\x40\xA1\x2A\x2A\x2A\x2A\x89\x4C\x90\x08"
+				"linux"		"@_Z23GlobalEntity_SetCounterii"
+			}
+			"GlobalEntity_Add" // int GlobalEntity_Add( string_t const char *pGlobalname, const char *pMapName, GLOBALESTATE state )
+			{
+				"windows"	"\x55\x8B\xEC\x8B\x45\x0C\xBA\x2A\x2A\x2A\x2A\xFF\x75\x10"
+				"linux"		"@_Z16GlobalEntity_AddPKcS0_12GLOBALESTATE"
+			}
 			"Pickup_ForcePlayerToDropThisObject" // void Pickup_ForcePlayerToDropThisObject(CBaseEntity *)
 			{
 				"windows"	"\x55\x8B\xEC\x56\x8B\x75\x08\x85\xF6\x74\x2A\x8B\x8E\xE4\x01\x00\x00"
@@ -690,6 +734,11 @@
 				"windows"	"34"
 				"linux"		"33"
 			}
+			"CBaseEntity::Blocked" // bool CBaseEntity::Blocked(CBaseEntity*)
+			{
+				"windows"	"111"
+				"linux"		"112"
+			}
 		}
 	}
 	"hl2mp"
@@ -723,6 +772,11 @@
 			{
 				"windows"		"\x55\x8B\xEC\x81\xC1\x4C\x01\x00\x00"
 				"linux"			"@_ZN11CBaseEntity18SetCollisionBoundsERK6VectorS2_"
+			}
+			"CreateServerRagdoll" // CBaseEntity CreateServerRagdoll(CBaseAnimating *, int, const CTakeDamageInfo *, int, bool)
+			{
+				"windows"	"\x53\x8B\xDC\x83\xEC\x08\x83\xE4\xF0\x83\xC4\x04\x55\x8B\x6B\x04\x89\x6C\x24\x04\x8B\xEC\xB8\x78\x32\x00\x00"
+				"linux" 	"@_Z19CreateServerRagdollP14CBaseAnimatingiRK15CTakeDamageInfoib"
 			}
 		}
 	}

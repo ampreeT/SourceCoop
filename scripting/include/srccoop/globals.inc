@@ -54,6 +54,7 @@ DynamicHook hkRunAI;
 DynamicHook hkLevelInit;
 DynamicHook hkEvent_Killed;
 DynamicHook hkKeyValue_char;
+DynamicHook hkBlocked;
 DynamicDetour hkSetSuitUpdate;
 DynamicDetour hkUTIL_GetLocalPlayer;
 DynamicDetour hkResolveNames;
