@@ -67,6 +67,14 @@ void LoadGameData()
 			SetFailState("Could not get interface verison for %s", "IServerGameDLL");
 		if (!(g_ServerGameDLL = IServerGameDLL(GetServerInterface(szInterfaceGame))))
 			SetFailState("Could not get interface for %s", "g_ServerGameDLL");
+
+		LoadDHookVirtual(pGameConfig, hkChangeTeam, "CBasePlayer::ChangeTeam");
+		LoadDHookVirtual(pGameConfig, hkShouldCollide, "CBaseEntity::ShouldCollide");
+		LoadDHookVirtual(pGameConfig, hkPlayerSpawn, "CBasePlayer::Spawn");
+		LoadDHookVirtual(pGameConfig, hkLevelInit, "CServerGameDLL::LevelInit");
+		
+		if (hkLevelInit.HookRaw(Hook_Pre, view_as<Address>(g_ServerGameDLL), Hook_OnLevelInit) == INVALID_HOOK_ID)
+			SetFailState("Could not hook CServerGameDLL::LevelInit");
 		
 		char szCreateServerRagdoll[] = "CreateServerRagdoll";
 		StartPrepSDKCall(SDKCall_Static);
@@ -80,16 +88,8 @@ void LoadGameData()
 		PrepSDKCall_AddParameter(SDKType_Bool, SDKPass_Plain); // bool bUseLRURetirement
 		if (!(g_pCreateServerRagdoll = EndPrepSDKCall()))
 			SetFailState("Could not prep SDK call %s", szCreateServerRagdoll);
-	
-		LoadDHookVirtual(pGameConfig, hkChangeTeam, "CBasePlayer::ChangeTeam");
-		LoadDHookVirtual(pGameConfig, hkShouldCollide, "CBaseEntity::ShouldCollide");
-		LoadDHookVirtual(pGameConfig, hkPlayerSpawn, "CBasePlayer::Spawn");
-		LoadDHookVirtual(pGameConfig, hkLevelInit, "CServerGameDLL::LevelInit");
-			
-		if (hkLevelInit.HookRaw(Hook_Pre, view_as<Address>(g_ServerGameDLL), Hook_OnLevelInit) == INVALID_HOOK_ID)
-			SetFailState("Could not hook CServerGameDLL::LevelInit");
 	}
-		
+	
 	if (g_Engine == Engine_BlackMesa)
 	{
 		LoadDHookVirtual(pGameConfig, hkFAllowFlashlight, "CMultiplayRules::FAllowFlashlight");
@@ -110,6 +110,7 @@ void LoadGameData()
 		LoadDHookVirtual(pGameConfig, hkRunAI, "CAI_BaseNPC::RunAI");
 		LoadDHookVirtual(pGameConfig, hkEvent_Killed, "CBaseEntity::Event_Killed");
 		LoadDHookVirtual(pGameConfig, hkKeyValue_char, "CBaseEntity::KeyValue_char");
+		LoadDHookVirtual(pGameConfig, hkBlocked, "CBaseEntity::Blocked");
 		LoadDHookDetour(pGameConfig, hkUTIL_GetLocalPlayer, "UTIL_GetLocalPlayer", Hook_UTIL_GetLocalPlayer);
 		LoadDHookDetour(pGameConfig, hkSetSuitUpdate, "CBasePlayer::SetSuitUpdate", Hook_SetSuitUpdate, Hook_SetSuitUpdatePost);
 		LoadDHookDetour(pGameConfig, hkResolveNames, "CAI_GoalEntity::ResolveNames", Hook_ResolveNames, Hook_ResolveNamesPost);
@@ -313,6 +314,7 @@ public void OnClientPutInServer(int client)
 	DHookEntity(hkAcceptInput, false, client, _, Hook_PlayerAcceptInput);
 	DHookEntity(hkEvent_Killed, false, client, _, Hook_PlayerKilled);
 	DHookEntity(hkEvent_Killed, true, client, _, Hook_PlayerKilledPost);
+	
 	GreetPlayer(client);
 }
 
@@ -441,6 +443,7 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 				if (strcmp(szClassname, "item_suit") == 0)
 				{
 					DHookEntity(hkOnTryPickUp, true, iEntIndex, _, Hook_OnEquipmentTryPickUpPost);
+					HookSingleEntityOutput(iEntIndex, "OnPlayerPickup", Hook_SuitTouchPickup, true);
 				}
 			}
 			else if (pEntity.IsClassWeapon())
@@ -528,6 +531,14 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 			{
 				DHookEntity(hkThink, false, iEntIndex, _, Hook_MusicTrackThink);
 				DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_MusicTrackAceptInput);
+			}
+			else if (strcmp(szClassname, "func_trackautochange") == 0)
+			{
+				DHookEntity(hkBlocked, false, iEntIndex, _, Hook_TrackChangeBlocked);
+			}
+			else if (strcmp(szClassname, "func_tracktrain") == 0)
+			{
+				DHookEntity(hkBlocked, false, iEntIndex, _, Hook_TrackTrainBlocked);
 			}
 			
 			// if some explosions turn out to be damaging all players except one, this is the fix

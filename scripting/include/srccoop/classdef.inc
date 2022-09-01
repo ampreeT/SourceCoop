@@ -7,6 +7,12 @@
 
 Handle g_pGlobalEntityGetIndex;
 Handle g_pGlobalEntityGetState;
+Handle g_pGlobalEntityGetName;
+Handle g_pGlobalEntityGetCounter;
+Handle g_pGlobalEntityGetMap;
+Handle g_pGlobalEntitySetState;
+Handle g_pGlobalEntitySetCounter;
+Handle g_pGlobalEntityAdd;
 Handle g_pGameShutdown;
 Handle g_pSetCollisionBounds;
 Handle g_pUpdateEnemyMemory;
@@ -40,8 +46,76 @@ void InitClassdef(GameData pGameConfig)
 			SetFailState("Could not obtain gamedata offset %s", szRemoveAllItems);
 		PrepSDKCall_AddParameter(SDKType_Bool, SDKPass_Plain);
 		if (!(g_pRemoveAllItems = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szRemoveAllItems);
-	}
 		
+		char szGlobalEntity_GetIndex[] = "GlobalEntity_GetIndex";
+		StartPrepSDKCall(SDKCall_Static);
+		if(!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Signature, szGlobalEntity_GetIndex))
+			SetFailState("Could not obtain gamedata signature %s", szGlobalEntity_GetIndex);
+		PrepSDKCall_AddParameter(SDKType_String, SDKPass_Pointer);
+		PrepSDKCall_SetReturnInfo(SDKType_PlainOldData, SDKPass_Plain);
+		if (!(g_pGlobalEntityGetIndex = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szGlobalEntity_GetIndex);
+
+		char szGlobalEntity_GetState[] = "GlobalEntity_GetState";
+		StartPrepSDKCall(SDKCall_Static);
+		if(!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Signature, szGlobalEntity_GetState))
+			SetFailState("Could not obtain gamedata signature %s", szGlobalEntity_GetState);
+		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
+		PrepSDKCall_SetReturnInfo(SDKType_PlainOldData, SDKPass_Plain);
+		if (!(g_pGlobalEntityGetState = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szGlobalEntity_GetState);
+
+		char szGlobalEntity_GetName[] = "GlobalEntity_GetName";
+		StartPrepSDKCall(SDKCall_Static);
+		if(!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Signature, szGlobalEntity_GetName))
+			SetFailState("Could not obtain gamedata signature %s", szGlobalEntity_GetName);
+		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
+		PrepSDKCall_SetReturnInfo(SDKType_String, SDKPass_Pointer);
+		if (!(g_pGlobalEntityGetName = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szGlobalEntity_GetName);
+
+		char szGlobalEntity_GetCounter[] = "GlobalEntity_GetCounter";
+		StartPrepSDKCall(SDKCall_Static);
+		if(!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Signature, szGlobalEntity_GetCounter))
+			SetFailState("Could not obtain gamedata signature %s", szGlobalEntity_GetCounter);
+		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
+		PrepSDKCall_SetReturnInfo(SDKType_PlainOldData, SDKPass_Plain);
+		if (!(g_pGlobalEntityGetCounter = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szGlobalEntity_GetCounter);
+
+		char szGlobalEntity_GetMap[] = "GlobalEntity_GetMap";
+		StartPrepSDKCall(SDKCall_Static);
+		if(!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Signature, szGlobalEntity_GetMap))
+			SetFailState("Could not obtain gamedata signature %s", szGlobalEntity_GetMap);
+		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
+		PrepSDKCall_SetReturnInfo(SDKType_String, SDKPass_Pointer);
+		if (!(g_pGlobalEntityGetMap = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szGlobalEntity_GetMap);
+
+		char szGlobalEntity_SetState[] = "GlobalEntity_SetState";
+		StartPrepSDKCall(SDKCall_Static);
+		if(!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Signature, szGlobalEntity_SetState))
+			SetFailState("Could not obtain gamedata signature %s", szGlobalEntity_SetState);
+		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
+		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
+		PrepSDKCall_SetReturnInfo(SDKType_PlainOldData, SDKPass_Plain);
+		if (!(g_pGlobalEntitySetState = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szGlobalEntity_SetState);
+
+		char szGlobalEntity_SetCounter[] = "GlobalEntity_SetCounter";
+		StartPrepSDKCall(SDKCall_Static);
+		if(!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Signature, szGlobalEntity_SetCounter))
+			SetFailState("Could not obtain gamedata signature %s", szGlobalEntity_SetCounter);
+		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
+		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
+		PrepSDKCall_SetReturnInfo(SDKType_PlainOldData, SDKPass_Plain);
+		if (!(g_pGlobalEntitySetCounter = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szGlobalEntity_SetCounter);
+
+		char szGlobalEntity_Add[] = "GlobalEntity_Add";
+		StartPrepSDKCall(SDKCall_Static);
+		if(!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Signature, szGlobalEntity_Add))
+			SetFailState("Could not obtain gamedata signature %s", szGlobalEntity_Add);
+		PrepSDKCall_AddParameter(SDKType_String, SDKPass_Pointer);
+		PrepSDKCall_AddParameter(SDKType_String, SDKPass_Pointer);
+		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
+		PrepSDKCall_SetReturnInfo(SDKType_PlainOldData, SDKPass_Plain);
+		if (!(g_pGlobalEntityAdd = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szGlobalEntity_Add);
+	}
+	
 	if (GetEngineVersion() == Engine_BlackMesa)
 	{
 		/*
@@ -61,28 +135,12 @@ void InitClassdef(GameData pGameConfig)
 		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
 		if (!(g_pSendWeaponAnim = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szSendWeaponAnim);
 		*/
-		
+
 		char szGameShutdown[] = "CServerGameDLL::GameShutdown";
 		StartPrepSDKCall(SDKCall_Raw);
 		if(!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Virtual, szGameShutdown))
 			SetFailState("Could not obtain gamedata offset %s", szGameShutdown);
 		if (!(g_pGameShutdown = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szGameShutdown);
-	
-		char szGlobalEntity_GetIndex[] = "GlobalEntity_GetIndex";
-		StartPrepSDKCall(SDKCall_Static);
-		if(!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Signature, szGlobalEntity_GetIndex))
-			SetFailState("Could not obtain gamedata signature %s", szGlobalEntity_GetIndex);
-		PrepSDKCall_AddParameter(SDKType_String, SDKPass_Pointer);
-		PrepSDKCall_SetReturnInfo(SDKType_PlainOldData, SDKPass_Plain);
-		if (!(g_pGlobalEntityGetIndex = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szGlobalEntity_GetIndex);
-	
-		char szGlobalEntity_GetState[] = "GlobalEntity_GetState";
-		StartPrepSDKCall(SDKCall_Static);
-		if(!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Signature, szGlobalEntity_GetState))
-			SetFailState("Could not obtain gamedata signature %s", szGlobalEntity_GetState);
-		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
-		PrepSDKCall_SetReturnInfo(SDKType_PlainOldData, SDKPass_Plain);
-		if (!(g_pGlobalEntityGetState = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szGlobalEntity_GetState);
 	
 		char szUpdateEnemyMemory[] = "CAI_BaseNPC::UpdateEnemyMemory";
 		StartPrepSDKCall(SDKCall_Entity);
@@ -589,6 +647,22 @@ methodmap CBaseAnimating < CBaseEntity
 	{
 		SDKCall(g_pGetSequenceLinearMotion, this, iSequence, pVec);
 	}
+	public float GetPlaybackRate()
+	{
+		return GetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flPlaybackRate");
+	}
+	public void SetPlaybackRate(const float flPlaybackRate)
+	{
+		SetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flPlaybackRate", flPlaybackRate);
+	}
+	public float GetCycle()
+	{
+		return GetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flCycle");
+	}
+	public void SetCycle(const float flCycle)
+	{
+		SetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flCycle", flCycle);
+	}
 }
 
 methodmap CBaseTrigger < CBaseEntity
@@ -709,6 +783,43 @@ methodmap CBaseCombatWeapon < CBaseAnimating
 	{
 		return view_as<bool>(GetEntProp(this.GetEntIndex(), Prop_Data, "m_bFiresUnderwater"));
 	}
+	public int GetViewModelIndex()
+	{
+		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_nViewModelIndex");
+	}
+	public void SetViewModelIndex(const int iViewModelIndex = 0)
+	{
+		SetEntProp(this.GetEntIndex(), Prop_Data, "m_nViewModelIndex", iViewModelIndex);
+	}
+	public float GetWeaponTimeIdle()
+	{
+		return GetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flTimeWeaponIdle");
+	}
+	public void SetWeaponTimeIdle(const float flTimeIdle)
+	{
+		SetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flTimeWeaponIdle", flTimeIdle);
+	}
+}
+
+methodmap CPredictedViewModel < CBaseAnimating
+{
+	public CPredictedViewModel(const int iEntIndex = -1)
+	{
+		return view_as<CPredictedViewModel>(CBaseEntity(iEntIndex));
+	}
+	
+	public float GetWeaponTimeIdle()
+	{
+		return GetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flTimeWeaponIdle");
+	}
+	public void SetWeaponTimeIdle(const float flTimeIdle)
+	{
+		SetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flTimeWeaponIdle", flTimeIdle);
+	}
+	public CBaseCombatWeapon GetOwningWeapon()
+	{
+		return view_as<CBaseCombatWeapon>(GetEntPropEnt(this.GetEntIndex(), Prop_Data, "m_hWeapon"));
+	}
 }
 
 methodmap CBaseCombatCharacter < CBaseAnimating
@@ -740,6 +851,10 @@ methodmap CBaseCombatCharacter < CBaseAnimating
 	public void SetActiveWeapon(CBaseCombatWeapon pWeapon)
 	{
 		SetEntPropEnt(this.GetEntIndex(), Prop_Send, "m_hActiveWeapon", pWeapon.GetEntIndex());
+	}
+	public CBaseCombatWeapon GetLastWeapon()
+	{
+		return CBaseCombatWeapon(GetEntPropEnt(this.GetEntIndex(), Prop_Data, "m_hLastWeapon"));
 	}
 }
 
@@ -922,6 +1037,12 @@ methodmap CBasePlayer < CBaseCombatCharacter
 	}
 	public CBaseAnimating GiveItem(const char[] szItemName)
 	{
+		if (strcmp(szItemName, "item_suit", false) == 0)
+		{
+			this.SetSuit(true);
+			return CBaseAnimating(-1);
+		}
+		
 		int iNameOffset = (strncmp(szItemName, "item_weapon_", 12, false) == 0) ? 5 : 0;
 		
 		CBaseAnimating pItem = CBaseAnimating(GivePlayerItem(this.GetEntIndex(), szItemName[iNameOffset]));
@@ -971,6 +1092,18 @@ methodmap CBasePlayer < CBaseCombatCharacter
 			}
 		}
 		
+		return false;
+	}
+	public bool EquipPlayerWeapon(CBaseCombatWeapon pWeapon)
+	{
+		if (pWeapon.IsValid())
+		{
+			EquipPlayerWeapon(this.GetEntIndex(), pWeapon.GetEntIndex());
+			return true;
+		}
+		
+		// still make this possible to set -1
+		EquipPlayerWeapon(this.GetEntIndex(), -1);
 		return false;
 	}
 	public int GetOldButtons()
@@ -1074,9 +1207,9 @@ methodmap CBasePlayer < CBaseCombatCharacter
 		SetEntPropEnt(this.GetEntIndex(), Prop_Data, "m_hViewEntity", (this == pEntity) ? -1 : pEntity.GetEntIndex());
 		SetClientViewEntity(this.GetEntIndex(), pEntity.GetEntIndex());
 	}
-	public CBaseEntity GetViewModel()
+	public CPredictedViewModel GetViewModel(int iIndex = 0)
 	{
-		return CBaseEntity(GetEntPropEnt(this.GetEntIndex(), Prop_Send, "m_hViewModel"));
+		return CPredictedViewModel(GetEntPropEnt(this.GetEntIndex(), Prop_Send, "m_hViewModel", iIndex));
 	}
 	public void SetViewModel(CBaseEntity pEntity)
 	{
@@ -1403,6 +1536,78 @@ methodmap CGlobalState
 	public static GLOBALESTATE GetState(const char[] szGlobalname)
 	{
 		return CGlobalState.GetStateByIndex(CGlobalState.GetIndex(szGlobalname));
+	}
+	
+	public static int GetName(int globalIndex, const char[] szGlobalName, const int iMaxLength)
+	{
+		return SDKCall(g_pGlobalEntityGetName, szGlobalName, iMaxLength, globalIndex);
+	}
+
+	public static bool IsValidIndex(int globalIndex)
+	{
+		return CGlobalState.GetName(globalIndex, NULL_STRING, 0) != -1;
+	}
+	
+	public static int GetCounter(int globalIndex)
+	{
+		return SDKCall(g_pGlobalEntityGetCounter, globalIndex);
+	}
+	
+	public static int GetMap(int globalIndex, const char[] szGlobalMap, const int iMaxLength)
+	{
+		return SDKCall(g_pGlobalEntityGetMap, szGlobalMap, iMaxLength, globalIndex);
+	}
+	
+	public static bool SetState(int globalIndex, GLOBALESTATE state)
+	{
+		if (CGlobalState.IsValidIndex(globalIndex))
+		{
+			SDKCall(g_pGlobalEntitySetState, globalIndex, state);
+			return true;
+		}
+		
+		return false;
+	}
+	
+	public static bool SetStateByName(const char[] szGlobalName, GLOBALESTATE state)
+	{
+		int globalIndex = CGlobalState.GetIndex(szGlobalName);
+		if (globalIndex != -1)
+		{
+			CGlobalState.SetState(globalIndex, state);
+			return true;
+		}
+		
+		return false;
+	}
+	
+	public static bool SetCounter(int globalIndex, int iCounter)
+	{
+		if (CGlobalState.IsValidIndex(globalIndex))
+		{
+			SDKCall(g_pGlobalEntitySetCounter, globalIndex, iCounter);
+			return true;
+		}
+		
+		return false;
+	}
+	
+	public static bool SetCounterByName(const char[] szGlobalName, int iCounter)
+	{
+		int globalIndex = CGlobalState.GetIndex(szGlobalName);
+		if (globalIndex != -1)
+		{
+			CGlobalState.SetCounter(globalIndex, iCounter);
+			return true;
+		}
+		
+		return false;
+	}
+	
+	// Returns index to global state
+	public static int Add(const char[] szGlobalName, const char[] szMapName, GLOBALESTATE state)
+	{
+		return SDKCall(g_pGlobalEntityAdd, szGlobalName, szMapName, state);
 	}
 }
 
