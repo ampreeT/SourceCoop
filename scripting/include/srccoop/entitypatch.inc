@@ -1649,15 +1649,12 @@ public MRESReturn Hook_TrackTrainBlocked(int _this, Handle hReturn, Handle hPara
 			pPlayer.GetAbsOrigin(vecOriginAdjusted);
 			
 			CanTeleportResult CanTP = CanTeleportPlayer(pPlayer, vecOriginAdjusted);
-			if (CanTP == CAN_TP_NO)
+			if (!CanTP)
 			{
 				pPlayer.Suicide();
 				DHookSetReturn(hReturn, false);
 				return MRES_Supercede;
 			}
-			
-			// Move up 2 if blocking and not out of world
-			vecOriginAdjusted[2] += 2.0;
 			pPlayer.Teleport(vecOriginAdjusted);
 			
 			if ((CanTP == CAN_TP_MUSTDUCK) && (!pPlayer.IsDucked()))
