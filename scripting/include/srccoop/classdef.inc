@@ -114,6 +114,22 @@ void InitClassdef(GameData pGameConfig)
 		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
 		PrepSDKCall_SetReturnInfo(SDKType_PlainOldData, SDKPass_Plain);
 		if (!(g_pGlobalEntityAdd = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szGlobalEntity_Add);
+		
+		char szGameShutdown[] = "CServerGameDLL::GameShutdown";
+		StartPrepSDKCall(SDKCall_Raw);
+		if(!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Virtual, szGameShutdown))
+			SetFailState("Could not obtain gamedata offset %s", szGameShutdown);
+		if (!(g_pGameShutdown = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szGameShutdown);
+	
+		char szUpdateEnemyMemory[] = "CAI_BaseNPC::UpdateEnemyMemory";
+		StartPrepSDKCall(SDKCall_Entity);
+		if(!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Virtual, szUpdateEnemyMemory))
+			SetFailState("Could not obtain gamedata offset %s", szUpdateEnemyMemory);
+		PrepSDKCall_AddParameter(SDKType_CBaseEntity, SDKPass_Pointer);
+		PrepSDKCall_AddParameter(SDKType_Vector, SDKPass_ByRef);
+		PrepSDKCall_AddParameter(SDKType_CBaseEntity, SDKPass_Pointer);
+		PrepSDKCall_SetReturnInfo(SDKType_Bool, SDKPass_Plain);
+		if (!(g_pUpdateEnemyMemory = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szUpdateEnemyMemory);
 	}
 	
 	if (GetEngineVersion() == Engine_BlackMesa)
@@ -136,22 +152,6 @@ void InitClassdef(GameData pGameConfig)
 		if (!(g_pSendWeaponAnim = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szSendWeaponAnim);
 		*/
 
-		char szGameShutdown[] = "CServerGameDLL::GameShutdown";
-		StartPrepSDKCall(SDKCall_Raw);
-		if(!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Virtual, szGameShutdown))
-			SetFailState("Could not obtain gamedata offset %s", szGameShutdown);
-		if (!(g_pGameShutdown = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szGameShutdown);
-	
-		char szUpdateEnemyMemory[] = "CAI_BaseNPC::UpdateEnemyMemory";
-		StartPrepSDKCall(SDKCall_Entity);
-		if(!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Virtual, szUpdateEnemyMemory))
-			SetFailState("Could not obtain gamedata offset %s", szUpdateEnemyMemory);
-		PrepSDKCall_AddParameter(SDKType_CBaseEntity, SDKPass_Pointer);
-		PrepSDKCall_AddParameter(SDKType_Vector, SDKPass_ByRef);
-		PrepSDKCall_AddParameter(SDKType_CBaseEntity, SDKPass_Pointer);
-		PrepSDKCall_SetReturnInfo(SDKType_Bool, SDKPass_Plain);
-		if (!(g_pUpdateEnemyMemory = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szUpdateEnemyMemory);
-		
 		char szShouldPlayerAvoid[] = "CAI_BaseNPC::ShouldPlayerAvoid";
 		StartPrepSDKCall(SDKCall_Entity);
 		if(!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Virtual, szShouldPlayerAvoid))
@@ -203,6 +203,10 @@ methodmap CBaseEntity
 	public bool GetClassname(char[] szBuffer, const int iMaxLength)
 	{
 		return GetEntityClassname(this.GetEntIndex(), szBuffer, iMaxLength);
+	}
+	public int SetClassname(const char[] szClassname)
+	{
+		return SetEntPropString(this.GetEntIndex(), Prop_Data, "m_iClassname", szClassname); 
 	}
 	public bool GetNetClassname(char[] szBuffer, const int iMaxLength)
 	{
@@ -1200,7 +1204,7 @@ methodmap CBasePlayer < CBaseCombatCharacter
 	}
 	public CBaseEntity GetViewEntity()
 	{
-		return CBaseEntity(GetEntPropEnt(this.GetEntIndex(), Prop_Send, "m_hViewEntity"));
+		return CBaseEntity(GetEntPropEnt(this.GetEntIndex(), Prop_Data, "m_hViewEntity"));
 	}
 	public void SetViewEntity(CBaseEntity pEntity)
 	{

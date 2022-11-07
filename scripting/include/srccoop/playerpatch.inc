@@ -51,6 +51,16 @@ void OnEntityDestroyed_CameraDeath(CBaseEntity pEntity)
 	}
 }
 
+public CBaseEntity CreateCameraDeath(CBasePlayer pPlayer)
+{
+	CBaseEntity pCamera = CBaseEntity.Create("info_target");
+	pCamera.SetClassname("camera_death");
+	pCamera.SetSpawnFlags(1);
+	pCamera.Spawn();
+	pPlayer.SetViewEntity(pCamera);
+	return pCamera;
+}
+
 //------------------------------------------------------
 // The singleplayer override for PreThink handles our
 // prop pickup, sprinting, vm anims, suit queue updates, etc
@@ -74,7 +84,7 @@ public void Hook_PlayerPreThinkPost(int iClient)
 	if (!CoopManager.IsCoopModeEnabled())
 		return;
 	
-	CBlackMesaPlayer pPlayer = CBlackMesaPlayer(iClient);
+	CBasePlayer pPlayer = CBasePlayer(iClient);
 	if (pPlayer.IsAlive())
 	{
 		if (g_Engine == Engine_BlackMesa)
@@ -125,7 +135,7 @@ public void Hook_PlayerPreThinkPost(int iClient)
 	else // Dead
 	{
 		float flRespawnTime = g_pConvarCoopRespawnTime.FloatValue;
-		if (flRespawnTime && pPlayer.GetTeam() > TEAM_SPECTATOR && !SurvivalManager.IsDead(pPlayer) && GetGameTime() - pPlayer.GetDeathTime() > flRespawnTime)
+		if (flRespawnTime && pPlayer.GetTeam() != TEAM_SPECTATOR && !SurvivalManager.IsDead(pPlayer) && GetGameTime() - pPlayer.GetDeathTime() > flRespawnTime)
 		{
 			int iPressed = pPlayer.GetPressedButtons();
 			if (iPressed != 0 && iPressed != IN_SCORE)
@@ -245,6 +255,18 @@ public MRESReturn Hook_PlayerAcceptInput(int _this, Handle hReturn, Handle hPara
 }
 
 //------------------------------------------------------
+// ClientPutInServer
+//------------------------------------------------------
+void PlayerPatch_OnClientPutInServer(CBasePlayer pPlayer)
+{
+	if (g_Engine == Engine_BlackMesa)
+	{
+		// fixes bugged trigger_teleport prediction (camera jerking around as if being teleported)
+		ClientCommand(pPlayer.GetEntIndex(), "cl_predicttriggers 0");
+	}
+}
+
+//------------------------------------------------------
 // Player spawn
 //------------------------------------------------------
 public MRESReturn Hook_PlayerSpawn(int _this, Handle hReturn, Handle hParams)
@@ -276,18 +298,30 @@ public void Hook_PlayerSpawnPost(int iClient)
 	CBlackMesaPlayer pPlayer = CBlackMesaPlayer(iClient);
 	if (pPlayer.IsValid())
 	{
+		bool bAlive = pPlayer.IsAlive();
+		
+		if (bAlive)
+		{
+			// Ensure death camera and ragdoll get removed
+			CBaseEntity pRagdoll = pPlayer.GetRagdoll();
+			if (pRagdoll.IsValid())
+			{
+				pRagdoll.Kill();
+			}
+
+			// Ensure view entity is player and observer mode is off
+			// Set before spawnsystem SpawnPlayer in case view entitiy is changed there
+			pPlayer.SetViewEntity(pPlayer);
+			pPlayer.SetObserverMode(OBS_MODE_NONE);
+
+			// Fix for if player died on a ladder
+			SetEntPropEnt(pPlayer.GetEntIndex(), Prop_Data, "m_hLadder", -1);
+		}
+
 		if (g_Engine == Engine_BlackMesa)
 		{
-			if (pPlayer.IsAlive())
+			if (bAlive)
 			{
-				// Ensure view entity is player and observer mode is off
-				// Set before spawnsystem SpawnPlayer in case view entitiy is changed there
-				pPlayer.SetViewEntity(pPlayer);
-				pPlayer.SetObserverMode(OBS_MODE_NONE);
-
-				// Fix for if player died on a ladder
-				SetEntPropEnt(pPlayer.GetEntIndex(), Prop_Data, "m_hLadder", -1);
-
 				// Fix for client viewmodel animation when always run is off
 				if (!IsFakeClient(iClient)) sv_always_run.ReplicateToClient(iClient, "1");
 				
@@ -343,7 +377,7 @@ public MRESReturn Hook_PlayerKilled(int _this, DHookParam hParams)
 	
 	CBasePlayer pPlayer = CBasePlayer(_this);
 	if (pPlayer.IsValid())
-	{		
+	{
 		Address pTakeDmgInfo = hParams.GetAddress(1);
 		int iForceBone = GetEntProp(_this, Prop_Send, "m_nForceBone");
 		g_pNewRagdoll = CBaseEntity(SDKCall(g_pCreateServerRagdoll, _this, iForceBone, pTakeDmgInfo, COLLISION_GROUP_DEBRIS_TRIGGER, false));
@@ -357,9 +391,18 @@ public MRESReturn Hook_PlayerKilledPost(int _this, DHookParam hParams)
 	CBasePlayer pPlayer = CBasePlayer(_this);
 	if (g_pNewRagdoll.IsValid())
 	{
+		CBaseEntity pViewEnt;
+		if (CoopManager.IsFeatureEnabled(FT_FIRSTPERSON_DEATHCAM) && g_Engine == Engine_HL2DM)
+		{
+			// No camera_death entity in hl2dm
+			pViewEnt = CreateCameraDeath(pPlayer);
+		}
+		else
+		{
+			pViewEnt = pPlayer.GetViewEntity();
+		}
+
 		CBaseEntity pRagdoll = pPlayer.GetRagdoll();
-		CBaseEntity pViewEnt = pPlayer.GetViewEntity();
-		
 		if (pRagdoll.IsValid())
 		{
 			pRagdoll.Kill();
@@ -371,16 +414,43 @@ public MRESReturn Hook_PlayerKilledPost(int _this, DHookParam hParams)
 			// Parent death camera to server-side ragdoll
 			pViewEnt.SetParent(g_pNewRagdoll);
 			pViewEnt.SetParentAttachment("eyes");
+
+			int fadeDuration = g_pConvarFadeToBlackLength.IntValue;
+			if (fadeDuration)
+			{
+				Client_ScreenFade(_this, fadeDuration, FFADE_OUT|FFADE_STAYOUT);
+			}
 		}
 
 		g_pNewRagdoll = CBaseEntity(-1);
-		
 	}
 	if (CoopManager.IsCoopModeEnabled())
 	{
 		SurvivalManager.HandlePlayerDeath(pPlayer);
 	}
 	return MRES_Ignored;
+}
+
+public MRESReturn Hook_CreateRagdollEntity(int _this)
+{
+	// avoid invalid cast on m_hRagdoll in hl2mp with the serverside ragdolls
+	return MRES_Supercede;
+}
+
+//------------------------------------------------------
+// OnClientDisconnect
+//------------------------------------------------------
+void PlayerPatch_OnClientDisconnect(CBasePlayer pPlayer)
+{
+	if (g_Engine == Engine_HL2DM)
+	{
+		// prevent crash with serverside ragdolls
+		CBaseEntity pRagdoll = pPlayer.GetRagdoll();
+		if (pRagdoll.IsValid())
+		{
+			pRagdoll.Kill();
+		}
+	}
 }
 
 //------------------------------------------------------
@@ -440,12 +510,12 @@ public MRESReturn Hook_PlayerChangeTeam(int _this, Handle hParams)
 		if (iTeamNum == TEAM_SCIENTIST || iTeamNum == TEAM_MARINES || iTeamNum == TEAM_UNASSIGNED)
 		{
 			char szTeam[16]; g_pConvarCoopTeam.GetString(szTeam, sizeof(szTeam));
-			if (StrEqual(szTeam, "scientist", false))
+			if (StrEqual(szTeam, "scientist", false) || StrEqual(szTeam, "3"))
 			{
 				DHookSetParam(hParams, 1, TEAM_SCIENTIST);
 				return MRES_ChangedHandled;
 			}
-			else if (StrEqual(szTeam, "marines", false))
+			else if (StrEqual(szTeam, "marines", false) || StrEqual(szTeam, "2"))
 			{
 				DHookSetParam(hParams, 1, TEAM_MARINES);
 				return MRES_ChangedHandled;
@@ -500,7 +570,7 @@ public MRESReturn Hook_ForcePlayerToDropThisObject(Handle hParams)
 		CBaseEntity pParam = CBaseEntity(DHookGetParam(hParams, 1));
 		if (pParam.IsClassPlayer())
 		{
-			view_as<CBlackMesaPlayer>(pParam).ForceDropOfCarriedPhysObjects();
+			view_as<CBasePlayer>(pParam).ForceDropOfCarriedPhysObjects();
 		}
 		else
 		{
@@ -509,7 +579,7 @@ public MRESReturn Hook_ForcePlayerToDropThisObject(Handle hParams)
 				if (IsClientInGame(i))
 				{
 					// is this player carrying the required item?
-					CBlackMesaPlayer pPlayer = CBlackMesaPlayer(i);
+					CBasePlayer pPlayer = CBasePlayer(i);
 					if (pPlayer.GetCarriedObject() == pParam)
 					{
 						pPlayer.ForceDropOfCarriedPhysObjects();

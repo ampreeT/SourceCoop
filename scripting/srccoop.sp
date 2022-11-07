@@ -27,9 +27,6 @@ void LoadGameData()
 	if (pGameConfig == null)
 		SetFailState("Couldn't load game config %s", SRCCOOP_GAMEDATA_NAME);
 	
-	// Init SDKCalls for classdef
-	InitClassdef(pGameConfig);
-	
 	// ALL Games
 	{
 		g_serverOS = view_as<OperatingSystem>(pGameConfig.GetOffset("_OS_Detector_"));
@@ -67,14 +64,6 @@ void LoadGameData()
 			SetFailState("Could not get interface verison for %s", "IServerGameDLL");
 		if (!(g_ServerGameDLL = IServerGameDLL(GetServerInterface(szInterfaceGame))))
 			SetFailState("Could not get interface for %s", "g_ServerGameDLL");
-
-		LoadDHookVirtual(pGameConfig, hkChangeTeam, "CBasePlayer::ChangeTeam");
-		LoadDHookVirtual(pGameConfig, hkShouldCollide, "CBaseEntity::ShouldCollide");
-		LoadDHookVirtual(pGameConfig, hkPlayerSpawn, "CBasePlayer::Spawn");
-		LoadDHookVirtual(pGameConfig, hkLevelInit, "CServerGameDLL::LevelInit");
-		
-		if (hkLevelInit.HookRaw(Hook_Pre, view_as<Address>(g_ServerGameDLL), Hook_OnLevelInit) == INVALID_HOOK_ID)
-			SetFailState("Could not hook CServerGameDLL::LevelInit");
 		
 		char szCreateServerRagdoll[] = "CreateServerRagdoll";
 		StartPrepSDKCall(SDKCall_Static);
@@ -88,6 +77,21 @@ void LoadGameData()
 		PrepSDKCall_AddParameter(SDKType_Bool, SDKPass_Plain); // bool bUseLRURetirement
 		if (!(g_pCreateServerRagdoll = EndPrepSDKCall()))
 			SetFailState("Could not prep SDK call %s", szCreateServerRagdoll);
+
+		LoadDHookVirtual(pGameConfig, hkChangeTeam, "CBasePlayer::ChangeTeam");
+		LoadDHookVirtual(pGameConfig, hkShouldCollide, "CBaseEntity::ShouldCollide");
+		LoadDHookVirtual(pGameConfig, hkPlayerSpawn, "CBasePlayer::Spawn");
+		LoadDHookVirtual(pGameConfig, hkLevelInit, "CServerGameDLL::LevelInit");
+		LoadDHookVirtual(pGameConfig, hkSetModel, "CBaseEntity::SetModel");
+		LoadDHookVirtual(pGameConfig, hkAcceptInput, "CBaseEntity::AcceptInput");
+		LoadDHookVirtual(pGameConfig, hkThink, "CBaseEntity::Think");
+		LoadDHookVirtual(pGameConfig, hkEvent_Killed, "CBaseEntity::Event_Killed");
+		LoadDHookVirtual(pGameConfig, hkKeyValue_char, "CBaseEntity::KeyValue_char");
+		LoadDHookDetour(pGameConfig, hkUTIL_GetLocalPlayer, "UTIL_GetLocalPlayer", Hook_UTIL_GetLocalPlayer);
+		LoadDHookDetour(pGameConfig, hkPickup_ForcePlayerToDropThisObject, "Pickup_ForcePlayerToDropThisObject", Hook_ForcePlayerToDropThisObject);
+
+		if (hkLevelInit.HookRaw(Hook_Pre, view_as<Address>(g_ServerGameDLL), Hook_OnLevelInit) == INVALID_HOOK_ID)
+			SetFailState("Could not hook CServerGameDLL::LevelInit");
 	}
 	
 	if (g_Engine == Engine_BlackMesa)
@@ -101,23 +105,24 @@ void LoadGameData()
 		LoadDHookVirtual(pGameConfig, hkProtoSniperSelectSchedule, "CProtoSniper::SelectSchedule");
 		LoadDHookVirtual(pGameConfig, hkFindNamedEntity, "CSceneEntity::FindNamedEntity");
 		LoadDHookVirtual(pGameConfig, hkFindNamedEntityClosest, "CSceneEntity::FindNamedEntityClosest");
-		LoadDHookVirtual(pGameConfig, hkSetModel, "CBaseEntity::SetModel");
-		LoadDHookVirtual(pGameConfig, hkAcceptInput, "CBaseEntity::AcceptInput");
 		LoadDHookVirtual(pGameConfig, hkOnTryPickUp, "CBasePickup::OnTryPickUp");
-		LoadDHookVirtual(pGameConfig, hkThink, "CBaseEntity::Think");
 		LoadDHookVirtual(pGameConfig, hkIchthyosaurIdleSound, "CNPC_Ichthyosaur::IdleSound");
 		LoadDHookVirtual(pGameConfig, hkHandleAnimEvent, "CBaseAnimating::HandleAnimEvent");
 		LoadDHookVirtual(pGameConfig, hkRunAI, "CAI_BaseNPC::RunAI");
-		LoadDHookVirtual(pGameConfig, hkEvent_Killed, "CBaseEntity::Event_Killed");
-		LoadDHookVirtual(pGameConfig, hkKeyValue_char, "CBaseEntity::KeyValue_char");
 		LoadDHookVirtual(pGameConfig, hkBlocked, "CBaseEntity::Blocked");
-		LoadDHookDetour(pGameConfig, hkUTIL_GetLocalPlayer, "UTIL_GetLocalPlayer", Hook_UTIL_GetLocalPlayer);
 		LoadDHookDetour(pGameConfig, hkSetSuitUpdate, "CBasePlayer::SetSuitUpdate", Hook_SetSuitUpdate, Hook_SetSuitUpdatePost);
 		LoadDHookDetour(pGameConfig, hkResolveNames, "CAI_GoalEntity::ResolveNames", Hook_ResolveNames, Hook_ResolveNamesPost);
 		LoadDHookDetour(pGameConfig, hkCanSelectSchedule, "CAI_LeadBehavior::CanSelectSchedule", Hook_CanSelectSchedule);
-		LoadDHookDetour(pGameConfig, hkPickup_ForcePlayerToDropThisObject, "Pickup_ForcePlayerToDropThisObject", Hook_ForcePlayerToDropThisObject);
 		LoadDHookDetour(pGameConfig, hkSetPlayerAvoidState, "CAI_BaseNPC::SetPlayerAvoidState", Hook_SetPlayerAvoidState);
 	}
+
+	if (g_Engine == Engine_HL2DM)
+	{
+		LoadDHookVirtual(pGameConfig, hkCreateRagdollEntity, "CBasePlayer::CreateRagdollEntity");
+	}
+	
+	// Init SDKCalls for classdef
+	InitClassdef(pGameConfig);
 	
 	CloseHandle(pGameConfig);
 }
@@ -130,7 +135,7 @@ public void OnPluginStart()
 	
 	InitDebugLog("sourcecoop_debug", "SRCCOOP", ADMFLAG_ROOT);
 	CreateConVar("sourcecoop_version", SRCCOOP_VERSION, _, FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
-	g_pConvarCoopTeam = CreateConVar("sourcecoop_team", "scientist", "Sets which team to use in TDM mode. Valid values are [marines] or [scientist]. Setting anything else will not manage teams.");
+	g_pConvarCoopTeam = CreateConVar("sourcecoop_team", "scientist", "Sets which team to use in TDM mode. Valid values are [marines] or [scientist] or a team number. Setting anything else will not manage teams.");
 	g_pConvarDisableTeamSelect = CreateConVar("sourcecoop_disable_teamselect", "1", "Whether to skip the team select screen and spawn in instantly.", _, true, 0.0, true, 1.0);
 	g_pConvarCoopRespawnTime = CreateConVar("sourcecoop_respawntime", "2.0", "Sets player respawn time in seconds. This can only be used for making respawn times quicker, not longer. Set to 0 to use the game's default.", _, true, 0.0);
 	g_pConvarWaitPeriod = CreateConVar("sourcecoop_start_wait_period", "15.0", "The max number of seconds to wait since first player spawned in to start the map. The timer is skipped when all players enter the game.", _, true, 0.0);
@@ -138,8 +143,8 @@ public void OnPluginStart()
 	g_pConvarEndWaitFactor = CreateConVar("sourcecoop_end_wait_factor", "1.0", "Controls how much the number of finished players increases the changelevel timer speed. 1.0 means full, 0 means none (timer will run full length).", _, true, 0.0, true, 1.0);
 	g_pConvarHomeMap = CreateConVar("sourcecoop_homemap", "", "The map to return to after finishing a campaign/map.");
 	g_pConvarEndWaitDisplayMode = CreateConVar("sourcecoop_end_wait_display_mode", "0", "Sets which method to show countdown. 0 is panel, 1 is hud text.", _, true, 0.0, true, 1.0);
-	g_pConVarNextStuck = CreateConVar("sourcecoop_next_stuck", "60.0", "Prevents using stuck for this many seconds after using.", _, true, 0.0, false);
-	
+	g_pConvarFadeToBlackLength = CreateConVar("sourcecoop_fadetoblack_ms", "1500", "Duration in milliseconds to fade first person death screen to black. 0 to disable.", _, true, 0.0);
+
 	mp_friendlyfire = FindConVar("mp_friendlyfire");
 	mp_flashlight = FindConVar("mp_flashlight");
 	sv_always_run = FindConVar("sv_always_run");
@@ -148,8 +153,6 @@ public void OnPluginStart()
 	RegAdminCmd("sc_ft", Command_SetFeature, ADMFLAG_ROOT, "Command for toggling plugin features on/off");
 	RegServerCmd("sourcecoop_dump", Command_DumpMapEntities, "Command for dumping map entities to a file");
 	RegServerCmd("sc_dump", Command_DumpMapEntities, "Command for dumping map entities to a file");
-	RegConsoleCmd("stuck", Command_Unstuck);
-	RegConsoleCmd("unstuck", Command_Unstuck);
 	
 	g_pLevelLump.Initialize();
 	g_SpawnSystem.Initialize();
@@ -289,15 +292,7 @@ public void OnClientPutInServer(int client)
 {
 	CBasePlayer pPlayer = CBasePlayer(client);
 	
-	// fixes visual bug for players which had different view ent at mapchange
-	pPlayer.SetViewEntity(pPlayer);
-	
-	if (g_Engine == Engine_BlackMesa)
-	{
-		// fixes bugged trigger_teleport prediction (camera jerking around as if being teleported)
-		ClientCommand(client, "cl_predicttriggers 0");
-	}
-	
+	PlayerPatch_OnClientPutInServer(pPlayer)
 	CoopManager.OnClientPutInServer(pPlayer);
 	g_pInstancingManager.OnClientPutInServer(client);
 	
@@ -315,6 +310,11 @@ public void OnClientPutInServer(int client)
 	DHookEntity(hkEvent_Killed, false, client, _, Hook_PlayerKilled);
 	DHookEntity(hkEvent_Killed, true, client, _, Hook_PlayerKilledPost);
 	
+	if (g_Engine == Engine_HL2DM)
+	{
+		DHookEntity(hkCreateRagdollEntity, false, client, _, Hook_CreateRagdollEntity);
+	}
+	
 	GreetPlayer(client);
 }
 
@@ -327,11 +327,16 @@ public void OnClientAuthorized(int client, const char[] auth)
 	}
 }
 
+public void OnClientDisconnect(int client)
+{
+	CBasePlayer pPlayer = CBasePlayer(client);
+	PlayerPatch_OnClientDisconnect(pPlayer);
+}
+
 public void OnClientDisconnect_Post(int client)
 {
 	g_pInstancingManager.OnClientDisconnect(client);
 	SurvivalManager.GameOverCheck();
-	g_flNextStuck[client] = 0.0;
 	g_szSteamIds[client] = "";
 	g_bPostTeamSelect[client] = false;
 }
@@ -363,13 +368,81 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 		SDKHook(iEntIndex, SDKHook_Spawn, Hook_FixupBrushModels);
 		SDKHook(iEntIndex, SDKHook_SpawnPost, Hook_EntitySpawnPost);
 		
-		if (g_Engine == Engine_BlackMesa)
+		bool isNPC = pEntity.IsClassNPC();
+
+		// ALL games
 		{
-			if (pEntity.IsClassNPC())
+			if (isNPC)
 			{
-				SDKHook(iEntIndex, SDKHook_SpawnPost, Hook_BaseNPCSpawnPost);
 				DHookEntity(hkKeyValue_char, true, iEntIndex, _, Hook_BaseNPCKeyValuePost);
 				DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_BaseNPCAcceptInput);
+			}
+			else
+			{
+				if (strcmp(szClassname, "trigger_changelevel") == 0)
+				{
+					SDKHook(iEntIndex, SDKHook_SpawnPost, Hook_ChangelevelSpawn);
+				}
+				else if (strcmp(szClassname, "trigger_autosave") == 0)
+				{
+					SDKHook(iEntIndex, SDKHook_Spawn, Hook_AutosaveSpawn);
+				}
+				else if (strcmp(szClassname, "point_teleport") == 0)
+				{
+					DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_PointTeleportAcceptInput);
+				}
+				else if (strcmp(szClassname, "point_viewcontrol") == 0)
+				{
+					DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_PointViewcontrolAcceptInput);
+				}
+				else if (strcmp(szClassname, "player_speedmod") == 0)
+				{
+					DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_SpeedmodAcceptInput);
+				}
+				else if (strcmp(szClassname, "point_clientcommand") == 0)
+				{
+					DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_ClientCommandAcceptInput);
+				}
+				else if (strcmp(szClassname, "point_servercommand") == 0)
+				{
+					DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_ServerCommandAcceptInput);
+				}
+				else if (strcmp(szClassname, "env_zoom") == 0)
+				{
+					DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_EnvZoomAcceptInput);
+				}
+				else if (strcmp(szClassname, "env_credits") == 0)
+				{
+					DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_EnvCreditsAcceptInput);
+				}
+				else if (strcmp(szClassname, "env_sprite") == 0)
+				{
+					SDKHook(iEntIndex, SDKHook_SpawnPost, Hook_EnvSpriteSpawnPost);
+				}
+				else if (strcmp(szClassname, "ai_script_conditions") == 0)
+				{
+					DHookEntity(hkThink, false, iEntIndex, _, Hook_AIConditionsThink);
+				}
+				else if (strcmp(szClassname, "func_rotating") == 0)
+				{
+					CreateTimer(30.0, Timer_FixRotatingAngles, pEntity, TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT);
+				}
+				else if (strcmp(szClassname, "player_loadsaved") == 0)
+				{
+					DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_LoadSavedAcceptInput);
+				}
+				else if (strcmp(szClassname, "logic_autosave") == 0)
+				{
+					DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_LogicAutosaveAcceptInput);
+				}
+			}
+		}
+
+		if (g_Engine == Engine_BlackMesa)
+		{
+			if (isNPC)
+			{
+				SDKHook(iEntIndex, SDKHook_SpawnPost, Hook_BaseNPCSpawnPost);
 				if (strncmp(szClassname, "npc_human_scientist", 19) == 0)
 				{
 					DHookEntity(hkIRelationType, true, iEntIndex, _, Hook_ScientistIRelationType);
@@ -423,6 +496,10 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 					SDKHook(iEntIndex, SDKHook_OnTakeDamage, Hook_PuffballFungusDmg);
 				}
 			}
+			else if (strcmp(szClassname, "camera_death") == 0)
+			{
+				SDKHook(iEntIndex, SDKHook_SpawnPost, Hook_CameraDeathSpawn);
+			}
 			else if ((strcmp(szClassname, "instanced_scripted_scene", false) == 0) ||
 					(strcmp(szClassname, "logic_choreographed_scene", false) == 0) ||
 					(strcmp(szClassname, "scripted_scene", false) == 0))
@@ -450,58 +527,6 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 			{
 				DHookEntity(hkSetModel, false, iEntIndex, _, Hook_WeaponSetModel);
 			}
-			else if (strcmp(szClassname, "trigger_changelevel") == 0)
-			{
-				SDKHook(iEntIndex, SDKHook_SpawnPost, Hook_ChangelevelSpawn);
-			}
-			else if (strcmp(szClassname, "trigger_autosave") == 0)
-			{
-				SDKHook(iEntIndex, SDKHook_Spawn, Hook_AutosaveSpawn);
-			}
-			else if (strcmp(szClassname, "camera_death") == 0)
-			{
-				SDKHook(iEntIndex, SDKHook_SpawnPost, Hook_CameraDeathSpawn);
-			}
-			else if (strcmp(szClassname, "point_teleport") == 0)
-			{
-				DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_PointTeleportAcceptInput);
-			}
-			else if (strcmp(szClassname, "point_viewcontrol") == 0)
-			{
-				DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_PointViewcontrolAcceptInput);
-			}
-			else if (strcmp(szClassname, "player_speedmod") == 0)
-			{
-				DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_SpeedmodAcceptInput);
-			}
-			else if (strcmp(szClassname, "point_clientcommand") == 0)
-			{
-				DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_ClientCommandAcceptInput);
-			}
-			else if (strcmp(szClassname, "point_servercommand") == 0)
-			{
-				DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_ServerCommandAcceptInput);
-			}
-			else if (strcmp(szClassname, "env_zoom") == 0)
-			{
-				DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_EnvZoomAcceptInput);
-			}
-			else if (strcmp(szClassname, "env_credits") == 0)
-			{
-				DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_EnvCreditsAcceptInput);
-			}
-			else if (strcmp(szClassname, "env_sprite") == 0)
-			{
-				SDKHook(iEntIndex, SDKHook_SpawnPost, Hook_EnvSpriteSpawnPost);
-			}
-			else if (strcmp(szClassname, "ai_script_conditions") == 0)
-			{
-				DHookEntity(hkThink, false, iEntIndex, _, Hook_AIConditionsThink);
-			}
-			else if (strcmp(szClassname, "func_rotating") == 0)
-			{
-				CreateTimer(30.0, Timer_FixRotatingAngles, pEntity, TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT);
-			}
 			else if (strcmp(szClassname, "prop_hev_charger") == 0 || strcmp(szClassname, "prop_radiation_charger") == 0)
 			{
 				//DHookEntity(hkThink, false, iEntIndex, _, Hook_PropChargerThink);
@@ -510,14 +535,6 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 			else if (strcmp(szClassname, "misc_marionettist") == 0)
 			{
 				DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_MarionettistAcceptInput);
-			}
-			else if (strcmp(szClassname, "player_loadsaved") == 0)
-			{
-				DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_LoadSavedAcceptInput);
-			}
-			else if (strcmp(szClassname, "logic_autosave") == 0)
-			{
-				DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_LogicAutosaveAcceptInput);
 			}
 			else if (strcmp(szClassname, "game_end") == 0)
 			{
@@ -558,13 +575,16 @@ public void OnEntityDestroyed(int iEntIndex)
 		static char szClassname[MAX_CLASSNAME];
 		pEntity.GetClassname(szClassname, sizeof(szClassname));
 		
-		if (strcmp(szClassname, "camera_death") == 0)
+		if (g_Engine == Engine_BlackMesa)
 		{
-			OnEntityDestroyed_CameraDeath(pEntity);
-		}
-		else if (strcmp(szClassname, "misc_marionettist") == 0)
-		{
-			OnEntityDestroyed_Marionettist(pEntity);
+			if (strcmp(szClassname, "camera_death") == 0)
+			{
+				OnEntityDestroyed_CameraDeath(pEntity);
+			}
+			else if (strcmp(szClassname, "misc_marionettist") == 0)
+			{
+				OnEntityDestroyed_Marionettist(pEntity);
+			}
 		}
 	}
 }
@@ -763,126 +783,4 @@ void GreetPlayer(int client)
 	{
 		Msg(client, "This server runs SourceCoop version %s.\nPress %s=%s or type %s/coopmenu%s for extra settings.", SRCCOOP_VERSION, CHAT_COLOR_SEC, CHAT_COLOR_PRI, CHAT_COLOR_SEC, CHAT_COLOR_PRI);
 	}
-}
-
-public Action Command_Unstuck(int iClient, int iArgs)
-{
-	if (!CoopManager.IsCoopModeEnabled())
-	{
-		MsgReply(iClient, "Unstuck is currently unavailable.");
-		return Plugin_Handled;
-	}
-
-	CBasePlayer pPlayer = CBasePlayer(iClient);
-	if (pPlayer.IsValid())
-	{
-		float flGameTime = GetGameTime();
-		if (g_flNextStuck[iClient] >= flGameTime)
-		{
-			MsgReply(iClient, "You cannot unstuck for another %1.1f seconds!", g_flNextStuck[iClient] - flGameTime);
-			return Plugin_Handled;
-		}
-		
-		// Velocity check for if people try to use it to get out of falling to their death
-		float flVerticalVelocity = GetEntPropFloat(iClient, Prop_Send, "m_vecVelocity[2]");
-		if (flVerticalVelocity < -200.0)
-		{
-			MsgReply(iClient, "Can't unstuck while falling.");
-			return Plugin_Handled;
-		}
-		
-		CCoopSpawnEntry pCheckpoint;
-		if (g_SpawnSystem.GetCurrentCheckpoint(pCheckpoint))
-		{
-			g_flNextStuck[iClient] = flGameTime + g_pConVarNextStuck.FloatValue;
-			pCheckpoint.TeleportPlayer(pPlayer, true);
-			MsgReply(iClient, "Moved to the active checkpoint.");
-		}
-		else
-		{
-			MsgReply(iClient, "Unable to find a place to put you.");
-		}
-	}
-	
-	return Plugin_Handled;
-}
-
-public Action Command_SetFeature(int iClient, int iArgs)
-{
-	if (iArgs == 0)
-	{
-		MsgReply(iClient, "------------------------------");
-		StringMapSnapshot snapshot = g_pFeatureMap.Snapshot();
-		for (int i = 0; i < snapshot.Length; i++)
-		{
-			int len = snapshot.KeyBufferSize(i);
-			char[] szKey = new char[len];
-			snapshot.GetKey(i, szKey, len);
-			SourceCoopFeature iFeature;
-			g_pFeatureMap.GetValue(szKey, iFeature);
-			MsgReply(iClient, "%s : %s", szKey, CoopManager.IsFeatureEnabled(iFeature)? "Enabled" : "Disabled");
-		}
-		MsgReply(iClient, "------------------------------");
-		snapshot.Close();
-	}
-	else if (iArgs == 2)
-	{
-		char szFeature[MAX_FORMAT];
-		GetCmdArg(1, szFeature, sizeof(szFeature));
-		
-		SourceCoopFeature feature;
-		if (g_pFeatureMap.GetFeature(szFeature, feature))
-		{
-			char szVal[MAX_FORMAT];
-			GetCmdArg(2, szVal, sizeof(szVal));
-			
-			if (StrEqual(szVal, "1") || IsEnableSynonym(szVal))
-			{
-				CoopManager.EnableFeature(feature);
-				MsgReply(iClient, "Enabled feature %s", szFeature);
-			}
-			else if (StrEqual(szVal, "0") || IsDisableSynonym(szVal))
-			{
-				CoopManager.DisableFeature(feature);
-				MsgReply(iClient, "Disabled feature %s", szFeature);
-			}
-		}
-		else
-		{
-			MsgReply(iClient, "Unknown feature: %s", szFeature);
-		}
-		return Plugin_Handled;
-	}
-	
-	MsgReply(iClient, "Format: sourcecoop_ft [<FEATURE> <1/0>]");
-	return Plugin_Handled;
-}
-
-public Action Command_DumpMapEntities(int iArgs)
-{
-	if (g_szEntityString[0] == '\0')
-	{
-		PrintToServer("No entity data recorded for current map.");
-		return Plugin_Handled;
-	}
-	
-	char szDumpPath[PLATFORM_MAX_PATH];
-	char szTime[128];
-	FormatTime(szTime, sizeof(szTime), "%Y-%m-%d-%H%M%S");
-	BuildPath(Path_SM, szDumpPath, sizeof(szDumpPath), "data/srccoop/dumps");
-	CreateDirectory(szDumpPath, FPERM_U_READ|FPERM_U_WRITE|FPERM_U_EXEC|FPERM_G_READ|FPERM_G_WRITE|FPERM_G_EXEC|FPERM_O_READ|FPERM_O_EXEC);
-	Format(szDumpPath, sizeof(szDumpPath), "%s/%s-%s.txt", szDumpPath, g_szMapName, szTime);
-	
-	File pDumpFile = OpenFile(szDumpPath, "w");
-	if (pDumpFile != null)
-	{
-		pDumpFile.WriteString(g_szEntityString, false);
-		CloseHandle(pDumpFile);
-		PrintToServer("Dumped map entities in %s", szDumpPath);
-	}
-	else
-	{
-		PrintToServer("Failed opening file for writing: %s", szDumpPath);
-	}
-	return Plugin_Handled;
 }

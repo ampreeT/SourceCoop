@@ -78,3 +78,11 @@ native bool SurvivalRespawn(CBasePlayer pPlayer);
  * @return    Current survival mode (enum)
  */
 native SurvivalMode GetSurvivalMode();
+
+/**
+ * Teleports a player to active checkpoint.
+ * 
+ * @error     Invalid CBasePlayer
+ * @return    true for success, false if there is no checkpoint
+ */
+native bool TeleportToCurrentCheckpoint(CBasePlayer pPlayer);
