@@ -433,6 +433,8 @@ public MRESReturn Hook_PlayerKilledPost(int _this, DHookParam hParams)
 
 public MRESReturn Hook_CreateRagdollEntity(int _this)
 {
+	if (!CoopManager.IsCoopModeEnabled())
+		return MRES_Ignored;
 	// avoid invalid cast on m_hRagdoll in hl2mp with the serverside ragdolls
 	return MRES_Supercede;
 }
