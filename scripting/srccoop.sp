@@ -132,7 +132,6 @@ public void OnPluginStart()
 	g_Engine = GetEngineVersion();
 	LoadGameData();
 	LoadTranslations("common.phrases");
-	
 	InitDebugLog("sourcecoop_debug", "SRCCOOP", ADMFLAG_ROOT);
 	CreateConVar("sourcecoop_version", SRCCOOP_VERSION, _, FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
 	g_pConvarCoopTeam = CreateConVar("sourcecoop_team", "scientist", "Sets which team to use in TDM mode. Valid values are [marines] or [scientist] or a team number. Setting anything else will not manage teams.");
@@ -143,7 +142,6 @@ public void OnPluginStart()
 	g_pConvarEndWaitFactor = CreateConVar("sourcecoop_end_wait_factor", "1.0", "Controls how much the number of finished players increases the changelevel timer speed. 1.0 means full, 0 means none (timer will run full length).", _, true, 0.0, true, 1.0);
 	g_pConvarHomeMap = CreateConVar("sourcecoop_homemap", "", "The map to return to after finishing a campaign/map.");
 	g_pConvarEndWaitDisplayMode = CreateConVar("sourcecoop_end_wait_display_mode", "0", "Sets which method to show countdown. 0 is panel, 1 is hud text.", _, true, 0.0, true, 1.0);
-	g_pConvarFadeToBlackLength = CreateConVar("sourcecoop_fadetoblack_ms", "1500", "Duration in milliseconds to fade first person death screen to black. 0 to disable.", _, true, 0.0);
 
 	mp_friendlyfire = FindConVar("mp_friendlyfire");
 	mp_flashlight = FindConVar("mp_flashlight");
@@ -496,10 +494,6 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 					SDKHook(iEntIndex, SDKHook_OnTakeDamage, Hook_PuffballFungusDmg);
 				}
 			}
-			else if (strcmp(szClassname, "camera_death") == 0)
-			{
-				SDKHook(iEntIndex, SDKHook_SpawnPost, Hook_CameraDeathSpawn);
-			}
 			else if ((strcmp(szClassname, "instanced_scripted_scene", false) == 0) ||
 					(strcmp(szClassname, "logic_choreographed_scene", false) == 0) ||
 					(strcmp(szClassname, "scripted_scene", false) == 0))
@@ -575,13 +569,14 @@ public void OnEntityDestroyed(int iEntIndex)
 		static char szClassname[MAX_CLASSNAME];
 		pEntity.GetClassname(szClassname, sizeof(szClassname));
 		
+		if (strcmp(szClassname, "prop_ragdoll") == 0)
+		{
+			OnEntityDestroyed_Ragdoll(pEntity);
+		}
+
 		if (g_Engine == Engine_BlackMesa)
 		{
-			if (strcmp(szClassname, "camera_death") == 0)
-			{
-				OnEntityDestroyed_CameraDeath(pEntity);
-			}
-			else if (strcmp(szClassname, "misc_marionettist") == 0)
+			if (strcmp(szClassname, "misc_marionettist") == 0)
 			{
 				OnEntityDestroyed_Marionettist(pEntity);
 			}

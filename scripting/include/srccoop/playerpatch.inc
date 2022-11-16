@@ -13,55 +13,6 @@ public MRESReturn Hook_FAllowFlashlight(Handle hReturn, Handle hParams)
 }
 
 //------------------------------------------------------
-// Singleplayer (firstperson) death camera
-//------------------------------------------------------
-public void Hook_CameraDeathSpawn(int iEntIndex)
-{
-	if (CoopManager.IsFeatureEnabled(FT_FIRSTPERSON_DEATHCAM))
-	{
-		CBaseEntity pEntity = CBaseEntity(iEntIndex);
-		CBlackMesaPlayer pOwner = view_as<CBlackMesaPlayer>(pEntity.GetOwner());
-		if (pOwner.IsValid())
-		{
-			CBaseEntity pViewEntity = pOwner.GetViewEntity();
-			if (!pViewEntity.IsValid() || pViewEntity == pOwner)
-			{
-				pOwner.SetViewEntity(pEntity);
-			}
-		}
-	}
-	else
-	{
-		AcceptEntityInput(iEntIndex, "Kill");
-	}
-}
-
-void OnEntityDestroyed_CameraDeath(CBaseEntity pEntity)
-{
-	for (int i = 1; i <= MaxClients; i++)
-	{
-		if (IsClientInGame(i))
-		{
-			CBasePlayer pPlayer = CBasePlayer(i);
-			if (pPlayer.GetViewEntity() == pEntity)
-			{
-				pPlayer.SetViewEntity(pPlayer);
-			}
-		}
-	}
-}
-
-public CBaseEntity CreateCameraDeath(CBasePlayer pPlayer)
-{
-	CBaseEntity pCamera = CBaseEntity.Create("info_target");
-	pCamera.SetClassname("camera_death");
-	pCamera.SetSpawnFlags(1);
-	pCamera.Spawn();
-	pPlayer.SetViewEntity(pCamera);
-	return pCamera;
-}
-
-//------------------------------------------------------
 // The singleplayer override for PreThink handles our
 // prop pickup, sprinting, vm anims, suit queue updates, etc
 //
@@ -275,6 +226,9 @@ public MRESReturn Hook_PlayerSpawn(int _this, Handle hReturn, Handle hParams)
 	{
 		CBasePlayer pPlayer = CBasePlayer(_this);
 		
+		// Clear ragdoll parent
+		pPlayer.ClearParent();
+
 		// ignore initial in-game spawn
 		if (pPlayer.GetTeam() != TEAM_UNASSIGNED)
 		{
@@ -382,6 +336,20 @@ public MRESReturn Hook_PlayerKilled(int _this, DHookParam hParams)
 		int iForceBone = GetEntProp(_this, Prop_Send, "m_nForceBone");
 		g_pNewRagdoll = CBaseEntity(SDKCall(g_pCreateServerRagdoll, _this, iForceBone, pTakeDmgInfo, COLLISION_GROUP_DEBRIS_TRIGGER, false));
 		SDKHook(g_pNewRagdoll.GetEntIndex(), SDKHook_OnTakeDamage, Hook_NoDmg);
+
+		// TODO: Check can keep this in BM?
+		CBaseEntity pRagdoll = pPlayer.GetRagdoll();
+		if (pRagdoll.IsValid())
+		{
+			pRagdoll.Kill();
+		}
+		// Bone merge player to the new ragdoll. This ensures thirdperson death camera actually follows it (firstperson is unaffected).
+		pPlayer.SetRagdoll(g_pNewRagdoll);
+		pPlayer.SetParent(g_pNewRagdoll);
+		pPlayer.SetParentAttachment("forward");
+		pPlayer.SetEffects(pPlayer.GetEffects() | EF_BONEMERGE);
+
+		g_pNewRagdoll = CBaseEntity(-1);
 	}
 	return MRES_Ignored;
 }
@@ -389,41 +357,17 @@ public MRESReturn Hook_PlayerKilled(int _this, DHookParam hParams)
 public MRESReturn Hook_PlayerKilledPost(int _this, DHookParam hParams)
 {
 	CBasePlayer pPlayer = CBasePlayer(_this);
-	if (g_pNewRagdoll.IsValid())
-	{
-		CBaseEntity pViewEnt;
-		if (CoopManager.IsFeatureEnabled(FT_FIRSTPERSON_DEATHCAM) && g_Engine == Engine_HL2DM)
-		{
-			// No camera_death entity in hl2dm
-			pViewEnt = CreateCameraDeath(pPlayer);
-		}
-		else
-		{
-			pViewEnt = pPlayer.GetViewEntity();
-		}
-
-		CBaseEntity pRagdoll = pPlayer.GetRagdoll();
-		if (pRagdoll.IsValid())
-		{
-			pRagdoll.Kill();
-		}
-		pPlayer.SetRagdoll(g_pNewRagdoll);
-		
-		if (pViewEnt.IsValid() && !pViewEnt.IsClassPlayer())
-		{
-			// Parent death camera to server-side ragdoll
-			pViewEnt.SetParent(g_pNewRagdoll);
-			pViewEnt.SetParentAttachment("eyes");
-
-			int fadeDuration = g_pConvarFadeToBlackLength.IntValue;
-			if (fadeDuration)
-			{
-				Client_ScreenFade(_this, fadeDuration, FFADE_OUT|FFADE_STAYOUT);
-			}
-		}
-
-		g_pNewRagdoll = CBaseEntity(-1);
-	}
+	// TODO: Check can delete this in BM?
+	// if (g_pNewRagdoll.IsValid())
+	// {
+	// 	CBaseEntity pRagdoll = pPlayer.GetRagdoll();
+	// 	if (pRagdoll.IsValid())
+	// 	{
+	// 		pRagdoll.Kill();
+	// 	}
+	// 	pPlayer.SetRagdoll(g_pNewRagdoll);
+	// 	g_pNewRagdoll = CBaseEntity(-1);
+	// }
 	if (CoopManager.IsCoopModeEnabled())
 	{
 		SurvivalManager.HandlePlayerDeath(pPlayer);
@@ -439,6 +383,16 @@ public MRESReturn Hook_CreateRagdollEntity(int _this)
 	return MRES_Supercede;
 }
 
+void OnEntityDestroyed_Ragdoll(CBaseEntity pRagdoll)
+{
+	CBasePlayer pPlayerChild = view_as<CBasePlayer>(pRagdoll.GetMoveChild());
+	if (pPlayerChild.IsValid())
+	{
+		// Prevent parented player entity removal
+		pPlayerChild.ClearParent();
+	}
+}
+
 //------------------------------------------------------
 // OnClientDisconnect
 //------------------------------------------------------
@@ -446,11 +400,14 @@ void PlayerPatch_OnClientDisconnect(CBasePlayer pPlayer)
 {
 	if (g_Engine == Engine_HL2DM)
 	{
-		// prevent crash with serverside ragdolls
-		CBaseEntity pRagdoll = pPlayer.GetRagdoll();
-		if (pRagdoll.IsValid())
+		if (pPlayer.IsValid())
 		{
-			pRagdoll.Kill();
+			// prevent hl2dm crash with serverside ragdolls
+			CBaseEntity pRagdoll = pPlayer.GetRagdoll();
+			if (pRagdoll.IsValid())
+			{
+				pRagdoll.Kill();
+			}
 		}
 	}
 }
@@ -505,7 +462,7 @@ public MRESReturn Hook_PlayerChangeTeam(int _this, Handle hParams)
 {
 	if (CoopManager.IsCoopModeEnabled())
 	{
-		if (!CBM_MP_GameRules.IsTeamplay())
+		if (!CMultiplayRules.IsTeamplay())
 			return MRES_Ignored;
 		
 		int iTeamNum = DHookGetParam(hParams, 1);

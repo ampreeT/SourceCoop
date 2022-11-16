@@ -11,6 +11,7 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 	CreateNative("SurvivalRespawn", Native_SurvivalRespawn);
 	CreateNative("GetSurvivalMode", Native_GetSurvivalMode);
 	CreateNative("TeleportToCurrentCheckpoint", Native_TeleportToCurrentCheckpoint);
+	CreateNative("IsCoopFeatureEnabled", Native_IsCoopFeatureEnabled);
 	RegPluginLibrary(SRCCOOP_LIBRARY);
 	return APLRes_Success;
 }
@@ -50,4 +51,9 @@ public any Native_TeleportToCurrentCheckpoint(Handle plugin, int numParams)
 		return pCheckpoint.TeleportPlayer(pPlayer, true);
 	}
 	return false;
+}
+
+public any Native_IsCoopFeatureEnabled(Handle plugin, int numParams)
+{
+	return CoopManager.IsFeatureEnabled(GetNativeCell(1));
 }

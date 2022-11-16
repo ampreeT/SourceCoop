@@ -38,7 +38,7 @@ public Action Command_Unstuck(int iClient, int iArgs)
 	}
 
 	CBasePlayer pPlayer = CBasePlayer(iClient);
-	if (pPlayer.IsValid())
+	if (pPlayer.IsValid() && pPlayer.IsAlive())
 	{
 		float flGameTime = GetGameTime();
 		if (g_flNextStuck[iClient] >= flGameTime)

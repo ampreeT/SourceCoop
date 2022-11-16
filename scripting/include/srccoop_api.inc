@@ -5,10 +5,11 @@
 
 #include <topmenus>
 
-#include <srccoop/typedef.inc>
-#include <srccoop/typedef_game.inc>
-#include <srccoop/classdef.inc>
-#include <srccoop/utils.inc>
+#include <srccoop/typedef>
+#include <srccoop/typedef_game>
+#include <srccoop/classdef>
+#include <srccoop/utils>
+#include <srccoop/features>
 
 #define SRCCOOP_VERSION "1.1.2"
 
@@ -86,3 +87,8 @@ native SurvivalMode GetSurvivalMode();
  * @return    true for success, false if there is no checkpoint
  */
 native bool TeleportToCurrentCheckpoint(CBasePlayer pPlayer);
+
+/**
+ * Checks if a SourceCoop feature is enabled.
+ */
+native bool IsCoopFeatureEnabled(SourceCoopFeature iFeatureBits);

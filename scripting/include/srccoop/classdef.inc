@@ -230,7 +230,7 @@ methodmap CBaseEntity
 	}
 	public bool IsClassname(const char[] szClassname)
 	{
-		char szBuffer[MAX_CLASSNAME];
+		static char szBuffer[MAX_CLASSNAME];
 		this.GetClassname(szBuffer, sizeof(szBuffer));
 		return StrEqual(szClassname, szBuffer);
 	}
@@ -345,6 +345,18 @@ methodmap CBaseEntity
 	public void SetParentAttachmentMaintainOffset(const char[] szParentAttachment)
 	{
 		this.AcceptInputStr("SetParentAttachmentMaintainOffset", szParentAttachment);
+	}
+	public void ClearParent()
+	{
+		this.AcceptInputStr("ClearParent");
+	}
+	public CBaseEntity GetMoveChild()
+	{
+		return CBaseEntity(GetEntPropEnt(this.GetEntIndex(), Prop_Data, "m_hMoveChild"));
+	}
+	public void SetMoveChild(CBaseEntity pMoveChild)
+	{
+		SetEntPropEnt(this.GetEntIndex(), Prop_Data, "m_hMoveChild", pMoveChild.GetEntIndex());
 	}
 	public void GetAbsOrigin(float vecBuffer[3])
 	{
@@ -1244,6 +1256,14 @@ methodmap CBasePlayer < CBaseCombatCharacter
 	{
 		SetEntProp(this.GetEntIndex(), Prop_Data, "m_iObserverMode", iMode);
 	}
+	public CBaseEntity GetObserverTarget()
+	{
+		return CBaseEntity(GetEntPropEnt(this.GetEntIndex(), Prop_Data, "m_hObserverTarget"));
+	}
+	public void SetObserverTarget(CBaseEntity pTarget)
+	{
+		SetEntPropEnt(this.GetEntIndex(), Prop_Data, "m_hObserverTarget", pTarget.GetEntIndex());
+	}
 	public int GetTeam()
 	{
 		return GetClientTeam(this.GetEntIndex());
@@ -1489,7 +1509,21 @@ methodmap CParticleSystem < CBaseEntity
 	}
 }
 
-methodmap CBM_MP_GameRules
+methodmap CMultiplayRules
+{
+	public static bool IsTeamplay()
+	{
+		switch (GetEngineVersion()) {
+			case Engine_BlackMesa:
+				return GetTeamCount() >= 4;
+			case Engine_HL2DM:
+				return view_as<bool>(GameRules_GetProp("m_bTeamPlayEnabled"));
+		}
+		
+	}
+}
+
+methodmap CBM_MP_GameRules < CMultiplayRules
 {
 	public static int GetStateIndex(const char[] szStateProp)
 	{
@@ -1517,11 +1551,6 @@ methodmap CBM_MP_GameRules
 	public static void SetStateIsInIntermission(char[] szStateProp, bool bInIntermission)
 	{
 		GameRules_SetProp(szStateProp, bInIntermission, _, STATE_ELEMENT_IS_IN_INTERMISSION);
-	}
-
-	public static bool IsTeamplay()
-	{
-		return GetTeamCount() >= 4;
 	}
 }
 
