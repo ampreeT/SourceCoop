@@ -58,7 +58,7 @@ stock void Msg(int client, const char[] msg, any ...)
 	int len = strlen(msg) + 255;
 	char[] formatMsg = new char[len];
 	VFormat(formatMsg, len, msg, 3);
- 	PrintToChat(client, "%s%s", CHAT_TAG, formatMsg);
+ 	PrintToChat(client, "%s%s", SRCCOOP_CHAT_TAG, formatMsg);
 }
 
 stock void MsgReply(int client, const char[] msg, any ...)
@@ -66,7 +66,7 @@ stock void MsgReply(int client, const char[] msg, any ...)
 	int len = strlen(msg) + 255;
 	char[] formatMsg = new char[len];
 	VFormat(formatMsg, len, msg, 3);
- 	ReplyToCommand(client, "%s%s", client && GetCmdReplySource() == SM_REPLY_TO_CHAT? CHAT_TAG : CONSOLE_TAG, formatMsg);
+ 	ReplyToCommand(client, "%s%s", client && GetCmdReplySource() == SM_REPLY_TO_CHAT? SRCCOOP_CHAT_TAG : SRCCOOP_CONSOLE_TAG, formatMsg);
 }
 
 stock void MsgAll(const char[] msg, any ...)
@@ -74,8 +74,8 @@ stock void MsgAll(const char[] msg, any ...)
 	int len = strlen(msg) + 255;
 	char[] formatMsg = new char[len];
 	VFormat(formatMsg, len, msg, 2);
-	PrintToServer("%s(chat) %s", CONSOLE_TAG, formatMsg);
- 	PrintToChatAll("%s%s", CHAT_TAG, formatMsg);
+	PrintToServer("%s(chat) %s", SRCCOOP_CONSOLE_TAG, formatMsg);
+ 	PrintToChatAll("%s%s", SRCCOOP_CHAT_TAG, formatMsg);
 }
 
 stock void MsgSrv(const char[] msg, any ...)
@@ -83,7 +83,7 @@ stock void MsgSrv(const char[] msg, any ...)
 	int len = strlen(msg) + 255;
 	char[] formatMsg = new char[len];
 	VFormat(formatMsg, len, msg, 2);
-	PrintToServer("%s%s", CONSOLE_TAG, formatMsg);
+	PrintToServer("%s%s", SRCCOOP_CONSOLE_TAG, formatMsg);
 }
 
 #if defined _regex_included

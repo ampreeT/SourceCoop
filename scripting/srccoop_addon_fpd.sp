@@ -155,7 +155,7 @@ public void OnEntityDestroyed(int iEntIndex)
 		{
 			if (pEntity.IsClassname("camera_death"))
 			{
-				OnEntityDestroyed_CameraDeath(pEntity);
+				Hook_CameraDeathDestroyed(pEntity);
 			}
 		}
 	}
@@ -180,7 +180,7 @@ public void Hook_CameraDeathSpawn(int iEntIndex)
 	AcceptEntityInput(iEntIndex, "Kill");
 }
 
-void OnEntityDestroyed_CameraDeath(CBaseEntity pEntity)
+void Hook_CameraDeathDestroyed(CBaseEntity pEntity)
 {
 	for (int i = 1; i <= MaxClients; i++)
 	{
@@ -197,6 +197,9 @@ void OnEntityDestroyed_CameraDeath(CBaseEntity pEntity)
 
 public void Event_PlayerDeath(Event hEvent, const char[] szName, bool bDontBroadcast)
 {
+	if (!IsCurrentMapCoop())
+		return;
+
 	CBasePlayer pPlayer = CBasePlayer(GetClientOfUserId(GetEventInt(hEvent, "userid")));
 	if (!pPlayer.IsValid())
 		return;

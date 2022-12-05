@@ -232,7 +232,7 @@ methodmap CoopManager {
 		
 		data.m_bStarted = true;
 		data.m_flStartTime = GetGameTime();
-		PrintToServer("%sCo-op map %s has begun", CONSOLE_TAG, g_szMapName);
+		PrintToServer("%sCo-op map %s has begun", SRCCOOP_CONSOLE_TAG, g_szMapName);
 
 		if(g_pLevelLump.m_iIntroType == INTRO_FADE || g_pLevelLump.m_iIntroType == INTRO_FREEZE)
 		{

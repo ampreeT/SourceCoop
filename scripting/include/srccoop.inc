@@ -3,6 +3,13 @@
 #endif
 #define _srccoop_included
 
+#if defined SRCCOOP_CUSTOM_COMPILE
+	// custom compile predefined games
+#else
+	// compile all games by default, they are still checked at runtime
+	#define SRCCOOP_BLACKMESA
+#endif
+
 #include <sourcemod>
 #include <sdktools>
 #include <sdkhooks>
@@ -19,6 +26,9 @@
 #include <srccoop/typedef_game>
 #include <srccoop/features>
 #include <srccoop/classdef>
+#if defined SRCCOOP_BLACKMESA
+#include <srccoop/blackmesa/classdef>
+#endif
 #include <srccoop/utils>
 #include <srccoop_api>
 
@@ -28,8 +38,8 @@
 #include <srccoop/manager>
 #include <srccoop/manager_survival>
 #include <srccoop/manager_persistence>
-#include <srccoop/entitypatch_common>
-#include <srccoop/entitypatch_bm>
+#include <srccoop/entitypatch>
+#include <srccoop/blackmesa/entitypatch>
 #include <srccoop/instancing>
 #include <srccoop/playerpatch>
 #include <srccoop/menu>

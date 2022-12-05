@@ -1,7 +1,7 @@
-#if defined _srccoop_entitypatch_common_included
+#if defined _srccoop_entitypatch_included
  #endinput
 #endif
-#define _srccoop_entitypatch_common_included
+#define _srccoop_entitypatch_included
 
 // Patches common to multiple source games
 

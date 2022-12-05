@@ -776,6 +776,6 @@ void GreetPlayer(int client)
 {
 	if (CoopManager.IsFeatureEnabled(FT_SHOW_WELCOME_MESSAGE))
 	{
-		Msg(client, "This server runs SourceCoop version %s.\nPress %s=%s or type %s/coopmenu%s for extra settings.", SRCCOOP_VERSION, CHAT_COLOR_SEC, CHAT_COLOR_PRI, CHAT_COLOR_SEC, CHAT_COLOR_PRI);
+		Msg(client, "This server runs SourceCoop version %s.\nPress %s=%s or type %s/coopmenu%s for extra settings.", SRCCOOP_VERSION, SRCCOOP_CHAT_COLOR_SEC, SRCCOOP_CHAT_COLOR_PRI, SRCCOOP_CHAT_COLOR_SEC, SRCCOOP_CHAT_COLOR_PRI);
 	}
 }

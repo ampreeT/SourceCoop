@@ -21,7 +21,7 @@ Handle g_pShouldPlayerAvoid;
 Handle g_pRemoveAllItems;
 Handle g_pIsNPC;
 
-void InitClassdef(GameData pGameConfig)
+stock void InitClassdef(GameData pGameConfig)
 {
 	// ALL Games
 	{
@@ -132,33 +132,16 @@ void InitClassdef(GameData pGameConfig)
 		if (!(g_pUpdateEnemyMemory = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szUpdateEnemyMemory);
 	}
 	
+	#if defined SRCCOOP_BLACKMESA
 	if (GetEngineVersion() == Engine_BlackMesa)
-	{
-		/*
-		char szPickupObject[] = "CBlackMesaPlayer::PickupObject";
-		StartPrepSDKCall(SDKCall_Player);
-		if (!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Virtual, szPickupObject))
-			SetFailState("Could not obtain gamedata offset %s", szPickupObject);
-		PrepSDKCall_AddParameter(SDKType_CBaseEntity, SDKPass_Pointer);
-		PrepSDKCall_AddParameter(SDKType_Bool, SDKPass_Plain);
-		if (!(g_pPickupObject = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szPickupObject);
-		
-		
-		char szSendWeaponAnim[] = "CBaseCombatWeapon::SendWeaponAnim";
-		StartPrepSDKCall(SDKCall_Entity);
-		if (!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Virtual, szSendWeaponAnim))
-			SetFailState("Could not obtain gamedata offset %s", szSendWeaponAnim);
-		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
-		if (!(g_pSendWeaponAnim = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szSendWeaponAnim);
-		*/
-
+	{	
 		char szShouldPlayerAvoid[] = "CAI_BaseNPC::ShouldPlayerAvoid";
 		StartPrepSDKCall(SDKCall_Entity);
 		if(!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Virtual, szShouldPlayerAvoid))
 			SetFailState("Could not obtain gamedata offset %s", szShouldPlayerAvoid);
 		PrepSDKCall_SetReturnInfo(SDKType_Bool, SDKPass_Plain);
 		if (!(g_pShouldPlayerAvoid = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szShouldPlayerAvoid);
-	
+
 		char szGetSequenceLinearMotion[] = "CBaseAnimating::GetSequenceLinearMotion";
 		StartPrepSDKCall(SDKCall_Entity);
 		if(!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Signature, szGetSequenceLinearMotion))
@@ -166,7 +149,10 @@ void InitClassdef(GameData pGameConfig)
 		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
 		PrepSDKCall_AddParameter(SDKType_Vector, SDKPass_Pointer, _, VENCODE_FLAG_COPYBACK);
 		if (!(g_pGetSequenceLinearMotion = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szGetSequenceLinearMotion);
+
+		InitClassdefBM(pGameConfig);
 	}
+	#endif
 }
 
 methodmap CBaseEntity
@@ -362,9 +348,25 @@ methodmap CBaseEntity
 	{
 		GetEntPropVector(this.GetEntIndex(), Prop_Data, "m_vecAbsOrigin", vecBuffer);
 	}
+	public void SetAbsOrigin(const float vecBuffer[3])
+	{
+		SetEntPropVector(this.GetEntIndex(), Prop_Data, "m_vecAbsOrigin", vecBuffer);
+	}
+	public void GetOrigin(float vecBuffer[3])
+	{
+		GetEntPropVector(this.GetEntIndex(), Prop_Data, "m_vecOrigin", vecBuffer);
+	}
+	public void SetOrigin(const float vecBuffer[3])
+	{
+		SetEntPropVector(this.GetEntIndex(), Prop_Data, "m_vecOrigin", vecBuffer);
+	}
 	public void GetAbsAngles(float vecBuffer[3])
 	{
 		GetEntPropVector(this.GetEntIndex(), Prop_Data, "m_angAbsRotation", vecBuffer);
+	}
+	public void SetAbsAngles(const float vecAngles[3])
+	{
+		SetEntPropVector(this.GetEntIndex(), Prop_Send, "m_angAbsRotation", vecAngles);
 	}
 	public void GetAngles(float vecBuffer[3])
 	{
@@ -604,7 +606,7 @@ methodmap CBaseEntity
 
 enum struct FireOutputData
 {
-	char m_szName[MAX_KEY];
+	char m_szName[32];
 	CBaseEntity m_pCaller;
 	CBaseEntity m_pActivator;
 	float m_flDelay;
@@ -1238,7 +1240,6 @@ methodmap CBasePlayer < CBaseCombatCharacter
 	public void SetRagdoll(CBaseEntity pEntity)
 	{
 		SetEntPropEnt(this.GetEntIndex(), Prop_Send, "m_hRagdoll", pEntity.GetEntIndex());
-		ChangeEdictState(this.GetEntIndex());
 	}
 	public float GetDeathTime()
 	{
@@ -1341,22 +1342,6 @@ methodmap CBasePlayer < CBaseCombatCharacter
 	public void Suicide()
 	{
 		ForcePlayerSuicide(this.GetEntIndex());
-	}
-}
-
-methodmap CBlackMesaPlayer < CBasePlayer
-{
-	public CBlackMesaPlayer(const int iEntIndex = -1)
-	{
-		return view_as<CBlackMesaPlayer>(CBaseEntity(iEntIndex));
-	}
-	public bool HasJumpModule()
-	{
-		return view_as<bool>(GetEntProp(this.GetEntIndex(), Prop_Send, "m_bHasJumpModule"));
-	}
-	public void SetJumpModule(const bool bShouldHaveJumpModule)
-	{
-		SetEntProp(this.GetEntIndex(), Prop_Send, "m_bHasJumpModule", bShouldHaveJumpModule);
 	}
 }
 
@@ -1520,37 +1505,6 @@ methodmap CMultiplayRules
 				return view_as<bool>(GameRules_GetProp("m_bTeamPlayEnabled"));
 		}
 		
-	}
-}
-
-methodmap CBM_MP_GameRules < CMultiplayRules
-{
-	public static int GetStateIndex(const char[] szStateProp)
-	{
-		if(strcmp(szStateProp, STATE_WARMUP) == 0) return STATE_WARMUP_INDEX;
-		if(strcmp(szStateProp, STATE_ROUND) == 0) return STATE_ROUND_INDEX;
-		if(strcmp(szStateProp, STATE_INTERMISSION) == 0) return STATE_INTERMISSION_INDEX;
-		SetFailState("CBM_MP_GameRules.GetStateIndex %s", szStateProp); return -1;
-	}
-	
-	public static void SetStateEndTime(const char[] szStateProp, float flEndTime)
-	{
-		GameRules_SetPropFloat(szStateProp, flEndTime, STATE_ELEMENT_DONE_TIME);
-	}
-	
-	public static void SetCurrentState(const char[] szStateProp)
-	{
-		GameRules_SetProp("m_nCurrentStateId", CBM_MP_GameRules.GetStateIndex(szStateProp));
-	}
-	
-	public static void SetStateNextState(const char[] szStateProp, const char[] szNextStateProp)
-	{
-		GameRules_SetProp(szStateProp, CBM_MP_GameRules.GetStateIndex(szNextStateProp), _, STATE_ELEMENT_NEXT_STATE);
-	}
-	
-	public static void SetStateIsInIntermission(char[] szStateProp, bool bInIntermission)
-	{
-		GameRules_SetProp(szStateProp, bInIntermission, _, STATE_ELEMENT_IS_IN_INTERMISSION);
 	}
 }
 

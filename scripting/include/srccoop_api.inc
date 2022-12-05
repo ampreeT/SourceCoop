@@ -3,11 +3,21 @@
 #endif
 #define _srccoop_api_included
 
+#if defined SRCCOOP_CUSTOM_COMPILE
+	// custom compile predefined games
+#else
+	// compile all games by default, they are still checked at runtime
+	#define SRCCOOP_BLACKMESA
+#endif
+
 #include <topmenus>
 
 #include <srccoop/typedef>
 #include <srccoop/typedef_game>
 #include <srccoop/classdef>
+#if defined SRCCOOP_BLACKMESA
+#include <srccoop/blackmesa/classdef>
+#endif
 #include <srccoop/utils>
 #include <srccoop/features>
 

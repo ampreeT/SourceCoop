@@ -85,14 +85,17 @@ public void Hook_PlayerPreThinkPost(int iClient)
 	}
 	else // Dead
 	{
-		float flRespawnTime = g_pConvarCoopRespawnTime.FloatValue;
-		if (flRespawnTime && pPlayer.GetTeam() != TEAM_SPECTATOR && !SurvivalManager.IsDead(pPlayer) && GetGameTime() - pPlayer.GetDeathTime() > flRespawnTime)
+		if (pPlayer.GetTeam() != TEAM_SPECTATOR)
 		{
-			int iPressed = pPlayer.GetPressedButtons();
-			if (iPressed != 0 && iPressed != IN_SCORE)
+			float flRespawnTime = g_pConvarCoopRespawnTime.FloatValue;
+			if (flRespawnTime && !SurvivalManager.IsDead(pPlayer) && GetGameTime() - pPlayer.GetDeathTime() > flRespawnTime)
 			{
-				DispatchSpawn(iClient);
-			}
+				int iPressed = pPlayer.GetPressedButtons();
+				if (iPressed != 0 && iPressed != IN_SCORE)
+				{
+					DispatchSpawn(iClient);
+				}
+			}	
 		}
 	}
 }
@@ -343,8 +346,10 @@ public MRESReturn Hook_PlayerKilled(int _this, DHookParam hParams)
 		{
 			pRagdoll.Kill();
 		}
-		// Bone merge player to the new ragdoll. This ensures thirdperson death camera actually follows it (firstperson is unaffected).
 		pPlayer.SetRagdoll(g_pNewRagdoll);
+		
+		// Bone merge player to the new ragdoll. This ensures thirdperson death camera actually follows it (firstperson is unaffected).
+		// The downside is we have to keep check on its removal in order not to kill the player entity.
 		pPlayer.SetParent(g_pNewRagdoll);
 		pPlayer.SetParentAttachment("forward");
 		pPlayer.SetEffects(pPlayer.GetEffects() | EF_BONEMERGE);
@@ -357,6 +362,7 @@ public MRESReturn Hook_PlayerKilled(int _this, DHookParam hParams)
 public MRESReturn Hook_PlayerKilledPost(int _this, DHookParam hParams)
 {
 	CBasePlayer pPlayer = CBasePlayer(_this);
+
 	// TODO: Check can delete this in BM?
 	// if (g_pNewRagdoll.IsValid())
 	// {
@@ -370,6 +376,10 @@ public MRESReturn Hook_PlayerKilledPost(int _this, DHookParam hParams)
 	// }
 	if (CoopManager.IsCoopModeEnabled())
 	{
+		// Tells the death think not to move the player anymore. Player used to move despite being parented to its ragdoll, causing rendering issues.
+		pPlayer.SetFlags(FL_ONGROUND);
+		pPlayer.Teleport(vec3_origin, NULL_VECTOR, vec3_origin);
+
 		SurvivalManager.HandlePlayerDeath(pPlayer);
 	}
 	return MRES_Ignored;
@@ -388,7 +398,7 @@ void OnEntityDestroyed_Ragdoll(CBaseEntity pRagdoll)
 	CBasePlayer pPlayerChild = view_as<CBasePlayer>(pRagdoll.GetMoveChild());
 	if (pPlayerChild.IsValid())
 	{
-		// Prevent parented player entity removal
+		// prevent parented player entity removal
 		pPlayerChild.ClearParent();
 	}
 }

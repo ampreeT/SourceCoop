@@ -6,10 +6,10 @@
 //------------------------------------------------------
 // Prefix tags for printing messages
 //------------------------------------------------------
-#define CHAT_COLOR_PRI "\x07e69c12"
-#define CHAT_COLOR_SEC "\x07eb6f28"
-#define CHAT_TAG		CHAT_COLOR_SEC..."[SRCCOOP]"...CHAT_COLOR_PRI..." "
-#define CONSOLE_TAG "[SRCCOOP] "
+#define SRCCOOP_CHAT_COLOR_PRI "\x07e69c12"
+#define SRCCOOP_CHAT_COLOR_SEC "\x07eb6f28"
+#define SRCCOOP_CHAT_TAG		SRCCOOP_CHAT_COLOR_SEC..."[SRCCOOP]"...SRCCOOP_CHAT_COLOR_PRI..." "
+#define SRCCOOP_CONSOLE_TAG "[SRCCOOP] "
 
 //------------------------------------------------------
 // Mapchange reasons for SourceMod
