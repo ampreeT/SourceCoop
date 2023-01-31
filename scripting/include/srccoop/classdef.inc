@@ -597,10 +597,25 @@ methodmap CBaseEntity
 	{
 		return view_as<WaterLevel>(GetEntProp(this.GetEntIndex(), Prop_Data, "m_nWaterLevel"));
 	}
-	
 	public CBaseEntity GetGroundEntity()
 	{
 		return CBaseEntity(GetEntPropEnt(this.GetEntIndex(), Prop_Data, "m_hGroundEntity"));
+	}
+	public int GetHealth()
+	{
+		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_iHealth");
+	}
+	public void SetHealth(const int iHealth)
+	{
+		SetEntProp(this.GetEntIndex(), Prop_Data, "m_iHealth", iHealth);
+	}
+	public int GetMaxHealth()
+	{
+		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_iMaxHealth");
+	}
+	public void SetMaxHealth(const int iMaxHealth)
+	{
+		SetEntProp(this.GetEntIndex(), Prop_Data, "m_iMaxHealth", iMaxHealth);
 	}
 }
 
@@ -845,15 +860,6 @@ methodmap CBaseCombatCharacter < CBaseAnimating
 	public CBaseCombatCharacter(const int iEntIndex = -1)
 	{
 		return view_as<CBaseCombatCharacter>(CBaseEntity(iEntIndex));
-	}
-
-	public int GetHealth()
-	{
-		return GetEntProp(this.GetEntIndex(), Prop_Send, "m_iHealth");
-	}
-	public void SetHealth(const int iHealth)
-	{
-		SetEntProp(this.GetEntIndex(), Prop_Send, "m_iHealth", iHealth);
 	}
 	public bool IsAlive()
 	{
@@ -1374,11 +1380,11 @@ methodmap CSprite < CBaseEntity
 	}
 	public float GetFrame()
 	{
-		return GetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flFrame");
+		return GetEntPropFloat(this.GetEntIndex(), Prop_Send, "m_flFrame");
 	}
 	public void SetFrame(float val)
 	{
-		SetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flFrame", val);
+		SetEntPropFloat(this.GetEntIndex(), Prop_Send, "m_flFrame", val);
 	}
 	public float Frames()
 	{
