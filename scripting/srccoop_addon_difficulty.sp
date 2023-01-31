@@ -28,7 +28,7 @@ StringMap g_pMapIgnoredTo;
 StringMap g_pMapIgnoredFrom;
 
 int g_iDifficulty;
-bool bEnabled;
+bool g_bEnabled;
 
 public void OnPluginStart()
 {
@@ -58,13 +58,13 @@ public void OnPluginStart()
 
 public void OnMapStart()
 {
-	bEnabled = IsCurrentMapCoop();
+	g_bEnabled = IsCurrentMapCoop();
 }
 
 void OnDifficultyChanged(ConVar convar, const char[] oldValue, const char[] newValue)
 {
 	g_iDifficulty = convar.IntValue;
-	if(bEnabled && g_pConvarDifficultyAnnounce.BoolValue)
+	if (g_bEnabled && g_pConvarDifficultyAnnounce.BoolValue)
 	{
 		MsgAll("Difficulty has changed to %d", g_iDifficulty);
 	}
@@ -107,12 +107,12 @@ public void Frame_PlayerChangeTeamPost()
 
 void UpdateAutoDifficulty()
 {
-	if(g_pConvarDifficultyAuto.FloatValue == 0)
+	if (g_pConvarDifficultyAuto.FloatValue == 0)
 	{
 		int min = g_pConvarDifficultyAutoMin.IntValue;
 		int max = g_pConvarDifficultyAutoMax.IntValue;
 		
-		if(min > max)
+		if (min > max)
 		{
 			PrintToServer("Unable to set difficulty: sourcecoop_difficulty_auto_max is lower than sourcecoop_difficulty_auto_min");
 			return;
@@ -121,7 +121,7 @@ void UpdateAutoDifficulty()
 		float ratio = (GetRealClientCount(true, false, true) - 1) / float(MaxClients - 1);
 		g_pConvarDifficulty.IntValue = RoundToFloor((max - min) * ratio + min);
 	}
-	else if(g_pConvarDifficultyAuto.FloatValue > 0.0)
+	else if (g_pConvarDifficultyAuto.FloatValue > 0.0)
 	{
 		g_pConvarDifficulty.IntValue = RoundFloat(g_pConvarDifficultyAuto.FloatValue * GetRealClientCount(true, false, true));
 	}
@@ -130,11 +130,11 @@ void UpdateAutoDifficulty()
 public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 {
 	CBaseEntity pEntity = CBaseEntity(iEntIndex);
-	if(pEntity.IsClassNPC())
+	if (pEntity.IsClassNPC())
 	{
 		SDKHook(iEntIndex, SDKHook_OnTakeDamage, Hook_OnNpcTakeDamage);
 		
-		if(StrEqual(szClassname, "npc_apache"))
+		if (StrEqual(szClassname, "npc_apache"))
 		{
 			HookSingleEntityOutput(iEntIndex, "OnWishToDie", Hook_ApacheAboutToDie, true);
 		}
@@ -143,11 +143,11 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 
 public Action Hook_OnPlayerTakeDamage(int victim, int &attacker, int &inflictor, float &damage, int &damagetype, int &weapon, float damageForce[3], float damagePosition[3])
 {
-	if(g_iDifficulty && bEnabled)
+	if (g_iDifficulty && g_bEnabled)
 	{
 		CBaseEntity pAttacker = CBaseEntity(attacker);
 		
-		if(pAttacker.IsClassNPC() && PassIgnoreMap(g_pMapIgnoredFrom, attacker))
+		if (pAttacker.IsClassNPC() && PassIgnoreMap(g_pMapIgnoredFrom, attacker))
 		{
 			damage += g_iDifficulty * SCALE * damage;
 			return Plugin_Changed;
@@ -158,11 +158,11 @@ public Action Hook_OnPlayerTakeDamage(int victim, int &attacker, int &inflictor,
 
 public Action Hook_OnNpcTakeDamage(int victim, int &attacker, int &inflictor, float &damage, int &damagetype, int &weapon, float damageForce[3], float damagePosition[3])
 {
-	if(g_iDifficulty && bEnabled)
+	if (g_iDifficulty && g_bEnabled)
 	{
 		CBaseEntity pAttacker = CBaseEntity(attacker);
 		
-		if(pAttacker.IsClassPlayer() && PassIgnoreMap(g_pMapIgnoredTo, victim))
+		if (pAttacker.IsClassPlayer() && PassIgnoreMap(g_pMapIgnoredTo, victim))
 		{
 			damage = damage / (g_iDifficulty * SCALE + 1);
 			return Plugin_Changed;
@@ -192,16 +192,16 @@ void RefreshIgnoreMap(StringMap map, ConVar convar)
 	
 	int start;
 	int len = strlen(szIgnores);
-	for(int i = 0; i < len; i++)
+	for (int i = 0; i < len; i++)
 	{
-		if(szIgnores[i] == ';')
+		if (szIgnores[i] == ';')
 		{
 			szIgnores[i] = '\0';
 			map.SetValue(szIgnores[start], 1);
 			start = i + 1;
 		}
 	}
-	if(szIgnores[start] != '\0')
+	if (szIgnores[start] != '\0')
 	{
 		map.SetValue(szIgnores[start], 1);
 	}
