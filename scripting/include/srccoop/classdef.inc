@@ -155,9 +155,11 @@ stock void InitClassdef(GameData pGameConfig)
 	#endif
 }
 
+#define NULL_CBASEENTITY view_as<any>(-1)
+
 methodmap CBaseEntity
 {
-	public CBaseEntity(const int iEntIndex = -1)
+	public CBaseEntity(const int iEntIndex = NULL_CBASEENTITY)
 	{
 		return view_as<CBaseEntity>(iEntIndex > -1 ? EntIndexToEntRef(iEntIndex) : iEntIndex);
 	}
@@ -172,7 +174,7 @@ methodmap CBaseEntity
 	}
 	public bool IsValid()
 	{
-		if(view_as<int>(this) == -1)
+		if (this == NULL_CBASEENTITY)
 		{
 			return false;
 		}
@@ -444,6 +446,10 @@ methodmap CBaseEntity
 	{
 		return view_as<MoveCollide_t>(GetEntProp(this.GetEntIndex(), Prop_Data, "m_MoveCollide"));
 	}
+	public void SetMoveCollide(MoveCollide_t moveCollide)
+	{
+		SetEntProp(this.GetEntIndex(), Prop_Data, "m_MoveCollide", moveCollide);
+	}
 	public int GetCollisionGroup()
 	{
 		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_CollisionGroup");
@@ -560,6 +566,10 @@ methodmap CBaseEntity
 	{
 		SetEntProp(this.GetEntIndex(), Prop_Data, "m_takedamage", m_takedamage); 
 	}
+	public bool IsWorld()
+	{
+		return this.GetEntIndex() == 0;
+	}
 	public bool IsClassPlayer()
 	{
 		return (0 < this.GetEntIndex() <= MaxClients);
@@ -660,6 +670,11 @@ methodmap CBaseAnimating < CBaseEntity
 	{
 		return view_as<CBaseAnimating>(CBaseEntity(iEntIndex));
 	}
+	public static CBaseAnimating Create(const char[] szClassname)
+	{
+		return CBaseAnimating(CreateEntityByName(szClassname));
+	}
+
 	public float GetModelScale()
 	{
 		return GetEntPropFloat(this.GetEntIndex(), Prop_Send, "m_flModelScale");

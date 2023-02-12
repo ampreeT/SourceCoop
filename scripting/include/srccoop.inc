@@ -27,6 +27,7 @@
 #include <srccoop/features>
 #include <srccoop/classdef>
 #if defined SRCCOOP_BLACKMESA
+#include <srccoop/blackmesa/typedef>
 #include <srccoop/blackmesa/classdef>
 #endif
 #include <srccoop/utils>
