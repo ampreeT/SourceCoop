@@ -132,11 +132,6 @@ public Action OnPlayerRunCmd(int iClient, int &iButtons, int &iImpulse, float fV
 		if (iMode == OBS_MODE_POI && pTarget != pClient && (!pTarget.IsValid() || pTarget.IsClassPlayer())) {
 			SetEntProp(iClient, Prop_Data, "m_iObserverMode", OBS_MODE_ROAMING);
 		}
-
-		// fix bug where spectator can't move while free-looking
-		if (iMode == OBS_MODE_ROAMING) {
-			SetEntityMoveType(iClient, MOVETYPE_NOCLIP);
-		}
 	}
 
 	return Plugin_Continue;
@@ -252,7 +247,7 @@ public void Hook_PlayerSpawnPost(int iClient)
 	if (!CoopManager.IsCoopModeEnabled())
 		return;
 
-	CBlackMesaPlayer pPlayer = CBlackMesaPlayer(iClient);
+	CBasePlayer pPlayer = CBasePlayer(iClient);
 	if (pPlayer.IsValid())
 	{
 		bool bAlive = pPlayer.IsAlive();

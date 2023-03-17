@@ -49,71 +49,95 @@ stock void InitClassdef(GameData pGameConfig)
 		
 		char szGlobalEntity_GetIndex[] = "GlobalEntity_GetIndex";
 		StartPrepSDKCall(SDKCall_Static);
-		if(!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Signature, szGlobalEntity_GetIndex))
-			SetFailState("Could not obtain gamedata signature %s", szGlobalEntity_GetIndex);
-		PrepSDKCall_AddParameter(SDKType_String, SDKPass_Pointer);
-		PrepSDKCall_SetReturnInfo(SDKType_PlainOldData, SDKPass_Plain);
-		if (!(g_pGlobalEntityGetIndex = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szGlobalEntity_GetIndex);
+		if (!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Signature, szGlobalEntity_GetIndex))
+			LogMessage("Could not obtain gamedata signature %s", szGlobalEntity_GetIndex);
+		else
+		{
+			PrepSDKCall_AddParameter(SDKType_String, SDKPass_Pointer);
+			PrepSDKCall_SetReturnInfo(SDKType_PlainOldData, SDKPass_Plain);
+			if (!(g_pGlobalEntityGetIndex = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szGlobalEntity_GetIndex);
+		}
 
 		char szGlobalEntity_GetState[] = "GlobalEntity_GetState";
 		StartPrepSDKCall(SDKCall_Static);
-		if(!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Signature, szGlobalEntity_GetState))
-			SetFailState("Could not obtain gamedata signature %s", szGlobalEntity_GetState);
-		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
-		PrepSDKCall_SetReturnInfo(SDKType_PlainOldData, SDKPass_Plain);
-		if (!(g_pGlobalEntityGetState = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szGlobalEntity_GetState);
+		if (!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Signature, szGlobalEntity_GetState))
+			LogMessage("Could not obtain gamedata signature %s", szGlobalEntity_GetState);
+		else
+		{
+			PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
+			PrepSDKCall_SetReturnInfo(SDKType_PlainOldData, SDKPass_Plain);
+			if (!(g_pGlobalEntityGetState = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szGlobalEntity_GetState);
+		}
 
 		char szGlobalEntity_GetName[] = "GlobalEntity_GetName";
 		StartPrepSDKCall(SDKCall_Static);
-		if(!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Signature, szGlobalEntity_GetName))
-			SetFailState("Could not obtain gamedata signature %s", szGlobalEntity_GetName);
-		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
-		PrepSDKCall_SetReturnInfo(SDKType_String, SDKPass_Pointer);
-		if (!(g_pGlobalEntityGetName = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szGlobalEntity_GetName);
+		if (!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Signature, szGlobalEntity_GetName))
+			LogMessage("Could not obtain gamedata signature %s", szGlobalEntity_GetName);
+		else
+		{	
+			PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
+			PrepSDKCall_SetReturnInfo(SDKType_String, SDKPass_Pointer);
+			if (!(g_pGlobalEntityGetName = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szGlobalEntity_GetName);
+		}
 
 		char szGlobalEntity_GetCounter[] = "GlobalEntity_GetCounter";
 		StartPrepSDKCall(SDKCall_Static);
-		if(!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Signature, szGlobalEntity_GetCounter))
-			SetFailState("Could not obtain gamedata signature %s", szGlobalEntity_GetCounter);
-		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
-		PrepSDKCall_SetReturnInfo(SDKType_PlainOldData, SDKPass_Plain);
-		if (!(g_pGlobalEntityGetCounter = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szGlobalEntity_GetCounter);
+		if (!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Signature, szGlobalEntity_GetCounter))
+			LogMessage("Could not obtain gamedata signature %s", szGlobalEntity_GetCounter);
+		else
+		{
+			PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
+			PrepSDKCall_SetReturnInfo(SDKType_PlainOldData, SDKPass_Plain);
+			if (!(g_pGlobalEntityGetCounter = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szGlobalEntity_GetCounter);
+		}
 
 		char szGlobalEntity_GetMap[] = "GlobalEntity_GetMap";
 		StartPrepSDKCall(SDKCall_Static);
-		if(!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Signature, szGlobalEntity_GetMap))
-			SetFailState("Could not obtain gamedata signature %s", szGlobalEntity_GetMap);
-		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
-		PrepSDKCall_SetReturnInfo(SDKType_String, SDKPass_Pointer);
-		if (!(g_pGlobalEntityGetMap = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szGlobalEntity_GetMap);
+		if (!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Signature, szGlobalEntity_GetMap))
+			LogMessage("Could not obtain gamedata signature %s", szGlobalEntity_GetMap);
+		else
+		{
+			PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
+			PrepSDKCall_SetReturnInfo(SDKType_String, SDKPass_Pointer);
+			if (!(g_pGlobalEntityGetMap = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szGlobalEntity_GetMap);
+		}
 
 		char szGlobalEntity_SetState[] = "GlobalEntity_SetState";
 		StartPrepSDKCall(SDKCall_Static);
-		if(!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Signature, szGlobalEntity_SetState))
-			SetFailState("Could not obtain gamedata signature %s", szGlobalEntity_SetState);
-		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
-		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
-		PrepSDKCall_SetReturnInfo(SDKType_PlainOldData, SDKPass_Plain);
-		if (!(g_pGlobalEntitySetState = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szGlobalEntity_SetState);
+		if (!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Signature, szGlobalEntity_SetState))
+			LogMessage("Could not obtain gamedata signature %s", szGlobalEntity_SetState);
+		else
+		{
+			PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
+			PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
+			PrepSDKCall_SetReturnInfo(SDKType_PlainOldData, SDKPass_Plain);
+			if (!(g_pGlobalEntitySetState = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szGlobalEntity_SetState);
+		}
 
 		char szGlobalEntity_SetCounter[] = "GlobalEntity_SetCounter";
 		StartPrepSDKCall(SDKCall_Static);
-		if(!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Signature, szGlobalEntity_SetCounter))
-			SetFailState("Could not obtain gamedata signature %s", szGlobalEntity_SetCounter);
-		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
-		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
-		PrepSDKCall_SetReturnInfo(SDKType_PlainOldData, SDKPass_Plain);
-		if (!(g_pGlobalEntitySetCounter = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szGlobalEntity_SetCounter);
+		if (!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Signature, szGlobalEntity_SetCounter))
+			LogMessage("Could not obtain gamedata signature %s", szGlobalEntity_SetCounter);
+		else
+		{
+			PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
+			PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
+			PrepSDKCall_SetReturnInfo(SDKType_PlainOldData, SDKPass_Plain);
+			if (!(g_pGlobalEntitySetCounter = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szGlobalEntity_SetCounter);
+		}
 
 		char szGlobalEntity_Add[] = "GlobalEntity_Add";
 		StartPrepSDKCall(SDKCall_Static);
-		if(!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Signature, szGlobalEntity_Add))
-			SetFailState("Could not obtain gamedata signature %s", szGlobalEntity_Add);
-		PrepSDKCall_AddParameter(SDKType_String, SDKPass_Pointer);
-		PrepSDKCall_AddParameter(SDKType_String, SDKPass_Pointer);
-		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
-		PrepSDKCall_SetReturnInfo(SDKType_PlainOldData, SDKPass_Plain);
-		if (!(g_pGlobalEntityAdd = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szGlobalEntity_Add);
+		if (!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Signature, szGlobalEntity_Add))
+			LogMessage("Could not obtain gamedata signature %s", szGlobalEntity_Add);
+		else
+		{
+			PrepSDKCall_AddParameter(SDKType_String, SDKPass_Pointer);
+			PrepSDKCall_AddParameter(SDKType_String, SDKPass_Pointer);
+			PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
+			PrepSDKCall_SetReturnInfo(SDKType_PlainOldData, SDKPass_Plain);
+			if (!(g_pGlobalEntityAdd = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szGlobalEntity_Add);
+		}
 		
 		char szGameShutdown[] = "CServerGameDLL::GameShutdown";
 		StartPrepSDKCall(SDKCall_Raw);

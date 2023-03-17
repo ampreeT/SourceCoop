@@ -22,7 +22,7 @@ enum struct ItemInstancingManager
 		delete this.m_pPickedUpItems[client];
 	}
 	
-	void OnPlayerSpawned(CBlackMesaPlayer pPlayer)
+	void OnPlayerSpawned(CBasePlayer pPlayer)
 	{
 		if(!CoopManager.IsFeatureEnabled(FT_INSTANCE_ITEMS_NORESET))
 		{
@@ -30,13 +30,13 @@ enum struct ItemInstancingManager
 		}
 	}
 	
-	void AddPickedUpItem(CBlackMesaPlayer pPlayer, CBaseEntity pItem)
+	void AddPickedUpItem(CBasePlayer pPlayer, CBaseEntity pItem)
 	{
 		char key[32]; IntToString(view_as<int>(pItem), key, sizeof(key));
 		this.m_pPickedUpItems[pPlayer.GetEntIndex()].SetValue(key, true);
 	}
 	
-	bool HasPickedUpItem(CBlackMesaPlayer pPlayer, CBaseEntity pItem)
+	bool HasPickedUpItem(CBasePlayer pPlayer, CBaseEntity pItem)
 	{
 		char key[32]; bool _val; IntToString(view_as<int>(pItem), key, sizeof(key));
 		return this.m_pPickedUpItems[pPlayer.GetEntIndex()].GetValue(key, _val);
@@ -78,7 +78,7 @@ public void Hook_Instancing_ItemSpawn(int iEntIndex)
 // Do not allow to to touch-pickup consumed items
 public MRESReturn Hook_Instancing_OnTryPickUpPre(int _this, Handle hReturn, Handle hParams)
 {
-	CBlackMesaPlayer pPlayer = CBlackMesaPlayer(DHookGetParam(hParams, 1));
+	CBasePlayer pPlayer = CBasePlayer(DHookGetParam(hParams, 1));
 	if(pPlayer.IsClassPlayer())
 	{
 		CBaseEntity pItem = CBaseEntity(_this);
@@ -97,7 +97,7 @@ public MRESReturn Hook_Instancing_OnTryPickUpPost(int _this, Handle hReturn, Han
 	bool bPickedUp = DHookGetReturn(hReturn);
 	if(bPickedUp)
 	{
-		CBlackMesaPlayer pPlayer = CBlackMesaPlayer(DHookGetParam(hParams, 1));
+		CBasePlayer pPlayer = CBasePlayer(DHookGetParam(hParams, 1));
 		if(pPlayer.IsClassPlayer())
 		{
 			CBaseEntity pItem = CBaseEntity(_this);
@@ -110,7 +110,7 @@ public MRESReturn Hook_Instancing_OnTryPickUpPost(int _this, Handle hReturn, Han
 // Do not transmit picked up items. This is not optimal - better option would be to show some effect/as translucent
 public Action Hook_Instancing_ItemTransmit(int entity, int client)
 {
-	if(g_pInstancingManager.HasPickedUpItem(CBlackMesaPlayer(client), CBaseEntity(entity)))
+	if(g_pInstancingManager.HasPickedUpItem(CBasePlayer(client), CBaseEntity(entity)))
 	{
 		return Plugin_Stop;
 	}
@@ -119,7 +119,7 @@ public Action Hook_Instancing_ItemTransmit(int entity, int client)
 
 public Action Hook_Instancing_Use(int entity, int activator, int caller, UseType type, float value)
 {
-	if(g_pInstancingManager.HasPickedUpItem(CBlackMesaPlayer(caller), CBaseEntity(entity)))
+	if(g_pInstancingManager.HasPickedUpItem(CBasePlayer(caller), CBaseEntity(entity)))
 	{
 		return Plugin_Handled;
 	}
