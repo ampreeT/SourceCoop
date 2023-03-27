@@ -59,8 +59,12 @@ ItemInstancingManager g_pInstancingManager;
 public void Hook_Instancing_ItemSpawn(int iEntIndex)
 {
 	CBaseEntity pItem = CBaseEntity(iEntIndex);
+	
+	#if defined SRCCOOP_BLACKMESA
 	DHookEntity(hkOnTryPickUp, false, iEntIndex, _, Hook_Instancing_OnTryPickUpPre);
 	DHookEntity(hkOnTryPickUp, true, iEntIndex, _, Hook_Instancing_OnTryPickUpPost);
+	#endif
+
 	if(pItem.IsClassname("item_healthkit"))
 	{
 		// this spawns second entity item_healthkit_ragdoll_clone

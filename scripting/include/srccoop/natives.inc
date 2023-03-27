@@ -4,7 +4,7 @@
 #define _srccoop_natives_included
 
 
-public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
+void RegNatives()
 {
 	CreateNative("GetCoopTopMenu", Native_GetCoopTopMenu);
 	CreateNative("IsCurrentMapCoop", Native_IsCurrentMapCoop);
@@ -12,8 +12,6 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 	CreateNative("GetSurvivalMode", Native_GetSurvivalMode);
 	CreateNative("TeleportToCurrentCheckpoint", Native_TeleportToCurrentCheckpoint);
 	CreateNative("IsCoopFeatureEnabled", Native_IsCoopFeatureEnabled);
-	RegPluginLibrary(SRCCOOP_LIBRARY);
-	return APLRes_Success;
 }
 
 public any Native_GetCoopTopMenu(Handle plugin, int numParams)

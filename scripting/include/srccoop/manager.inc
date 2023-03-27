@@ -108,10 +108,10 @@ methodmap CoopManager {
 
 		if (data.m_bIsCoopMap)
 		{
-			if (g_Engine == Engine_BlackMesa)
-			{
-				CBM_MP_GameRules.SetStateEndTime(STATE_WARMUP, GetGameTime() + 60 * 60 * 24 * 7);
-			}
+			#if defined SRCCOOP_BLACKMESA
+			CBM_MP_GameRules.SetStateEndTime(STATE_WARMUP, GetGameTime() + 60 * 60 * 24 * 7);
+			#endif
+
 			KeyValues kv = CoopManager.LoadMapConfig(g_szMapName, data.m_mapConfigLoc);
 			if(kv != null)
 			{
@@ -193,7 +193,7 @@ methodmap CoopManager {
 
 	public static void StartCountdown(bool bGetReadyTimer)
 	{
-		if((data.m_bGetReadyTimer = bGetReadyTimer))
+		if ((data.m_bGetReadyTimer = bGetReadyTimer))
 		{
 			data.m_iSecondsToStart = 3;
 			EmitSoundToAll(SND_3, .volume = SND_TICK_VOL);
@@ -202,10 +202,11 @@ methodmap CoopManager {
 		{
 			data.m_iSecondsToStart = g_pConvarWaitPeriod.IntValue;
 		}
-		if (g_Engine == Engine_BlackMesa)
-		{
-			CBM_MP_GameRules.SetStateEndTime(STATE_WARMUP, GetGameTime() + data.m_iSecondsToStart + 1.0);
-		}
+
+		#if defined SRCCOOP_BLACKMESA
+		CBM_MP_GameRules.SetStateEndTime(STATE_WARMUP, GetGameTime() + data.m_iSecondsToStart + 1.0);
+		#endif
+
 		data.m_pStartTimer = CreateTimer(1.0, StartTimerCallback, _, TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT);
 	}
 
@@ -221,26 +222,26 @@ methodmap CoopManager {
 
 	public static void Start()
 	{
-		if(!GetRealClientCount(true)) {
+		if (!GetRealClientCount(true))
+		{
 			return;
 		}
 		
-		if (g_Engine == Engine_BlackMesa)
-		{
-			CBM_MP_GameRules.SetStateEndTime(STATE_WARMUP, 0.0);
-		}
+		#if defined SRCCOOP_BLACKMESA
+		CBM_MP_GameRules.SetStateEndTime(STATE_WARMUP, 0.0);
+		#endif
 		
 		data.m_bStarted = true;
 		data.m_flStartTime = GetGameTime();
 		PrintToServer("%sCo-op map %s has begun", SRCCOOP_CONSOLE_TAG, g_szMapName);
 
-		if(g_pLevelLump.m_iIntroType == INTRO_FADE || g_pLevelLump.m_iIntroType == INTRO_FREEZE)
+		if (g_pLevelLump.m_iIntroType == INTRO_FADE || g_pLevelLump.m_iIntroType == INTRO_FREEZE)
 		{
-			for(int i = 1; i <= MaxClients; i++)
+			for (int i = 1; i <= MaxClients; i++)
 			{
-				if(IsClientInGame(i))
+				if (IsClientInGame(i))
 				{
-					CBlackMesaPlayer pClient = CBlackMesaPlayer(i);
+					CBasePlayer pClient = CBasePlayer(i);
 					pClient.SetFlags(pClient.GetFlags() & ~FL_ATCONTROLS);
 					if(g_pLevelLump.m_iIntroType == INTRO_FREEZE)
 					{
@@ -342,10 +343,6 @@ methodmap CoopManager {
 
 	public static bool IsNewMapSeries()
 	{
-		if(g_Engine != Engine_BlackMesa)
-		{
-			return false;
-		}
 		// Return false if map was changed naturally, true if externally
 		if(GetMapHistorySize() > 0)
 		{

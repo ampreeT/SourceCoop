@@ -395,10 +395,11 @@ enum struct CCoopSpawn
 		}
 		if (bSpawnEquipment)
 		{
-			if (g_Engine != Engine_BlackMesa) // bm uses game_player_equip
-			{
-				this.StripPlayer(pPlayer);
-			}
+			#if !defined SRCCOOP_BLACKMESA
+			// bm uses game_player_equip
+			this.StripPlayer(pPlayer);
+			#endif
+			
 			this.SpawnPlayerEquipment(pPlayer);
 		}
 	}

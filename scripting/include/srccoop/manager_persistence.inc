@@ -123,13 +123,13 @@ methodmap EquipmentManager
 			{
 				playerEquipment.AddItem("item_suit");
 			}
-			if (g_Engine == Engine_BlackMesa)
+
+			#if defined SRCCOOP_BLACKMESA
+			if (view_as<CBlackMesaPlayer>(pPlayer).HasJumpModule())
 			{
-				if (view_as<CBlackMesaPlayer>(pPlayer).HasJumpModule())
-				{
-					playerEquipment.AddItem("item_longjump");
-				}
+				playerEquipment.AddItem("item_longjump");
 			}
+			#endif // SRCCOOP_BLACKMESA
 
 			for (int iAmmo = 0; iAmmo < MAX_AMMO_TYPES; iAmmo++)
 			{

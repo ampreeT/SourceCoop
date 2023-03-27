@@ -7,7 +7,7 @@
 
 void SetLocalPlayerCallingEntity(int iEntIndex)
 {
-	if(g_pLocalPlayerEntity.IsValid())
+	if (g_pLocalPlayerEntity.IsValid())
 	{
 		LogDebug("WARN: SetLocalPlayerCallingEntity, but one has already been set (%d).", g_pLocalPlayerEntity.GetEntIndex());
 	}
@@ -27,14 +27,14 @@ public MRESReturn Hook_UTIL_GetLocalPlayer(Handle hReturn)
 	if (g_pLocalPlayerEntity.IsValid())
 	{
 		CBasePlayer pPlayer;
-		if(g_pLocalPlayerEntity.IsClassPlayer())
+		if (g_pLocalPlayerEntity.IsClassPlayer())
 		{
 			pPlayer = view_as<CBasePlayer>(g_pLocalPlayerEntity);
 		}
 		else
 		{
 			pPlayer = GetNearestPlayer(g_pLocalPlayerEntity, false);
-			if(!pPlayer.IsValid())
+			if (!pPlayer.IsValid())
 			{
 				return MRES_Ignored;
 			}
@@ -44,6 +44,15 @@ public MRESReturn Hook_UTIL_GetLocalPlayer(Handle hReturn)
 		return MRES_Supercede;
 	}
 	return MRES_Ignored;
+}
+
+//------------------------------------------------------
+// CMultiplayRules::IsMultiplayer
+//------------------------------------------------------
+public MRESReturn Hook_IsMultiplayer(Handle hReturn)
+{
+	DHookSetReturn(hReturn, g_bIsMultiplayerOverride);
+	return MRES_Supercede;
 }
 
 //------------------------------------------------------
@@ -110,6 +119,34 @@ public MRESReturn Hook_BaseNPCAcceptInput(int _this, Handle hReturn, Handle hPar
 			}
 		}
 	}
+	return MRES_Ignored;
+}
+
+//------------------------------------------------------
+// Scene entities
+// fix findnamedentity returning sp player ( nullptr )
+//------------------------------------------------------
+public MRESReturn Hook_FindNamedEntity(int _this, Handle hReturn, Handle hParams)
+{
+	if (!DHookIsNullParam(hParams, 1) && !DHookIsNullParam(hParams, 2))
+	{
+		char szName[MAX_CLASSNAME];
+		DHookGetParamString(hParams, 1, szName, sizeof(szName));
+		if ((strcmp(szName, "Player", false) == 0) || (strcmp(szName, "!player", false) == 0))
+		{
+			CBaseEntity pActor = CBaseEntity(DHookGetParam(hParams, 2));
+			if (pActor.IsValid())
+			{
+				CBasePlayer pBestPlayer = GetNearestPlayer(pActor);
+				if (pBestPlayer.IsValid())
+				{
+					DHookSetReturn(hReturn, pBestPlayer.GetEntIndex());
+					return MRES_Supercede;
+				}
+			}
+		}
+	}
+
 	return MRES_Ignored;
 }
 
@@ -192,6 +229,30 @@ public Action ChangelevelEffects(Handle timer, CChangelevel pChangelevel)
 		return Plugin_Continue;
 	}
 	return Plugin_Stop;
+}
+
+//------------------------------------------------------
+// game_end
+// Does not work in BM
+// Other games benefit from our custom map series logic
+//------------------------------------------------------
+public MRESReturn Hook_GameEndAcceptInput(int _this, Handle hReturn, Handle hParams)
+{
+	if (!CoopManager.IsCoopModeEnabled())
+	{
+		return MRES_Ignored;
+	}
+
+	char szInputType[MAX_FORMAT];
+	DHookGetParamString(hParams, 1, szInputType, sizeof(szInputType));
+
+	if (strcmp(szInputType, "EndGame", false) == 0)
+	{
+		CoopManager.OnMapSeriesFinished();
+		DHookSetReturn(hReturn, true);
+		return MRES_Supercede;
+	}
+	return MRES_Ignored;
 }
 
 //------------------------------------------------------
@@ -411,7 +472,7 @@ public MRESReturn Hook_EnvZoomAcceptInput(int _this, Handle hReturn, Handle hPar
 			DHookGetParamString(hParams, 1, szInput, sizeof(szInput));
 		
 			CBaseEntity pActivator;
-			if(!DHookIsNullParam(hParams, 2))
+			if (!DHookIsNullParam(hParams, 2))
 			{
 				pActivator = CBaseEntity(DHookGetParam(hParams, 2));
 			}
@@ -422,16 +483,16 @@ public MRESReturn Hook_EnvZoomAcceptInput(int _this, Handle hReturn, Handle hPar
 			if (strcmp(szInput, "Zoom", false) == 0)
 			{
 				szNewInput = "Zoom";
-				if(pActivator.IsClassPlayer())
+				if (pActivator.IsClassPlayer())
 				{
 					iNewClient = pActivator.GetEntIndex();
 				}
 			}
-			else if(strcmp(szInput, "ZoomAll", false) == 0)
+			else if (strcmp(szInput, "ZoomAll", false) == 0)
 			{
 				szNewInput = "Zoom";
 			}
-			else if(strcmp(szInput, "UnZoom", false) == 0)
+			else if (strcmp(szInput, "UnZoom", false) == 0)
 			{
 				szNewInput = "UnZoom";
 			}
@@ -441,7 +502,7 @@ public MRESReturn Hook_EnvZoomAcceptInput(int _this, Handle hReturn, Handle hPar
 			}
 			
 			bHookSkip = true;
-			if(iNewClient > 0)
+			if (iNewClient > 0)
 			{
 				SetLocalPlayerCallingEntity(iNewClient);
 				AcceptEntityInput(_this, szNewInput);
@@ -449,9 +510,9 @@ public MRESReturn Hook_EnvZoomAcceptInput(int _this, Handle hReturn, Handle hPar
 			}
 			else
 			{
-				for(int i = 1; i <= MaxClients; i++)
+				for (int i = 1; i <= MaxClients; i++)
 				{
-					if(IsClientInGame(i))
+					if (IsClientInGame(i))
 					{
 						SetLocalPlayerCallingEntity(i);
 						AcceptEntityInput(_this, szNewInput);
@@ -651,6 +712,42 @@ public Action Timer_EnvSpritePostSpawn(Handle timer, CBaseEntity pEntity)
 }
 
 //------------------------------------------------------
+// CAI_GoalEntity - ai_goal_*
+// set goal entity to nearest player
+//------------------------------------------------------
+public MRESReturn Hook_ResolveNamesPost(int _this)
+{
+	char szGoal[MAX_TARGET_LENGTH];
+	GetEntPropString(_this, Prop_Data, "m_iszGoal", szGoal, sizeof(szGoal));
+
+	if(szGoal[0] == '\0' || strcmp(szGoal, "!player", false) == 0)
+	{
+		CBaseEntity pEnt = CBaseEntity(_this);
+		CBasePlayer pPlayer = GetNearestPlayer(pEnt);
+		SetEntPropEnt(_this, Prop_Data, "m_hGoalEntity", pPlayer.GetEntIndex());
+	}
+	return MRES_Ignored;
+}
+
+// this pre hook is required, otherwise the post hook will crash!
+public MRESReturn Hook_ResolveNames(int _this)
+{
+	return MRES_Ignored;
+}
+
+//------------------------------------------------------
+// CAI_LeadBehavior
+// multiplayer support for ai_goal_lead
+//------------------------------------------------------
+public MRESReturn Hook_CanSelectSchedule(Handle hReturn)
+{
+	LogDebug("Hook_CanSelectSchedule");
+	// ToDo: acutally check conditions as in original code
+	DHookSetReturn(hReturn, true);
+	return MRES_Supercede;
+}
+
+//------------------------------------------------------
 // ai_script_conditions
 // completely broken in mp
 //------------------------------------------------------
@@ -658,13 +755,167 @@ public MRESReturn Hook_AIConditionsThink(int _this)
 {
 	LogDebug("Hook_AIConditionsThink");
 	CAI_ScriptConditions pThis = CAI_ScriptConditions(_this);
-	if(!pThis.IsDisabled())
+	if (!pThis.IsDisabled())
 	{
 		// Just fire the output and disable. To even begin fixing this, one would need to read the CUtlVector< CAI_ScriptConditionsElement > m_ElementList.
 		pThis.FireOutput("OnConditionsSatisfied");
 		pThis.SetDisabled(true);
 		pThis.SetNextThink(-1.0);
 	}
+	return MRES_Supercede;
+}
+
+//------------------------------------------------------
+// CAI_BaseNPC - Recreation of SetPlayerAvoidState for MP compatibility
+// From https://github.com/ValveSoftware/source-sdk-2013/blob/0d8dceea4310fde5706b3ce1c70609d72a38efdf/mp/src/game/server/ai_basenpc.cpp#L3822
+//------------------------------------------------------
+public MRESReturn Hook_SetPlayerAvoidState(int _this)
+{
+	CAI_BaseNPC pThis = CAI_BaseNPC(_this);
+	
+	bool bShouldPlayerAvoid;
+	float vNothing[3];
+	
+	pThis.GetSequenceLinearMotion(pThis.GetSequence(), vNothing);
+	bool bIsMoving = (pThis.IsMoving() || !VecEqual(vNothing, vec3_origin));
+	
+	//If we are coming out of a script, check if we are stuck inside the player.
+	if (pThis.GetPerformAvoidance() || (pThis.ShouldPlayerAvoid() && bIsMoving))
+	{
+		float vMins[3], vMaxs[3], vOrigin[3], vPlrMins[3], vPlrMaxs[3], vPlrOrigin[3];
+		pThis.GetMins(vMins);
+		pThis.GetMaxs(vMaxs);
+		pThis.GetAbsOrigin(vOrigin);
+		AddVectors(vMins, vOrigin, vMins);
+		AddVectors(vMaxs, vOrigin, vMaxs);
+		
+		for (int i = 1; i <= MaxClients; i++)
+		{
+			if (IsClientInGame(i) && IsPlayerAlive(i))
+			{
+				CBasePlayer pPlayer = CBasePlayer(i);
+				pPlayer.GetMins(vPlrMins);
+				pPlayer.GetMaxs(vPlrMaxs);
+				pPlayer.GetAbsOrigin(vPlrOrigin);
+				AddVectors(vPlrMins, vPlrOrigin, vPlrMins);
+				AddVectors(vPlrMaxs, vPlrOrigin, vPlrMaxs);
+				
+				if(IsBoxIntersectingBox(vMins, vMaxs, vPlrMins, vPlrMaxs))
+				{
+					bShouldPlayerAvoid = true;
+					break;
+				}
+			}
+		}
+	}
+	
+	pThis.SetPlayerAvoidState(pThis.ShouldPlayerAvoid());
+	pThis.SetPerformAvoidance(bShouldPlayerAvoid);
+	
+	int iCollGroup = pThis.GetCollisionGroup();
+	if (iCollGroup == COLLISION_GROUP_NPC || iCollGroup == COLLISION_GROUP_NPC_ACTOR)
+	{
+		if (bShouldPlayerAvoid)
+		{
+			pThis.SetCollisionGroup(COLLISION_GROUP_NPC_ACTOR);
+		}
+		else
+		{
+			pThis.SetCollisionGroup(COLLISION_GROUP_NPC);
+		}
+	}
+	return MRES_Supercede;
+}
+
+//------------------------------------------------------
+// CProtoSniper - npc_sniper
+// Crashed in AI_GetSinglePlayer nullptr
+// This function is remade from scratch
+//------------------------------------------------------
+public MRESReturn Hook_ProtoSniperSelectSchedule(int _this, Handle hReturn)	// https://github.com/ValveSoftware/source-sdk-2013/blob/0d8dceea4310fde5706b3ce1c70609d72a38efdf/mp/src/game/server/hl2/proto_sniper.cpp#L1385
+{
+	CProtoSniper pSniper = CProtoSniper(_this);
+	
+	if (pSniper.HasCondition(view_as<int>(COND_ENEMY_DEAD)))
+	{
+		// unsure why this is crashing; unneeded
+		/*
+		if (PrecacheSound("NPC_Sniper.TargetDestroyed", true))
+		{
+			EmitGameSoundToAll("NPC_Sniper.TargetDestroyed", pSniper.GetEntIndex());
+		}
+		*/
+	}
+
+	if (!pSniper.IsWeaponLoaded())
+	{
+		DHookSetReturn(hReturn, SCHED_RELOAD);
+		return MRES_Supercede;
+	}
+	
+	// skipped SCHED_PSNIPER_PLAYER_DEAD
+	// this schedule is pretty useless as it only turns on the laser to show the dead player where he got sniped from
+	
+	if (pSniper.HasCondition(view_as<int>(COND_HEAR_DANGER)))
+	{
+		// Hear Danger; add glint, ect. here
+		DHookSetReturn(hReturn, SCHED_PSNIPER_SUPPRESSED);
+		return MRES_Supercede;
+	}
+	
+	if (!pSniper.IsEnabled())
+	{
+		DHookSetReturn(hReturn, SCHED_PSNIPER_DISABLEDWAIT);
+		return MRES_Supercede;
+	}
+	
+	if (pSniper.HasCondition(view_as<int>(COND_SNIPER_SWEEP_TARGET)))
+	{
+		CBaseEntity pSweepTarget = pSniper.GetSweepTarget();
+		if ((pSweepTarget.IsValid() && pSweepTarget.HasSpawnFlag(SF_SNIPERTARGET_NOINTERRUPT)) || pSniper.IsSweepHighestPriority())
+		{
+			DHookSetReturn(hReturn, SCHED_PSNIPER_SWEEP_TARGET_NOINTERRUPT);
+		}
+		else
+		{
+			DHookSetReturn(hReturn, SCHED_PSNIPER_SWEEP_TARGET);
+		}
+		return MRES_Supercede;
+	}
+	
+	CBaseEntity pEnemy = pSniper.GetEnemy();
+	if (!pEnemy.IsValid() || pSniper.HasCondition(view_as<int>(COND_ENEMY_DEAD)))
+	{
+		pSniper.SetEnemy(CBaseEntity());
+		DHookSetReturn(hReturn, SCHED_PSNIPER_SCAN);
+		return MRES_Supercede;
+	}
+	
+	if (pSniper.HasCondition(view_as<int>(COND_SNIPER_FRUSTRATED)))
+	{
+		DHookSetReturn(hReturn, SCHED_PSNIPER_FRUSTRATED_ATTACK);
+		return MRES_Supercede;
+	}
+	
+	if (pSniper.HasCondition(view_as<int>(COND_SNIPER_CANATTACKDECOY)))
+	{
+		DHookSetReturn(hReturn, SCHED_RANGE_ATTACK2);
+		return MRES_Supercede;
+	}
+	
+	if (pSniper.HasCondition(view_as<int>(COND_SNIPER_NO_SHOT)))
+	{
+		DHookSetReturn(hReturn, SCHED_PSNIPER_NO_CLEAR_SHOT);
+		return MRES_Supercede;
+	}
+	
+	if (pSniper.HasCondition(view_as<int>(COND_CAN_RANGE_ATTACK1)))
+	{
+		DHookSetReturn(hReturn, SCHED_RANGE_ATTACK1);
+		return MRES_Supercede;
+	}
+
+	DHookSetReturn(hReturn, SCHED_PSNIPER_CAMP);
 	return MRES_Supercede;
 }
 

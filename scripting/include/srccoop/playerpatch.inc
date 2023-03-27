@@ -38,50 +38,51 @@ public void Hook_PlayerPreThinkPost(int iClient)
 	CBasePlayer pPlayer = CBasePlayer(iClient);
 	if (pPlayer.IsAlive())
 	{
-		if (g_Engine == Engine_BlackMesa)
+		#if defined SRCCOOP_BLACKMESA
+
+		CBaseCombatWeapon pWeapon = pPlayer.GetActiveWeapon();
+		if (pWeapon.IsValid())
 		{
-			CBaseCombatWeapon pWeapon = pPlayer.GetActiveWeapon();
-			if (pWeapon.IsValid())
+			if (PlayingAdmireGloves(pPlayer))
 			{
-				if (PlayingAdmireGloves(pPlayer))
+				// if weapon viewmodel index is different at this point, player canceled admire animation
+				if ((pWeapon.GetViewModelIndex() != 1) || (pPlayer.GetViewModel().GetWeaponTimeIdle() <= GetGameTime()))
 				{
-					// if weapon viewmodel index is different at this point, player canceled admire animation
-					if ((pWeapon.GetViewModelIndex() != 1) || (pPlayer.GetViewModel().GetWeaponTimeIdle() <= GetGameTime()))
-					{
-						PlayAdmireGloves(pPlayer, false);
-					}
-					else
-					{
-						// this has to be here because the active weapon cant be -1 due to tpose
-						PreventWeaponFiring(pWeapon, 1.0);
-					}
+					PlayAdmireGloves(pPlayer, false);
 				}
-				
-				if (pPlayer.GetCarriedObject().IsValid())
+				else
 				{
-					// fix clientside prediction errors when dropping objects
+					// this has to be here because the active weapon cant be -1 due to tpose
 					PreventWeaponFiring(pWeapon, 1.0);
 				}
-				else if (pPlayer.GetWaterLevel() == WL_Eyes)
+			}
+			
+			if (pPlayer.GetCarriedObject().IsValid())
+			{
+				// fix clientside prediction errors when dropping objects
+				PreventWeaponFiring(pWeapon, 1.0);
+			}
+			else if (pPlayer.GetWaterLevel() == WL_Eyes)
+			{
+				// fix clientside firing weapons when dragged by beneathticle
+				CBaseEntity pParent = pPlayer.GetParent();
+				if (pParent.IsValid())
 				{
-					// fix clientside firing weapons when dragged by beneathticle
-					CBaseEntity pParent = pPlayer.GetParent();
-					if (pParent.IsValid())
+					if (HasEntProp(pParent.GetEntIndex(), Prop_Data, "m_hPrey"))
 					{
-						if (HasEntProp(pParent.GetEntIndex(), Prop_Data, "m_hPrey"))
+						if (GetEntPropEnt(pParent.GetEntIndex(), Prop_Data, "m_hPrey") == pPlayer.GetEntIndex())
 						{
-							if (GetEntPropEnt(pParent.GetEntIndex(), Prop_Data, "m_hPrey") == pPlayer.GetEntIndex())
+							if (!pWeapon.m_bFiresUnderwater() && pWeapon.GetPrimaryAmmoType() != -1)
 							{
-								if (!pWeapon.m_bFiresUnderwater() && pWeapon.GetPrimaryAmmoType() != -1)
-								{
-									PreventWeaponFiring(pWeapon, 0.2);
-								}
+								PreventWeaponFiring(pWeapon, 0.2);
 							}
 						}
 					}
 				}
 			}
 		}
+
+		#endif // SRCCOOP_BLACKMESA
 	}
 	else // Dead
 	{
@@ -152,11 +153,13 @@ public Action PlayerSoundListener(int clients[MAXPLAYERS], int &numClients, char
 			szLastSuitSound[clients[i]] = sample;
 		}
 	}
-	else if (strncmp(sample, "physics\\footsteps\\", 18) == 0 || strncmp(sample, "player/suit_sprint.wav", 22) == 0)
+
+	#if defined SRCCOOP_BLACKMESA
+	if (strncmp(sample, "physics\\footsteps\\", 18) == 0 || strncmp(sample, "player/suit_sprint.wav", 22) == 0)
 	{
 		// Footsteps are emitted on the server but not sent to client, because the client usually plays them on its own - but not when sprinting in MP mode (actually just pressing +speed!)
 		// We can resolve this by sending the footsteps, which are already generated on the server, to the client.
-		CBlackMesaPlayer pPlayer = CBlackMesaPlayer(entity);
+		CBasePlayer pPlayer = CBasePlayer(entity);
 		if (pPlayer.IsValid() && pPlayer.GetButtons() & IN_SPEED)
 		{
 			clients[0] = entity;
@@ -164,6 +167,8 @@ public Action PlayerSoundListener(int clients[MAXPLAYERS], int &numClients, char
 			return Plugin_Changed;
 		}
 	}
+	#endif // SRCCOOP_BLACKMESA
+
 	return Plugin_Continue;
 }
 
@@ -206,13 +211,12 @@ public MRESReturn Hook_PlayerAcceptInput(int _this, Handle hReturn, Handle hPara
 //------------------------------------------------------
 // ClientPutInServer
 //------------------------------------------------------
-void PlayerPatch_OnClientPutInServer(CBasePlayer pPlayer)
+public void PlayerPatch_OnClientPutInServer(CBasePlayer pPlayer)
 {
-	if (g_Engine == Engine_BlackMesa)
-	{
-		// fixes bugged trigger_teleport prediction (camera jerking around as if being teleported)
-		ClientCommand(pPlayer.GetEntIndex(), "cl_predicttriggers 0");
-	}
+	#if defined SRCCOOP_BLACKMESA
+	// fixes bugged trigger_teleport prediction (camera jerking around as if being teleported)
+	ClientCommand(pPlayer.GetEntIndex(), "cl_predicttriggers 0");
+	#endif // SRCCOOP_BLACKMESA
 }
 
 //------------------------------------------------------
@@ -250,9 +254,7 @@ public void Hook_PlayerSpawnPost(int iClient)
 	CBasePlayer pPlayer = CBasePlayer(iClient);
 	if (pPlayer.IsValid())
 	{
-		bool bAlive = pPlayer.IsAlive();
-		
-		if (bAlive)
+		if (pPlayer.IsAlive())
 		{
 			// Ensure death camera and ragdoll get removed
 			CBaseEntity pRagdoll = pPlayer.GetRagdoll();
@@ -268,48 +270,51 @@ public void Hook_PlayerSpawnPost(int iClient)
 
 			// Fix for if player died on a ladder
 			SetEntPropEnt(pPlayer.GetEntIndex(), Prop_Data, "m_hLadder", -1);
-		}
 
-		if (g_Engine == Engine_BlackMesa)
+			#if defined SRCCOOP_BLACKMESA
+
+			// Fix for client viewmodel animation when always run is off
+			if (!IsFakeClient(iClient)) sv_always_run.ReplicateToClient(iClient, "1");
+			
+			// Fix for lag no collide with mp_teamplay 0
+			if (!CBM_MP_GameRules.IsTeamplay()) pPlayer.SetCollisionGroup(COLLISION_GROUP_INTERACTIVE_DEBRIS);
+			
+			// Correct the 'damages' from the prethink hook hack
+			pPlayer.SetSuit(false);
+			pPlayer.SetMaxSpeed(190.0);
+			pPlayer.SetIsSprinting(false);
+			pPlayer.SetSolidFlags(pPlayer.GetSolidFlags() & ~FSOLID_NOT_SOLID);
+			
+			#endif // SRCCOOP_BLACKMESA
+
+			// Stop HEV sounds
+			StopSound(iClient, SNDCHAN_STATIC, szLastSuitSound[iClient]);
+		}
+		else // Not alive => entered the game
 		{
-			if (bAlive)
+			#if defined SRCCOOP_BLACKMESA
+
+			if (GetClientTeam(iClient) == TEAM_SPECTATOR)
 			{
-				// Fix for client viewmodel animation when always run is off
-				if (!IsFakeClient(iClient)) sv_always_run.ReplicateToClient(iClient, "1");
-				
-				// Fix for lag no collide with mp_teamplay 0
-				if (!CBM_MP_GameRules.IsTeamplay()) pPlayer.SetCollisionGroup(COLLISION_GROUP_INTERACTIVE_DEBRIS);
-				
-				// Correct the 'damages' from the prethink hook hack
-				pPlayer.SetSuit(false);
-				pPlayer.SetMaxSpeed(190.0);
-				pPlayer.SetIsSprinting(false);
-				pPlayer.SetSolidFlags(pPlayer.GetSolidFlags() & ~FSOLID_NOT_SOLID);
-				
-				// Stop HEV sounds
-				StopSound(iClient, SNDCHAN_STATIC, szLastSuitSound[iClient]);
-			}
-			else // Not alive => entered the game
-			{
-				if (GetClientTeam(iClient) == TEAM_SPECTATOR)
+				if (g_pConvarDisableTeamSelect.BoolValue)
 				{
-					if (g_pConvarDisableTeamSelect.BoolValue)
-					{
-						// hide team select
-						ClientCommand(iClient, "hidepanel team");
-						ClientCommand(iClient, "hidepanel deathmatch");
-						ChangeClientTeam(iClient, TEAM_SCIENTIST);
-						g_bPostTeamSelect[iClient] = true;
-					}
-					else
-					{
-						// always show DM variant of team select
-						ClientCommand(iClient, "hidepanel team");
-						ClientCommand(iClient, "showpanel deathmatch");
-					}
+					// hide team select
+					ClientCommand(iClient, "hidepanel team");
+					ClientCommand(iClient, "hidepanel deathmatch");
+					ChangeClientTeam(iClient, TEAM_SCIENTIST);
+					g_bPostTeamSelect[iClient] = true;
+				}
+				else
+				{
+					// always show DM variant of team select
+					ClientCommand(iClient, "hidepanel team");
+					ClientCommand(iClient, "showpanel deathmatch");
 				}
 			}
+
+			#endif // SRCCOOP_BLACKMESA
 		}
+
 		
 		CoopManager.OnPlayerSpawned(pPlayer);
 		g_pInstancingManager.OnPlayerSpawned(pPlayer);
@@ -320,10 +325,14 @@ public void Hook_PlayerSpawnPost(int iClient)
 // Player death hooks
 // - Force serverside ragdolls
 //------------------------------------------------------
+#if defined SERVERSIDE_RAGDOLLS
 CBaseEntity g_pNewRagdoll = view_as<CBaseEntity>(-1);
+#endif
 
 public MRESReturn Hook_PlayerKilled(int _this, DHookParam hParams)
 {
+	#if defined SERVERSIDE_RAGDOLLS
+
 	if (!CoopManager.IsCoopModeEnabled())
 		return MRES_Ignored;
 	
@@ -351,6 +360,9 @@ public MRESReturn Hook_PlayerKilled(int _this, DHookParam hParams)
 
 		g_pNewRagdoll = CBaseEntity(-1);
 	}
+
+	#endif // SERVERSIDE_RAGDOLLS
+	
 	return MRES_Ignored;
 }
 
@@ -371,9 +383,11 @@ public MRESReturn Hook_PlayerKilledPost(int _this, DHookParam hParams)
 	// }
 	if (CoopManager.IsCoopModeEnabled())
 	{
+		#if defined SERVERSIDE_RAGDOLLS
 		// Tells the death think not to move the player anymore. Player used to move despite being parented to its ragdoll, causing rendering issues.
 		pPlayer.SetFlags(FL_ONGROUND);
 		pPlayer.Teleport(vec3_origin, NULL_VECTOR, vec3_origin);
+		#endif
 
 		SurvivalManager.HandlePlayerDeath(pPlayer);
 	}
@@ -388,7 +402,7 @@ public MRESReturn Hook_CreateRagdollEntity(int _this)
 	return MRES_Supercede;
 }
 
-void OnEntityDestroyed_Ragdoll(CBaseEntity pRagdoll)
+public void OnEntityDestroyed_Ragdoll(CBaseEntity pRagdoll)
 {
 	CBasePlayer pPlayerChild = view_as<CBasePlayer>(pRagdoll.GetMoveChild());
 	if (pPlayerChild.IsValid())
@@ -401,20 +415,21 @@ void OnEntityDestroyed_Ragdoll(CBaseEntity pRagdoll)
 //------------------------------------------------------
 // OnClientDisconnect
 //------------------------------------------------------
-void PlayerPatch_OnClientDisconnect(CBasePlayer pPlayer)
+public void PlayerPatch_OnClientDisconnect(CBasePlayer pPlayer)
 {
-	if (g_Engine == Engine_HL2DM)
+	#if defined SRCCOOP_HL2DM && defined SERVERSIDE_RAGDOLLS
+
+	if (pPlayer.IsValid())
 	{
-		if (pPlayer.IsValid())
+		// prevent hl2dm crash with serverside ragdolls
+		CBaseEntity pRagdoll = pPlayer.GetRagdoll();
+		if (pRagdoll.IsValid())
 		{
-			// prevent hl2dm crash with serverside ragdolls
-			CBaseEntity pRagdoll = pPlayer.GetRagdoll();
-			if (pRagdoll.IsValid())
-			{
-				pRagdoll.Kill();
-			}
+			pRagdoll.Kill();
 		}
 	}
+
+	#endif // SRCCOOP_HL2DM && SERVERSIDE_RAGDOLLS
 }
 
 //------------------------------------------------------
@@ -425,7 +440,7 @@ public Action Hook_PlayerTraceAttack(int victim, int &attacker, int &inflictor, 
 	if (CoopManager.IsCoopModeEnabled() && !mp_friendlyfire.BoolValue)
 	{
 		// Disable FF
-		if (attacker != victim && CBlackMesaPlayer(attacker).IsClassPlayer())
+		if (attacker != victim && CBasePlayer(attacker).IsClassPlayer())
 		{
 			return Plugin_Handled;
 		}
@@ -451,7 +466,7 @@ public Action Hook_PlayerTakeDamage(int victim, int &attacker, int &inflictor, f
 	if (CoopManager.IsCoopModeEnabled() && !mp_friendlyfire.BoolValue)
 	{
 		// Disable FF from other sources such as the tau cannon
-		if (attacker != victim && CBlackMesaPlayer(attacker).IsClassPlayer())
+		if (attacker != victim && CBasePlayer(attacker).IsClassPlayer())
 		{
 			return Plugin_Handled;
 		}
