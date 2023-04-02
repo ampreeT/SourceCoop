@@ -8,13 +8,14 @@
 // Compile defs
 //------------------------------------------------------
 
+// Uncomment to disable debugging
+// #define NO_DEBUG
+
 #if !defined SRCCOOP_CUSTOM_COMPILE
 
 #if defined SRCCOOP_HL2DM
 	
 	#define CHECK_ENGINE "HL2DM"; if (GetEngineVersion() != Engine_HL2DM)
-
-	#define SERVERSIDE_RAGDOLLS
 
 	#define ENTPATCH_CUSTOM_NPC_MODELS
 	#define ENTPATCH_UPDATE_ENEMY_MEMORY
@@ -40,6 +41,7 @@
 	
 	#define PLAYERPATCH_SETSUITUPDATE
 	#define PLAYERPATCH_PICKUP_FORCEPLAYERTODROPTHISOBJECT
+	#define PLAYERPATCH_SERVERSIDE_RAGDOLLS
 
 	#define GAMEPATCH_UTIL_GETLOCALPLAYER
 	#define GAMEPATCH_IS_MULTIPLAYER
@@ -49,8 +51,6 @@
 	// SRCCOOP_BLACKMESA is the fallback if no other definition is passed
 	#define SRCCOOP_BLACKMESA
 	#define CHECK_ENGINE "Black Mesa"; if (GetEngineVersion() != Engine_BlackMesa)
-
-	#define SERVERSIDE_RAGDOLLS
 
 	#define ENTPATCH_CUSTOM_NPC_MODELS
 	#define ENTPATCH_UPDATE_ENEMY_MEMORY
@@ -93,12 +93,14 @@
 
 	#define PLAYERPATCH_SETSUITUPDATE
 	#define PLAYERPATCH_PICKUP_FORCEPLAYERTODROPTHISOBJECT
+	#define PLAYERPATCH_SERVERSIDE_RAGDOLLS
 
 	#define GAMEPATCH_UTIL_GETLOCALPLAYER
 	#define GAMEPATCH_IS_MULTIPLAYER
 	#define GAMEPATCH_BLOCK_RESTOREWORLD
 	#define GAMEPATCH_BLOCK_RESPAWNPLAYERS
 	#define GAMEPATCH_ALLOW_FLASHLIGHT
+	#define GAMEPATCH_TEAMSELECT_UI
 
 #endif // SRCCOOP_BLACKMESA
 
@@ -123,7 +125,6 @@
 #include <logdebug>
 
 #include <srccoop_api>
-
 #include <srccoop/globals>
 #include <srccoop/kv_shared>
 #include <srccoop/manager_changelevel>

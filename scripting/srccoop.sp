@@ -1,5 +1,3 @@
-//#define NO_DEBUG   /* Uncomment to disable debugging */
-
 #include <srccoop>
 
 public Plugin myinfo =
@@ -63,7 +61,7 @@ void LoadGameData()
 	if (!(g_ServerGameDLL = IServerGameDLL(GetServerInterface(szInterfaceGame))))
 		SetFailState("Could not get interface for %s", "g_ServerGameDLL");
 	
-	#if defined SERVERSIDE_RAGDOLLS
+	#if defined PLAYERPATCH_SERVERSIDE_RAGDOLLS
 	char szCreateServerRagdoll[] = "CreateServerRagdoll";
 	StartPrepSDKCall(SDKCall_Static);
 	if(!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Signature, szCreateServerRagdoll))
@@ -144,7 +142,7 @@ void LoadGameData()
 	LoadDHookVirtual(pGameConfig, hkBlocked, "CBaseEntity::Blocked");
 	#endif
 
-	#if defined SRCCOOP_HL2DM && defined SERVERSIDE_RAGDOLLS
+	#if defined SRCCOOP_HL2DM && defined PLAYERPATCH_SERVERSIDE_RAGDOLLS
 	LoadDHookVirtual(pGameConfig, hkCreateRagdollEntity, "CBasePlayer::CreateRagdollEntity");
 	#endif
 
@@ -202,7 +200,7 @@ public void OnPluginStart()
 	InitDebugLog("sourcecoop_debug", "SRCCOOP", ADMFLAG_ROOT);
 	CreateConVar("sourcecoop_version", SRCCOOP_VERSION, _, FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
 	g_pConvarCoopTeam = CreateConVar("sourcecoop_team", "scientist", "Sets which team to use in TDM mode. Valid values are [marines] or [scientist] or a team number. Setting anything else will not manage teams.");
-	#if defined SRCCOOP_BLACKMESA
+	#if defined GAMEPATCH_TEAMSELECT_UI
 	g_pConvarDisableTeamSelect = CreateConVar("sourcecoop_disable_teamselect", "1", "Whether to skip the team select screen and spawn in instantly.", _, true, 0.0, true, 1.0);
 	#endif
 	g_pConvarCoopRespawnTime = CreateConVar("sourcecoop_respawntime", "2.0", "Sets player respawn time in seconds. This can only be used for making respawn times quicker, not longer. Set to 0 to use the game's default.", _, true, 0.0);
@@ -389,7 +387,7 @@ public void OnClientPutInServer(int client)
 	DHookEntity(hkEvent_Killed, false, client, _, Hook_PlayerKilled);
 	DHookEntity(hkEvent_Killed, true, client, _, Hook_PlayerKilledPost);
 	
-	#if defined SRCCOOP_HL2DM && defined SERVERSIDE_RAGDOLLS
+	#if defined SRCCOOP_HL2DM && defined PLAYERPATCH_SERVERSIDE_RAGDOLLS
 	DHookEntity(hkCreateRagdollEntity, false, client, _, Hook_CreateRagdollEntity);
 	#endif
 	
@@ -777,15 +775,11 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 		#endif
 		
 		// if some explosions turn out to be damaging all players except one, this is the fix
-		//if (strcmp(szClassname, "env_explosion") == 0)
-		//{
-		//	SDKHook(iEntIndex, SDKHook_SpawnPost, Hook_ExplosionSpawn);
-		//	return;
-			//}
-			//}
-		}
-		//}
-		}
+		// if (strcmp(szClassname, "env_explosion") == 0)
+		// {
+		// 	SDKHook(iEntIndex, SDKHook_SpawnPost, Hook_ExplosionSpawn);
+		// 	return;
+		// }
 	}
 }
 
@@ -797,7 +791,7 @@ public void OnEntityDestroyed(int iEntIndex)
 		static char szClassname[MAX_CLASSNAME];
 		pEntity.GetClassname(szClassname, sizeof(szClassname));
 		
-		#if defined SERVERSIDE_RAGDOLLS
+		#if defined PLAYERPATCH_SERVERSIDE_RAGDOLLS
 		if (strcmp(szClassname, "prop_ragdoll") == 0)
 		{
 			OnEntityDestroyed_Ragdoll(pEntity);

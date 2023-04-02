@@ -6,7 +6,6 @@
 
 #if !defined SRCCOOP_CUSTOM_COMPILE
 	#if defined SRCCOOP_HL2DM
-	
 	#else
 		// SRCCOOP_BLACKMESA is the fallback if no other definition is passed
 		#define SRCCOOP_BLACKMESA

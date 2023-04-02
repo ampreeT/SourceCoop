@@ -292,7 +292,7 @@ public void Hook_PlayerSpawnPost(int iClient)
 		}
 		else // Not alive => entered the game
 		{
-			#if defined SRCCOOP_BLACKMESA
+			#if defined GAMEPATCH_TEAMSELECT_UI
 
 			if (GetClientTeam(iClient) == TEAM_SPECTATOR)
 			{
@@ -312,7 +312,7 @@ public void Hook_PlayerSpawnPost(int iClient)
 				}
 			}
 
-			#endif // SRCCOOP_BLACKMESA
+			#endif // GAMEPATCH_TEAMSELECT_UI
 		}
 
 		
@@ -325,13 +325,13 @@ public void Hook_PlayerSpawnPost(int iClient)
 // Player death hooks
 // - Force serverside ragdolls
 //------------------------------------------------------
-#if defined SERVERSIDE_RAGDOLLS
+#if defined PLAYERPATCH_SERVERSIDE_RAGDOLLS
 CBaseEntity g_pNewRagdoll = view_as<CBaseEntity>(-1);
 #endif
 
 public MRESReturn Hook_PlayerKilled(int _this, DHookParam hParams)
 {
-	#if defined SERVERSIDE_RAGDOLLS
+	#if defined PLAYERPATCH_SERVERSIDE_RAGDOLLS
 
 	if (!CoopManager.IsCoopModeEnabled())
 		return MRES_Ignored;
@@ -361,7 +361,7 @@ public MRESReturn Hook_PlayerKilled(int _this, DHookParam hParams)
 		g_pNewRagdoll = CBaseEntity(-1);
 	}
 
-	#endif // SERVERSIDE_RAGDOLLS
+	#endif // PLAYERPATCH_SERVERSIDE_RAGDOLLS
 	
 	return MRES_Ignored;
 }
@@ -383,7 +383,7 @@ public MRESReturn Hook_PlayerKilledPost(int _this, DHookParam hParams)
 	// }
 	if (CoopManager.IsCoopModeEnabled())
 	{
-		#if defined SERVERSIDE_RAGDOLLS
+		#if defined PLAYERPATCH_SERVERSIDE_RAGDOLLS
 		// Tells the death think not to move the player anymore. Player used to move despite being parented to its ragdoll, causing rendering issues.
 		pPlayer.SetFlags(FL_ONGROUND);
 		pPlayer.Teleport(vec3_origin, NULL_VECTOR, vec3_origin);
@@ -417,7 +417,7 @@ public void OnEntityDestroyed_Ragdoll(CBaseEntity pRagdoll)
 //------------------------------------------------------
 public void PlayerPatch_OnClientDisconnect(CBasePlayer pPlayer)
 {
-	#if defined SRCCOOP_HL2DM && defined SERVERSIDE_RAGDOLLS
+	#if defined SRCCOOP_HL2DM && defined PLAYERPATCH_SERVERSIDE_RAGDOLLS
 
 	if (pPlayer.IsValid())
 	{
@@ -429,7 +429,7 @@ public void PlayerPatch_OnClientDisconnect(CBasePlayer pPlayer)
 		}
 	}
 
-	#endif // SRCCOOP_HL2DM && SERVERSIDE_RAGDOLLS
+	#endif // SRCCOOP_HL2DM && PLAYERPATCH_SERVERSIDE_RAGDOLLS
 }
 
 //------------------------------------------------------

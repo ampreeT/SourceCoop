@@ -14,7 +14,7 @@ ConVar g_pConvarEndWaitFactor;
 ConVar g_pConvarHomeMap;
 ConVar g_pConvarEndWaitDisplayMode;
 
-#if defined SRCCOOP_BLACKMESA
+#if defined GAMEPATCH_TEAMSELECT_UI
 ConVar g_pConvarDisableTeamSelect;
 #endif
 
@@ -32,7 +32,7 @@ ConVar sv_always_run;
 Handle g_pCreateEngineInterface;
 Handle g_pCreateServerInterface;
 
-#if defined SERVERSIDE_RAGDOLLS
+#if defined PLAYERPATCH_SERVERSIDE_RAGDOLLS
 Handle g_pCreateServerRagdoll;
 #endif
 
@@ -126,7 +126,7 @@ DynamicDetour hkPickup_ForcePlayerToDropThisObject;
 DynamicDetour hkSetPlayerAvoidState;
 #endif
 
-#if defined SRCCOOP_HL2DM && defined SERVERSIDE_RAGDOLLS
+#if defined SRCCOOP_HL2DM && defined PLAYERPATCH_SERVERSIDE_RAGDOLLS
 DynamicHook hkCreateRagdollEntity;
 #endif
 
