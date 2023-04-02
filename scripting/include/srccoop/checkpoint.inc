@@ -3,6 +3,9 @@
 #endif
 #define _srccoop_checkpoint_included
 
+#pragma newdecls required
+#pragma semicolon 1
+
 #define SND_BRINGALL "sfx.beep5"
 #define SND_PORTAL "xen.energy_hit"
 

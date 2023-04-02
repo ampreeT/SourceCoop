@@ -3,6 +3,9 @@
 #endif
 #define _srccoop_typedef_game_included
 
+#pragma newdecls required
+#pragma semicolon 1
+
 //------------------------------------------------------
 // Base definitions
 //------------------------------------------------------

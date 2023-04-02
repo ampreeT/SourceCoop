@@ -3,6 +3,9 @@
 #endif
 #define _srccoop_manager_persistence_included
 
+#pragma newdecls required
+#pragma semicolon 1
+
 #define SAVEDATA_PATH "data/srccoop/savedata"
 
 enum struct EquipmentManagerData

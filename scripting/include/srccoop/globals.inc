@@ -3,6 +3,9 @@
 #endif
 #define _srccoop_globals_included
 
+#pragma newdecls required
+#pragma semicolon 1
+
 // ----------------------------
 // Convars
 // ----------------------------

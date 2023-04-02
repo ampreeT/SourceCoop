@@ -3,6 +3,8 @@
 #endif
 #define _srccoop_natives_included
 
+#pragma newdecls required
+#pragma semicolon 1
 
 void RegNatives()
 {

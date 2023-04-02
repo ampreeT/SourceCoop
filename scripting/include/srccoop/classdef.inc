@@ -5,6 +5,9 @@
 
 #include <sdktools>
 
+#pragma newdecls required
+#pragma semicolon 1
+
 Handle g_pGlobalEntityGetIndex;
 Handle g_pGlobalEntityGetState;
 Handle g_pGlobalEntityGetName;

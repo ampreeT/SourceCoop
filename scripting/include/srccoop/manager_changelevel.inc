@@ -3,6 +3,9 @@
 #endif
 #define _srccoop_manager_changelevel_included
 
+#pragma newdecls required
+#pragma semicolon 1
+
 //------------------------------------------------------
 // Changelevel extension of manager
 //------------------------------------------------------

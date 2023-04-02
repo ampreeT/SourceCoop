@@ -3,6 +3,9 @@
 #endif
 #define _srccoop_playerpatch_included
 
+#pragma newdecls required
+#pragma semicolon 1
+
 //------------------------------------------------------
 // Allow flashlight
 //------------------------------------------------------

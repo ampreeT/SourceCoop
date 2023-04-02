@@ -3,6 +3,9 @@
 #endif
 #define _srccoop_features_included
 
+#pragma newdecls required
+#pragma semicolon 1
+
 enum SourceCoopFeature
 {
 	FT_INSTANCE_ITEMS			=	(1 << 0),

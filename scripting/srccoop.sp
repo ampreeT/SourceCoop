@@ -1,5 +1,8 @@
 #include <srccoop>
 
+#pragma newdecls required
+#pragma semicolon 1
+
 public Plugin myinfo =
 {
 	name = "SourceCoop",
@@ -66,7 +69,7 @@ void LoadGameData()
 	StartPrepSDKCall(SDKCall_Static);
 	if(!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Signature, szCreateServerRagdoll))
 		SetFailState("Could not obtain gamedata signature %s", szCreateServerRagdoll);
-	PrepSDKCall_SetReturnInfo(SDKType_CBaseEntity, SDKPass_Pointer)
+	PrepSDKCall_SetReturnInfo(SDKType_CBaseEntity, SDKPass_Pointer);
 	PrepSDKCall_AddParameter(SDKType_CBaseEntity, SDKPass_Pointer); // CBaseAnimating *pAnimating
 	PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain); // int forceBone
 	PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain); // const CTakeDamageInfo &info
@@ -369,7 +372,7 @@ public void OnClientPutInServer(int client)
 {
 	CBasePlayer pPlayer = CBasePlayer(client);
 	
-	PlayerPatch_OnClientPutInServer(pPlayer)
+	PlayerPatch_OnClientPutInServer(pPlayer);
 	CoopManager.OnClientPutInServer(pPlayer);
 	g_pInstancingManager.OnClientPutInServer(client);
 	

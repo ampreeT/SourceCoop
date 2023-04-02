@@ -3,6 +3,9 @@
 #endif
 #define _srccoop_manager_survival_included
 
+#pragma newdecls required
+#pragma semicolon 1
+
 //------------------------------------------------------
 // Survival extension of manager
 //------------------------------------------------------

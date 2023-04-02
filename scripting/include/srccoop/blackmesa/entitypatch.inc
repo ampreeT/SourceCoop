@@ -3,6 +3,9 @@
 #endif
 #define _srccoop_entitypatch_bm_included
 
+#pragma newdecls required
+#pragma semicolon 1
+
 // Patches for Black Mesa
 
 //------------------------------------------------------

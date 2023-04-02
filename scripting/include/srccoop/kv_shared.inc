@@ -3,6 +3,9 @@
 #endif
 #define _srccoop_kv_shared_included
 
+#pragma newdecls required
+#pragma semicolon 1
+
 //------------------------------------------------------------------------------------------------------------
 // This exists for sharing functionality between checkpoint.inc and levellump.inc
 // Has to be structured this way since sourcepawn doesn't have forward declaration and parses all but functions top to bottom.

@@ -3,6 +3,9 @@
 #endif
 #define _srccoop_manager_included
 
+#pragma newdecls required
+#pragma semicolon 1
+
 // Freeze intro - screenfade properties
 #define FROZEN_FADE_R 15
 #define FROZEN_FADE_G 15
@@ -284,7 +287,7 @@ methodmap CoopManager {
 	public static void OnChangeLevelInput(CChangelevel pChangelevel)
 	{
 		char szMapName[MAX_MAPNAME];
-		pChangelevel.GetMapName(szMapName, sizeof(szMapName))
+		pChangelevel.GetMapName(szMapName, sizeof(szMapName));
 		
 		if (CoopManager.IsMapAllowedNext(szMapName))
 		{
@@ -296,7 +299,7 @@ methodmap CoopManager {
 	public static void OnChangeLevelTouch(CChangelevel pChangelevel, CBasePlayer pActivator)
 	{
 		char szMapName[MAX_MAPNAME];
-		pChangelevel.GetMapName(szMapName, sizeof(szMapName))
+		pChangelevel.GetMapName(szMapName, sizeof(szMapName));
 		
 		if (!CoopManager.IsMapAllowedNext(szMapName))
 		{

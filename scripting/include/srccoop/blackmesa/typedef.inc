@@ -3,6 +3,8 @@
 #endif
 #define _srccoop_typedef_bm_included
 
+#pragma newdecls required
+#pragma semicolon 1
 
 //------------------------------------------------------
 // Gamerules gamestates

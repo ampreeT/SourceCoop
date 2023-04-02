@@ -3,6 +3,9 @@
 #endif
 #define _srccoop_instancing_included
 
+#pragma newdecls required
+#pragma semicolon 1
+
 enum struct ItemInstancingManager
 {
 	StringMap m_pPickedUpItems[MAXPLAYERS+1];

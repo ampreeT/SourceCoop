@@ -3,6 +3,9 @@
 #endif
 #define _srccoop_menu_included
 
+#pragma newdecls required
+#pragma semicolon 1
+
 TopMenu g_pCoopTopMenu;
 TopMenuObject g_pCoopPlayerSettingsMenu;
 TopMenuObject g_pCoopSoundSettingsMenu;

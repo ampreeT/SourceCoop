@@ -3,6 +3,9 @@
 #endif
 #define _srccoop_entitypatch_included
 
+#pragma newdecls required
+#pragma semicolon 1
+
 // Patches common to multiple source games
 
 void SetLocalPlayerCallingEntity(int iEntIndex)
@@ -206,7 +209,7 @@ public Action ChangelevelEffects(Handle timer, CChangelevel pChangelevel)
 		if (CoopManager.IsFeatureEnabled(FT_CHANGELEVEL_FX))
 		{
 			char szMapName[MAX_MAPNAME];
-			pChangelevel.GetMapName(szMapName, sizeof(szMapName))
+			pChangelevel.GetMapName(szMapName, sizeof(szMapName));
 
 			if (!pChangelevel.IsDisabled() && CoopManager.IsMapAllowedNext(szMapName))
 			{

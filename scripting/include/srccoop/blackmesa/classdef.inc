@@ -3,6 +3,9 @@
 #endif
 #define _srccoop_classdef_bm_included
 
+#pragma newdecls required
+#pragma semicolon 1
+
 stock void InitClassdefBM(GameData pGameConfig)
 {
 	/*

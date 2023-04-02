@@ -3,6 +3,9 @@
 #endif
 #define _srccoop_commands_included
 
+#pragma newdecls required
+#pragma semicolon 1
+
 public Action Command_SetFeature(int iClient, int iArgs)
 {
 	if (iArgs == 0)

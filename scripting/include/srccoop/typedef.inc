@@ -3,6 +3,9 @@
 #endif
 #define _srccoop_typedef_included
 
+#pragma newdecls required
+#pragma semicolon 1
+
 //------------------------------------------------------
 // Prefix tags for printing messages
 //------------------------------------------------------

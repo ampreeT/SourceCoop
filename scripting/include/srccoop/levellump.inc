@@ -3,6 +3,9 @@
 #endif
 #define _srccoop_levellump_included
 
+#pragma newdecls required
+#pragma semicolon 1
+
 #define OUTPUT_SEPARATOR "\27"
 #define BRUSH_FIXUP_MDL "models/error.mdl"
 #define BRUSH_FIXUP_IDENT "$BRUSHFIXUP$"

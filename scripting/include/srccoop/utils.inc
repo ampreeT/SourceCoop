@@ -3,6 +3,9 @@
 #endif
 #define _srccoop_utils_included
 
+#pragma newdecls required
+#pragma semicolon 1
+
 //------------------------------------------------------
 // DHooks utils
 //------------------------------------------------------
