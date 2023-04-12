@@ -318,7 +318,6 @@ public void Hook_PlayerSpawnPost(int iClient)
 			#endif // GAMEPATCH_TEAMSELECT_UI
 		}
 
-		
 		CoopManager.OnPlayerSpawned(pPlayer);
 		g_pInstancingManager.OnPlayerSpawned(pPlayer);
 	}
@@ -329,7 +328,7 @@ public void Hook_PlayerSpawnPost(int iClient)
 // - Force serverside ragdolls
 //------------------------------------------------------
 #if defined PLAYERPATCH_SERVERSIDE_RAGDOLLS
-CBaseEntity g_pNewRagdoll = view_as<CBaseEntity>(-1);
+CBaseEntity g_pNewRagdoll = NULL_CBASEENTITY;
 #endif
 
 public MRESReturn Hook_PlayerKilled(int _this, DHookParam hParams)
@@ -347,54 +346,72 @@ public MRESReturn Hook_PlayerKilled(int _this, DHookParam hParams)
 		g_pNewRagdoll = CBaseEntity(SDKCall(g_pCreateServerRagdoll, _this, iForceBone, pTakeDmgInfo, COLLISION_GROUP_DEBRIS_TRIGGER, false));
 		SDKHook(g_pNewRagdoll.GetEntIndex(), SDKHook_OnTakeDamage, Hook_NoDmg);
 
-		// TODO: Check can keep this in BM?
-		CBaseEntity pRagdoll = pPlayer.GetRagdoll();
-		if (pRagdoll.IsValid())
-		{
-			pRagdoll.Kill();
-		}
-		pPlayer.SetRagdoll(g_pNewRagdoll);
-		
-		// Bone merge player to the new ragdoll. This ensures thirdperson death camera actually follows it (firstperson is unaffected).
-		// The downside is we have to keep check on its removal in order not to kill the player entity.
-		pPlayer.SetParent(g_pNewRagdoll);
-		pPlayer.SetParentAttachment("forward");
-		pPlayer.SetEffects(pPlayer.GetEffects() | EF_BONEMERGE);
-
-		g_pNewRagdoll = CBaseEntity(-1);
+		#if defined SRCCOOP_HL2DM
+		PlayerPatch_ApplyServerRagdoll(pPlayer);
+		#endif
 	}
 
 	#endif // PLAYERPATCH_SERVERSIDE_RAGDOLLS
-	
+
 	return MRES_Ignored;
 }
 
 public MRESReturn Hook_PlayerKilledPost(int _this, DHookParam hParams)
 {
-	CBasePlayer pPlayer = CBasePlayer(_this);
-
-	// TODO: Check can delete this in BM?
-	// if (g_pNewRagdoll.IsValid())
-	// {
-	// 	CBaseEntity pRagdoll = pPlayer.GetRagdoll();
-	// 	if (pRagdoll.IsValid())
-	// 	{
-	// 		pRagdoll.Kill();
-	// 	}
-	// 	pPlayer.SetRagdoll(g_pNewRagdoll);
-	// 	g_pNewRagdoll = CBaseEntity(-1);
-	// }
 	if (CoopManager.IsCoopModeEnabled())
 	{
+		CBasePlayer pPlayer = CBasePlayer(_this);
+	
 		#if defined PLAYERPATCH_SERVERSIDE_RAGDOLLS
+
+		#if defined SRCCOOP_BLACKMESA
+		PlayerPatch_ApplyServerRagdoll(pPlayer);
+		#endif
+		
+		#if defined SRCCOOP_HL2DM
 		// Tells the death think not to move the player anymore. Player used to move despite being parented to its ragdoll, causing rendering issues.
 		pPlayer.SetFlags(FL_ONGROUND);
 		pPlayer.Teleport(vec3_origin, NULL_VECTOR, vec3_origin);
 		#endif
+		
+		#endif // PLAYERPATCH_SERVERSIDE_RAGDOLLS
 
 		SurvivalManager.HandlePlayerDeath(pPlayer);
 	}
 	return MRES_Ignored;
+}
+
+void PlayerPatch_ApplyServerRagdoll(CBasePlayer pPlayer)
+{
+	if (!g_pNewRagdoll.IsValid())
+		return;
+
+	CBaseEntity pRagdoll = pPlayer.GetRagdoll();
+	if (pRagdoll.IsValid())
+	{
+		pRagdoll.Kill();
+	}
+	pPlayer.SetRagdoll(g_pNewRagdoll);
+	
+	#if defined SRCCOOP_HL2DM
+	// Bone merge player to the new ragdoll. This ensures thirdperson death camera actually follows it (firstperson is unaffected).
+	// The downside is we have to keep check on its removal in order not to kill the player entity.
+	pPlayer.SetParent(g_pNewRagdoll);
+	pPlayer.SetParentAttachment("forward");
+	pPlayer.SetEffects(pPlayer.GetEffects() | EF_BONEMERGE);
+	#endif
+
+	#if defined SRCCOOP_BLACKMESA
+	pPlayer.SetObserverMode(OBS_MODE_CHASE);
+	pPlayer.SetObserverTarget(g_pNewRagdoll);
+	#endif
+
+	Call_StartForward(g_OnPlayerRagdollCreatedFwd);
+	Call_PushCell(pPlayer);
+	Call_PushCell(g_pNewRagdoll);
+	Call_Finish();
+	
+	g_pNewRagdoll = NULL_CBASEENTITY;
 }
 
 public MRESReturn Hook_CreateRagdollEntity(int _this)
@@ -508,8 +525,6 @@ public MRESReturn Hook_PlayerChangeTeam(int _this, Handle hParams)
 				return MRES_ChangedHandled;
 			}
 		}
-
-
 	}
 	return MRES_Ignored;
 }

@@ -56,19 +56,6 @@ stock void InitSourceCoopAddon()
 }
 
 /**
- * Retrieves the handle to the coop TopMenu.
- *
- * @return              Handle to the TopMenu
- */
-native TopMenu GetCoopTopMenu();
-
-/**
- * Returns whether current map is a coop map.
- *
- */
-native bool IsCurrentMapCoop();
-
-/**
  * Global callback after map config is loaded in OnMapStart.
  *
  * @param kv          The configuration file imported into keyvalues. You must call kv.Rewind() first to ensure consistency.
@@ -81,6 +68,25 @@ forward void OnCoopMapConfigLoaded(KeyValues kv, CoopConfigLocation location);
  * that is potentially after the player wait timer completes.
  */
 forward void OnCoopMapStart();
+
+/**
+ * Called when the core plugin creates server-side player ragoll on death.
+ * The timing of which can vary by game.
+ */
+forward void OnPlayerRagdollCreated(CBasePlayer pPlayer, CBaseAnimating pRagdoll);
+
+/**
+ * Retrieves the handle to the coop TopMenu.
+ *
+ * @return              Handle to the TopMenu
+ */
+native TopMenu GetCoopTopMenu();
+
+/**
+ * Returns whether current map is a coop map.
+ *
+ */
+native bool IsCurrentMapCoop();
 
 /**
  * Respawns a dead player.

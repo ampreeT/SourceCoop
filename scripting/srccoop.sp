@@ -235,6 +235,7 @@ public void OnPluginStart()
 	
 	g_CoopMapStartFwd = new GlobalForward("OnCoopMapStart", ET_Ignore);
 	g_CoopMapConfigLoadedFwd = new GlobalForward("OnCoopMapConfigLoaded", ET_Ignore, Param_Cell, Param_Cell);
+	g_OnPlayerRagdollCreatedFwd = new GlobalForward("OnPlayerRagdollCreated", ET_Ignore, Param_Cell, Param_Cell);
 	
 	HookEvent("player_disconnect", Event_PlayerDisconnect);
 	AddNormalSoundHook(PlayerSoundListener);
@@ -696,7 +697,7 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 		#endif
 
 		#if defined ENTPATCH_REMOVE_BONE_FOLLOWERS
-		else if (strcmp(szClassname, "phys_bone_follower") == 0)
+		if (strcmp(szClassname, "phys_bone_follower") == 0)
 		{
 			SDKHook(iEntIndex, SDKHook_VPhysicsUpdatePost, Hook_BoneFollowerVPhysicsUpdatePost);
 			return;
@@ -753,7 +754,7 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 		#endif
 
 		#if defined ENTPATCH_BM_MUSIC_TRACK
-		else if (strcmp(szClassname, "music_track") == 0)
+		if (strcmp(szClassname, "music_track") == 0)
 		{
 			DHookEntity(hkThink, false, iEntIndex, _, Hook_MusicTrackThink);
 			DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_MusicTrackAceptInput);
@@ -762,7 +763,7 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 		#endif
 
 		#if defined ENTPATCH_BM_FUNC_TRACKAUTOCHANGE
-		else if (strcmp(szClassname, "func_trackautochange") == 0)
+		if (strcmp(szClassname, "func_trackautochange") == 0)
 		{
 			DHookEntity(hkBlocked, false, iEntIndex, _, Hook_TrackChangeBlocked);
 			return;
@@ -770,7 +771,7 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 		#endif
 
 		#if defined ENTPATCH_BM_FUNC_TRACKTRAIN
-		else if (strcmp(szClassname, "func_tracktrain") == 0)
+		if (strcmp(szClassname, "func_tracktrain") == 0)
 		{
 			DHookEntity(hkBlocked, false, iEntIndex, _, Hook_TrackTrainBlocked);
 			return;

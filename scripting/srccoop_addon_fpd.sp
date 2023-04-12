@@ -35,7 +35,6 @@ public void OnPluginStart()
 {
 	g_Engine = GetEngineVersion();
 	InitSourceCoopAddon();
-	HookEvent("player_death", Event_PlayerDeath);
 
 	pStateCookie = new Cookie("sourcecoop_fpd", "First person death", CookieAccess_Protected);
 	g_pConvarFadeToBlackLength = CreateConVar("sourcecoop_fpd_fade_ms", "1500", "Duration in milliseconds to fade first-person death screen to black. 0 to disable.", _, true, 0.0);
@@ -195,19 +194,8 @@ void Hook_CameraDeathDestroyed(CBaseEntity pEntity)
 	}
 }
 
-public void Event_PlayerDeath(Event hEvent, const char[] szName, bool bDontBroadcast)
+public void OnPlayerRagdollCreated(CBasePlayer pPlayer, CBaseAnimating pRagdoll)
 {
-	if (!IsCurrentMapCoop())
-		return;
-
-	CBasePlayer pPlayer = CBasePlayer(GetClientOfUserId(GetEventInt(hEvent, "userid")));
-	if (!pPlayer.IsValid())
-		return;
-
-	CBaseEntity pRagdoll = pPlayer.GetRagdoll();
-	if (!pRagdoll.IsValid())
-		return;
-
 	CBaseEntity pViewEnt;
 	if (g_Engine == Engine_BlackMesa)
 	{
