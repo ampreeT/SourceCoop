@@ -13,7 +13,7 @@ public Plugin myinfo =
 	author = "Alienmario",
 	description = "SourceCoop landing screen overlay",
 	version = SRCCOOP_VERSION,
-	url = "https://github.com/ampreeT/SourceCoop"
+	url = SRCCOOP_URL
 };
 
 ConVar pCvarLogoMaterial;

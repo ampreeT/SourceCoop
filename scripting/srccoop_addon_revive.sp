@@ -28,7 +28,7 @@ public Plugin myinfo =
 	author = "Balimbanana",
 	description = "Enables revive by pressing <USE> while looking at player ragdoll",
 	version = SRCCOOP_VERSION,
-	url = "https://github.com/ampreeT/SourceCoop"
+	url = SRCCOOP_URL
 };
 
 public void OnPluginStart()

@@ -13,7 +13,7 @@ public Plugin myinfo =
 	author      = "Jimbab",
 	description = "Client side damage effects fix for all weapons.",
 	version     = SRCCOOP_VERSION,
-	url         = "https://github.com/ampreeT/SourceCoop"
+	url         = SRCCOOP_URL
 };
 
 ConVar cvarAlienBlood;

@@ -28,6 +28,7 @@
 #include <srccoop/features>
 
 #define SRCCOOP_VERSION "1.1.2"
+#define SRCCOOP_URL "https://github.com/ampreeT/SourceCoop"
 
 /* The library name registered by the core plugin */
 #define SRCCOOP_LIBRARY "SRCCOOP"

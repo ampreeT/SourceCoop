@@ -12,7 +12,7 @@ public Plugin myinfo =
 	author = "Alienmario",
 	description = "",
 	version = SRCCOOP_VERSION,
-	url = "https://github.com/ampreeT/SourceCoop"
+	url = SRCCOOP_URL
 };
 
 #define MENUITEM_TOGGLE_KILLSOUNDS "ToggleKillsounds"

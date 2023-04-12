@@ -9,7 +9,7 @@ public Plugin myinfo =
 	author = "ampreeT, Alienmario",
 	description = "SourceCoop",
 	version = SRCCOOP_VERSION,
-	url = "https://github.com/ampreeT/SourceCoop"
+	url = SRCCOOP_URL
 };
 
 public Address GetServerInterface(const char[] szInterface)

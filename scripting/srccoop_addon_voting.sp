@@ -10,7 +10,7 @@ public Plugin myinfo =
 	author = "Alienmario",
 	description = "Provides coop related voting",
 	version = SRCCOOP_VERSION,
-	url = "https://github.com/ampreeT/SourceCoop"
+	url = SRCCOOP_URL
 };
 
 #define VOTE_DURATION 20

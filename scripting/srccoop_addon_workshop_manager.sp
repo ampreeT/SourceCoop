@@ -14,7 +14,7 @@ public Plugin myinfo =
 	author = "Alienmario",
 	description = "Kicks players who are missing workshop maps with a custom message",
 	version = SRCCOOP_VERSION,
-	url = "https://github.com/ampreeT/SourceCoop"
+	url = SRCCOOP_URL
 };
 
 ConVar pWorkshopMsg;

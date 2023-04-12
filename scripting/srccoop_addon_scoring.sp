@@ -33,7 +33,7 @@ public Plugin myinfo =
 	author = "Rock & Alienmario",
 	description = "Player scores for killing NPCs + chat killfeed",
 	version = SRCCOOP_VERSION,
-	url = "https://github.com/ampreeT/SourceCoop"
+	url = SRCCOOP_URL
 };
 
 public void OnPluginStart()

@@ -11,7 +11,7 @@ public Plugin myinfo =
 	author = "Alienmario",
 	description = "NPC difficulty scaling",
 	version = SRCCOOP_VERSION,
-	url = "https://github.com/ampreeT/SourceCoop"
+	url = SRCCOOP_URL
 };
 
 #define SCALE 0.1

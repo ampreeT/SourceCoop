@@ -10,7 +10,7 @@ public Plugin myinfo =
 	author = "Balimbanana, Alienmario",
 	description = "Provides unstuck command",
 	version = SRCCOOP_VERSION,
-	url = "https://github.com/ampreeT/SourceCoop"
+	url = SRCCOOP_URL
 };
 
 ConVar g_pConVarNextStuck;
