@@ -30,27 +30,18 @@ public void OnPluginStart()
 	pSoundEffectPath.AddChangeHook(OnSndPathChange);
 
 	InitSourceCoopAddon();
-	if (LibraryExists(SRCCOOP_LIBRARY))
-	{
-		OnSourceCoopStarted();
-	}
 }
 
 public void OnLibraryAdded(const char[] name)
 {
-	if(StrEqual(name, SRCCOOP_LIBRARY))
+	if (StrEqual(name, SRCCOOP_LIBRARY))
 	{
-		OnSourceCoopStarted();
-	}
-}
-
-void OnSourceCoopStarted()
-{
-	TopMenu pCoopMenu = GetCoopTopMenu();
-	TopMenuObject pMenuCategory = pCoopMenu.FindCategory(COOPMENU_CATEGORY_SOUNDS);
-	if(pMenuCategory != INVALID_TOPMENUOBJECT)
-	{
-		pCoopMenu.AddItem(MENUITEM_TOGGLE_KILLSOUNDS, MyMenuHandler, pMenuCategory);
+		TopMenu pCoopMenu = GetCoopTopMenu();
+		TopMenuObject pMenuCategory = pCoopMenu.FindCategory(COOPMENU_CATEGORY_SOUNDS);
+		if(pMenuCategory != INVALID_TOPMENUOBJECT)
+		{
+			pCoopMenu.AddItem(MENUITEM_TOGGLE_KILLSOUNDS, MyMenuHandler, pMenuCategory);
+		}
 	}
 }
 

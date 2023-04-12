@@ -28,27 +28,18 @@ public void OnPluginStart()
 	HookConVarChange(pEnabledCvar, EnabledCvarChanged);
 	
 	InitSourceCoopAddon();
-	if (LibraryExists(SRCCOOP_LIBRARY))
-	{
-		OnSourceCoopStarted();
-	}
 }
 
 public void OnLibraryAdded(const char[] name)
 {
 	if (StrEqual(name, SRCCOOP_LIBRARY))
 	{
-		OnSourceCoopStarted();
-	}
-}
-
-void OnSourceCoopStarted()
-{
-	TopMenu pCoopMenu = GetCoopTopMenu();
-	TopMenuObject pSettingsMenu = pCoopMenu.FindCategory(COOPMENU_CATEGORY_PLAYER);
-	if (pSettingsMenu != INVALID_TOPMENUOBJECT)
-	{
-		pCoopMenu.AddItem(MENUITEM_TOGGLE, ThirdPersonMenuHandler, pSettingsMenu);
+		TopMenu pCoopMenu = GetCoopTopMenu();
+		TopMenuObject pSettingsMenu = pCoopMenu.FindCategory(COOPMENU_CATEGORY_PLAYER);
+		if (pSettingsMenu != INVALID_TOPMENUOBJECT)
+		{
+			pCoopMenu.AddItem(MENUITEM_TOGGLE, ThirdPersonMenuHandler, pSettingsMenu);
+		}
 	}
 }
 

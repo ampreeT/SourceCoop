@@ -40,11 +40,6 @@ public void OnPluginStart()
 	g_pConvarFadeToBlackLength = CreateConVar("sourcecoop_fpd_fade_ms", "1500", "Duration in milliseconds to fade first-person death screen to black. 0 to disable.", _, true, 0.0);
 	g_pConvarPlayerToggle = CreateConVar("sourcecoop_fpd_player_toggle", "1", "Enable players to choose death camera option regardless of server/map settings.", _, true, 0.0, true, 1.0);
 	g_pConvarPlayerToggle.AddChangeHook(PlayerToggleCvarChanged);
-
-	if (LibraryExists(SRCCOOP_LIBRARY))
-	{
-		UpdateMenuItems(!g_pConvarPlayerToggle.BoolValue);
-	}
 }
 
 public void OnLibraryAdded(const char[] name)

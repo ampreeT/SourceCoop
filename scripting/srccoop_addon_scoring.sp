@@ -45,27 +45,18 @@ public void OnPluginStart()
 	pConvarKillfeedDefault = CreateConVar("sourcecoop_killfeed_default", "0", "Sets the default setting of the killfeed player preference.", _, true, 0.0, true, 1.0);
 	
 	InitSourceCoopAddon();
-	if (LibraryExists(SRCCOOP_LIBRARY))
-	{
-		OnSourceCoopStarted();
-	}
 }
 
 public void OnLibraryAdded(const char[] name)
 {
-	if(StrEqual(name, SRCCOOP_LIBRARY))
+	if (StrEqual(name, SRCCOOP_LIBRARY))
 	{
-		OnSourceCoopStarted();
-	}
-}
-
-void OnSourceCoopStarted()
-{
-	TopMenu pCoopMenu = GetCoopTopMenu();
-	TopMenuObject pMenuCategory = pCoopMenu.FindCategory(COOPMENU_CATEGORY_OTHER);
-	if(pMenuCategory != INVALID_TOPMENUOBJECT)
-	{
-		pCoopMenu.AddItem(MENUITEM_TOGGLE_KILLFEED, MyMenuHandler, pMenuCategory);
+		TopMenu pCoopMenu = GetCoopTopMenu();
+		TopMenuObject pMenuCategory = pCoopMenu.FindCategory(COOPMENU_CATEGORY_OTHER);
+		if (pMenuCategory != INVALID_TOPMENUOBJECT)
+		{
+			pCoopMenu.AddItem(MENUITEM_TOGGLE_KILLFEED, MyMenuHandler, pMenuCategory);
+		}
 	}
 }
 
