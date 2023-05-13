@@ -285,6 +285,7 @@ public void Hook_PlayerSpawnPost(int iClient)
 				QueryClientConVar(iClient, "r_bloomtintr_nextgen", QueryConVar_Bloom, 0.25);
 				QueryClientConVar(iClient, "r_bloomtintb_nextgen", QueryConVar_Bloom, 0.25);
 				QueryClientConVar(iClient, "r_bloomtintb_nextgen", QueryConVar_Bloom, 0.25);
+				QueryClientConVar(iClient, "gb_flashlight_intensity", QueryConVar_Bloom, 0.8);
 			}
 			
 			// Fix for lag no collide with mp_teamplay 0
@@ -669,6 +670,13 @@ public void QueryConVar_Bloom(QueryCookie cookie, int iClient, ConVarQueryResult
 	if (!strcmp(cvarName, "r_bloomtintexponent_nextgen"))
 	{
 		if (!strcmp(cvarValue, "0.750"))
+		{
+			ClientCommand(iClient, "%s %f", cvarName, flDefaultValue);
+		}
+	}
+	else if (!strcmp(cvarName, "gb_flashlight_intensity"))
+	{
+		if (!strcmp(cvarValue, "2.5"))
 		{
 			ClientCommand(iClient, "%s %f", cvarName, flDefaultValue);
 		}
