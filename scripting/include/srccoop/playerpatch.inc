@@ -277,7 +277,16 @@ public void Hook_PlayerSpawnPost(int iClient)
 			#if defined SRCCOOP_BLACKMESA
 
 			// Fix for client viewmodel animation when always run is off
-			if (!IsFakeClient(iClient)) sv_always_run.ReplicateToClient(iClient, "1");
+			if (!IsFakeClient(iClient))
+			{
+				sv_always_run.ReplicateToClient(iClient, "1");
+				
+				QueryClientConVar(iClient, "r_bloomtintexponent_nextgen", QueryConVar_Bloom, 2.2);
+				QueryClientConVar(iClient, "r_bloomtintr_nextgen", QueryConVar_Bloom, 0.25);
+				QueryClientConVar(iClient, "r_bloomtintb_nextgen", QueryConVar_Bloom, 0.25);
+				QueryClientConVar(iClient, "r_bloomtintb_nextgen", QueryConVar_Bloom, 0.25);
+				QueryClientConVar(iClient, "gb_flashlight_intensity", QueryConVar_Bloom, 0.8);
+			}
 			
 			// Fix for lag no collide with mp_teamplay 0
 			if (!CBM_MP_GameRules.IsTeamplay()) pPlayer.SetCollisionGroup(COLLISION_GROUP_INTERACTIVE_DEBRIS);
@@ -650,4 +659,30 @@ public void PlayAdmireGloves(CBasePlayer pPlayer, const bool bStartAnim)
 public bool PlayingAdmireGloves(CBasePlayer pPlayer)
 {
 	return g_bPlayingAdmireGloves[pPlayer.GetEntIndex()];
+}
+
+//------------------------------------------------------
+// Check for default broken values and fix them
+// This occurs if the client has not loaded any background map which can happen from either running -dev or by direct steam://connect links.
+//------------------------------------------------------
+public void QueryConVar_Bloom(QueryCookie cookie, int iClient, ConVarQueryResult result, const char[] cvarName, const char[] cvarValue, float flDefaultValue)
+{
+	if (!strcmp(cvarName, "r_bloomtintexponent_nextgen"))
+	{
+		if (!strcmp(cvarValue, "0.750"))
+		{
+			ClientCommand(iClient, "%s %f", cvarName, flDefaultValue);
+		}
+	}
+	else if (!strcmp(cvarName, "gb_flashlight_intensity"))
+	{
+		if (!strcmp(cvarValue, "2.5"))
+		{
+			ClientCommand(iClient, "%s %f", cvarName, flDefaultValue);
+		}
+	}
+	else if (!strcmp(cvarValue, "1.0"))
+	{
+		ClientCommand(iClient, "%s %f", cvarName, flDefaultValue);
+	}
 }
