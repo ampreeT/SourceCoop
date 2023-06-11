@@ -158,7 +158,7 @@ public void OnEntityDestroyed(int iEntIndex)
 public void Hook_CameraDeathSpawn(int iEntIndex)
 {
 	CBaseEntity pEntity = CBaseEntity(iEntIndex);
-	CBlackMesaPlayer pOwner = view_as<CBlackMesaPlayer>(pEntity.GetOwner());
+	CBasePlayer pOwner = view_as<CBasePlayer>(pEntity.GetOwner());
 	if (pOwner.IsValid())
 	{
 		if (ShouldUseFPDeathCamera(pOwner.GetEntIndex()))

@@ -207,7 +207,7 @@ public void Event_EntKilled(Event event, const char[] name, bool dontBroadcast)
 
 	if (pAttacker.IsClassPlayer())
 	{
-		CBlackMesaPlayer pClient = view_as<CBlackMesaPlayer>(pAttacker.GetEntIndex());
+		CBasePlayer pClient = view_as<CBasePlayer>(pAttacker.GetEntIndex());
 		if (pKilled.IsClassNPC())
 		{
 			CAI_BaseNPC pNPC = CAI_BaseNPC(pKilled.GetEntIndex());
@@ -242,7 +242,7 @@ public void Event_EntKilled(Event event, const char[] name, bool dontBroadcast)
 					// Was it a player different from the killer?
 					if (pKilledEnemy.IsClassPlayer() && pKilledEnemy.GetEntIndex() != pClient.GetEntIndex())
 					{
-						CBlackMesaPlayer pTargetClient = CBlackMesaPlayer(pKilledEnemy.GetEntIndex()); 
+						CBasePlayer pTargetClient = CBasePlayer(pKilledEnemy.GetEntIndex()); 
 						iPointsToAward += 1;
 						pTargetClient.GetName(szSavedName, sizeof(szSavedName));
 						StrCat(szMessage, sizeof(szMessage), "%s saving %s%s");
@@ -278,13 +278,13 @@ public void Event_EntKilled(Event event, const char[] name, bool dontBroadcast)
 				// Gotta calculate the damage total first to see if it's worthy of being broadcast in chat...
 				for(int iClientIndex = 0; iClientIndex <= MaxClients; iClientIndex++) {
 					float fDamageInflicted = attackers[iClientIndex];
-					CBlackMesaPlayer pDamagerDealer = CBlackMesaPlayer(iClientIndex);
+					CBasePlayer pDamagerDealer = CBasePlayer(iClientIndex);
 					if(!pDamagerDealer.IsValid() || fDamageInflicted <= 0) continue;
 					fTotalDamage += fDamageInflicted;
 				}
 				for(int iClientIndex = 0; iClientIndex <= MaxClients; iClientIndex++) {
 					float fDamageInflicted = attackers[iClientIndex];
-					CBlackMesaPlayer pDamagerDealer = CBlackMesaPlayer(iClientIndex);
+					CBasePlayer pDamagerDealer = CBasePlayer(iClientIndex);
 					if(!pDamagerDealer.IsValid() || fDamageInflicted <= 0) continue;
 				
 					char szDmgDealerName[32];
@@ -320,7 +320,7 @@ public void Event_EntKilled(Event event, const char[] name, bool dontBroadcast)
 		if (pKilled.IsClassPlayer())
 		{
 			// An NPC killed a player...
-			CBlackMesaPlayer pClient = view_as<CBlackMesaPlayer>(pKilled.GetEntIndex());
+			CBasePlayer pClient = view_as<CBasePlayer>(pKilled.GetEntIndex());
 			pClient.GetName(szKilledName, sizeof(szKilledName));
 			EntityNameFix(szAttackerName);
 
@@ -401,7 +401,7 @@ public Action Timer_DamageUpdate(Handle hTimer)
 {
 	for(int iClientIndex = 0; iClientIndex <= MaxClients; iClientIndex++)
 	{
-		CBlackMesaPlayer pPlayer = CBlackMesaPlayer(iClientIndex);
+		CBasePlayer pPlayer = CBasePlayer(iClientIndex);
 		if(!pPlayer.IsValid()) continue;
 		char szPlayerName[32];
 		pPlayer.GetName(szPlayerName, sizeof(szPlayerName));
