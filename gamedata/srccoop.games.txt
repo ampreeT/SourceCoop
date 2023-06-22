@@ -492,6 +492,44 @@
 				"return"	"void"
 				"this"		"entity"
 			}
+			"CBoneSetup::AccumulatePose"
+			{
+				"signature"	"CBoneSetup::AccumulatePose"
+				"callconv"	"thiscall"
+				"return"	"void"
+				"this"		"address"
+				"arguments"
+				{
+					"pos"
+					{
+						"type"	"vectorptr"
+					}
+					"q"
+					{
+						"type"	"vectorptr"
+					}
+					"sequence"
+					{
+						"type"	"int"
+					}
+					"cycle"
+					{
+						"type"	"float"
+					}
+					"flWeight"
+					{
+						"type"	"float"
+					}
+					"flTime"
+					{
+						"type"	"float"
+					}
+					"pIKContext"
+					{
+						"type"	"objectptr"
+					}
+				}
+			}
 		}
 	}
 	"bms"
@@ -582,6 +620,10 @@
 			{
 				"windows"	"\x53\x8B\xDC\x83\xEC\x08\x83\xE4\xF0\x83\xC4\x04\x55\x8B\x6B\x04\x89\x6C\x24\x04\x8B\xEC\xB8\x78\x30\x00\x00"
 				"linux" 	"@_Z19CreateServerRagdollP14CBaseAnimatingiRK15CTakeDamageInfoib"
+			}
+			"CBoneSetup::AccumulatePose" // void CBoneSetup::AccumulatePose(Vector *, Quaternion *, int, float, float, float, CIKContext *)
+			{
+				"linux" 	"@_ZN10CBoneSetup14AccumulatePoseEP6VectorP10QuaternionifffP10CIKContext"
 			}
 		}
 		"Offsets"

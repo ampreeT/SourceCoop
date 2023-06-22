@@ -175,6 +175,13 @@ void LoadGameData()
 	LoadDHookDetour(pGameConfig, hkPickup_ForcePlayerToDropThisObject, "Pickup_ForcePlayerToDropThisObject", Hook_ForcePlayerToDropThisObject);
 	#endif
 
+	#if defined SRCCOOP_BLACKMESA
+	if (g_serverOS == OS_Linux)
+	{
+		LoadDHookDetour(pGameConfig, hkAccumulatePose, "CBoneSetup::AccumulatePose", Hook_AccumulatePose);
+	}
+	#endif
+
 	// Init SDKCalls for classdef
 	InitClassdef(pGameConfig);
 	

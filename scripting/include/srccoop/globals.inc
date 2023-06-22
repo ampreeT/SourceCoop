@@ -133,6 +133,10 @@ DynamicDetour hkSetPlayerAvoidState;
 DynamicHook hkCreateRagdollEntity;
 #endif
 
+#if defined SRCCOOP_BLACKMESA
+DynamicDetour hkAccumulatePose;
+#endif
+
 // ----------------------------
 // Adresses, Interfaces
 // ----------------------------
