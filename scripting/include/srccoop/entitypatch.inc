@@ -70,7 +70,7 @@ public MRESReturn Hook_BaseNPCKeyValuePost(int _this, Handle hReturn, Handle hPa
 	static char szKey[MAX_FORMAT];
 	static char szVal[MAX_VALUE];
 	DHookGetParamString(hParams, 1, szKey, sizeof(szKey));
-	if (StrEqual(szKey, "model"))
+	if (StrEqual(szKey, "custommodel"))
 	{
 		DHookGetParamString(hParams, 2, szVal, sizeof(szVal));
 		int iModelIndex = PrecacheModel(szVal);
