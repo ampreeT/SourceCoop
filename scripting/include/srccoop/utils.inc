@@ -410,6 +410,38 @@ public bool CanTeleportPlayer_TraceFilter(int entity, int mask, any data) {
 	return true;
 }
 
+stock float PlayerDotProductToEntity(CBasePlayer pPlayer, CBaseEntity pEnt)
+{
+	float entOrigin[3];
+	pEnt.GetAbsOrigin(entOrigin);
+	return PlayerDotProductToPoint(pPlayer, entOrigin);
+}
+
+stock float PlayerDotProductToEntityCenter(CBasePlayer pPlayer, CBaseEntity pEnt)
+{
+	float midpoint[3], mins[3], maxs[3];
+	pEnt.GetMins(mins);
+	pEnt.GetMaxs(maxs);
+	MoveVector(mins, maxs, 0.5, midpoint);
+
+	pEnt.GetAbsOrigin(mins);
+	AddVectors(mins, midpoint, midpoint);
+	return PlayerDotProductToPoint(pPlayer, midpoint);
+}
+
+stock float PlayerDotProductToPoint(CBasePlayer pPlayer, const float vecPoint[3])
+{
+	float angles[3], origin[3], fwd[3], targetDir[3];
+	pPlayer.GetEyeAngles(angles);
+	GetAngleVectors(angles, fwd, NULL_VECTOR, NULL_VECTOR);
+
+	pPlayer.GetEyePosition(origin);
+	MakeVectorFromPoints(origin, vecPoint, targetDir);
+	NormalizeVector(targetDir, targetDir);
+
+	return GetVectorDotProduct(fwd, targetDir);
+}
+
 /**
  * Fades a client's screen to a specified color
  * Your adviced to read the FFADE_ Comments

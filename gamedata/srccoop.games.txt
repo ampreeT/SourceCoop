@@ -809,6 +809,11 @@
 				"windows"	"22"
 				"linux" 	"23"
 			}
+			"CBaseCombatWeapon::SendWeaponAnim" // CBaseCombatWeapon::SendWeaponAnim(int)
+			{
+				"windows"	"236"
+				"linux"		"237"
+			}
 			"CBaseEntity::ShouldCollide" // CBaseEntity::ShouldCollide
 			{
 				"windows"	"16"

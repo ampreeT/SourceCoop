@@ -23,6 +23,7 @@ Handle g_pGetSequenceLinearMotion;
 Handle g_pShouldPlayerAvoid;
 Handle g_pRemoveAllItems;
 Handle g_pIsNPC;
+Handle g_pSendWeaponAnim;
 
 stock void InitClassdef(GameData pGameConfig)
 {
@@ -190,6 +191,17 @@ stock void InitClassdef(GameData pGameConfig)
 		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
 		PrepSDKCall_AddParameter(SDKType_Vector, SDKPass_Pointer, _, VENCODE_FLAG_COPYBACK);
 		if (!(g_pGetSequenceLinearMotion = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szGetSequenceLinearMotion);
+	}
+
+	char szSendWeaponAnim[] = "CBaseCombatWeapon::SendWeaponAnim";
+	StartPrepSDKCall(SDKCall_Entity);
+	if (!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Virtual, szSendWeaponAnim))
+		LogMessage("Could not obtain gamedata offset %s", szSendWeaponAnim);
+	else
+	{
+		PrepSDKCall_SetReturnInfo(SDKType_Bool, SDKPass_Plain);
+		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
+		if (!(g_pSendWeaponAnim = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szSendWeaponAnim);
 	}
 
 	#if defined SRCCOOP_BLACKMESA
@@ -888,6 +900,10 @@ methodmap CBaseCombatWeapon < CBaseAnimating
 	public void SetWeaponTimeIdle(const float flTimeIdle)
 	{
 		SetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flTimeWeaponIdle", flTimeIdle);
+	}
+	public bool SendWeaponAnim(int iActivity)
+	{
+		return SDKCall(g_pSendWeaponAnim, this.GetEntIndex(), iActivity);
 	}
 }
 
