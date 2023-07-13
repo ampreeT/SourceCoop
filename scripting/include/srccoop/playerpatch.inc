@@ -342,8 +342,9 @@ CBaseEntity g_pNewRagdoll = NULL_CBASEENTITY;
 
 public MRESReturn Hook_PlayerKilled(int _this, DHookParam hParams)
 {
-	#if defined PLAYERPATCH_SERVERSIDE_RAGDOLLS
+	g_pNewRagdoll = NULL_CBASEENTITY;
 
+	#if defined PLAYERPATCH_SERVERSIDE_RAGDOLLS
 	if (!CoopManager.IsCoopModeEnabled())
 		return MRES_Ignored;
 	
@@ -351,6 +352,13 @@ public MRESReturn Hook_PlayerKilled(int _this, DHookParam hParams)
 	if (pPlayer.IsValid())
 	{
 		Address pTakeDmgInfo = hParams.GetAddress(1);
+		int dmgType = LoadFromAddress(pTakeDmgInfo + view_as<Address>(60), NumberType_Int32);
+		if (dmgType & DMG_DISSOLVE)
+		{
+			// Dont bother
+			return MRES_Ignored;
+		}
+
 		int iForceBone = GetEntProp(_this, Prop_Send, "m_nForceBone");
 		g_pNewRagdoll = CBaseEntity(SDKCall(g_pCreateServerRagdoll, _this, iForceBone, pTakeDmgInfo, COLLISION_GROUP_DEBRIS_TRIGGER, false));
 		SDKHook(g_pNewRagdoll.GetEntIndex(), SDKHook_OnTakeDamage, Hook_NoDmg);
@@ -373,16 +381,19 @@ public MRESReturn Hook_PlayerKilledPost(int _this, DHookParam hParams)
 	
 		#if defined PLAYERPATCH_SERVERSIDE_RAGDOLLS
 
-		#if defined SRCCOOP_BLACKMESA
-		PlayerPatch_ApplyServerRagdoll(pPlayer);
-		#endif
-		
-		#if defined SRCCOOP_HL2DM
-		// Tells the death think not to move the player anymore. Player used to move despite being parented to its ragdoll, causing rendering issues.
-		pPlayer.SetFlags(FL_ONGROUND);
-		pPlayer.Teleport(vec3_origin, NULL_VECTOR, vec3_origin);
-		#endif
-		
+		if (g_pNewRagdoll.IsValid())
+		{
+			#if defined SRCCOOP_BLACKMESA
+			PlayerPatch_ApplyServerRagdoll(pPlayer);
+			#endif
+			
+			#if defined SRCCOOP_HL2DM
+			// Tells the death think not to move the player anymore. Player used to move despite being parented to its ragdoll, causing rendering issues.
+			pPlayer.SetFlags(FL_ONGROUND);
+			pPlayer.Teleport(vec3_origin, NULL_VECTOR, vec3_origin);
+			#endif
+		}
+
 		#endif // PLAYERPATCH_SERVERSIDE_RAGDOLLS
 
 		SurvivalManager.HandlePlayerDeath(pPlayer);
@@ -390,11 +401,9 @@ public MRESReturn Hook_PlayerKilledPost(int _this, DHookParam hParams)
 	return MRES_Ignored;
 }
 
+#if defined PLAYERPATCH_SERVERSIDE_RAGDOLLS
 void PlayerPatch_ApplyServerRagdoll(CBasePlayer pPlayer)
 {
-	if (!g_pNewRagdoll.IsValid())
-		return;
-
 	CBaseEntity pRagdoll = pPlayer.GetRagdoll();
 	if (pRagdoll.IsValid())
 	{
@@ -419,14 +428,13 @@ void PlayerPatch_ApplyServerRagdoll(CBasePlayer pPlayer)
 	Call_PushCell(pPlayer);
 	Call_PushCell(g_pNewRagdoll);
 	Call_Finish();
-	
-	g_pNewRagdoll = NULL_CBASEENTITY;
 }
 
 public MRESReturn Hook_CreateRagdollEntity(int _this)
 {
-	if (!CoopManager.IsCoopModeEnabled())
+	if (!g_pNewRagdoll.IsValid())
 		return MRES_Ignored;
+
 	// avoid invalid cast on m_hRagdoll in hl2mp with the serverside ragdolls
 	return MRES_Supercede;
 }
@@ -440,6 +448,7 @@ public void OnEntityDestroyed_Ragdoll(CBaseEntity pRagdoll)
 		pPlayerChild.ClearParent();
 	}
 }
+#endif // PLAYERPATCH_SERVERSIDE_RAGDOLLS
 
 //------------------------------------------------------
 // OnClientDisconnect
