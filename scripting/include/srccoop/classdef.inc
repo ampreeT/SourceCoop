@@ -765,6 +765,14 @@ methodmap CBaseAnimating < CBaseEntity
 	{
 		SetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flCycle", flCycle);
 	}
+	public int LookupAttachment(const char[] szName)
+	{
+		return LookupEntityAttachment(this.GetEntIndex(), szName);
+	}
+	public bool GetAttachment(int attachment, float origin[3], float angles[3])
+	{
+		return GetEntityAttachment(this.GetEntIndex(), attachment, origin, angles);
+	}
 }
 
 methodmap CBaseTrigger < CBaseEntity
@@ -1443,6 +1451,14 @@ methodmap CSprite < CBaseEntity
 	{
 		SetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flSpriteScale", val);
 	}
+	public int GetBrightness()
+	{
+		return GetEntProp(this.GetEntIndex(), Prop_Send, "m_nBrightness");
+	}
+	public void SetBrigtness(int val)
+	{
+		SetEntProp(this.GetEntIndex(), Prop_Send, "m_nBrightness", val);
+	}
 	public float GetFramerate()
 	{
 		return GetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flSpriteFramerate");
@@ -1491,6 +1507,18 @@ methodmap CSprite < CBaseEntity
 	public bool IsOn()
 	{
 		return !(this.GetEffects() & EF_NODRAW);
+	}
+}
+
+methodmap CSpriteOriented < CSprite
+{
+	public CSpriteOriented(const int iEntIndex = -1)
+	{
+		return view_as<CSpriteOriented>(CBaseEntity(iEntIndex));
+	}
+	public static CSpriteOriented Create()
+	{
+		return CSpriteOriented(CreateEntityByName("env_sprite_oriented"));
 	}
 }
 
