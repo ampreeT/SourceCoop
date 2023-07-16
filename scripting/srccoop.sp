@@ -378,8 +378,12 @@ public void OnConfigsExecutedPost()
 
 public void OnClientPutInServer(int client)
 {
-	CBasePlayer pPlayer = CBasePlayer(client);
+	GreetPlayer(client);
+
+	if (IsFakeClient(client))
+		return;
 	
+	CBasePlayer pPlayer = CBasePlayer(client);
 	PlayerPatch_OnClientPutInServer(pPlayer);
 	CoopManager.OnClientPutInServer(pPlayer);
 	g_pInstancingManager.OnClientPutInServer(client);
@@ -401,8 +405,6 @@ public void OnClientPutInServer(int client)
 	#if defined SRCCOOP_HL2DM && defined PLAYERPATCH_SERVERSIDE_RAGDOLLS
 	DHookEntity(hkCreateRagdollEntity, false, client, _, Hook_CreateRagdollEntity);
 	#endif
-	
-	GreetPlayer(client);
 }
 
 public void OnClientAuthorized(int client, const char[] auth)
@@ -416,6 +418,9 @@ public void OnClientAuthorized(int client, const char[] auth)
 
 public void OnClientDisconnect(int client)
 {
+	if (IsFakeClient(client))
+		return;
+	
 	CBasePlayer pPlayer = CBasePlayer(client);
 	PlayerPatch_OnClientDisconnect(pPlayer);
 }

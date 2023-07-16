@@ -415,7 +415,7 @@ void PlayerPatch_ApplyServerRagdoll(CBasePlayer pPlayer)
 	// Bone merge player to the new ragdoll. This ensures thirdperson death camera actually follows it (firstperson is unaffected).
 	// The downside is we have to keep check on its removal in order not to kill the player entity.
 	pPlayer.SetParent(g_pNewRagdoll);
-	pPlayer.SetParentAttachment("forward");
+	pPlayer.Teleport(vec3_origin);
 	pPlayer.SetEffects(pPlayer.GetEffects() | EF_BONEMERGE);
 	#endif
 
