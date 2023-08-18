@@ -239,6 +239,48 @@ enum struct CCoopEquipment
 
 		ClientCommand(pPlayer.GetEntIndex(), "use %s", this.m_szActiveWeapon);
 	}
+
+	void Fill(CBasePlayer pPlayer)
+	{
+		this.m_iHealth = pPlayer.GetHealth();
+		this.m_iArmor = pPlayer.GetArmor();
+
+		CBaseCombatWeapon pActiveWeapon = pPlayer.GetActiveWeapon();
+		if (pActiveWeapon.IsValid())
+		{
+			pActiveWeapon.GetClassname(this.m_szActiveWeapon, sizeof(this.m_szActiveWeapon));
+		}
+
+		for (int iWeapon = 0; iWeapon < MAX_WEAPONS; iWeapon++)
+		{
+			CBaseCombatWeapon pWeapon = pPlayer.GetWeaponFromIndex(iWeapon);
+			char weaponClassName[MAX_CLASSNAME];
+			if (pWeapon.IsValid() && pWeapon.GetClassname(weaponClassName, sizeof(weaponClassName)))
+			{
+				if (pPlayer.HasWeapon(weaponClassName))
+				{
+					this.AddItem(weaponClassName, pWeapon.GetPrimaryAmmo(), pWeapon.GetSecondaryAmmo());
+				}
+			}
+		}
+
+		if (pPlayer.HasSuit())
+		{
+			this.AddItem("item_suit");
+		}
+
+		#if defined SRCCOOP_BLACKMESA
+		if (view_as<CBlackMesaPlayer>(pPlayer).HasJumpModule())
+		{
+			this.AddItem("item_longjump");
+		}
+		#endif // SRCCOOP_BLACKMESA
+
+		for (int iAmmo = 0; iAmmo < MAX_AMMO_TYPES; iAmmo++)
+		{
+			this.m_iAmmoCount[iAmmo] = pPlayer.GetAmmoFromIndex(iAmmo);
+		}
+	}
 }
 
 enum struct CCoopSpawn

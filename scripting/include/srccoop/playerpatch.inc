@@ -217,8 +217,13 @@ public MRESReturn Hook_PlayerAcceptInput(int _this, Handle hReturn, Handle hPara
 public void PlayerPatch_OnClientPutInServer(CBasePlayer pPlayer)
 {
 	#if defined SRCCOOP_BLACKMESA
+
+	int client = pPlayer.GetEntIndex();
 	// fixes bugged trigger_teleport prediction (camera jerking around as if being teleported)
-	ClientCommand(pPlayer.GetEntIndex(), "cl_predicttriggers 0");
+	ClientCommand(client, "cl_predicttriggers 0");
+	// turn off ugly flashlights from other players
+	ClientCommand(client, "r_flashlight_3rd_draw 0");
+	
 	#endif // SRCCOOP_BLACKMESA
 }
 
@@ -276,9 +281,9 @@ public void Hook_PlayerSpawnPost(int iClient)
 
 			#if defined SRCCOOP_BLACKMESA
 
-			// Fix for client viewmodel animation when always run is off
 			if (!IsFakeClient(iClient))
 			{
+				// Fix for client viewmodel animation when always run is off
 				sv_always_run.ReplicateToClient(iClient, "1");
 				
 				QueryClientConVar(iClient, "r_bloomtintexponent_nextgen", QueryConVar_Bloom, 2.2);
@@ -337,14 +342,14 @@ public void Hook_PlayerSpawnPost(int iClient)
 // - Force serverside ragdolls
 //------------------------------------------------------
 #if defined PLAYERPATCH_SERVERSIDE_RAGDOLLS
-CBaseEntity g_pNewRagdoll = NULL_CBASEENTITY;
+CBaseAnimating g_pNewRagdoll = NULL_CBASEENTITY;
 #endif
 
 public MRESReturn Hook_PlayerKilled(int _this, DHookParam hParams)
 {
+	#if defined PLAYERPATCH_SERVERSIDE_RAGDOLLS
 	g_pNewRagdoll = NULL_CBASEENTITY;
 
-	#if defined PLAYERPATCH_SERVERSIDE_RAGDOLLS
 	if (!CoopManager.IsCoopModeEnabled())
 		return MRES_Ignored;
 	
@@ -360,7 +365,7 @@ public MRESReturn Hook_PlayerKilled(int _this, DHookParam hParams)
 		}
 
 		int iForceBone = GetEntProp(_this, Prop_Send, "m_nForceBone");
-		g_pNewRagdoll = CBaseEntity(SDKCall(g_pCreateServerRagdoll, _this, iForceBone, pTakeDmgInfo, COLLISION_GROUP_DEBRIS_TRIGGER, false));
+		g_pNewRagdoll = CBaseAnimating(SDKCall(g_pCreateServerRagdoll, _this, iForceBone, pTakeDmgInfo, COLLISION_GROUP_DEBRIS_TRIGGER, false));
 		SDKHook(g_pNewRagdoll.GetEntIndex(), SDKHook_OnTakeDamage, Hook_NoDmg);
 
 		#if defined SRCCOOP_HL2DM

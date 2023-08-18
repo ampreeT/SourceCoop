@@ -422,7 +422,7 @@ methodmap CBaseEntity
 	}
 	public void SetAbsAngles(const float vecAngles[3])
 	{
-		SetEntPropVector(this.GetEntIndex(), Prop_Send, "m_angAbsRotation", vecAngles);
+		SetEntPropVector(this.GetEntIndex(), Prop_Data, "m_angAbsRotation", vecAngles);
 	}
 	public void GetAngles(float vecBuffer[3])
 	{
@@ -961,6 +961,14 @@ methodmap CBaseCombatCharacter < CBaseAnimating
 	{
 		return CBaseCombatWeapon(GetEntPropEnt(this.GetEntIndex(), Prop_Data, "m_hLastWeapon"));
 	}
+	public float GetNextAttack()
+	{
+		return GetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flNextAttack");
+	}
+	public void SetNextAttack(const float flNextAttack)
+	{
+		SetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flNextAttack", flNextAttack);
+	}	
 }
 
 methodmap CAI_BaseNPC < CBaseCombatCharacter
@@ -1351,6 +1359,14 @@ methodmap CBasePlayer < CBaseCombatCharacter
 	public void SetObserverTarget(CBaseEntity pTarget)
 	{
 		SetEntPropEnt(this.GetEntIndex(), Prop_Data, "m_hObserverTarget", pTarget.GetEntIndex());
+	}
+	public int GetHideHud()
+	{
+		return GetEntProp(this.GetEntIndex(), Prop_Send, "m_iHideHUD");
+	}
+	public void SetHideHud(int iHideHud)
+	{
+		SetEntProp(this.GetEntIndex(), Prop_Send, "m_iHideHUD", iHideHud);
 	}
 	public int GetTeam()
 	{

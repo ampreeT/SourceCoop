@@ -31,11 +31,6 @@ methodmap EquipmentManager
 		RegAdminCmd("sourcecoop_clear", Command_ClearEquipment, ADMFLAG_ROOT, "Clear persisted equipment and equip players with the map defaults.");
 	}
 
-	public static bool Enabled()
-	{
-		return CoopManager.IsFeatureEnabled(FT_TRANSFER_PLAYER_STATE);
-	}
-
 	public static void Clear(const char[] szSteamId)
 	{
 		CCoopEquipment equipment;
@@ -86,60 +81,25 @@ methodmap EquipmentManager
 		return false;
 	}
 
-	public static void SavePlayerEquipment()
+	public static bool StoreCurrentEquipment(int client)
 	{
-		for (int iClient = 1; iClient <= MaxClients; iClient++)
+		CBasePlayer pPlayer = CBasePlayer(client);
+		if (!pPlayer.IsValid() || !pPlayer.IsAlive() || strlen(g_szSteamIds[client]) == 0)
+			return false;
+		
+		CCoopEquipment playerEquipment;
+		playerEquipment.Initialize();
+		playerEquipment.Fill(pPlayer);
+		
+		EquipmentManager.StoreEquipment(g_szSteamIds[client], playerEquipment);
+		return true;
+	}
+
+	public static void StoreCurrentEquipmentAll()
+	{
+		for (int i = 1; i <= MaxClients; i++)
 		{
-			if (strlen(g_szSteamIds[iClient]) == 0)
-				continue;
-
-			CBasePlayer pPlayer = CBasePlayer(iClient);
-			if (!pPlayer.IsValid() || !pPlayer.IsAlive())
-				continue;
-			
-			CCoopEquipment playerEquipment;
-			playerEquipment.Initialize();
-
-			playerEquipment.m_iHealth = pPlayer.GetHealth();
-			playerEquipment.m_iArmor = pPlayer.GetArmor();
-
-			CBaseCombatWeapon pActiveWeapon = pPlayer.GetActiveWeapon();
-			if (pActiveWeapon.IsValid())
-			{
-				pActiveWeapon.GetClassname(playerEquipment.m_szActiveWeapon, sizeof(playerEquipment.m_szActiveWeapon));
-			}
-
-			for (int iWeapon = 0; iWeapon < MAX_WEAPONS; iWeapon++)
-			{
-				CBaseCombatWeapon pWeapon = pPlayer.GetWeaponFromIndex(iWeapon);
-				char weaponClassName[MAX_CLASSNAME];
-				if (pWeapon.IsValid() && pWeapon.GetClassname(weaponClassName, sizeof(weaponClassName)))
-				{
-					if (pPlayer.HasWeapon(weaponClassName))
-					{
-						playerEquipment.AddItem(weaponClassName, pWeapon.GetPrimaryAmmo(), pWeapon.GetSecondaryAmmo());
-					}
-				}
-			}
-
-			if (pPlayer.HasSuit())
-			{
-				playerEquipment.AddItem("item_suit");
-			}
-
-			#if defined SRCCOOP_BLACKMESA
-			if (view_as<CBlackMesaPlayer>(pPlayer).HasJumpModule())
-			{
-				playerEquipment.AddItem("item_longjump");
-			}
-			#endif // SRCCOOP_BLACKMESA
-
-			for (int iAmmo = 0; iAmmo < MAX_AMMO_TYPES; iAmmo++)
-			{
-				playerEquipment.m_iAmmoCount[iAmmo] = pPlayer.GetAmmoFromIndex(iAmmo);
-			}
-
-			EquipmentManager.StoreEquipment(g_szSteamIds[iClient], playerEquipment);
+			EquipmentManager.StoreCurrentEquipment(i);
 		}
 	}
 
@@ -159,7 +119,6 @@ methodmap EquipmentManager
 
 		CCoopEquipment equipment;
 		equipment.Initialize();
-
 		equipment.m_iHealth = kv.GetNum("hp");
 		equipment.m_iArmor = kv.GetNum("armor");
 
@@ -195,7 +154,7 @@ methodmap EquipmentManager
 
 		for (int i = 0; i < MAX_AMMO_TYPES; i++)
 		{
-			char key[3];
+			char key[8];
 			IntToString(i, key, sizeof(key));
 			equipment.m_iAmmoCount[i] = kv.GetNum(key, 0);	
 		}
@@ -218,13 +177,22 @@ methodmap EquipmentManager
 		for (int i = 1; i <= MaxClients; i++)
 		{
 			CBasePlayer pPlayer = CBasePlayer(i);
-			if(!pPlayer.IsValid())
+			if (!pPlayer.IsValid())
 				continue;
-
+			
 			CCoopEquipment equipment;
-			if (!EquipmentManager.GetEquipment(pPlayer, equipment))
+			bool close;
+			if (pPlayer.IsAlive())
+			{
+				equipment.Initialize();
+				equipment.Fill(pPlayer);
+				close = true;
+			}
+			else if (!EquipmentManager.GetEquipment(pPlayer, equipment))
+			{
 				continue;
-
+			}
+			
 			kv.JumpToKey(g_szSteamIds[i], true);
 			kv.SetNum("hp", equipment.m_iHealth);
 			kv.SetNum("armor", equipment.m_iArmor);
@@ -246,9 +214,14 @@ methodmap EquipmentManager
 			kv.JumpToKey("ammo", true);
 			for (int k = 0; k < MAX_AMMO_TYPES; k++)
 			{
-				char key[3];
+				char key[8];
 				IntToString(k, key, sizeof(key));
 				kv.SetNum(key, equipment.m_iAmmoCount[k]);
+			}
+
+			if (close)
+			{
+				equipment.Close();
 			}
 			
 			kv.Rewind();

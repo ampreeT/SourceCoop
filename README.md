@@ -9,9 +9,9 @@ __If you are someone who is looking to play on a server__, you are already compl
 
 __If you are a server operator who is looking to host your own cooperative server__, then follow the instructions below.
 - Install [Metamod:Source](https://www.sourcemm.net/downloads.php?branch=stable)
-	- Latest tested build ➤ __1143__
+	- Latest tested build ➤ __1148__
 - Install [SourceMod](https://www.sourcemod.net/downloads.php?branch=stable)
-	- Latest tested build ➤ __6874__
+	- Latest tested build ➤ __6936__
 - Install the latest release of SourceCoop from the [releases page](https://github.com/ampreeT/SourceCoop/releases).
 
 A step-by-step guide is also available on [Steam](https://steamcommunity.com/sharedfiles/filedetails/?id=2200247356).

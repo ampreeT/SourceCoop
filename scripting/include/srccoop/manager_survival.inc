@@ -235,7 +235,12 @@ methodmap SurvivalManager {
 			if (pPlayer.IsInGame() && pPlayer.GetTeam() > TEAM_SPECTATOR)
 			{
 				Client_ScreenFade(i, 1000, FFADE_OUT|FFADE_STAYOUT, _, 0, 0, 0, 255);
+				
+				#if defined SRCCOOP_BLACKMESA
 				ShowHudText(i, 2, "#BMS_GameOver_Ally");
+				#else
+				ShowHudText(i, 2, "ASSIGNMENT: TERMINATED\nSUBJECT: FREEMAN\nREASON: FAILURE TO PRESERVE MISSION-CRITICAL PERSONNEL");
+				#endif
 			}
 		}
 	}

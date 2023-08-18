@@ -51,7 +51,9 @@
 #else
 	
 	// SRCCOOP_BLACKMESA is the fallback if no other definition is passed
-	#define SRCCOOP_BLACKMESA
+	#if !defined SRCCOOP_BLACKMESA
+		#define SRCCOOP_BLACKMESA
+	#endif
 	#define CHECK_ENGINE "Black Mesa"; if (GetEngineVersion() != Engine_BlackMesa)
 
 	#define ENTPATCH_CUSTOM_NPC_MODELS

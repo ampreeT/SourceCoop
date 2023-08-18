@@ -102,15 +102,15 @@ methodmap CoopManager {
 
 	public static void OnMapStart()
 	{
-		PrecacheSound(SND_TICK);
-		PrecacheSound(SND_3);
-		PrecacheSound(SND_2);
-		PrecacheSound(SND_1);
-		PrecacheSound(SND_CHANGELEVEL);
-		PrecacheSound(SND_CHANGELEVEL_TICK);
-
 		if (data.m_bIsCoopMap)
 		{
+			PrecacheSound(SND_TICK);
+			PrecacheSound(SND_3);
+			PrecacheSound(SND_2);
+			PrecacheSound(SND_1);
+			PrecacheSound(SND_CHANGELEVEL);
+			PrecacheSound(SND_CHANGELEVEL_TICK);
+
 			#if defined SRCCOOP_BLACKMESA
 			CBM_MP_GameRules.SetStateEndTime(STATE_WARMUP, GetGameTime() + 60 * 60 * 24 * 7);
 			#endif
@@ -384,9 +384,9 @@ methodmap CoopManager {
 		if (StrEqual(szReason, SC_NORMAL_MAPCHANGE))
 		{
 			EquipmentManager.ClearAll();
-			if(EquipmentManager.Enabled())
+			if (CoopManager.IsFeatureEnabled(FT_TRANSFER_PLAYER_STATE))
 			{
-				EquipmentManager.SavePlayerEquipment();
+				EquipmentManager.StoreCurrentEquipmentAll();
 			}
 		}
 		ForceChangeLevel(szNextMap, szReason);

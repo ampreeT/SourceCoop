@@ -487,7 +487,7 @@ public void Hook_ExplosionSpawn(int iEntIndex)
 // weapons
 // use sp weapon models
 //------------------------------------------------------
-public MRESReturn Hook_WeaponSetModel(int _this, Handle hParams)
+public MRESReturn Hook_WeaponSetModel(int _this, DHookParam hParams)
 {
 	if (!DHookIsNullParam(hParams, 1))
 	{
@@ -499,10 +499,10 @@ public MRESReturn Hook_WeaponSetModel(int _this, Handle hParams)
 			{
 				static const char szWeaponModel[][][] =
 				{
-					{ "models/weapons/w_glock_mp.mdl", "models/weapons/w_glock.mdl", },
-					{ "models/weapons/w_357_mp.mdl", "models/weapons/w_357.mdl", },
-					{ "models/weapons/w_mp5_mp.mdl", "models/weapons/w_mp5.mdl", },
-					{ "models/weapons/w_shotgun_mp.mdl", "models/weapons/w_shotgun.mdl", },
+					{ "models/weapons/w_glock_mp.mdl", "models/weapons/w_glock.mdl" },
+					{ "models/weapons/w_357_mp.mdl", "models/weapons/w_357.mdl" },
+					{ "models/weapons/w_mp5_mp.mdl", "models/weapons/w_mp5.mdl" },
+					{ "models/weapons/w_shotgun_mp.mdl", "models/weapons/w_shotgun.mdl" },
 					{ "models/weapons/w_rpg_mp.mdl", "models/weapons/w_rpg.mdl" },
 				};
 
@@ -515,7 +515,7 @@ public MRESReturn Hook_WeaponSetModel(int _this, Handle hParams)
 					{
 						if (PrecacheModel(szWeaponModel[i][1], false))
 						{
-							DHookSetParamString(hParams, 1, szWeaponModel[i][1]);
+							hParams.SetString(1, szWeaponModel[i][1]);
 							return MRES_ChangedHandled;
 						}
 
