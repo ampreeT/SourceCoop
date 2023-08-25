@@ -285,11 +285,19 @@ methodmap CNextMapLump < ArrayList
 	}
 }
 
+enum struct CClientConsoleCommand
+{
+	char m_szConvar[128];
+	char m_szValue[256];
+	ConVar m_pConvar;
+}
+
 enum struct CGlobalLevelLump
 {
 	CEntityListLump m_pEntityList;
 	CNextMapLump m_pNextMapList;
 	ArrayList m_pModifiedCvarList;
+	ArrayList m_pClientCvarList;
 	COutputHookLump m_pOutputHookList;
 	IntroType m_iIntroType;
 	StringMap m_EdtDefinesMap;
@@ -299,6 +307,7 @@ enum struct CGlobalLevelLump
 		this.m_pEntityList = new CEntityListLump(CreateArray(sizeof(CEntityInfoLump)));
 		this.m_pNextMapList = new CNextMapLump(CreateArray(MAX_MAPNAME));
 		this.m_pModifiedCvarList = CreateArray();
+		this.m_pClientCvarList = CreateArray(sizeof(CClientConsoleCommand));
 		this.m_pOutputHookList = new COutputHookLump(CreateArray(sizeof(CEntityOutputHook)));
 		this.m_EdtDefinesMap = new StringMap();
 	}
@@ -306,6 +315,8 @@ enum struct CGlobalLevelLump
 	void Clear()
 	{
 		this.m_pNextMapList.Clear();
+		this.m_pModifiedCvarList.Clear();
+		this.m_pClientCvarList.Clear();
 		this.m_pOutputHookList.Clear();
 		this.m_iIntroType = INTRO_NONE;
 		this.m_EdtDefinesMap.Clear();
@@ -454,6 +465,10 @@ enum struct CGlobalLevelLump
 						{
 							this.ParseConsole(kv);
 						}
+						else if (strcmp(szType, "client_console", false) == 0)
+						{
+							this.ParseClientConsole(kv);
+						}
 						else if (strcmp(szType, "entity", false) == 0 || StrContains(szType, "entity_base", false) == 0)
 						{
 							LogDebug("Processing \"%s\" block for entity lump modifications", szType);
@@ -590,7 +605,7 @@ enum struct CGlobalLevelLump
 		{
 			do
 			{
-				char szKey[MAX_KEY];
+				char szKey[128];
 				if (kv.GetSectionName(szKey, sizeof(szKey)))
 				{
 					EVAL_CONDITIONS(szKey, kv, this.ParseConsole(kv))
@@ -605,7 +620,7 @@ enum struct CGlobalLevelLump
 							continue;
 						}
 						
-						char szValue[MAX_VALUE];
+						char szValue[256];
 						kv.GetString(NULL_STRING, szValue, sizeof(szValue));
 						ConVar pConvar = FindConVar(szKey);
 						if (pConvar != null)
@@ -613,6 +628,30 @@ enum struct CGlobalLevelLump
 							this.m_pModifiedCvarList.Push(pConvar);
 							pConvar.SetString(szValue);
 						}
+					}
+				}
+			}
+			while (kv.GotoNextKey(false));
+			kv.GoBack();
+		}
+	}
+	
+	void ParseClientConsole(KeyValues kv)
+	{
+		if (kv.GotoFirstSubKey(false))
+		{
+			CClientConsoleCommand cmd;
+			do
+			{
+				if (kv.GetSectionName(cmd.m_szConvar, sizeof(cmd.m_szConvar)))
+				{
+					EVAL_CONDITIONS(cmd.m_szConvar, kv, this.ParseClientConsole(kv))
+					
+					if (kv.GetDataType(NULL_STRING) != KvData_None)
+					{
+						kv.GetString(NULL_STRING, cmd.m_szValue, sizeof(cmd.m_szValue));
+						cmd.m_pConvar = FindConVar(cmd.m_szConvar);
+						this.m_pClientCvarList.PushArray(cmd);
 					}
 				}
 			}

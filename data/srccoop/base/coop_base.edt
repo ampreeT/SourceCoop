@@ -37,6 +37,15 @@
 		// prevents client crash after pvp deaths due to freezecam, shortens respawn time
 		"spec_freeze_time" "0"
 	}
+
+	"client_console"
+	{
+		// fixes bugged trigger_teleport prediction (camera jerking around as if being teleported)
+		"cl_predicttriggers" "0"
+
+		// turn off ugly flashlights from other players
+		"r_flashlight_3rd_draw" "0"
+	}
 	
 	"entity_base_coop"
 	{

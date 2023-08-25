@@ -214,17 +214,24 @@ public MRESReturn Hook_PlayerAcceptInput(int _this, Handle hReturn, Handle hPara
 //------------------------------------------------------
 // ClientPutInServer
 //------------------------------------------------------
-public void PlayerPatch_OnClientPutInServer(CBasePlayer pPlayer)
+public void PlayerPatch_OnClientPutInServer(int client)
 {
-	#if defined SRCCOOP_BLACKMESA
-
-	int client = pPlayer.GetEntIndex();
-	// fixes bugged trigger_teleport prediction (camera jerking around as if being teleported)
-	ClientCommand(client, "cl_predicttriggers 0");
-	// turn off ugly flashlights from other players
-	ClientCommand(client, "r_flashlight_3rd_draw 0");
-	
-	#endif // SRCCOOP_BLACKMESA
+	// Send client convars
+	CClientConsoleCommand cmd;
+	int count = g_pLevelLump.m_pClientCvarList.Length;
+	for (int i = 0; i < count; i++)
+	{
+		g_pLevelLump.m_pClientCvarList.GetArray(i, cmd);
+		if (cmd.m_pConvar)
+		{
+			cmd.m_pConvar.ReplicateToClient(client, cmd.m_szValue);
+		}
+		else
+		{
+			// Verify it's actual clientside convar and not some malicious command
+			QueryClientConVar(client, cmd.m_szConvar, QueryConVarSafeSet, i);
+		}
+	}
 }
 
 //------------------------------------------------------
@@ -698,5 +705,21 @@ public void QueryConVar_Bloom(QueryCookie cookie, int iClient, ConVarQueryResult
 	else if (!strcmp(cvarValue, "1.0"))
 	{
 		ClientCommand(iClient, "%s %f", cvarName, flDefaultValue);
+	}
+}
+
+void QueryConVarSafeSet(QueryCookie cookie, int client, ConVarQueryResult result, const char[] cvarName, const char[] cvarValue, any cvarListIndex)
+{
+	if (result == ConVarQuery_Okay || result == ConVarQuery_Protected)
+	{
+		CClientConsoleCommand cmd;
+		g_pLevelLump.m_pClientCvarList.GetArray(cvarListIndex, cmd);
+		char szCmd[256];
+		FormatEx(szCmd, sizeof(szCmd), "%s %s", cmd.m_szConvar, cmd.m_szValue);
+		ClientCommand(client, szCmd);
+	}
+	else if (result == ConVarQuery_NotValid)
+	{
+		LogMessage("Issuing client commands is not allowed. Please remove \"%s\" from client_console in the map's edt file.", cvarName);
 	}
 }

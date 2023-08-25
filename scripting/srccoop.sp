@@ -384,7 +384,7 @@ public void OnClientPutInServer(int client)
 		return;
 	
 	CBasePlayer pPlayer = CBasePlayer(client);
-	PlayerPatch_OnClientPutInServer(pPlayer);
+	PlayerPatch_OnClientPutInServer(client);
 	CoopManager.OnClientPutInServer(pPlayer);
 	g_pInstancingManager.OnClientPutInServer(client);
 	
