@@ -99,7 +99,7 @@ public void Hook_PlayerPreThinkPost(int iClient)
 				{
 					DispatchSpawn(iClient);
 				}
-			}	
+			}
 		}
 	}
 }
@@ -109,35 +109,74 @@ public void Hook_PlayerPreThinkPost(int iClient)
 //------------------------------------------------------
 public Action OnPlayerRunCmd(int iClient, int &iButtons, int &iImpulse, float fVel[3], float fAngles[3], int &iWeapon, int& subtype, int& cmdnum, int& tickcount, int& seed, int mouse[2])
 {
-	if (IsFakeClient(iClient) || !CoopManager.IsCoopModeEnabled()) {
+	if (IsFakeClient(iClient) || !CoopManager.IsCoopModeEnabled())
 		return Plugin_Continue;
-	}
 
 	if (mouse[0] || mouse[1])
-	{
 		g_bPostTeamSelect[iClient] = true;
-	}
 
 	// Spectator fixes
 	// Credit: harper
 
-	if (IsClientObserver(iClient))
+	Obs_Mode iObsMode = view_as<Obs_Mode> (GetEntProp(iClient, Prop_Send, "m_iObserverMode"));
+	if (iObsMode > OBS_MODE_DEATHCAM)
 	{
 		// hide bugged ctrl menu
-		if (g_bPostTeamSelect[iClient] && tickcount % 64 == 0)
+		if (g_bPostTeamSelect[iClient] && tickcount % 10 == 0)
 			ShowVGUIPanel(iClient, "specmenu", _, false);
 
-		Obs_Mode iMode = view_as<Obs_Mode> (GetEntProp(iClient, Prop_Send, "m_iObserverMode"));
 		CBasePlayer pTarget = CBasePlayer(GetEntPropEnt(iClient, Prop_Send, "m_hObserverTarget"));
 		CBasePlayer pClient = CBasePlayer(iClient);
 
 		// Make sure target is not an info_observer_menu
 		// force free-look where appropriate - this removes the extra (pointless) third person spec mode
-		if (iMode == OBS_MODE_POI && pTarget != pClient && (!pTarget.IsValid() || pTarget.IsClassPlayer())) {
+		if (iObsMode == OBS_MODE_POI && pTarget != pClient && (!pTarget.IsValid() || pTarget.IsClassPlayer()))
+		{
 			SetEntProp(iClient, Prop_Data, "m_iObserverMode", OBS_MODE_ROAMING);
 		}
 	}
 
+	if (g_iAddButtons[iClient])
+	{
+		iButtons |= g_iAddButtons[iClient];
+		g_iAddButtons[iClient] = 0;
+		return Plugin_Changed;
+	}
+	
+	return Plugin_Changed;
+}
+
+//------------------------------------------------------
+// Player commands
+//------------------------------------------------------
+public Action PlayerCommandListener(int client, const char[] command, int argc)
+{
+	int spec2Buttons;
+	if (StrEqual(command, "spec_next"))
+	{
+		spec2Buttons = IN_ATTACK;
+	}
+	else if (StrEqual(command, "spec_prev"))
+	{
+		spec2Buttons = IN_ATTACK2;
+	}
+	else if (StrEqual(command, "spec_mode"))
+	{
+		spec2Buttons = IN_JUMP;
+	}
+
+	if (spec2Buttons)
+	{
+		CBasePlayer pPlayer = CBasePlayer(client);
+		if (pPlayer.GetObserverMode() == OBS_MODE_CHASE && pPlayer.GetObserverTarget() == pPlayer.GetRagdoll())
+		{
+			// Player dead & following our server ragdoll.
+			// Translate back otherwise ignored buttons so spawning works as normal.
+			// (Not necessary for BM)
+			g_iAddButtons[client] |= spec2Buttons;
+		}
+	}
+	
 	return Plugin_Continue;
 }
 
@@ -391,22 +430,12 @@ public MRESReturn Hook_PlayerKilledPost(int _this, DHookParam hParams)
 	{
 		CBasePlayer pPlayer = CBasePlayer(_this);
 	
-		#if defined PLAYERPATCH_SERVERSIDE_RAGDOLLS
-
+		#if defined PLAYERPATCH_SERVERSIDE_RAGDOLLS && defined SRCCOOP_BLACKMESA
 		if (g_pNewRagdoll.IsValid())
 		{
-			#if defined SRCCOOP_BLACKMESA
 			PlayerPatch_ApplyServerRagdoll(pPlayer);
-			#endif
-			
-			#if defined SRCCOOP_HL2DM
-			// Tells the death think not to move the player anymore. Player used to move despite being parented to its ragdoll, causing rendering issues.
-			pPlayer.SetFlags(FL_ONGROUND);
-			pPlayer.Teleport(vec3_origin, NULL_VECTOR, vec3_origin);
-			#endif
 		}
-
-		#endif // PLAYERPATCH_SERVERSIDE_RAGDOLLS
+		#endif
 
 		SurvivalManager.HandlePlayerDeath(pPlayer);
 	}
@@ -422,19 +451,8 @@ void PlayerPatch_ApplyServerRagdoll(CBasePlayer pPlayer)
 		pRagdoll.Kill();
 	}
 	pPlayer.SetRagdoll(g_pNewRagdoll);
-	
-	#if defined SRCCOOP_HL2DM
-	// Bone merge player to the new ragdoll. This ensures thirdperson death camera actually follows it (firstperson is unaffected).
-	// The downside is we have to keep check on its removal in order not to kill the player entity.
-	pPlayer.SetParent(g_pNewRagdoll);
-	pPlayer.Teleport(vec3_origin);
-	pPlayer.SetEffects(pPlayer.GetEffects() | EF_BONEMERGE);
-	#endif
-
-	#if defined SRCCOOP_BLACKMESA
 	pPlayer.SetObserverMode(OBS_MODE_CHASE);
 	pPlayer.SetObserverTarget(g_pNewRagdoll);
-	#endif
 
 	Call_StartForward(g_OnPlayerRagdollCreatedFwd);
 	Call_PushCell(pPlayer);
@@ -450,23 +468,13 @@ public MRESReturn Hook_CreateRagdollEntity(int _this)
 	// avoid invalid cast on m_hRagdoll in hl2mp with the serverside ragdolls
 	return MRES_Supercede;
 }
-
-public void OnEntityDestroyed_Ragdoll(CBaseEntity pRagdoll)
-{
-	CBasePlayer pPlayerChild = view_as<CBasePlayer>(pRagdoll.GetMoveChild());
-	if (pPlayerChild.IsValid())
-	{
-		// prevent parented player entity removal
-		pPlayerChild.ClearParent();
-	}
-}
 #endif // PLAYERPATCH_SERVERSIDE_RAGDOLLS
 
 //------------------------------------------------------
 // OnClientDisconnect
 //------------------------------------------------------
 public void PlayerPatch_OnClientDisconnect(CBasePlayer pPlayer)
-{
+{	
 	#if defined SRCCOOP_HL2DM && defined PLAYERPATCH_SERVERSIDE_RAGDOLLS
 
 	if (pPlayer.IsValid())
@@ -528,9 +536,9 @@ public Action Hook_PlayerTakeDamage(int victim, int &attacker, int &inflictor, f
 // Player team change hooks
 // - Force everyone to single team in TDM
 //------------------------------------------------------
-public MRESReturn Hook_PlayerChangeTeam(int _this, Handle hParams)
+public MRESReturn Hook_PlayerChangeTeam(int client, Handle hParams)
 {
-	if (CoopManager.IsCoopModeEnabled())
+	if (CoopManager.IsCoopModeEnabled() && client != -1)
 	{
 		if (!CMultiplayRules.IsTeamplay())
 			return MRES_Ignored;

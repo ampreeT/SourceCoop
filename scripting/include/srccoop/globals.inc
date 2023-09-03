@@ -153,6 +153,7 @@ char g_szSteamIds[MAXPLAYERS+1][32];
 bool g_bTempDontHookEnts;
 bool g_bMapStarted;
 bool g_bPostTeamSelect[MAXPLAYERS+1];
+int g_iAddButtons[MAXPLAYERS+1];
 OperatingSystem g_serverOS;
 FeatureMap g_pFeatureMap;
 

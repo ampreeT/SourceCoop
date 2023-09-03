@@ -246,6 +246,7 @@ public void OnPluginStart()
 	
 	HookEvent("player_disconnect", Event_PlayerDisconnect);
 	AddNormalSoundHook(PlayerSoundListener);
+	AddCommandListener(PlayerCommandListener);
 
 	#if defined SRCCOOP_BLACKMESA
 
@@ -431,6 +432,7 @@ public void OnClientDisconnect_Post(int client)
 	SurvivalManager.GameOverCheck();
 	g_szSteamIds[client] = "";
 	g_bPostTeamSelect[client] = false;
+	g_iAddButtons[client] = 0;
 }
 
 public void Event_PlayerDisconnect(Event hEvent, const char[] szName, bool bDontBroadcast)
@@ -806,14 +808,6 @@ public void OnEntityDestroyed(int iEntIndex)
 	{
 		static char szClassname[MAX_CLASSNAME];
 		pEntity.GetClassname(szClassname, sizeof(szClassname));
-		
-		#if defined PLAYERPATCH_SERVERSIDE_RAGDOLLS
-		if (strcmp(szClassname, "prop_ragdoll") == 0)
-		{
-			OnEntityDestroyed_Ragdoll(pEntity);
-			return;
-		}
-		#endif
 
 		#if defined ENTPATCH_BM_MISC_MARIONETTIST
 		if (strcmp(szClassname, "misc_marionettist") == 0)
