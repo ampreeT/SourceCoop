@@ -51,7 +51,7 @@ public void OnLibraryAdded(const char[] name)
 {
 	if (StrEqual(name, SRCCOOP_LIBRARY))
 	{
-		TopMenu pCoopMenu = GetCoopTopMenu();
+		TopMenu pCoopMenu = SC_GetCoopTopMenu();
 		TopMenuObject pMenuCategory = pCoopMenu.FindCategory(COOPMENU_CATEGORY_OTHER);
 		if (pMenuCategory != INVALID_TOPMENUOBJECT)
 		{

@@ -60,7 +60,7 @@ public void PlayerToggleCvarChanged(ConVar convar, const char[] oldValue, const 
 
 void UpdateMenuItems(bool remove = false)
 {
-	TopMenu pCoopMenu = GetCoopTopMenu();
+	TopMenu pCoopMenu = SC_GetCoopTopMenu();
 	TopMenuObject pMenuCategory = pCoopMenu.FindCategory(COOPMENU_CATEGORY_PLAYER);
 	if (pMenuCategory != INVALID_TOPMENUOBJECT)
 	{
@@ -123,7 +123,7 @@ bool ShouldUseFPDeathCamera(int client)
 	int state;
 	if (!g_pConvarPlayerToggle.BoolValue || (state = GetFPDState(client)) == FPD_DEFAULT)
 	{
-		 if (!IsCoopFeatureEnabled(FT_FIRSTPERSON_DEATHCAM))
+		 if (!SC_IsCoopFeatureEnabled(FT_FIRSTPERSON_DEATHCAM))
 		 	return false;
 	}
 	else if (state != FPD_FIRSTPERSON)
@@ -203,7 +203,7 @@ void Hook_CameraDeathDestroyed(CBaseEntity pEntity)
 	}
 }
 
-public void OnPlayerRagdollCreated(CBasePlayer pPlayer, CBaseAnimating pRagdoll)
+public void SC_OnPlayerRagdollCreated(CBasePlayer pPlayer, CBaseAnimating pRagdoll)
 {
 	int client = pPlayer.GetEntIndex();
 	CBaseEntity pViewEnt;

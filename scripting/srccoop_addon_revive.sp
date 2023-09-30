@@ -56,7 +56,7 @@ public void OnAllPluginsLoaded()
 
 public void OnMapStart()
 {
-	if (!IsCurrentMapCoop())
+	if (!SC_IsCurrentMapCoop())
 	{
 		return;
 	}
@@ -85,7 +85,7 @@ public void OnSurvivalModeChanged(ConVar convar, const char[] oldValue, const ch
 
 void SetEnabledState()
 {
-	if (g_pConVarSurvivalMode.IntValue && IsCurrentMapCoop())
+	if (g_pConVarSurvivalMode.IntValue && SC_IsCurrentMapCoop())
 	{
 		g_bEnabled = true;
 	}
@@ -117,7 +117,7 @@ public Action Command_ForceRespawn(int client, int args)
 	if (iTarget > 0)
 	{
 		CBasePlayer pTarget = CBasePlayer(iTarget);
-		if (SurvivalRespawn(pTarget))
+		if (SC_SurvivalRespawn(pTarget))
 		{
 			MsgReply(client, "Spawned '%N'.", iTarget);
 		}
@@ -195,7 +195,7 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 						
 						if (GetGameTime() >= g_flReviveTime[client])
 						{
-							if (SurvivalRespawn(g_pReviveTarget[client]))
+							if (SC_SurvivalRespawn(g_pReviveTarget[client]))
 							{
 								// Effects
 								Client_ScreenFade(g_pReviveTarget[client].GetEntIndex(), 256, FFADE_PURGE|FFADE_IN, 1, 0, 0, 200, 255);

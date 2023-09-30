@@ -58,7 +58,7 @@ public void OnPluginStart()
 
 public void OnMapStart()
 {
-	g_bEnabled = IsCurrentMapCoop();
+	g_bEnabled = SC_IsCurrentMapCoop();
 }
 
 void OnDifficultyChanged(ConVar convar, const char[] oldValue, const char[] newValue)

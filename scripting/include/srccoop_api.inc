@@ -64,46 +64,46 @@ stock void InitSourceCoopAddon()
  * @param kv          The configuration file imported into keyvalues. You must call kv.Rewind() first to ensure consistency.
  * @param location    From where the config was loaded.
  */
-forward void OnCoopMapConfigLoaded(KeyValues kv, CoopConfigLocation location);
+forward void SC_OnCoopMapConfigLoaded(KeyValues kv, CoopConfigLocation location);
 
 /**
  * Global callback for when a coop map actually starts,
  * that is potentially after the player wait timer completes.
  */
-forward void OnCoopMapStart();
+forward void SC_OnCoopMapStart();
 
 /**
  * Called when the core plugin creates server-side player ragoll on death.
  * The timing of which can vary by game.
  */
-forward void OnPlayerRagdollCreated(CBasePlayer pPlayer, CBaseAnimating pRagdoll);
+forward void SC_OnPlayerRagdollCreated(CBasePlayer pPlayer, CBaseAnimating pRagdoll);
 
 /**
  * Retrieves the handle to the coop TopMenu.
  *
  * @return              Handle to the TopMenu
  */
-native TopMenu GetCoopTopMenu();
+native TopMenu SC_GetCoopTopMenu();
 
 /**
  * Returns whether current map is a coop map.
  *
  */
-native bool IsCurrentMapCoop();
+native bool SC_IsCurrentMapCoop();
 
 /**
  * Respawns a dead player.
  * @return    true if player was dead and respawned
  * @error     Invalid CBasePlayer
  */
-native bool SurvivalRespawn(CBasePlayer pPlayer);
+native bool SC_SurvivalRespawn(CBasePlayer pPlayer);
 
 /**
  * Gets the survival mode.
  * 
  * @return    Current survival mode (enum)
  */
-native SurvivalMode GetSurvivalMode();
+native SurvivalMode SC_GetSurvivalMode();
 
 /**
  * Teleports a player to active checkpoint.
@@ -111,9 +111,9 @@ native SurvivalMode GetSurvivalMode();
  * @error     Invalid CBasePlayer
  * @return    true for success, false if there is no checkpoint
  */
-native bool TeleportToCurrentCheckpoint(CBasePlayer pPlayer);
+native bool SC_TeleportToCurrentCheckpoint(CBasePlayer pPlayer);
 
 /**
  * Checks if a SourceCoop feature is enabled.
  */
-native bool IsCoopFeatureEnabled(SourceCoopFeature iFeatureBits);
+native bool SC_IsCoopFeatureEnabled(SourceCoopFeature iFeatureBits);

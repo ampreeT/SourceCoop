@@ -34,7 +34,7 @@ public void OnLibraryAdded(const char[] name)
 {
 	if (StrEqual(name, SRCCOOP_LIBRARY))
 	{
-		TopMenu pCoopMenu = GetCoopTopMenu();
+		TopMenu pCoopMenu = SC_GetCoopTopMenu();
 		TopMenuObject pSettingsMenu = pCoopMenu.FindCategory(COOPMENU_CATEGORY_PLAYER);
 		if (pSettingsMenu != INVALID_TOPMENUOBJECT)
 		{
@@ -58,7 +58,7 @@ public void ThirdPersonMenuHandler(TopMenu topmenu, TopMenuAction action, TopMen
 
 public void EnabledCvarChanged(ConVar convar, const char[] oldValue, const char[] newValue)
 {
-	bool enable = pEnabledCvar.BoolValue && IsCurrentMapCoop();
+	bool enable = pEnabledCvar.BoolValue && SC_IsCurrentMapCoop();
 	for(int i = 1; i <= MaxClients; i++)
 	{
 		if (IsClientInGame(i))
@@ -83,14 +83,14 @@ public void EnabledCvarChanged(ConVar convar, const char[] oldValue, const char[
 public void OnClientPutInServer(int client)
 {
 	bIsInThirdperson[client] = false;
-	if (pEnabledCvar.BoolValue && IsCurrentMapCoop() && !IsFakeClient(client)) {
+	if (pEnabledCvar.BoolValue && SC_IsCurrentMapCoop() && !IsFakeClient(client)) {
 		SendConVarValue(client, pCheatsCvar, "1");
 	}
 }
 
 public Action Command_Thirdperson(int client, int args)
 {
-	if (!pEnabledCvar.BoolValue || !IsCurrentMapCoop())
+	if (!pEnabledCvar.BoolValue || !SC_IsCurrentMapCoop())
 	{
 		MsgReply(client, "Thirdperson mode is currently disabled.");
 		return Plugin_Handled;
@@ -102,7 +102,7 @@ public Action Command_Thirdperson(int client, int args)
 
 public Action Command_Firstperson(int client, int args)
 {
-	if (!pEnabledCvar.BoolValue || !IsCurrentMapCoop())
+	if (!pEnabledCvar.BoolValue || !SC_IsCurrentMapCoop())
 	{
 		MsgReply(client, "Thirdperson mode is currently disabled");
 		return Plugin_Handled;

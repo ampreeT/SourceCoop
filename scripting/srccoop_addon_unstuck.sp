@@ -31,7 +31,7 @@ public void OnClientDisconnect_Post(int client)
 
 public Action Command_Unstuck(int iClient, int iArgs)
 {
-	if (!IsCurrentMapCoop())
+	if (!SC_IsCurrentMapCoop())
 	{
 		MsgReply(iClient, "Unstuck is currently unavailable.");
 		return Plugin_Handled;
@@ -55,7 +55,7 @@ public Action Command_Unstuck(int iClient, int iArgs)
 			return Plugin_Handled;
 		}
 		
-		if (TeleportToCurrentCheckpoint(pPlayer))
+		if (SC_TeleportToCurrentCheckpoint(pPlayer))
 		{
 			g_flNextStuck[iClient] = flGameTime + g_pConVarNextStuck.FloatValue;
 			MsgReply(iClient, "Moved to the active checkpoint.");

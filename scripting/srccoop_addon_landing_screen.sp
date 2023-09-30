@@ -29,7 +29,7 @@ public void OnPluginStart() {
 
 public void OnMapStart()
 {
-	bEnabled = IsCurrentMapCoop();
+	bEnabled = SC_IsCurrentMapCoop();
 	if (bEnabled)
 	{
 		char szBuffer[PLATFORM_MAX_PATH], szVMT[PLATFORM_MAX_PATH], szVTF[PLATFORM_MAX_PATH];

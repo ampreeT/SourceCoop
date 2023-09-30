@@ -34,11 +34,11 @@ public void OnPluginStart() {
 
 public void OnMapStart()
 {
-	if (!IsCurrentMapCoop())
+	if (!SC_IsCurrentMapCoop())
 		bKickEnabled = false;
 }
 
-public void OnCoopMapConfigLoaded(KeyValues kv)
+public void SC_OnCoopMapConfigLoaded(KeyValues kv)
 {
 	kv.Rewind();
 	bKickEnabled = !kv.GetNum("allow_server_download");

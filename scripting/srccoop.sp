@@ -240,9 +240,9 @@ public void OnPluginStart()
 	EquipmentManager.Initialize();
 	InitializeMenus();
 	
-	g_CoopMapStartFwd = new GlobalForward("OnCoopMapStart", ET_Ignore);
-	g_CoopMapConfigLoadedFwd = new GlobalForward("OnCoopMapConfigLoaded", ET_Ignore, Param_Cell, Param_Cell);
-	g_OnPlayerRagdollCreatedFwd = new GlobalForward("OnPlayerRagdollCreated", ET_Ignore, Param_Cell, Param_Cell);
+	g_CoopMapStartFwd = new GlobalForward("SC_OnCoopMapStart", ET_Ignore);
+	g_CoopMapConfigLoadedFwd = new GlobalForward("SC_OnCoopMapConfigLoaded", ET_Ignore, Param_Cell, Param_Cell);
+	g_OnPlayerRagdollCreatedFwd = new GlobalForward("SC_OnPlayerRagdollCreated", ET_Ignore, Param_Cell, Param_Cell);
 	
 	HookEvent("player_disconnect", Event_PlayerDisconnect);
 	AddNormalSoundHook(PlayerSoundListener);

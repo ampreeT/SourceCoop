@@ -65,7 +65,7 @@ public void OnLibraryAdded(const char[] name)
 {
 	if (StrEqual(name, SRCCOOP_LIBRARY))
 	{
-		TopMenu pCoopMenu = GetCoopTopMenu();
+		TopMenu pCoopMenu = SC_GetCoopTopMenu();
 		TopMenuObject pMenuCategory = pCoopMenu.FindCategory(COOPMENU_CATEGORY_VOTING);
 		if (pMenuCategory != INVALID_TOPMENUOBJECT)
 		{
@@ -85,13 +85,13 @@ public void OnMapStart()
 		firstLoad = false;
 		MapParser.BuildMaps();
 	}
-	if (!IsCurrentMapCoop())
+	if (!SC_IsCurrentMapCoop())
 	{
 		szSkipTo = "";
 	}
 }
 
-public void OnCoopMapConfigLoaded(KeyValues kv, CoopConfigLocation location)
+public void SC_OnCoopMapConfigLoaded(KeyValues kv, CoopConfigLocation location)
 {
 	kv.Rewind();
 	
@@ -123,7 +123,7 @@ public Action Command_ReloadMaps(int client, int args)
 	return Plugin_Handled;
 }
 
-public void OnCoopMapStart()
+public void SC_OnCoopMapStart()
 {
 	if (szSkipTo[0] && bAutoVoteSkip)
 	{
@@ -151,7 +151,7 @@ public void MyCoopMenuHandler(TopMenu topmenu, TopMenuAction action, TopMenuObje
 		}
 		else if(StrEqual(szItem, MENUITEM_SURVIVAL))
 		{
-			Format(buffer, maxlength, GetSurvivalMode()? "Disable survival mode" : "Enable survival mode");
+			Format(buffer, maxlength, SC_GetSurvivalMode()? "Disable survival mode" : "Enable survival mode");
 		}
 	}
 	else if (action == TopMenuAction_SelectOption)
@@ -384,7 +384,7 @@ bool StartVoteSurvival(int client)
 		return false;
 	}
 	Menu menu = new Menu(VoteSurvivalHandler);
-	menu.SetTitle(GetSurvivalMode() ? "Disable survival mode" : "Enable survival mode");
+	menu.SetTitle(SC_GetSurvivalMode() ? "Disable survival mode" : "Enable survival mode");
 	menu.AddItem("0", "Yes");
 	menu.AddItem("1", "No");
 	menu.ExitButton = false;
@@ -687,7 +687,7 @@ public int MapSelectMenuHandler(Menu menu, MenuAction action, int client, int pa
 		{
 			if (pMapMenuNavStack[client].Empty)
 			{
-				TopMenu pCoopMenu = GetCoopTopMenu();
+				TopMenu pCoopMenu = SC_GetCoopTopMenu();
 				pCoopMenu.Display(client, TopMenuPosition_LastCategory);
 			}
 			else

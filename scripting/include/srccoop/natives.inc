@@ -8,12 +8,12 @@
 
 void RegNatives()
 {
-	CreateNative("GetCoopTopMenu", Native_GetCoopTopMenu);
-	CreateNative("IsCurrentMapCoop", Native_IsCurrentMapCoop);
-	CreateNative("SurvivalRespawn", Native_SurvivalRespawn);
-	CreateNative("GetSurvivalMode", Native_GetSurvivalMode);
-	CreateNative("TeleportToCurrentCheckpoint", Native_TeleportToCurrentCheckpoint);
-	CreateNative("IsCoopFeatureEnabled", Native_IsCoopFeatureEnabled);
+	CreateNative("SC_GetCoopTopMenu", Native_GetCoopTopMenu);
+	CreateNative("SC_IsCurrentMapCoop", Native_IsCurrentMapCoop);
+	CreateNative("SC_SurvivalRespawn", Native_SurvivalRespawn);
+	CreateNative("SC_GetSurvivalMode", Native_GetSurvivalMode);
+	CreateNative("SC_TeleportToCurrentCheckpoint", Native_TeleportToCurrentCheckpoint);
+	CreateNative("SC_IsCoopFeatureEnabled", Native_IsCoopFeatureEnabled);
 }
 
 public any Native_GetCoopTopMenu(Handle plugin, int numParams)
