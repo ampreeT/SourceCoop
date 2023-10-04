@@ -243,6 +243,7 @@ public void OnPluginStart()
 	g_CoopMapStartFwd = new GlobalForward("SC_OnCoopMapStart", ET_Ignore);
 	g_CoopMapConfigLoadedFwd = new GlobalForward("SC_OnCoopMapConfigLoaded", ET_Ignore, Param_Cell, Param_Cell);
 	g_OnPlayerRagdollCreatedFwd = new GlobalForward("SC_OnPlayerRagdollCreated", ET_Ignore, Param_Cell, Param_Cell);
+	g_OnCoopMapEndFwd = new GlobalForward("SC_OnCoopMapEnd", ET_Event, Param_String, Param_String, Param_Cell);
 	
 	HookEvent("player_disconnect", Event_PlayerDisconnect);
 	AddNormalSoundHook(PlayerSoundListener);

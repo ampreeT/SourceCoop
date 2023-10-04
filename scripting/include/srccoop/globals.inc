@@ -171,3 +171,4 @@ CBaseEntity g_pLocalPlayerEntity = view_as<CBaseEntity>(-1);
 GlobalForward g_CoopMapStartFwd;
 GlobalForward g_CoopMapConfigLoadedFwd;
 GlobalForward g_OnPlayerRagdollCreatedFwd;
+GlobalForward g_OnCoopMapEndFwd;

@@ -389,6 +389,16 @@ methodmap CoopManager {
 				EquipmentManager.StoreCurrentEquipmentAll();
 			}
 		}
+		Call_StartForward(g_OnCoopMapEndFwd);
+		Call_PushString(szNextMap);
+		Call_PushString(szReason);
+		Call_PushCell(StrContains(szReason, SC_MAPCHANGE_PREFIX..."-Finished") == 0);
+		Action action;
+		Call_Finish(action);
+		if (action != Plugin_Continue)
+		{
+			return;
+		}
 		ForceChangeLevel(szNextMap, szReason);
 	}
 

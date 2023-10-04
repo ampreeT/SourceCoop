@@ -73,6 +73,19 @@ forward void SC_OnCoopMapConfigLoaded(KeyValues kv, CoopConfigLocation location)
 forward void SC_OnCoopMapStart();
 
 /**
+ * Provides an opportunity for intercepting map changes that are handled by the plugin.
+ * Possible sources of origin that are hooked by the plugin:
+ * game_end, trigger_changelevel, point_servercommand, point_clientcommand in SP conversions.
+ * 
+ * @param szNextMap     The map that would be changed to if not intercepted.
+ * @param szReason      The reason that would be passed to ForceChangeLevel if not intercepted. Defined in typedef.inc
+ *                      Should be preserved, unless there is a specific reason not to.
+ * @param isFinal       True if a final map of a series just completed. False for all other reasons.
+ * @return              Plugin_Continue to proceed with the mapchange, other values to block it.
+ */
+forward Action SC_OnCoopMapEnd(const char[] szNextMap, const char[] szReason, bool isFinal);
+
+/**
  * Called when the core plugin creates server-side player ragoll on death.
  * The timing of which can vary by game.
  */
