@@ -536,6 +536,11 @@ methodmap CBaseEntity
 	{
 		SetEntProp(this.GetEntIndex(), Prop_Data, "m_nNextThinkTick", iTick);
 	}
+	public float GetNextThink()
+	{
+		int iThinkTick = this.GetNextThinkTick();
+		return iThinkTick == -1? -1.0 : TICKS_TO_TIME(iThinkTick);
+	}
 	public void SetNextThink(float flThinkTime)
 	{
 		int iThinkTick = (flThinkTime == -1) ? -1 : (TIME_TO_TICKS(flThinkTime));

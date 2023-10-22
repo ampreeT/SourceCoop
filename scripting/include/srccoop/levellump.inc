@@ -6,7 +6,7 @@
 #pragma newdecls required
 #pragma semicolon 1
 
-#define OUTPUT_SEPARATOR "\27"
+static char g_szOutputSeparator[2];
 #define BRUSH_FIXUP_MDL "models/error.mdl"
 #define BRUSH_FIXUP_IDENT "$BRUSHFIXUP$"
 #define BRUSH_FIXUP_IDENT_LEN 12
@@ -29,15 +29,15 @@ enum struct CEntityOutputLump
 	bool LoadFromEntityKeyLump(CEntityKeyLump pEntityKeyLump)
 	{
 		char buffers[5][MAX_VALUE];
-		if(ExplodeString(pEntityKeyLump.m_szValue, OUTPUT_SEPARATOR, buffers, sizeof(buffers), sizeof(buffers[])) != sizeof(buffers))
+		if (ExplodeString(pEntityKeyLump.m_szValue, g_szOutputSeparator, buffers, sizeof(buffers), sizeof(buffers[])) != sizeof(buffers))
 		{
 			return false;
 		}
-		if(!StringToFloatEx(buffers[3], this.m_flDelay))
+		if (!StringToFloatEx(buffers[3], this.m_flDelay))
 		{
 			return false;
 		}
-		if(!StringToIntEx(buffers[4], this.m_iTimesToFire))
+		if (!StringToIntEx(buffers[4], this.m_iTimesToFire))
 		{
 			return false;
 		}
@@ -50,12 +50,12 @@ enum struct CEntityOutputLump
 	void SaveToEntityKeyLump(CEntityKeyLump pEntityKeyLump)
 	{
 		FormatEx(pEntityKeyLump.m_szValue, sizeof(pEntityKeyLump.m_szValue), "%s%s%s%s%s%s%.2f%s%d",
-		this.m_szTargetEntity, OUTPUT_SEPARATOR, this.m_szInputName, OUTPUT_SEPARATOR, this.m_szParameter, OUTPUT_SEPARATOR, this.m_flDelay, OUTPUT_SEPARATOR, this.m_iTimesToFire);
+		this.m_szTargetEntity, g_szOutputSeparator, this.m_szInputName, g_szOutputSeparator, this.m_szParameter, g_szOutputSeparator, this.m_flDelay, g_szOutputSeparator, this.m_iTimesToFire);
 	}
 	
 	bool Matches(CEntityOutputLump pOther, bool bMatchTarget, bool bMatchInput, bool bMatchParameter, bool bMatchDelay, bool bMatchTTF)
 	{
-		if(bMatchTarget && !StrEqualsRegex(this.m_szTargetEntity, pOther.m_szTargetEntity, false)
+		if (bMatchTarget && !StrEqualsRegex(this.m_szTargetEntity, pOther.m_szTargetEntity, false)
 			|| bMatchInput && !StrEqualsRegex(this.m_szInputName, pOther.m_szInputName, false)
 			|| bMatchParameter && !StrEqualsRegex(this.m_szParameter, pOther.m_szParameter, false)
 			|| bMatchDelay && this.m_flDelay != pOther.m_flDelay
@@ -310,6 +310,9 @@ enum struct CGlobalLevelLump
 		this.m_pClientCvarList = CreateArray(sizeof(CClientConsoleCommand));
 		this.m_pOutputHookList = new COutputHookLump(CreateArray(sizeof(CEntityOutputHook)));
 		this.m_EdtDefinesMap = new StringMap();
+		
+		g_szOutputSeparator[0] = OUTPUT_SEPARATOR;
+		g_szOutputSeparator[1] = 0;
 	}
 	
 	void Clear()
@@ -453,28 +456,28 @@ enum struct CGlobalLevelLump
 					}
 					else
 					{
-						if (strcmp(szType, "define", false) == 0)
+						LogDebug("Processing \"%s\" block", szType);
+						if (StrContains(szType, "define", false) == 0)
 						{
 							this.ParseDefines(kv);
 						}
-						else if (strcmp(szType, "features", false) == 0)
+						else if (StrContains(szType, "features", false) == 0)
 						{
 							this.ParseFeatures(kv);
 						}
-						else if (strcmp(szType, "console", false) == 0)
+						else if (StrContains(szType, "console", false) == 0)
 						{
 							this.ParseConsole(kv);
 						}
-						else if (strcmp(szType, "client_console", false) == 0)
+						else if (StrContains(szType, "client_console", false) == 0)
 						{
 							this.ParseClientConsole(kv);
 						}
-						else if (strcmp(szType, "entity", false) == 0 || StrContains(szType, "entity_base", false) == 0)
+						else if (StrContains(szType, "entity", false) == 0)
 						{
-							LogDebug("Processing \"%s\" block for entity lump modifications", szType);
 							this.ParseEntityEdits(kv);
 						}
-						else if (strcmp(szType, "equipment", false) == 0)
+						else if (StrContains(szType, "equipment", false) == 0)
 						{
 							this.ParseEquipment(kv);
 						}
@@ -558,6 +561,7 @@ enum struct CGlobalLevelLump
 						char szValue[MAX_FORMAT];
 						kv.GetString(NULL_STRING, szValue, sizeof(szValue));
 						this.m_EdtDefinesMap.SetString(szKey, szValue, true);
+						LogDebug("Setting define: [\"%s\" = \"%s\"]", szKey, szValue);
 					}
 				}
 			}
@@ -627,6 +631,11 @@ enum struct CGlobalLevelLump
 						{
 							this.m_pModifiedCvarList.Push(pConvar);
 							pConvar.SetString(szValue);
+							LogDebug("Setting convar: [\"%s\" = \"%s\"]", szKey, szValue);
+						}
+						else
+						{
+							LogDebug("Convar \"%s\" not found!", szKey);
 						}
 					}
 				}

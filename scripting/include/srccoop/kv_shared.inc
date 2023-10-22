@@ -63,20 +63,20 @@ bool ParseConditions(KeyValues kv, bool anyPass = false)
 				kv.GetString(NULL_STRING, szValue, sizeof(szValue));
 				bool bResult = !anyPass;
 				
-				if(kv.GetDataType(NULL_STRING) == KvData_None)
+				if (kv.GetDataType(NULL_STRING) == KvData_None)
 				{
-					if(StrEqual(szCondition, "#any", false))
+					if (StrEqual(szCondition, "#any", false))
 					{
 						bResult = ParseConditions(kv, true);
 					}
-					else if(StrEqual(szCondition, "#all", false) || StrEqual(szCondition, "#if", false))
+					else if (StrEqual(szCondition, "#all", false) || StrEqual(szCondition, "#if", false))
 					{
 						bResult = ParseConditions(kv, false);
 					}
 				}
 				else
 				{
-					if(szCondition[0] == '!')
+					if (szCondition[0] == '!')
 					{
 						Format(szCondition, sizeof(szCondition), szCondition[1]);
 						bResult = !TestCondition(szCondition, szValue);
@@ -87,9 +87,9 @@ bool ParseConditions(KeyValues kv, bool anyPass = false)
 					}
 				}
 				
-				if(anyPass) 
+				if (anyPass) 
 				{
-					if(bResult)
+					if (bResult)
 					{
 						bPassed = true;
 						break;
@@ -97,7 +97,7 @@ bool ParseConditions(KeyValues kv, bool anyPass = false)
 				}
 				else
 				{
-					if(!bResult)
+					if (!bResult)
 					{
 						bPassed = false;
 						break;
@@ -108,7 +108,7 @@ bool ParseConditions(KeyValues kv, bool anyPass = false)
 		while (kv.GotoNextKey(false));
 		
 		kv.GoBack();
-		if(bPassed)
+		if (bPassed)
 		{
 			return true;
 		}
@@ -118,7 +118,7 @@ bool ParseConditions(KeyValues kv, bool anyPass = false)
 
 bool TestCondition(char szCondition[MAX_KEY], char szValue[MAX_VALUE])
 {
-	if(StrEqual(szCondition, "globalstate", false))
+	if (StrEqual(szCondition, "globalstate", false))
 	{
 		return CGlobalState.GetState(szValue) == GLOBAL_ON;
 	}
