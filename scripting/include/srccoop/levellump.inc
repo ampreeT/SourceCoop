@@ -285,6 +285,15 @@ methodmap CNextMapLump < ArrayList
 	}
 }
 
+enum struct CServerConsoleCommand
+{
+	ConVar m_pConvar;
+	char m_szValue[256];
+	int m_iFlagsAdd;
+	bool m_bHooked;
+	bool m_bLate;
+}
+
 enum struct CClientConsoleCommand
 {
 	char m_szConvar[128];
@@ -296,7 +305,7 @@ enum struct CGlobalLevelLump
 {
 	CEntityListLump m_pEntityList;
 	CNextMapLump m_pNextMapList;
-	ArrayList m_pModifiedCvarList;
+	ArrayList m_pServerCvarList;
 	ArrayList m_pClientCvarList;
 	COutputHookLump m_pOutputHookList;
 	IntroType m_iIntroType;
@@ -306,7 +315,7 @@ enum struct CGlobalLevelLump
 	{
 		this.m_pEntityList = new CEntityListLump(CreateArray(sizeof(CEntityInfoLump)));
 		this.m_pNextMapList = new CNextMapLump(CreateArray(MAX_MAPNAME));
-		this.m_pModifiedCvarList = CreateArray();
+		this.m_pServerCvarList = CreateArray(sizeof(CServerConsoleCommand));
 		this.m_pClientCvarList = CreateArray(sizeof(CClientConsoleCommand));
 		this.m_pOutputHookList = new COutputHookLump(CreateArray(sizeof(CEntityOutputHook)));
 		this.m_EdtDefinesMap = new StringMap();
@@ -318,7 +327,7 @@ enum struct CGlobalLevelLump
 	void Clear()
 	{
 		this.m_pNextMapList.Clear();
-		this.m_pModifiedCvarList.Clear();
+		this.m_pServerCvarList.Clear();
 		this.m_pClientCvarList.Clear();
 		this.m_pOutputHookList.Clear();
 		this.m_iIntroType = INTRO_NONE;
@@ -607,9 +616,9 @@ enum struct CGlobalLevelLump
 	{
 		if (kv.GotoFirstSubKey(false))
 		{
+			char szKey[128];
 			do
 			{
-				char szKey[128];
 				if (kv.GetSectionName(szKey, sizeof(szKey)))
 				{
 					EVAL_CONDITIONS(szKey, kv, this.ParseConsole(kv))
@@ -623,15 +632,41 @@ enum struct CGlobalLevelLump
 							LogMessage("Map %s tried to change dangerous convar %s", g_szMapName, FORBIDDEN[pos]);
 							continue;
 						}
-						
-						char szValue[256];
-						kv.GetString(NULL_STRING, szValue, sizeof(szValue));
-						ConVar pConvar = FindConVar(szKey);
-						if (pConvar != null)
+
+						CServerConsoleCommand cmd;
+						if ((cmd.m_pConvar = FindConVar(szKey)) != null)
 						{
-							this.m_pModifiedCvarList.Push(pConvar);
-							pConvar.SetString(szValue);
-							LogDebug("Setting convar: [\"%s\" = \"%s\"]", szKey, szValue);
+							kv.GetString(NULL_STRING, cmd.m_szValue, sizeof(cmd.m_szValue));
+							
+							int contextFlags[3]; // increase this when adding more flags
+							ExtractContextFlags(cmd.m_szValue, sizeof(cmd.m_szValue), contextFlags, sizeof(contextFlags));
+							
+							if (FindValueInArrayEx(contextFlags, sizeof(contextFlags), 'H') != -1)
+							{
+								// [H]ide convar (unavailable to console unless using sm_cvar)
+								cmd.m_iFlagsAdd |= FCVAR_DEVELOPMENTONLY;
+							}
+							cmd.m_pConvar.Flags |= cmd.m_iFlagsAdd;
+							
+							if (FindValueInArrayEx(contextFlags, sizeof(contextFlags), 'L') != -1)
+							{
+								// [L]ate convars are set after OnConfigsExecuted
+								cmd.m_bLate = true;
+							}
+							else
+							{
+								LogDebug("Setting convar: [\"%s\" = \"%s\"]", szKey, cmd.m_szValue);
+								cmd.m_pConvar.SetString(cmd.m_szValue);
+							}
+
+							if (FindValueInArrayEx(contextFlags, sizeof(contextFlags), 'F') != -1)
+							{
+								// [F]orced convar value
+								LogDebug("Preventing convar changes: \"%s\"", szKey);
+								cmd.m_pConvar.AddChangeHook(Hook_ForceConvarValue);
+								cmd.m_bHooked = true;
+							}
+							this.m_pServerCvarList.PushArray(cmd);
 						}
 						else
 						{
@@ -1181,15 +1216,41 @@ enum struct CGlobalLevelLump
 		return pResolvedOutputHookList;
 	}
 	
+	void ApplyLateConvars()
+	{
+		CServerConsoleCommand cmd;
+		int len = this.m_pServerCvarList.Length;
+		for (int i = 0; i < len; i++)
+		{
+			this.m_pServerCvarList.GetArray(i, cmd);
+			if (cmd.m_bLate)
+			{
+				#if !defined NO_DEBUG
+				char szName[128];
+				cmd.m_pConvar.GetName(szName, sizeof(szName));
+				LogDebug("Setting late convar: [\"%s\" = \"%s\"]", szName, cmd.m_szValue);
+				#endif
+
+				cmd.m_pConvar.SetString(cmd.m_szValue);
+			}
+		}
+	}
+
 	void RevertConvars()
 	{
-		for (int i = 0; i < this.m_pModifiedCvarList.Length; i++)
+		CServerConsoleCommand cmd;
+		int len = this.m_pServerCvarList.Length;
+		for (int i = 0; i < len; i++)
 		{
-			ConVar pConvar = this.m_pModifiedCvarList.Get(i);
-			pConvar.RestoreDefault();
-			delete pConvar;
+			this.m_pServerCvarList.GetArray(i, cmd);
+			if (cmd.m_bHooked)
+			{
+				cmd.m_pConvar.RemoveChangeHook(Hook_ForceConvarValue);
+			}
+			cmd.m_pConvar.Flags &= ~cmd.m_iFlagsAdd;
+			cmd.m_pConvar.RestoreDefault();
 		}
-		this.m_pModifiedCvarList.Clear();
+		this.m_pServerCvarList.Clear();
 	}
 }
 
@@ -1248,4 +1309,23 @@ public void FixupBrushModelsPost(DataPack pack)
 		pThis.SetEffects(pThis.GetEffects() | EF_NODRAW);
 	}
 	delete pack;
+}
+
+void Hook_ForceConvarValue(ConVar convar, const char[] oldValue, const char[] newValue)
+{
+	int index = g_pLevelLump.m_pServerCvarList.FindValue(convar, CServerConsoleCommand::m_pConvar);
+	if (index == -1)
+	{
+		char szName[128];
+		convar.GetName(szName, sizeof(szName));
+		ThrowError("Hooked ConVar \"%s\" is missing from m_pServerCvarList!", szName);
+	}
+	CServerConsoleCommand cmd;
+	g_pLevelLump.m_pServerCvarList.GetArray(index, cmd);
+	if (!StrEqual(newValue, cmd.m_szValue))
+	{
+		cmd.m_pConvar.RemoveChangeHook(Hook_ForceConvarValue);
+		cmd.m_pConvar.SetString(cmd.m_szValue);
+		cmd.m_pConvar.AddChangeHook(Hook_ForceConvarValue);
+	}
 }

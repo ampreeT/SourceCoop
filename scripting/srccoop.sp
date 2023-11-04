@@ -342,6 +342,8 @@ public void OnConfigsExecuted()
 
 public void OnConfigsExecutedPost()
 {
+	g_pLevelLump.ApplyLateConvars();
+
 	#if defined SRCCOOP_BLACKMESA
 
 	if (CoopManager.IsFeatureEnabled(FT_STRIP_DEFAULT_EQUIPMENT))

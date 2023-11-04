@@ -143,3 +143,47 @@ bool TestCondition(char szCondition[MAX_KEY], char szValue[MAX_VALUE])
 		);
 	}
 }
+
+/**
+ * Extracts context flags from a string and replaces the string with the remaining value.
+ * Context flags are simple characters in a row at the beginning of the string.
+ * They are prefixed with ~ (tilda) and end with a space, followed by the actual value.
+ * Example: "~fd value" will return flags ['f', 'd']
+ * 
+ * If a ~ character is needed at the beginning of the string, double tilda "~~etc" can be used instead.
+ * This implies space and tilda cannot be used for a context flag.
+ * 
+ * @return              Number of flags extracted
+ */
+int ExtractContextFlags(char[] szInput, int maxLength, int[] flags, int maxFlags)
+{
+	if (szInput[0] == '~')
+	{
+		// escaping
+		if (szInput[1] == '~')
+		{
+			strcopy(szInput, maxLength, szInput[1]);
+			return 0;
+		}
+
+		for (int i = 1; i < maxLength; i++)
+		{
+			if (szInput[i] == EOS)
+			{
+				strcopy(szInput, maxLength, szInput[i]);
+				return i - 1;
+			}
+			if (szInput[i] == ' ')
+			{
+				strcopy(szInput, maxLength, szInput[i + 1]);
+				return i - 1;
+			}
+			if (i > maxFlags)
+			{
+				ThrowError("At most %d context flags are allowed! @ \"%s\"", maxFlags, szInput);
+			}
+			flags[i - 1] = szInput[i];
+		}
+	}
+	return 0;
+}
