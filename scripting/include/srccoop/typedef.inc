@@ -11,6 +11,7 @@
 //------------------------------------------------------
 #define SRCCOOP_CHAT_COLOR_PRI "\x07e69c12"
 #define SRCCOOP_CHAT_COLOR_SEC "\x07eb6f28"
+#define SRCCOOP_CHAT_COLOR_TER "\x07e8b454"
 #define SRCCOOP_CHAT_TAG		SRCCOOP_CHAT_COLOR_SEC..."[SRCCOOP]"...SRCCOOP_CHAT_COLOR_PRI..." "
 #define SRCCOOP_CONSOLE_TAG "[SRCCOOP] "
 

@@ -1,5 +1,6 @@
 #include <sourcemod>
 #include <sdkhooks>
+
 #include <srccoop_api>
 
 #pragma newdecls required
@@ -70,6 +71,14 @@ void OnDifficultyChanged(ConVar convar, const char[] oldValue, const char[] newV
 	}
 }
 
+public void OnClientSayCommand_Post(int client, const char[] command, const char[] sArgs)
+{
+	if (StrEqual(sArgs, "difficulty", false))
+	{
+		MsgAllNoSrv("Current difficulty: %s%d", SRCCOOP_CHAT_COLOR_TER, g_iDifficulty);
+	}
+}
+
 void OnIgnoreDmgToChanged(ConVar convar, const char[] oldValue, const char[] newValue)
 {
 	RefreshIgnoreMap(g_pMapIgnoredTo, convar);
@@ -114,7 +123,7 @@ void UpdateAutoDifficulty()
 		
 		if (min > max)
 		{
-			PrintToServer("Unable to set difficulty: sourcecoop_difficulty_auto_max is lower than sourcecoop_difficulty_auto_min");
+			MsgSrv("Unable to set difficulty: sourcecoop_difficulty_auto_max is lower than sourcecoop_difficulty_auto_min");
 			return;
 		}
 		

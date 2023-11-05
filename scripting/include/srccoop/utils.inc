@@ -81,6 +81,14 @@ stock void MsgAll(const char[] msg, any ...)
  	PrintToChatAll("%s%s", SRCCOOP_CHAT_TAG, formatMsg);
 }
 
+stock void MsgAllNoSrv(const char[] msg, any ...)
+{
+	int len = strlen(msg) + 255;
+	char[] formatMsg = new char[len];
+	VFormat(formatMsg, len, msg, 2);
+ 	PrintToChatAll("%s%s", SRCCOOP_CHAT_TAG, formatMsg);
+}
+
 stock void MsgSrv(const char[] msg, any ...)
 {
 	int len = strlen(msg) + 255;
