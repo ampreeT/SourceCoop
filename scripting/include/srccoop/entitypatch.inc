@@ -213,9 +213,13 @@ public Action ChangelevelEffects(Handle timer, CChangelevel pChangelevel)
 
 			if (!pChangelevel.IsDisabled() && CoopManager.IsMapAllowedNext(szMapName))
 			{
-				float vecMins[3], vecMaxs[3];
+				float vecMins[3], vecMaxs[3], vecOrigin[3];
 				pChangelevel.GetMins(vecMins);
 				pChangelevel.GetMaxs(vecMaxs);
+				pChangelevel.GetAbsOrigin(vecOrigin);
+				AddVectors(vecOrigin, vecMins, vecMins);
+				AddVectors(vecOrigin, vecMaxs, vecMaxs);
+
 				vecMins[2] -= 100.0;
 				
 				int model = PrecacheModel("particle/xen_portal_tracer.vmt");
