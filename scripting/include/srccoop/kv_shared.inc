@@ -78,7 +78,7 @@ bool ParseConditions(KeyValues kv, bool anyPass = false)
 				{
 					if (szCondition[0] == '!')
 					{
-						Format(szCondition, sizeof(szCondition), szCondition[1]);
+						strcopy(szCondition, sizeof(szCondition), szCondition[1]);
 						bResult = !TestCondition(szCondition, szValue);
 					}
 					else
