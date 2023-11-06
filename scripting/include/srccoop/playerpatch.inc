@@ -255,22 +255,7 @@ public MRESReturn Hook_PlayerAcceptInput(int _this, Handle hReturn, Handle hPara
 //------------------------------------------------------
 public void PlayerPatch_OnClientPutInServer(int client)
 {
-	// Send client convars
-	CClientConsoleCommand cmd;
-	int count = g_pLevelLump.m_pClientCvarList.Length;
-	for (int i = 0; i < count; i++)
-	{
-		g_pLevelLump.m_pClientCvarList.GetArray(i, cmd);
-		if (cmd.m_pConvar)
-		{
-			cmd.m_pConvar.ReplicateToClient(client, cmd.m_szValue);
-		}
-		else
-		{
-			// Verify it's actual clientside convar and not some malicious command
-			QueryClientConVar(client, cmd.m_szConvar, QueryConVarSafeSet, i);
-		}
-	}
+	SendClientConvars(client, false);
 }
 
 //------------------------------------------------------
@@ -325,20 +310,22 @@ public void Hook_PlayerSpawnPost(int iClient)
 			// Fix for if player died on a ladder
 			SetEntPropEnt(pPlayer.GetEntIndex(), Prop_Data, "m_hLadder", -1);
 
-			#if defined SRCCOOP_BLACKMESA
-
 			if (!IsFakeClient(iClient))
 			{
-				// Fix for client viewmodel animation when always run is off
-				sv_always_run.ReplicateToClient(iClient, "1");
-				
+				// Apply on-spawn convars
+				SendClientConvars(iClient, true);
+
+				#if defined SRCCOOP_BLACKMESA
 				QueryClientConVar(iClient, "r_bloomtintexponent_nextgen", QueryConVar_Bloom, 2.2);
 				QueryClientConVar(iClient, "r_bloomtintr_nextgen", QueryConVar_Bloom, 0.25);
 				QueryClientConVar(iClient, "r_bloomtintb_nextgen", QueryConVar_Bloom, 0.25);
 				QueryClientConVar(iClient, "r_bloomtintb_nextgen", QueryConVar_Bloom, 0.25);
 				QueryClientConVar(iClient, "gb_flashlight_intensity", QueryConVar_Bloom, 0.8);
+				#endif // SRCCOOP_BLACKMESA
 			}
 			
+			#if defined SRCCOOP_BLACKMESA
+
 			// Fix for lag no collide with mp_teamplay 0
 			if (!CBM_MP_GameRules.IsTeamplay()) pPlayer.SetCollisionGroup(COLLISION_GROUP_INTERACTIVE_DEBRIS);
 			
@@ -713,6 +700,29 @@ public void QueryConVar_Bloom(QueryCookie cookie, int iClient, ConVarQueryResult
 	else if (!strcmp(cvarValue, "1.0"))
 	{
 		ClientCommand(iClient, "%s %f", cvarName, flDefaultValue);
+	}
+}
+
+void SendClientConvars(int client, bool bSpawn)
+{
+	CClientConsoleCommand cmd;
+	int count = g_pLevelLump.m_pClientCvarList.Length;
+	for (int i = 0; i < count; i++)
+	{
+		g_pLevelLump.m_pClientCvarList.GetArray(i, cmd);
+		if (bSpawn != cmd.m_bApplyOnSpawn)
+		{
+			continue;
+		}
+		if (cmd.m_pConvar)
+		{
+			cmd.m_pConvar.ReplicateToClient(client, cmd.m_szValue);
+		}
+		else
+		{
+			// Verify it's actual clientside convar and not some malicious command
+			QueryClientConVar(client, cmd.m_szConvar, QueryConVarSafeSet, i);
+		}
 	}
 }
 

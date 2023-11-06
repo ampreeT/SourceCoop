@@ -299,6 +299,7 @@ enum struct CClientConsoleCommand
 	char m_szConvar[128];
 	char m_szValue[256];
 	ConVar m_pConvar;
+	bool m_bApplyOnSpawn;
 }
 
 enum struct CGlobalLevelLump
@@ -694,6 +695,18 @@ enum struct CGlobalLevelLump
 					if (kv.GetDataType(NULL_STRING) != KvData_None)
 					{
 						kv.GetString(NULL_STRING, cmd.m_szValue, sizeof(cmd.m_szValue));
+						
+						int contextFlags[1]; // increase this when adding more flags
+						if (ExtractContextFlags(cmd.m_szValue, sizeof(cmd.m_szValue), contextFlags, sizeof(contextFlags)))
+						{
+							if (FindValueInArrayEx(contextFlags, sizeof(contextFlags), 'S') != -1)
+							{
+								// Apply on each spawn
+								cmd.m_bApplyOnSpawn = true;
+							}
+						}
+						LogDebug("Adding client convar: [\"%s\" = \"%s\"]%s", cmd.m_szConvar, cmd.m_szValue,
+								cmd.m_bApplyOnSpawn? " (Apply on spawn)" : "");
 						cmd.m_pConvar = FindConVar(cmd.m_szConvar);
 						this.m_pClientCvarList.PushArray(cmd);
 					}

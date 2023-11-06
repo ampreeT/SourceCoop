@@ -45,6 +45,9 @@
 
 		// turn off ugly flashlights from other players
 		"r_flashlight_3rd_draw" "0"
+
+		// fix client viewmodel animation when always run is off, applied on spawn.
+		"sv_always_run" "~S 1"
 	}
 	
 	"entity_base_coop"

@@ -25,10 +25,6 @@ ConVar g_pConvarDisableTeamSelect;
 ConVar mp_friendlyfire;
 ConVar mp_flashlight;
 
-#if defined SRCCOOP_BLACKMESA
-ConVar sv_always_run;
-#endif
-
 // ----------------------------
 // SDK Calls
 // ----------------------------
