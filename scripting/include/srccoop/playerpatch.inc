@@ -143,7 +143,7 @@ public Action OnPlayerRunCmd(int iClient, int &iButtons, int &iImpulse, float fV
 		return Plugin_Changed;
 	}
 	
-	return Plugin_Changed;
+	return Plugin_Continue;
 }
 
 //------------------------------------------------------
@@ -168,12 +168,14 @@ public Action PlayerCommandListener(int client, const char[] command, int argc)
 	if (spec2Buttons)
 	{
 		CBasePlayer pPlayer = CBasePlayer(client);
-		if (pPlayer.GetObserverMode() == OBS_MODE_CHASE && pPlayer.GetObserverTarget() == pPlayer.GetRagdoll())
-		{
-			// Player dead & following our server ragdoll.
-			// Translate back otherwise ignored buttons so spawning works as normal.
+		if (pPlayer.GetObserverMode() == OBS_MODE_CHASE
+				&& pPlayer.GetObserverTarget() == pPlayer.GetRagdoll() // Player dead & following our server ragdoll.
+				&& !SurvivalManager.GetMode() // Keep dead spectating in survival
+		) {
+			// Translate commands back to buttons so spawning works as normal.
 			// (Not necessary for BM)
 			g_iAddButtons[client] |= spec2Buttons;
+			return Plugin_Handled;
 		}
 	}
 	
