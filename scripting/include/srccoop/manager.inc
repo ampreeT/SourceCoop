@@ -281,7 +281,8 @@ methodmap CoopManager {
 
 	public static bool IsMapAllowedNext(const char[] szNextMap)
 	{
-		return g_pLevelLump.m_pNextMapList.Length == 0 || g_pLevelLump.m_pNextMapList.IsInMapList(szNextMap);
+		return (g_pLevelLump.m_pNextMapList.Length == 0 || g_pLevelLump.m_pNextMapList.IsInMapList(szNextMap))
+				&& IsMapValid(szNextMap);
 	}
 
 	public static void OnChangeLevelInput(CChangelevel pChangelevel)
