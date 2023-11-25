@@ -642,14 +642,14 @@ enum struct CGlobalLevelLump
 							int contextFlags[3]; // increase this when adding more flags
 							ExtractContextFlags(cmd.m_szValue, sizeof(cmd.m_szValue), contextFlags, sizeof(contextFlags));
 							
-							if (FindValueInArrayEx(contextFlags, sizeof(contextFlags), 'H') != -1)
+							if (FindCharInArray(contextFlags, sizeof(contextFlags), 'H', false) != -1)
 							{
 								// [H]ide convar (unavailable to console unless using sm_cvar)
 								cmd.m_iFlagsAdd |= FCVAR_DEVELOPMENTONLY;
 							}
 							cmd.m_pConvar.Flags |= cmd.m_iFlagsAdd;
 							
-							if (FindValueInArrayEx(contextFlags, sizeof(contextFlags), 'L') != -1)
+							if (FindCharInArray(contextFlags, sizeof(contextFlags), 'L', false) != -1)
 							{
 								// [L]ate convars are set after OnConfigsExecuted
 								cmd.m_bLate = true;
@@ -660,7 +660,7 @@ enum struct CGlobalLevelLump
 								cmd.m_pConvar.SetString(cmd.m_szValue);
 							}
 
-							if (FindValueInArrayEx(contextFlags, sizeof(contextFlags), 'F') != -1)
+							if (FindCharInArray(contextFlags, sizeof(contextFlags), 'F', false) != -1)
 							{
 								// [F]orced convar value
 								LogDebug("Preventing convar changes: \"%s\"", szKey);
@@ -699,7 +699,7 @@ enum struct CGlobalLevelLump
 						int contextFlags[1]; // increase this when adding more flags
 						if (ExtractContextFlags(cmd.m_szValue, sizeof(cmd.m_szValue), contextFlags, sizeof(contextFlags)))
 						{
-							if (FindValueInArrayEx(contextFlags, sizeof(contextFlags), 'S') != -1)
+							if (FindCharInArray(contextFlags, sizeof(contextFlags), 'S', false) != -1)
 							{
 								// Apply on each spawn
 								cmd.m_bApplyOnSpawn = true;
