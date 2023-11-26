@@ -644,7 +644,7 @@ methodmap CBaseEntity
 	public bool IsPickupItem()
 	{
 		char szNetClass[32];
-		if(this.GetNetClassname(szNetClass, sizeof(szNetClass)))
+		if (this.GetNetClassname(szNetClass, sizeof(szNetClass)))
 		{
 			return (strcmp(szNetClass, "CBasePickup") == 0 || strcmp(szNetClass, "CItem_Battery") == 0 || strcmp(szNetClass, "CAmmoCanister") == 0);
 		}
@@ -786,6 +786,7 @@ methodmap CBaseTrigger < CBaseEntity
 	{
 		return view_as<CBaseTrigger>(CBaseEntity(iEntIndex));
 	}
+
 	public bool IsDisabled()
 	{
 		return view_as<bool>(GetEntProp(this.GetEntIndex(), Prop_Data, "m_bDisabled"));
@@ -947,6 +948,7 @@ methodmap CBaseCombatCharacter < CBaseAnimating
 	{
 		return view_as<CBaseCombatCharacter>(CBaseEntity(iEntIndex));
 	}
+
 	public bool IsAlive()
 	{
 		//return view_as<bool>(this.GetHealth() > 0);
@@ -1092,6 +1094,7 @@ methodmap CBasePlayer < CBaseCombatCharacter
 	{
 		return view_as<CBasePlayer>(CBaseEntity(iEntIndex));
 	}
+
 	public bool IsValid()
 	{
 		return this.IsClassPlayer() && this.IsInGame();
@@ -1164,7 +1167,7 @@ methodmap CBasePlayer < CBaseCombatCharacter
 		int iNameOffset = (strncmp(szItemName, "item_weapon_", 12, false) == 0) ? 5 : 0;
 		
 		CBaseAnimating pItem = CBaseAnimating(GivePlayerItem(this.GetEntIndex(), szItemName[iNameOffset]));
-		if(pItem.IsValid() && !pItem.GetOwner().IsValid())
+		if (pItem.IsValid() && !pItem.GetOwner().IsValid())
 		{
 			// this would drop on the ground if player cant pick up any more
 			pItem.KillAfterTime(0.1);
@@ -1268,7 +1271,8 @@ methodmap CBasePlayer < CBaseCombatCharacter
 		SetEntProp(iClient, Prop_Send, "m_bDucked", true);
 		SetEntProp(iClient, Prop_Send, "m_bDucking", true);
 		SetEntPropFloat(iClient, Prop_Send, "m_flDucktime", 0.0);
-		float vecViewOffset[3] = VEC_DUCK_VIEW; ScaleVector(vecViewOffset, this.GetModelScale());
+		float vecViewOffset[3] = VEC_DUCK_VIEW;
+		ScaleVector(vecViewOffset, this.GetModelScale());
 		this.SetViewOffset(vecViewOffset);
 		this.SetCollisionBounds(view_as<float>(VEC_DUCK_HULL_MIN), view_as<float>(VEC_DUCK_HULL_MAX));
 	}
@@ -1279,7 +1283,8 @@ methodmap CBasePlayer < CBaseCombatCharacter
 		int iClient = this.GetEntIndex();
 		SetEntProp(iClient, Prop_Send, "m_bDucked", false);
 		SetEntProp(iClient, Prop_Send, "m_bDucking", false);
-		float vecViewOffset[3] = VEC_VIEW; ScaleVector(vecViewOffset, this.GetModelScale());
+		float vecViewOffset[3] = VEC_VIEW;
+		ScaleVector(vecViewOffset, this.GetModelScale());
 		this.SetViewOffset(vecViewOffset);
 		this.SetCollisionBounds(view_as<float>(VEC_HULL_MIN), view_as<float>(VEC_HULL_MAX));
 	}
@@ -1293,9 +1298,8 @@ methodmap CBasePlayer < CBaseCombatCharacter
 	}
 	public CBaseEntity GetAimTarget()
 	{
-		float vecEyePos[3];
+		float vecEyePos[3], vecEyeAngles[3];
 		this.GetEyePosition(vecEyePos);
-		float vecEyeAngles[3];
 		this.GetEyeAngles(vecEyeAngles);
 		
 		CTraceRay pTraceRay = CTraceRay(vecEyePos, vecEyeAngles, MASK_SHOT, RayType_Infinite, Callback_GetAimTarget, this);
@@ -1384,7 +1388,7 @@ methodmap CBasePlayer < CBaseCombatCharacter
 	public CBaseEntity GetCarriedObject()
 	{
 		CBaseEntity pUseEntity = this.GetUseEntity();
-		if(pUseEntity.IsValid() && pUseEntity.IsClassname("player_pickup"))
+		if (pUseEntity.IsValid() && pUseEntity.IsClassname("player_pickup"))
 		{
 			return CBaseEntity(GetEntPropEnt(pUseEntity.GetEntIndex(), Prop_Data, "m_attachedEntity"));
 		}
@@ -1572,7 +1576,7 @@ methodmap CParticleSystem < CBaseEntity
 	{
 		SetEntProp(this.GetEntIndex(), Prop_Data, "m_bStartActive", value);
 	}
-	public bool GetWeatherEffect()
+	public bool IsWeatherEffect()
 	{
 		return view_as<bool>(GetEntProp(this.GetEntIndex(), Prop_Data, "m_bWeatherEffect"));
 	}
@@ -1626,13 +1630,13 @@ methodmap CMultiplayRules
 {
 	public static bool IsTeamplay()
 	{
-		switch (GetEngineVersion()) {
+		switch (GetEngineVersion())
+		{
 			case Engine_BlackMesa:
 				return GetTeamCount() >= 4;
 			case Engine_HL2DM:
 				return view_as<bool>(GameRules_GetProp("m_bTeamPlayEnabled"));
 		}
-		
 	}
 }
 
@@ -1642,37 +1646,30 @@ methodmap CGlobalState
 	{
 		return SDKCall(g_pGlobalEntityGetIndex, szGlobalname);
 	}
-	
 	public static GLOBALESTATE GetStateByIndex(int globalIndex)
 	{
 		return SDKCall(g_pGlobalEntityGetState, globalIndex);
 	}
-	
 	public static GLOBALESTATE GetState(const char[] szGlobalname)
 	{
 		return CGlobalState.GetStateByIndex(CGlobalState.GetIndex(szGlobalname));
 	}
-	
 	public static int GetName(int globalIndex, const char[] szGlobalName, const int iMaxLength)
 	{
 		return SDKCall(g_pGlobalEntityGetName, szGlobalName, iMaxLength, globalIndex);
 	}
-
 	public static bool IsValidIndex(int globalIndex)
 	{
 		return CGlobalState.GetName(globalIndex, NULL_STRING, 0) != -1;
 	}
-	
 	public static int GetCounter(int globalIndex)
 	{
 		return SDKCall(g_pGlobalEntityGetCounter, globalIndex);
 	}
-	
 	public static int GetMap(int globalIndex, const char[] szGlobalMap, const int iMaxLength)
 	{
 		return SDKCall(g_pGlobalEntityGetMap, szGlobalMap, iMaxLength, globalIndex);
 	}
-	
 	public static bool SetState(int globalIndex, GLOBALESTATE state)
 	{
 		if (CGlobalState.IsValidIndex(globalIndex))
@@ -1683,7 +1680,6 @@ methodmap CGlobalState
 		
 		return false;
 	}
-	
 	public static bool SetStateByName(const char[] szGlobalName, GLOBALESTATE state)
 	{
 		int globalIndex = CGlobalState.GetIndex(szGlobalName);
@@ -1695,7 +1691,6 @@ methodmap CGlobalState
 		
 		return false;
 	}
-	
 	public static bool SetCounter(int globalIndex, int iCounter)
 	{
 		if (CGlobalState.IsValidIndex(globalIndex))
@@ -1706,7 +1701,6 @@ methodmap CGlobalState
 		
 		return false;
 	}
-	
 	public static bool SetCounterByName(const char[] szGlobalName, int iCounter)
 	{
 		int globalIndex = CGlobalState.GetIndex(szGlobalName);
@@ -1718,7 +1712,6 @@ methodmap CGlobalState
 		
 		return false;
 	}
-	
 	// Returns index to global state
 	public static int Add(const char[] szGlobalName, const char[] szMapName, GLOBALESTATE state)
 	{

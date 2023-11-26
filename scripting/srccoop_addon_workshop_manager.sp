@@ -20,7 +20,8 @@ public Plugin myinfo =
 ConVar pWorkshopMsg;
 bool bKickEnabled;
 
-public void OnPluginStart() {
+public void OnPluginStart()
+{
 	InitSourceCoopAddon();
 	
 	ConVar cvar = FindConVar("net_maxfilesize");

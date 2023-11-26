@@ -101,9 +101,10 @@ stock void MsgSrv(const char[] msg, any ...)
 stock bool StrEqualsRegex(const char[] pattern, const char[] str, bool caseSensitive = false)
 {
 	int patternLength = strlen(pattern);
-	if(patternLength > 1 && pattern[0] == '/' && pattern[patternLength - 1] == '/')
+	if (patternLength > 1 && pattern[0] == '/' && pattern[patternLength - 1] == '/')
 	{
-		if(str[0] == '\0') {
+		if (str[0] == '\0')
+		{
 			// regexing empty string errors out..
 			return false;
 		}
@@ -112,7 +113,7 @@ stock bool StrEqualsRegex(const char[] pattern, const char[] str, bool caseSensi
 		int substrings = SimpleRegexMatch(str, patternStripped, caseSensitive? 0 : PCRE_CASELESS);
 		return (substrings > 0);
 	}
-	else return strcmp(pattern, str, caseSensitive) == 0;
+	return strcmp(pattern, str, caseSensitive) == 0;
 }
 #endif
 
@@ -121,15 +122,15 @@ stock void FormatTimeLength(int seconds, char[] out, int size)
 	int hours = seconds / 3600;
 	int mins = (seconds % 3600) / 60;
 	int secs = seconds % 60;
-	if(hours != 0)
+	if (hours != 0)
 	{
 		Format(out, size, "%dh ", hours);
 	}
-	if(mins != 0)
+	if (mins != 0)
 	{
 		Format(out, size, "%s%dm ", out, mins);
 	}
-	if(secs != 0)
+	if (secs != 0)
 	{
 		Format(out, size, "%s%ds", out, secs);
 	}
@@ -141,17 +142,17 @@ stock void FormatTimeLengthLong(int seconds, char[] out, int size)
 	int mins = (seconds % 3600) / 60;
 	int secs = seconds % 60;
 	char separator[10];
-	if(hours != 0)
+	if (hours != 0)
 	{
 		Format(out, size, "%d hour%s", hours, hours == 1? "":"s");
 		separator = " ";
 	}
-	if(mins != 0)
+	if (mins != 0)
 	{
 		Format(out, size, "%s%s%d minute%s", out, separator, mins, mins == 1? "":"s");
 		separator = " ";
 	}
-	if(secs != 0)
+	if (secs != 0)
 	{
 		Format(out, size, "%s%s%d second%s", out, mins == 0? separator : " and ", secs, secs == 1? "":"s");
 	}
@@ -163,7 +164,7 @@ stock int SplitByChar(const char[] szSource, char c, char[] szBuffer, int nSize)
 	int i = 0;
 	while (szSource[i] != c)
 	{
-		if(szSource[i] == '\0')
+		if (szSource[i] == '\0')
 		{
 			return -1;
 		}
@@ -305,7 +306,7 @@ stock int FindEntityByOwner(int startEnt, CBaseEntity pOwnerEntity, const char[]
 	while ((startEnt = FindEntityByClassname(startEnt, szClassname)) != -1)
 	{
 		CBaseEntity pEntity = CBaseEntity(startEnt);
-		if(pEntity.GetOwner() == pOwnerEntity)
+		if (pEntity.GetOwner() == pOwnerEntity)
 		{
 			return startEnt;
 		}
@@ -345,9 +346,9 @@ stock CBasePlayer GetNearestPlayer(CBaseEntity pOriginEntity, bool bOnlyAlive = 
 stock int GetRealClientCount(bool bInGameOnly, bool bAliveOnly = false, bool bNoSpectators = false)
 {
 	int clients;
-	for(int i = 1; i <= MaxClients; i++)
+	for (int i = 1; i <= MaxClients; i++)
 	{
-		if((bInGameOnly? IsClientInGame(i) : IsClientConnected(i))
+		if ((bInGameOnly? IsClientInGame(i) : IsClientConnected(i))
 			&& !IsFakeClient(i)
 			&& (!bAliveOnly || IsPlayerAlive(i))
 			&& (!bNoSpectators || GetClientTeam(i) != TEAM_SPECTATOR)
@@ -371,26 +372,26 @@ stock CanTeleportResult CanTeleportPlayer(CBasePlayer pPlayer, float vecOrigin[3
 
 	TR_TraceHullFilter(vecOrigin, vecOrigin, view_as<float>(VEC_HULL_MIN), view_as<float>(VEC_HULL_MAX), MASK_PLAYERSOLID|CONTENTS_HITBOX, CanTeleportPlayer_TraceFilter);
 	bDidHit = TR_DidHit();
-	if(!bDidHit) return CAN_TP_YES;
+	if (!bDidHit) return CAN_TP_YES;
 	
 	TR_TraceHullFilter(vecOrigin, vecOrigin, view_as<float>(VEC_DUCK_HULL_MIN), view_as<float>(VEC_DUCK_HULL_MAX), MASK_PLAYERSOLID|CONTENTS_HITBOX, CanTeleportPlayer_TraceFilter);
 	bDidHit = TR_DidHit();
-	if(!bDidHit) return CAN_TP_MUSTDUCK;
+	if (!bDidHit) return CAN_TP_MUSTDUCK;
 	
-	if(!bExact)
+	if (!bExact)
 	{
 		// try varying the positions in a radius
 		static const float yaw[] = {0.0, 45.0, 90.0, 135.0, 180.0, 225.0, 270.0, 315.0};
 		static const float distance[] = {25.0, 50.0};
 		static const float zDistance[] = {0.0, 25.0, 50.0};
 		
-		for(int z = 0; z < sizeof(zDistance); z++)
+		for (int z = 0; z < sizeof(zDistance); z++)
 		{
-			for(int d = 0; d < sizeof(distance); d++)
+			for (int d = 0; d < sizeof(distance); d++)
 			{
-				for(int y = 0; y < sizeof(yaw); y++)
+				for (int y = 0; y < sizeof(yaw); y++)
 				{
-					if(CanTeleportPlayer_Offset(vecOrigin, yaw[y], distance[d], zDistance[z]))
+					if (CanTeleportPlayer_Offset(vecOrigin, yaw[y], distance[d], zDistance[z]))
 					{
 						return CAN_TP_YES;
 					}
@@ -415,7 +416,7 @@ stock bool CanTeleportPlayer_Offset(float vecOrigin[3], float yaw, float distanc
 	//TE_SetupGlowSprite(newPos, PrecacheModel("sprites/orangeglow1.vmt"), 60.0, 0.1, 255); TE_SendToAll();
 	
 	TR_TraceHullFilter(newPos, newPos, view_as<float>(VEC_HULL_MIN), view_as<float>(VEC_HULL_MAX), MASK_PLAYERSOLID|CONTENTS_HITBOX, CanTeleportPlayer_TraceFilter);
-	if(!TR_DidHit())
+	if (!TR_DidHit())
 	{
 		vecOrigin = newPos;
 		return true;
@@ -424,9 +425,11 @@ stock bool CanTeleportPlayer_Offset(float vecOrigin[3], float yaw, float distanc
   	return false;
 }
 
-public bool CanTeleportPlayer_TraceFilter(int entity, int mask, any data) {
+public bool CanTeleportPlayer_TraceFilter(int entity, int mask, any data)
+{
 	CBaseEntity pEntity = CBaseEntity(entity);
-	if(pEntity.IsClassPlayer() || pEntity.IsPickupItem()) {
+	if (pEntity.IsClassPlayer() || pEntity.IsPickupItem())
+	{
 		return false;
 	}
 	return true;
@@ -560,11 +563,11 @@ stock bool VecEqual(const float vecA[3], const float vecB[3])
 // borrowed from public/collisionutils.cpp
 stock bool IsBoxIntersectingBox(const float boxMin1[3], const float boxMax1[3], const float boxMin2[3], const float boxMax2[3])
 {
-	if ( (boxMin1[0] > boxMax2[0]) || (boxMax1[0] < boxMin2[0]) )
+	if ((boxMin1[0] > boxMax2[0]) || (boxMax1[0] < boxMin2[0]))
 		return false;
-	if ( (boxMin1[1] > boxMax2[1]) || (boxMax1[1] < boxMin2[1]) )
+	if ((boxMin1[1] > boxMax2[1]) || (boxMax1[1] < boxMin2[1]))
 		return false;
-	if ( (boxMin1[2] > boxMax2[2]) || (boxMax1[2] < boxMin2[2]) )
+	if ((boxMin1[2] > boxMax2[2]) || (boxMax1[2] < boxMin2[2]))
 		return false;
 	return true;
 }
@@ -582,13 +585,15 @@ stock bool FileCopy(const char[] source, const char[] destination, bool use_valv
 {
 	File file_source = OpenFile(source, "rb", use_valve_fs, valve_path_id);
 
-	if (file_source == null) {
+	if (file_source == null)
+	{
 		return false;
 	}
 
 	File file_destination = OpenFile(destination, "wb", use_valve_fs, valve_path_id);
 
-	if (file_destination == null) {
+	if (file_destination == null)
+	{
 		delete file_source;
 		return false;
 	}
@@ -596,7 +601,8 @@ stock bool FileCopy(const char[] source, const char[] destination, bool use_valv
 	int buffer[32];
 	int cache;
 
-	while (!IsEndOfFile(file_source)) {
+	while (!IsEndOfFile(file_source))
+	{
 		cache = ReadFile(file_source, buffer, sizeof(buffer), 1);
 		WriteFile(file_destination, buffer, cache, 1);
 	}

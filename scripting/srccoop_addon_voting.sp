@@ -141,15 +141,15 @@ public void MyCoopMenuHandler(TopMenu topmenu, TopMenuAction action, TopMenuObje
 		{
 			Format(buffer, maxlength, "Skip intro");
 		}
-		if (StrEqual(szItem, MENUITEM_RESTARTMAP))
+		else if (StrEqual(szItem, MENUITEM_RESTARTMAP))
 		{
 			Format(buffer, maxlength, "Restart current map");
 		}
-		else if(StrEqual(szItem, MENUITEM_MAPVOTE))
+		else if (StrEqual(szItem, MENUITEM_MAPVOTE))
 		{
 			Format(buffer, maxlength, "Change map");
 		}
-		else if(StrEqual(szItem, MENUITEM_SURVIVAL))
+		else if (StrEqual(szItem, MENUITEM_SURVIVAL))
 		{
 			Format(buffer, maxlength, SC_GetSurvivalMode()? "Disable survival mode" : "Enable survival mode");
 		}
@@ -483,7 +483,7 @@ enum struct MapMenuSection
 		for (int i = 0; i < len; i++)
 		{
 			this.pSubSections.GetArray(i, pTemp);
-			if(StrEqual(pTemp.szName, szSection))
+			if (StrEqual(pTemp.szName, szSection))
 			{
 				pSubSection = pTemp;
 				return true;
@@ -670,7 +670,7 @@ public int MapSelectMenuHandler(Menu menu, MenuAction action, int client, int pa
 		char szInfo[10], szDisp[MAX_MAPNAME];
 		menu.GetItem(param2, szInfo, sizeof(szInfo), _, szDisp, sizeof(szDisp));
 		
-		if(StrEqual(szInfo, MAPMENU_SUBSECTION))
+		if (StrEqual(szInfo, MAPMENU_SUBSECTION))
 		{
 			pMapMenuNavStack[client].PushArray(pMapSection[client]);
 			pMapSection[client].pSubSections.GetArray(param2, pMapSection[client]);
@@ -736,7 +736,7 @@ public int VoteMapHandler(Menu menu, MenuAction action, int param1, int param2)
 			MsgAll("Vote failed!");
 		}
 	}
-	else if(action == MenuAction_VoteCancel)
+	else if (action == MenuAction_VoteCancel)
 	{
 		MsgAll("Vote cancelled!");
 	}

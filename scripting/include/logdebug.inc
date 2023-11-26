@@ -21,6 +21,8 @@
  #endinput
 #endif
 
+#define DEBUG
+
 #define DEBUG_SERVER_CONSOLE		1		/**< Message will be routed to server console */
 #define DEBUG_CLIENT_CONSOLE		2		/**< Message will be routed to all clients' consoles */
 #define DEBUG_ADMIN_CONSOLE			4		/**< Message will be routed to consoles of admins with a flag specified by plugin */

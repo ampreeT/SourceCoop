@@ -130,7 +130,7 @@ enum struct CCoopSpawnEntry
 			for (int i = 1; i <= MaxClients; i++)
 			{
 				CBasePlayer pPlayer = CBasePlayer(i);
-				if(pPlayer.IsValid() && pPlayer.IsAlive())
+				if (pPlayer.IsValid() && pPlayer.IsAlive())
 				{
 					if (this.TeleportPlayer(pPlayer, true, true))
 					{

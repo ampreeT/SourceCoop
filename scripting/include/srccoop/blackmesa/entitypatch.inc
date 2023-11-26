@@ -119,6 +119,7 @@ public MRESReturn Hook_HoundeyeThink(int _this)
 	SetLocalPlayerCallingEntity(_this);
 	return MRES_Ignored;
 }
+
 public MRESReturn Hook_HoundeyeThinkPost(int _this)
 {
 	ClearLocalPlayerCallingEntity();
@@ -133,12 +134,14 @@ public MRESReturn Hook_GonarchRunAI(int _this)
 {
 	CBaseEntity pThis = CBaseEntity(_this);
 	CBasePlayer pPlayer = GetNearestPlayer(pThis, true);
-	if(!pPlayer.IsClassPlayer()) {
+	if (!pPlayer.IsClassPlayer())
+	{
 		return MRES_Supercede;
 	}
 	SetLocalPlayerCallingEntity(view_as<int>(pPlayer));
 	return MRES_Ignored;
 }
+
 public MRESReturn Hook_GonarchRunAIPost(int _this)
 {
 	ClearLocalPlayerCallingEntity();
@@ -153,7 +156,8 @@ public MRESReturn Hook_NihilanthRunAI(int _this)
 {
 	CBaseEntity pThis = CBaseEntity(_this);
 	CBasePlayer pPlayer = GetNearestPlayer(pThis, true);
-	if(!pPlayer.IsClassPlayer()) {
+	if (!pPlayer.IsClassPlayer())
+	{
 		return MRES_Supercede;
 	}
 	SetLocalPlayerCallingEntity(view_as<int>(pPlayer));
@@ -210,7 +214,7 @@ public MRESReturn Hook_PropChargerThinkPost(int _this)
 public Action BlackMesaFireBulletsTEHook(const char[] szTEName, const int[] iClients, int iNumClients, float flDelay)
 {
 	int iAmmoId = TE_ReadNum("m_iAmmoID");
-	if(iAmmoId == AMMO_SNIPERROUND)
+	if (iAmmoId == AMMO_SNIPERROUND)
 	{
 		TE_WriteNum("m_bDoTracers", 0);
 		return Plugin_Changed;
@@ -224,7 +228,7 @@ public Action BlackMesaFireBulletsTEHook(const char[] szTEName, const int[] iCli
 //------------------------------------------------------
 public MRESReturn Hook_XenTurretSelectSchedule(int _this, Handle hReturn)
 {
-	if(!GetClientCount())
+	if (!GetClientCount())
 	{
 		DHookSetReturn(hReturn, 88);
 		return MRES_Supercede;
@@ -234,7 +238,7 @@ public MRESReturn Hook_XenTurretSelectSchedule(int _this, Handle hReturn)
 
 public MRESReturn Hook_XenTurretHandleAnimEvent(int _this, Handle hParams)
 {
-	if(!GetClientCount())
+	if (!GetClientCount())
 	{
 		return MRES_Supercede;
 	}
@@ -249,7 +253,7 @@ public MRESReturn Hook_XenTurretHandleAnimEventPost(int _this, Handle hParams)
 
 public MRESReturn Hook_XenTurretRunAI(int _this)
 {
-	if(!GetClientCount())
+	if (!GetClientCount())
 	{
 		return MRES_Supercede;
 	}
@@ -266,7 +270,7 @@ public void Hook_XenTurretSpawnPost(int iEntIndex)
 {
 	// Use our fixed model, which doesn't have the clientside particles which affected everyone's screens even when they shouldn't.
 	static char szNewModel[] = "models/props_xen/xen_turret_mpfix.mdl";
-	if(PrecacheModel(szNewModel))
+	if (PrecacheModel(szNewModel))
 	{
 		SetEntityModel(iEntIndex, szNewModel);
 	}
@@ -290,7 +294,7 @@ public MRESReturn Hook_MarionettistAcceptInput(int _this, Handle hReturn, Handle
 			{
 				char szParam[MAX_FORMAT];
 				DHookGetParamObjectPtrString(hParams, 4, 0, ObjectValueType_String, szParam, sizeof(szParam));
-				if(strcmp(szParam, "!activator", false) == 0)
+				if (strcmp(szParam, "!activator", false) == 0)
 				{
 					if (!DHookIsNullParam(hParams, 2))
 					{
@@ -352,7 +356,7 @@ CBaseEntity CloneMarionettist(int iEnt)
 	GetEntPropString(iEnt, Prop_Data, "m_iszSoundScriptEnd", buff, sizeof(buff));
 	SetEntPropString(iClone, Prop_Data, "m_iszSoundScriptEnd", buff);
 	char szDestNamesProp[29];
-	for(int i = 0; i < 16; i++)
+	for (int i = 0; i < 16; i++)
 	{
 		FormatEx(szDestNamesProp, sizeof(szDestNamesProp), "m_iszDestinationsNames[ %d ]", i);
 		GetEntPropString(iEnt, Prop_Data, szDestNamesProp, buff, sizeof(buff));
@@ -425,7 +429,7 @@ public Action Hook_IntroCreditsMsg(UserMsg msg_id, BfRead msg, const int[] playe
 	DataPack dp; CreateDataTimer(0.0, IntroCreditsMsgRepeater, dp, TIMER_FLAG_NO_MAPCHANGE);
 	int type = msg.ReadByte();
 	dp.WriteCell(type);
-	if(type)
+	if (type)
 	{
 		dp.WriteFloat(msg.ReadFloat());
 		dp.WriteFloat(msg.ReadFloat());
@@ -446,10 +450,11 @@ public Action Hook_IntroCreditsMsg(UserMsg msg_id, BfRead msg, const int[] playe
 public Action IntroCreditsMsgRepeater(Handle timer, DataPack dp)
 {
 	Handle pNewMsg = StartMessageAll("IntroCredits", USERMSG_RELIABLE|USERMSG_BLOCKHOOKS);
-	if(pNewMsg != null) {
+	if (pNewMsg != null)
+	{
 		int type = dp.ReadCell();
 		BfWriteByte(pNewMsg, type);
-		if(type)
+		if (type)
 		{
 			BfWriteFloat(pNewMsg, dp.ReadFloat());
 			BfWriteFloat(pNewMsg, dp.ReadFloat());
@@ -476,7 +481,7 @@ public void Hook_ExplosionSpawn(int iEntIndex)
 {
 	char buffer[MAX_VALUE];
 	GetEntPropString(iEntIndex, Prop_Data, "m_strEntityNameToIgnore", buffer, sizeof(buffer)); // this is entity handle m_hEntityIgnore in other games
-	if(StrEqual(buffer, "!player", false))
+	if (StrEqual(buffer, "!player", false))
 	{
 		SetEntPropString(iEntIndex, Prop_Data, "m_strEntityNameToIgnore", "");
 		SetEntProp(iEntIndex, Prop_Data, "m_iClassIgnore", CLASS_PLAYER);

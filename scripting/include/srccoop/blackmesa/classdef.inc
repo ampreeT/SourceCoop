@@ -39,9 +39,9 @@ methodmap CBM_MP_GameRules < CMultiplayRules
 {
 	public static int GetStateIndex(const char[] szStateProp)
 	{
-		if(strcmp(szStateProp, STATE_WARMUP) == 0) return STATE_WARMUP_INDEX;
-		if(strcmp(szStateProp, STATE_ROUND) == 0) return STATE_ROUND_INDEX;
-		if(strcmp(szStateProp, STATE_INTERMISSION) == 0) return STATE_INTERMISSION_INDEX;
+		if (strcmp(szStateProp, STATE_WARMUP) == 0) return STATE_WARMUP_INDEX;
+		if (strcmp(szStateProp, STATE_ROUND) == 0) return STATE_ROUND_INDEX;
+		if (strcmp(szStateProp, STATE_INTERMISSION) == 0) return STATE_INTERMISSION_INDEX;
 		SetFailState("CBM_MP_GameRules.GetStateIndex %s", szStateProp); return -1;
 	}
 	

@@ -108,7 +108,7 @@ methodmap CEntityInfoLump < ArrayList
 		
 	public bool MatchesAsIOTarget(char[] szTarget, CEntityInfoLump pCallingEntity)
 	{
-		if(strcmp(szTarget, "!self") == 0)
+		if (strcmp(szTarget, "!self") == 0)
 		{
 			return this.Matches(pCallingEntity);
 		}
@@ -117,11 +117,11 @@ methodmap CEntityInfoLump < ArrayList
 			CEntityKeyLump pThisKeyInfo;
 			if (this.GetArray(i, pThisKeyInfo, sizeof(pThisKeyInfo)))
 			{
-				if(strcmp(pThisKeyInfo.m_szKey, "classname") == 0 && strcmp(pThisKeyInfo.m_szValue, szTarget) == 0)
+				if (strcmp(pThisKeyInfo.m_szKey, "classname") == 0 && strcmp(pThisKeyInfo.m_szValue, szTarget) == 0)
 				{
 					return true;
 				}
-				if(strcmp(pThisKeyInfo.m_szKey, "targetname") == 0 && strcmp(pThisKeyInfo.m_szValue, szTarget) == 0)
+				if (strcmp(pThisKeyInfo.m_szKey, "targetname") == 0 && strcmp(pThisKeyInfo.m_szValue, szTarget) == 0)
 				{
 					return true;
 				}
@@ -138,25 +138,25 @@ methodmap CEntityInfoLump < ArrayList
 			if (this.GetArray(i, pThisKeyInfo, sizeof(pThisKeyInfo)))
 			{
 				// check these 3 properties for now, return false if any dont match
-				if(StrEqual(pThisKeyInfo.m_szKey, "hammerid"))
+				if (StrEqual(pThisKeyInfo.m_szKey, "hammerid"))
 				{
-					if(StringToInt(pThisKeyInfo.m_szValue) != pEntity.GetHammerID())
+					if (StringToInt(pThisKeyInfo.m_szValue) != pEntity.GetHammerID())
 					{
 						return false;
 					}
 				}
-				if(StrEqual(pThisKeyInfo.m_szKey, "classname"))
+				if (StrEqual(pThisKeyInfo.m_szKey, "classname"))
 				{
-					if(!pEntity.IsClassname(pThisKeyInfo.m_szValue))
+					if (!pEntity.IsClassname(pThisKeyInfo.m_szValue))
 					{
 						return false;
 					}
 				}
-				if(StrEqual(pThisKeyInfo.m_szKey, "targetname"))
+				if (StrEqual(pThisKeyInfo.m_szKey, "targetname"))
 				{
 					char szBuffer[MAX_CLASSNAME];
 					pEntity.GetTargetname(szBuffer, sizeof(szBuffer));
-					if(!StrEqual(pThisKeyInfo.m_szValue, szBuffer))
+					if (!StrEqual(pThisKeyInfo.m_szValue, szBuffer))
 					{
 						return false;
 					}
@@ -180,7 +180,7 @@ methodmap CEntityInfoLump < ArrayList
 				}
 			}
 		}
-		if(replace)
+		if (replace)
 		{
 			this.PushArray(pKeyInfo, sizeof(pKeyInfo));
 		}
@@ -235,7 +235,8 @@ methodmap COutputHookLump < ArrayList
 	{
 		for (int i = 0; i < this.Length; i++)
 		{
-			CEntityOutputHook pOutputHook; this.GetArray(i, pOutputHook);
+			CEntityOutputHook pOutputHook;
+			this.GetArray(i, pOutputHook);
 			pOutputHook.m_pEntityList.Close();
 		}
 		ClearArray(this);
@@ -250,12 +251,12 @@ methodmap COutputHookLump < ArrayList
 			for (int j = 0; j < pOutputHook.m_pEntityList.Length; j++)
 			{
 				CEntityInfoLump pEntityInfo = pOutputHook.m_pEntityList.Get(j);
-				if(pValidEntityList.FindValue(pEntityInfo) == -1)
+				if (pValidEntityList.FindValue(pEntityInfo) == -1)
 				{
 					pOutputHook.m_pEntityList.Erase(j--);
 				}
 			}
-			if(!pOutputHook.m_pEntityList.Length)
+			if (!pOutputHook.m_pEntityList.Length)
 			{
 				pOutputHook.m_pEntityList.Close();
 				this.Erase(i--);
@@ -349,7 +350,7 @@ enum struct CGlobalLevelLump
 		{
 			if (szMapEntities[i] == '"')
 			{
-				if(bParsingValue)
+				if (bParsingValue)
 				{
 					n = SplitByChar(szMapEntities[++i], '"', pEntityInfoKey.m_szValue, sizeof(pEntityInfoKey.m_szValue));
 					pEntityInfo.PushArray(pEntityInfoKey, sizeof(pEntityInfoKey));
@@ -450,15 +451,15 @@ enum struct CGlobalLevelLump
 						{
 							char szIntroType[16];
 							kv.GetString(NULL_STRING, szIntroType, sizeof(szIntroType));
-							if(strcmp(szIntroType, "fade", false) == 0)
+							if (strcmp(szIntroType, "fade", false) == 0)
 							{
 								this.m_iIntroType = INTRO_FADE;
 							}
-							else if(strcmp(szIntroType, "none", false) == 0)
+							else if (strcmp(szIntroType, "none", false) == 0)
 							{
 								this.m_iIntroType = INTRO_NONE;
 							}
-							else if(strcmp(szIntroType, "freeze", false) == 0)
+							else if (strcmp(szIntroType, "freeze", false) == 0)
 							{
 								this.m_iIntroType = INTRO_FREEZE;
 							}
@@ -513,7 +514,7 @@ enum struct CGlobalLevelLump
 				{
 					EVAL_CONDITIONS(szKey, kv, this.ParseEquipment(kv))
 					
-					if(StrEqual(szKey, "lookup", false))
+					if (StrEqual(szKey, "lookup", false))
 					{
 						if (kv.GotoFirstSubKey(false))
 						{
@@ -536,7 +537,7 @@ enum struct CGlobalLevelLump
 								if (pEntityInfo.Matches(pThisEntityInfo))
 								{
 									CEntityKeyLump pClassKey;
-									if(pThisEntityInfo.GetKey("classname", pClassKey))
+									if (pThisEntityInfo.GetKey("classname", pClassKey))
 									{
 										g_SpawnSystem.AddSpawnItem(pClassKey.m_szValue, true);
 										pThisEntityInfo.Close();
@@ -566,7 +567,7 @@ enum struct CGlobalLevelLump
 				{
 					EVAL_CONDITIONS(szKey, kv, this.ParseDefines(kv))
 					
-					if(kv.GetDataType(NULL_STRING) != KvData_None)
+					if (kv.GetDataType(NULL_STRING) != KvData_None)
 					{
 						char szValue[MAX_FORMAT];
 						kv.GetString(NULL_STRING, szValue, sizeof(szValue));
@@ -591,12 +592,12 @@ enum struct CGlobalLevelLump
 				{
 					EVAL_CONDITIONS(szKey, kv, this.ParseFeatures(kv))
 					
-					if(kv.GetDataType(NULL_STRING) != KvData_None)
+					if (kv.GetDataType(NULL_STRING) != KvData_None)
 					{
 						SourceCoopFeature feature;
 						if (g_pFeatureMap.GetFeature(szKey, feature))
 						{
-							if(kv.GetNum(NULL_STRING))
+							if (kv.GetNum(NULL_STRING))
 							{
 								CoopManager.EnableFeature(feature);
 							}
@@ -731,7 +732,8 @@ enum struct CGlobalLevelLump
 					bool add = IsAddSynonym(szAction);
 					bool remove = IsRemoveSynonym(szAction);
 					bool modify = IsModifySynonym(szAction);
-					if(!add && !remove && !modify) {
+					if (!add && !remove && !modify)
+					{
 						ThrowError("Unknown entity action \"%s\", expected one of add | remove | modify", szAction);
 					}
 					
@@ -866,7 +868,7 @@ enum struct CGlobalLevelLump
 		bool functions = strcmp(szModifyType, "functions", false) == 0;
 		bool outputs = strcmp(szModifyType, "outputs", false) == 0;
 		bool flags = strcmp(szModifyType, "flags", false) == 0;
-		if(!add && !remove && !functions && !outputs && !flags)
+		if (!add && !remove && !functions && !outputs && !flags)
 		{
 			ThrowError("Unknown entity modify action \"%s\", expected one of add | remove | functions | outputs | flags", szModifyType);
 		}
@@ -875,15 +877,15 @@ enum struct CGlobalLevelLump
 		{
 			do
 			{
-				if(functions)
+				if (functions)
 				{
 					this.ParseFunction(kv, pTempEvaluatedList);
 				}
-				else if(outputs)
+				else if (outputs)
 				{
 					this.ParseOutputs(kv, pTempEvaluatedList);
 				}
-				else if(flags)
+				else if (flags)
 				{
 					this.ParseFlags(kv, pTempEvaluatedList);
 				}
@@ -912,11 +914,11 @@ enum struct CGlobalLevelLump
 		bool bFound = true;
 		if (kv.GetSectionName(szFunction, sizeof(szFunction)))
 		{
-			if(kv.GetDataType(NULL_STRING) != KvData_None)
+			if (kv.GetDataType(NULL_STRING) != KvData_None)
 			{
 				// inline functions
 				kv.GetString(NULL_STRING, szValue, sizeof(szValue));
-				if(StrEqual(szFunction, "delay_output", false))
+				if (StrEqual(szFunction, "delay_output", false))
 				{
 					CEntityOutputHook pOutputHook;
 					pOutputHook.m_pEntityList = view_as<CEntityListLump>(CloneHandle(pTempEvaluatedList));
@@ -928,13 +930,13 @@ enum struct CGlobalLevelLump
 			}
 			else
 			{
-				if(StrEqual(szFunction, "copy_model", false))
+				if (StrEqual(szFunction, "copy_model", false))
 				{
-					if(kv.GotoFirstSubKey(false))
+					if (kv.GotoFirstSubKey(false))
 					{
 						CEntityListLump pTargetEvaluatedList;
 						pTargetEvaluatedList = this.EvaluateEntityList(kv);
-						if(!pTargetEvaluatedList.Length)
+						if (!pTargetEvaluatedList.Length)
 						{
 							ThrowError("Found 0 entities for copy model matching (expects 1+)");
 						}
@@ -942,14 +944,14 @@ enum struct CGlobalLevelLump
 						for (int i = 0; i < pTargetEvaluatedList.Length; i++)
 						{
 							CEntityInfoLump pTargetEnt = pTargetEvaluatedList.Get(i);
-							if(pTargetEnt.GetKey("model", pModelKey))
+							if (pTargetEnt.GetKey("model", pModelKey))
 							{
 								bool bHasOrigin = pTargetEnt.GetKey("origin", pOriginKey);
 								for (int k = 0; k < pTempEvaluatedList.Length; k++)
 								{
 									CEntityInfoLump pTempEnt = pTempEvaluatedList.Get(k);
 									pTempEnt.RemoveOrReplace(pModelKey, true);
-									if(bHasOrigin)
+									if (bHasOrigin)
 									{
 										pTempEnt.RemoveOrReplace(pOriginKey, true);
 									}
@@ -961,15 +963,15 @@ enum struct CGlobalLevelLump
 						pTargetEvaluatedList.Close();
 					}
 				}
-				else if(StrEqual(szFunction, "set_model", false))
+				else if (StrEqual(szFunction, "set_model", false))
 				{
 					float vecFrom[3], vecTo[3];
-					if(kv.GetDataType("from") != KvData_None && kv.GetDataType("to") != KvData_None)
+					if (kv.GetDataType("from") != KvData_None && kv.GetDataType("to") != KvData_None)
 					{
 						kv.GetVector("from", vecFrom);
 						kv.GetVector("to", vecTo);
 					}
-					else if(kv.GetDataType("origin") != KvData_None && kv.GetDataType("size") != KvData_None)
+					else if (kv.GetDataType("origin") != KvData_None && kv.GetDataType("size") != KvData_None)
 					{
 						float vecOrigin[3], vecSize[3];
 						kv.GetVector("origin", vecOrigin);
@@ -995,7 +997,7 @@ enum struct CGlobalLevelLump
 				else bFound = false;
 			}
 			
-			if(!bFound)
+			if (!bFound)
 			{
 				ThrowError("Unknown function %s", szFunction);
 			}
@@ -1015,7 +1017,7 @@ enum struct CGlobalLevelLump
 					{
 						bool add = IsAddSynonym(szAction) || IsEnableSynonym(szAction);
 						bool remove = IsRemoveSynonym(szAction) || IsDisableSynonym(szAction);
-						if(!add && !remove)
+						if (!add && !remove)
 						{
 							ThrowError("Flags block \"%s\" contains unknown action \"%s\", expected one of add | remove", szFlagName, szAction);
 						}
@@ -1034,11 +1036,11 @@ enum struct CGlobalLevelLump
 									if (strcmp(pKeyInfo.m_szKey, szFlagName, false) == 0)
 									{
 										int iFlags = StringToInt(pKeyInfo.m_szValue);
-										if(add)
+										if (add)
 										{
 											iFlags |= iActionValue;
 										}
-										else if(remove)
+										else if (remove)
 										{
 											iFlags &= ~iActionValue;
 										}
@@ -1049,7 +1051,7 @@ enum struct CGlobalLevelLump
 									}
 								}
 							}
-							if(!bFoundFlag && add)
+							if (!bFoundFlag && add)
 							{
 								strcopy(pKeyInfo.m_szKey, sizeof(pKeyInfo.m_szKey), szFlagName);
 								IntToString(iActionValue, pKeyInfo.m_szValue, sizeof(pKeyInfo.m_szValue));
@@ -1072,7 +1074,7 @@ enum struct CGlobalLevelLump
 			LogDebug("Performing output \"%s\" action for %d entities", szAction, pTempEvaluatedList.Length);
 			
 			bool bFoundOutput, bFoundTarget, bFoundInput, bFoundParameter, bFoundDelay, bFoundTTF;
-			if(IsAddSynonym(szAction))
+			if (IsAddSynonym(szAction))
 			{
 				for (int i = 0; i < pTempEvaluatedList.Length; i++)
 				{
@@ -1080,10 +1082,10 @@ enum struct CGlobalLevelLump
 					CEntityOutputLump pNewOutputLump; CEntityKeyLump pNewKeyInfo;
 					
 					this.ParseOutputKeys(kv, pNewOutputLump, pNewKeyInfo.m_szKey, sizeof(pNewKeyInfo.m_szKey), bFoundOutput, bFoundTarget, bFoundInput, bFoundParameter, bFoundDelay, bFoundTTF);
-					if(!bFoundOutput) ThrowError("Cannot add output - missing entry for \"output\"");
-					if(!bFoundTarget) ThrowError("Cannot add output - missing entry for \"target\"");
-					if(!bFoundInput) ThrowError("Cannot add output - missing entry for \"input\"");
-					if(!bFoundTTF) pNewOutputLump.m_iTimesToFire = 1;
+					if (!bFoundOutput) ThrowError("Cannot add output - missing entry for \"output\"");
+					if (!bFoundTarget) ThrowError("Cannot add output - missing entry for \"target\"");
+					if (!bFoundInput) ThrowError("Cannot add output - missing entry for \"input\"");
+					if (!bFoundTTF) pNewOutputLump.m_iTimesToFire = 1;
 					
 					pNewOutputLump.SaveToEntityKeyLump(pNewKeyInfo);
 					pEditedEntityInfo.PushArray(pNewKeyInfo);
@@ -1093,7 +1095,7 @@ enum struct CGlobalLevelLump
 			
 			bool modify = IsModifySynonym(szAction);
 			bool remove = IsRemoveSynonym(szAction);
-			if(!modify && !remove)
+			if (!modify && !remove)
 			{
 				ThrowError("Unknown outputs action \"%s\", expected one of add | remove | modify", szAction);
 			}
@@ -1103,9 +1105,10 @@ enum struct CGlobalLevelLump
 			
 			// evaluate entities matching target if specified
 			CEntityListLump pTargetEvaluatedList;
-			if(kv.GetDataType("target") == KvData_None && kv.JumpToKey("target", false))
+			if (kv.GetDataType("target") == KvData_None && kv.JumpToKey("target", false))
 			{
-				if(kv.GotoFirstSubKey(false)) {
+				if (kv.GotoFirstSubKey(false))
+				{
 					pTargetEvaluatedList = this.EvaluateEntityList(kv);
 					LogDebug("Found %d entities for output target matching", pTargetEvaluatedList.Length);
 				}
@@ -1118,33 +1121,33 @@ enum struct CGlobalLevelLump
 				for (int j = 0; j < pEditedEntityInfo.Length; j++)
 				{
 					CEntityKeyLump pEditedKeyInfo; pEditedEntityInfo.GetArray(j, pEditedKeyInfo, sizeof(pEditedKeyInfo));
-					if(bFoundOutput && !StrEqualsRegex(szOutputName, pEditedKeyInfo.m_szKey, false))
+					if (bFoundOutput && !StrEqualsRegex(szOutputName, pEditedKeyInfo.m_szKey, false))
 					{
 						continue; // avoid parsing output from value unless necessary
 					}
 					
 					CEntityOutputLump pEntityOutputLump;
-					if(pEntityOutputLump.LoadFromEntityKeyLump(pEditedKeyInfo))
+					if (pEntityOutputLump.LoadFromEntityKeyLump(pEditedKeyInfo))
 					{
-						if(pMatchOutputLump.Matches(pEntityOutputLump, bFoundTarget, bFoundInput, bFoundParameter, bFoundDelay, bFoundTTF))
+						if (pMatchOutputLump.Matches(pEntityOutputLump, bFoundTarget, bFoundInput, bFoundParameter, bFoundDelay, bFoundTTF))
 						{
 							// skip any outputs that dont match the target entity
-							if(pTargetEvaluatedList)
+							if (pTargetEvaluatedList)
 							{
 								bool bFoundOne;
 								for (int k = 0; k < pTargetEvaluatedList.Length; k++)
 								{
 									CEntityInfoLump pTargetEntityInfo = pTargetEvaluatedList.Get(k);
-									if(pTargetEntityInfo.MatchesAsIOTarget(pEntityOutputLump.m_szTargetEntity, pEditedEntityInfo))
+									if (pTargetEntityInfo.MatchesAsIOTarget(pEntityOutputLump.m_szTargetEntity, pEditedEntityInfo))
 									{
 										bFoundOne = true;
 										break;
 									}
 								}
-								if(!bFoundOne)
+								if (!bFoundOne)
 									continue;
 							}
-							if(modify)
+							if (modify)
 							{
 								if (kv.GotoFirstSubKey(true))
 								{
@@ -1179,32 +1182,32 @@ enum struct CGlobalLevelLump
 		bool& bFoundOutput = false, bool& bFoundTarget = false, bool& bFoundInput = false, bool& bFoundParameter = false, bool& bFoundDelay = false, bool& bFoundTTF = false)
 	{
 		bFoundOutput = kv.GetDataType("output") != KvData_None;
-		if(bFoundOutput)
+		if (bFoundOutput)
 		{
 			kv.GetString("output", szOutputName, iOutputNameLength);
 		}
 		bFoundTarget = kv.GetDataType("target") != KvData_None;
-		if(bFoundTarget)
+		if (bFoundTarget)
 		{
 			kv.GetString("target", pOutputLump.m_szTargetEntity, sizeof(pOutputLump.m_szTargetEntity));
 		}
 		bFoundInput = kv.GetDataType("input") != KvData_None;
-		if(bFoundInput)
+		if (bFoundInput)
 		{
 			kv.GetString("input", pOutputLump.m_szInputName, sizeof(pOutputLump.m_szInputName));
 		}
 		bFoundParameter = kv.GetDataType("parameter") != KvData_None;
-		if(bFoundParameter)
+		if (bFoundParameter)
 		{
 			kv.GetString("parameter", pOutputLump.m_szParameter, sizeof(pOutputLump.m_szParameter));
 		}
 		bFoundDelay = kv.GetDataType("delay") != KvData_None;
-		if(bFoundDelay)
+		if (bFoundDelay)
 		{
 			pOutputLump.m_flDelay = kv.GetFloat("delay");
 		}
 		bFoundTTF = kv.GetDataType("timestofire") != KvData_None;
-		if(bFoundTTF)
+		if (bFoundTTF)
 		{
 			pOutputLump.m_iTimesToFire = kv.GetNum("timestofire");
 		}
@@ -1220,7 +1223,7 @@ enum struct CGlobalLevelLump
 			for (int j = 0; j < pEntityList.Length; j++)
 			{
 				CEntityInfoLump pHookedEntityInfo = pEntityList.Get(j);
-				if(pHookedEntityInfo.MatchesActualEntity(pEntity))
+				if (pHookedEntityInfo.MatchesActualEntity(pEntity))
 				{
 					pResolvedOutputHookList.PushArray(pOutputHook);
 				}
@@ -1238,7 +1241,7 @@ enum struct CGlobalLevelLump
 			this.m_pServerCvarList.GetArray(i, cmd);
 			if (cmd.m_bLate)
 			{
-				#if !defined NO_DEBUG
+				#if defined DEBUG
 				char szName[128];
 				cmd.m_pConvar.GetName(szName, sizeof(szName));
 				LogDebug("Setting late convar: [\"%s\" = \"%s\"]", szName, cmd.m_szValue);
@@ -1276,9 +1279,9 @@ public Action Hook_FixupBrushModels(int iEntIndex)
 	CBaseEntity pThis = CBaseEntity(iEntIndex);
 	static char szModelName[PLATFORM_MAX_PATH];
 	pThis.GetModelName(szModelName, sizeof(szModelName));
-	if(strncmp(szModelName, BRUSH_FIXUP_IDENT, BRUSH_FIXUP_IDENT_LEN) == 0)
+	if (strncmp(szModelName, BRUSH_FIXUP_IDENT, BRUSH_FIXUP_IDENT_LEN) == 0)
 	{
-		if(PrecacheModel(BRUSH_FIXUP_MDL))
+		if (PrecacheModel(BRUSH_FIXUP_MDL))
 		{
 			pThis.SetModelName(BRUSH_FIXUP_MDL);
 			
@@ -1287,9 +1290,8 @@ public Action Hook_FixupBrushModels(int iEntIndex)
 			pack.WriteString(szModelName);
 			pack.Reset();
 			RequestFrame(FixupBrushModelsPost, pack);
-		} else {
-			ThrowError("Couldn't precache model %s", BRUSH_FIXUP_MDL);
 		}
+		else ThrowError("Couldn't precache model %s", BRUSH_FIXUP_MDL);
 	}
 	return Plugin_Continue;
 }
@@ -1297,7 +1299,7 @@ public Action Hook_FixupBrushModels(int iEntIndex)
 public void FixupBrushModelsPost(DataPack pack)
 {
 	CBaseEntity pThis = pack.ReadCell();
-	if(pThis.IsValid())
+	if (pThis.IsValid())
 	{
 		static char szModelName[PLATFORM_MAX_PATH];
 		pack.ReadString(szModelName, sizeof(szModelName));

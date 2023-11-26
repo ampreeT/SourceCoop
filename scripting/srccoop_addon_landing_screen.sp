@@ -21,7 +21,8 @@ bool bEnabled;
 bool bHidden[MAXPLAYERS + 1];
 bool bReApply[MAXPLAYERS + 1];
 
-public void OnPluginStart() {
+public void OnPluginStart()
+{
 	pCvarLogoMaterial = CreateConVar("sourcecoop_logo_material", "sourcecoop/landing_screen");
 
 	HookEvent("player_team", Event_PlayerChangeTeam, EventHookMode_Post);

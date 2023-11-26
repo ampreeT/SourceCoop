@@ -8,7 +8,7 @@
 
 enum struct ItemInstancingManager
 {
-	StringMap m_pPickedUpItems[MAXPLAYERS+1];
+	StringMap m_pPickedUpItems[MAXPLAYERS + 1];
 	
 	void Initialize()
 	{
@@ -27,7 +27,7 @@ enum struct ItemInstancingManager
 	
 	void OnPlayerSpawned(CBasePlayer pPlayer)
 	{
-		if(!CoopManager.IsFeatureEnabled(FT_INSTANCE_ITEMS_NORESET))
+		if (!CoopManager.IsFeatureEnabled(FT_INSTANCE_ITEMS_NORESET))
 		{
 			this.m_pPickedUpItems[pPlayer.GetEntIndex()].Clear();
 		}
@@ -48,8 +48,9 @@ enum struct ItemInstancingManager
 	void ClearPickedUpItem(CBaseEntity pItem)
 	{
 		char key[32]; IntToString(view_as<int>(pItem), key, sizeof(key));
-		for (int i = 0; i <= MaxClients; i++) {
-			if(this.m_pPickedUpItems[i] != null)
+		for (int i = 0; i <= MaxClients; i++)
+		{
+			if (this.m_pPickedUpItems[i] != null)
 			{
 				this.m_pPickedUpItems[i].Remove(key);
 			}
@@ -68,7 +69,7 @@ public void Hook_Instancing_ItemSpawn(int iEntIndex)
 	DHookEntity(hkOnTryPickUp, true, iEntIndex, _, Hook_Instancing_OnTryPickUpPost);
 	#endif
 
-	if(pItem.IsClassname("item_healthkit"))
+	if (pItem.IsClassname("item_healthkit"))
 	{
 		// this spawns second entity item_healthkit_ragdoll_clone
 		SDKHook(iEntIndex, SDKHook_SetTransmit, Hook_Instancing_NeverTransmit);
@@ -86,10 +87,10 @@ public void Hook_Instancing_ItemSpawn(int iEntIndex)
 public MRESReturn Hook_Instancing_OnTryPickUpPre(int _this, Handle hReturn, Handle hParams)
 {
 	CBasePlayer pPlayer = CBasePlayer(DHookGetParam(hParams, 1));
-	if(pPlayer.IsClassPlayer())
+	if (pPlayer.IsClassPlayer())
 	{
 		CBaseEntity pItem = CBaseEntity(_this);
-		if(g_pInstancingManager.HasPickedUpItem(pPlayer, pItem))
+		if (g_pInstancingManager.HasPickedUpItem(pPlayer, pItem))
 		{
 			DHookSetReturn(hReturn, false);
 			return MRES_Supercede;
@@ -102,10 +103,10 @@ public MRESReturn Hook_Instancing_OnTryPickUpPre(int _this, Handle hReturn, Hand
 public MRESReturn Hook_Instancing_OnTryPickUpPost(int _this, Handle hReturn, Handle hParams)
 {
 	bool bPickedUp = DHookGetReturn(hReturn);
-	if(bPickedUp)
+	if (bPickedUp)
 	{
 		CBasePlayer pPlayer = CBasePlayer(DHookGetParam(hParams, 1));
-		if(pPlayer.IsClassPlayer())
+		if (pPlayer.IsClassPlayer())
 		{
 			CBaseEntity pItem = CBaseEntity(_this);
 			g_pInstancingManager.AddPickedUpItem(pPlayer, pItem);
@@ -117,7 +118,7 @@ public MRESReturn Hook_Instancing_OnTryPickUpPost(int _this, Handle hReturn, Han
 // Do not transmit picked up items. This is not optimal - better option would be to show some effect/as translucent
 public Action Hook_Instancing_ItemTransmit(int entity, int client)
 {
-	if(g_pInstancingManager.HasPickedUpItem(CBasePlayer(client), CBaseEntity(entity)))
+	if (g_pInstancingManager.HasPickedUpItem(CBasePlayer(client), CBaseEntity(entity)))
 	{
 		return Plugin_Stop;
 	}
@@ -126,7 +127,7 @@ public Action Hook_Instancing_ItemTransmit(int entity, int client)
 
 public Action Hook_Instancing_Use(int entity, int activator, int caller, UseType type, float value)
 {
-	if(g_pInstancingManager.HasPickedUpItem(CBasePlayer(caller), CBaseEntity(entity)))
+	if (g_pInstancingManager.HasPickedUpItem(CBasePlayer(caller), CBaseEntity(entity)))
 	{
 		return Plugin_Handled;
 	}

@@ -73,7 +73,7 @@ methodmap CoopManager {
 		data.m_bPlayerSpawned = false;
 		data.m_pChangeLevelMgr.Clear();
 		data.m_iEnabledFeatures = 0;
-		for(int i = 0; i <= MaxClients; i++)
+		for (int i = 0; i <= MaxClients; i++)
 		{
 			data.m_iClientChangeLvlIndicies[i] = -1;
 		}
@@ -83,9 +83,9 @@ methodmap CoopManager {
 		
 		KeyValues kv = CoopManager.LoadMapConfig(g_szMapName, data.m_mapConfigLoc);
 	
-		if((data.m_bIsCoopMap = kv != null))
+		if ((data.m_bIsCoopMap = kv != null))
 		{
-			if(CoopManager.IsNewMapSeries())
+			if (CoopManager.IsNewMapSeries())
 			{
 				// reset global states
 				g_ServerGameDLL.GameShutdown();
@@ -116,7 +116,7 @@ methodmap CoopManager {
 			#endif
 
 			KeyValues kv = CoopManager.LoadMapConfig(g_szMapName, data.m_mapConfigLoc);
-			if(kv != null)
+			if (kv != null)
 			{
 				g_SpawnSystem.ParseConfigFile(kv);
 				
@@ -143,12 +143,12 @@ methodmap CoopManager {
 		
 		g_SpawnSystem.SpawnPlayer(pPlayer, bActuallySpawned);
 		
-		if(bActuallySpawned)
+		if (bActuallySpawned)
 		{				
 			data.m_bPlayerSpawned = true;
-			if(!data.m_bStarted)
+			if (!data.m_bStarted)
 			{
-				if(g_pLevelLump.m_iIntroType == INTRO_FADE)
+				if (g_pLevelLump.m_iIntroType == INTRO_FADE)
 				{
 					Client_ScreenFade(pPlayer.GetEntIndex(), 0, FFADE_STAYOUT);
 					pPlayer.SetFlags(pPlayer.GetFlags() | FL_ATCONTROLS);
@@ -165,16 +165,16 @@ methodmap CoopManager {
 
 	public static void CheckStart()
 	{
-		if(!data.m_bStarted && data.m_bPlayerSpawned)
+		if (!data.m_bStarted && data.m_bPlayerSpawned)
 		{
 			// are we allowed to start or waiting for players?
-			if(CoopManager.IsAllowedToStart())
+			if (CoopManager.IsAllowedToStart())
 			{
 				// is initial timer already running?
-				if(CoopManager.IsInCountDownPeriod())
+				if (CoopManager.IsInCountDownPeriod())
 				{
 					// can start, but do a 3 sec readyup timer as we cancel the initial player wait timer
-					if(!data.m_bGetReadyTimer)
+					if (!data.m_bGetReadyTimer)
 					{
 						delete data.m_pStartTimer;
 						CoopManager.StartCountdown(true);
@@ -186,7 +186,7 @@ methodmap CoopManager {
 					CoopManager.Start();
 				}
 			}
-			else if(!CoopManager.IsInCountDownPeriod())
+			else if (!CoopManager.IsInCountDownPeriod())
 			{
 				// not allowed to start now and no timer is running, start the timer.
 				CoopManager.StartCountdown(false);
@@ -246,7 +246,7 @@ methodmap CoopManager {
 				{
 					CBasePlayer pClient = CBasePlayer(i);
 					pClient.SetFlags(pClient.GetFlags() & ~FL_ATCONTROLS);
-					if(g_pLevelLump.m_iIntroType == INTRO_FREEZE)
+					if (g_pLevelLump.m_iIntroType == INTRO_FREEZE)
 					{
 						Client_ScreenFade(pClient.GetEntIndex(), FROZEN_FADE_DUR_OUT, FFADE_PURGE|FFADE_IN, 1, FROZEN_FADE_R, FROZEN_FADE_G, FROZEN_FADE_B, FROZEN_FADE_A);
 					}
@@ -258,11 +258,11 @@ methodmap CoopManager {
 		for (int i = 0; i < data.m_pDelayedOutputs.Length; i++)
 		{
 			FireOutputData pFireOutputData; data.m_pDelayedOutputs.GetArray(i, pFireOutputData);
-			if(pFireOutputData.m_pCaller.IsValid())
+			if (pFireOutputData.m_pCaller.IsValid())
 			{
 				FireEntityOutput(pFireOutputData.m_pCaller.GetEntIndex(), pFireOutputData.m_szName, pFireOutputData.m_pActivator.GetEntIndex(), pFireOutputData.m_flDelay);
 
-				if(pFireOutputData.m_pCaller.IsClassname("trigger_once"))
+				if (pFireOutputData.m_pCaller.IsClassname("trigger_once"))
 				{
 					pFireOutputData.m_pCaller.SetNextThinkTick(GetGameTickCount()+1); // allow to kill itself
 				}
@@ -307,13 +307,13 @@ methodmap CoopManager {
 			return;
 		}
 
-		if(data.m_pChangeLevelTimer == null)
+		if (data.m_pChangeLevelTimer == null)
 		{
 			data.m_iTicksToEnd = g_pConvarEndWaitPeriod.IntValue;
 			data.m_pChangeLevelTimer = CreateTimer(CoopManager.GetChangeLevelTimerInterval(), ChangeLevelTimerCallback, _, TIMER_FLAG_NO_MAPCHANGE);
 			EmitSoundToAll(SND_CHANGELEVEL, .volume = SND_CHANGELEVEL_VOL);
 		}
-		if(data.m_pChangeLevelMgr.SetPlayerVote(pChangelevel, pActivator, data.m_iClientChangeLvlIndicies))
+		if (data.m_pChangeLevelMgr.SetPlayerVote(pChangelevel, pActivator, data.m_iClientChangeLvlIndicies))
 		{
 			data.m_pChangeLevelMgr.UpdateStatus(data.m_iTicksToEnd);
 		}
@@ -322,9 +322,9 @@ methodmap CoopManager {
 	public static float GetChangeLevelTimerInterval()
 	{
 		int votes = -1; // dont cut time off for first player that finished
-		for(int j = 1; j <= MaxClients; j++)
+		for (int j = 1; j <= MaxClients; j++)
 		{
-			if(data.m_iClientChangeLvlIndicies[j] != -1)
+			if (data.m_iClientChangeLvlIndicies[j] != -1)
 				votes++;
 		}
 		
@@ -332,23 +332,23 @@ methodmap CoopManager {
 		bool bCountLivingOnly = SurvivalManager.GetMode() != SURVIVAL_OFF;
 		
 		int iPlayerCount = GetRealClientCount(true, bCountLivingOnly, true) - 1; // take off the 1 that we did with votes
-		if(iPlayerCount < 1)
+		if (iPlayerCount < 1)
 		{
 			return 0.0;
 		}
-		if(votes < 1)
+		if (votes < 1)
 		{
 			return 1.0;
 		}
 		
-		if(iPlayerCount < votes) iPlayerCount = votes;
+		if (iPlayerCount < votes) iPlayerCount = votes;
 		return 1.0 - (1.0 / (iPlayerCount / float(votes))) * g_pConvarEndWaitFactor.FloatValue;
 	}
 
 	public static bool IsNewMapSeries()
 	{
 		// Return false if map was changed naturally, true if externally
-		if(GetMapHistorySize() > 0)
+		if (GetMapHistorySize() > 0)
 		{
 			char szMap[MAX_MAPNAME], szReason[32]; int startTime;
 			GetMapHistory(0, szMap, sizeof(szMap), szReason, sizeof(szReason), startTime);
@@ -365,7 +365,7 @@ methodmap CoopManager {
 	{
 		char szNextMap[MAX_MAPNAME];
 		g_pConvarHomeMap.GetString(szNextMap, sizeof(szNextMap));
-		if(szNextMap[0] != '\0')
+		if (szNextMap[0] != '\0')
 		{
 			CoopManager.EndMap(szNextMap, SC_FINISHED_HOMEMAP_MAPCHANGE);
 		}
@@ -430,7 +430,7 @@ methodmap CoopManager {
 		if (!FileExists(szConfigPath))
 		{
 			Format(szConfigPath, sizeof(szConfigPath), "maps/%s.edt", szMapName);
-			if(!FileExists(szConfigPath, true))
+			if (!FileExists(szConfigPath, true))
 			{
 				return null;
 			}
@@ -456,7 +456,7 @@ public Action StartTimerCallback(Handle pTimer)
 		return Plugin_Stop;
 	}
 	
-	if(data.m_iSecondsToStart == 3)
+	if (data.m_iSecondsToStart == 3)
 	{
 		EmitSoundToAll(SND_3, .volume = SND_TICK_VOL);
 	}
@@ -478,7 +478,7 @@ public Action StartTimerCallback(Handle pTimer)
 
 public Action ChangeLevelTimerCallback(Handle pTimer)
 {
-	if(!data.m_iTicksToEnd--)
+	if (!data.m_iTicksToEnd--)
 	{
 		CChangelevel pChangelevel = data.m_pChangeLevelMgr.GetWinner();
 		char szNextMap[MAX_MAPNAME];

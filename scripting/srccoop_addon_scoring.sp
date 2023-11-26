@@ -68,9 +68,9 @@ public void MyMenuHandler(TopMenu topmenu, TopMenuAction action, TopMenuObject t
 	}
 	else if (action == TopMenuAction_SelectOption)
 	{
-		if(AreClientCookiesCached(param))
+		if (AreClientCookiesCached(param))
 		{
-			if(GetCookieBool(pKillfeedEnabledCookie, param))
+			if (GetCookieBool(pKillfeedEnabledCookie, param))
 			{
 				SetCookieBool(pKillfeedEnabledCookie, param, false);
 				Msg(param, "Killfeed disabled.");
@@ -87,7 +87,7 @@ public void MyMenuHandler(TopMenu topmenu, TopMenuAction action, TopMenuObject t
 
 public void OnClientCookiesCached(int client)
 {
-	if(!IsCookieSet(pKillfeedEnabledCookie, client))
+	if (!IsCookieSet(pKillfeedEnabledCookie, client))
 	{
 		// new player - set the default
 		SetCookieBool(pKillfeedEnabledCookie, client, pConvarKillfeedDefault.BoolValue);
@@ -102,7 +102,8 @@ public void EntityNameFix(char[] szName)
 
 public void PopulateEntityNameMap()
 {
-	if(hTrie == null) {
+	if (hTrie == null)
+	{
 		hTrie = new StringMap();
 
 		// Weapons
@@ -237,7 +238,7 @@ public void Event_EntKilled(Event event, const char[] name, bool dontBroadcast)
 				CBaseEntity pKilledEnemy = pNPC.GetEnemy();
 
 				int iPointsToAward = 1;
-				if(pKilledEnemy.IsValid())
+				if (pKilledEnemy.IsValid())
 				{
 					// Was it a player different from the killer?
 					if (pKilledEnemy.IsClassPlayer() && pKilledEnemy.GetEntIndex() != pClient.GetEntIndex())
@@ -276,16 +277,21 @@ public void Event_EntKilled(Event event, const char[] name, bool dontBroadcast)
 				lNpcDamageTracker.GetArray(pKilled.GetEntIndex(), attackers);
 
 				// Gotta calculate the damage total first to see if it's worthy of being broadcast in chat...
-				for(int iClientIndex = 0; iClientIndex <= MaxClients; iClientIndex++) {
+				for (int iClientIndex = 0; iClientIndex <= MaxClients; iClientIndex++)
+				{
 					float fDamageInflicted = attackers[iClientIndex];
 					CBasePlayer pDamagerDealer = CBasePlayer(iClientIndex);
-					if(!pDamagerDealer.IsValid() || fDamageInflicted <= 0) continue;
+					if (!pDamagerDealer.IsValid() || fDamageInflicted <= 0)
+						continue;
 					fTotalDamage += fDamageInflicted;
 				}
-				for(int iClientIndex = 0; iClientIndex <= MaxClients; iClientIndex++) {
+
+				for (int iClientIndex = 0; iClientIndex <= MaxClients; iClientIndex++)
+				{
 					float fDamageInflicted = attackers[iClientIndex];
 					CBasePlayer pDamagerDealer = CBasePlayer(iClientIndex);
-					if(!pDamagerDealer.IsValid() || fDamageInflicted <= 0) continue;
+					if (!pDamagerDealer.IsValid() || fDamageInflicted <= 0)
+						continue;
 				
 					char szDmgDealerName[32];
 					pDamagerDealer.GetName(szDmgDealerName, sizeof(szDmgDealerName));
@@ -294,18 +300,15 @@ public void Event_EntKilled(Event event, const char[] name, bool dontBroadcast)
 					
 					float fPlrDmgLast;
 
-					if(!GetTrieValue(hDmgTrie, szDmgDealerName, fPlrDmgLast))
-					{
+					if (!GetTrieValue(hDmgTrie, szDmgDealerName, fPlrDmgLast))
 						fPlrDmgLast = 0.0;
-					}
 
 					float fNewDmgCombo = fPlrDmgLast + fDamageInflicted;
 					
-					if(GetCookieBool(pKillfeedEnabledCookie, iClientIndex)) {
+					if (GetCookieBool(pKillfeedEnabledCookie, iClientIndex))
 						PrintCenterText(iClientIndex, "COMBO +%.0f (%.0f)", fDamageInflicted, fNewDmgCombo);
-					}
 					
-					if(fTotalDamage >= 100)
+					if (fTotalDamage >= 100)
 						PrintToChatKillfeed("%s%s%s dealt %s%.0f%s damage.", COLOR_KILL_SCORE_ENT, szDmgDealerName, COLOR_WHITE, COLOR_MURDER, fDamageInflicted, COLOR_MURDER_VICTIM);
 
 					// Add damage to combo, reset combo counter to 6000 ms
@@ -329,7 +332,6 @@ public void Event_EntKilled(Event event, const char[] name, bool dontBroadcast)
 
 			if (strcmp(szAttackerName, szInflictorClass, false) != 0)
 				StrCat(szMessage, sizeof(szMessage), "%s with %s%s");
-			
 			
 			PrintToChatKillfeed(szMessage, COLOR_CRIMSON, szKilledName, COLOR_WHITE, COLOR_CRIMSON, szAttackerName, COLOR_WHITE, COLOR_CRIMSON, szInflictorClass);
 		}
@@ -371,10 +373,11 @@ void PrintToChatKillfeed(const char[] format, any ...)
 public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 {
 	CBaseEntity pEntity = CBaseEntity(iEntIndex);
-	if(pEntity.IsClassNPC())
+	if (pEntity.IsClassNPC())
 	{
 		float[] clients = new float[MaxClients + 1];
-		for(int iClientIndex = 0; iClientIndex <= MaxClients; iClientIndex++) {
+		for (int iClientIndex = 0; iClientIndex <= MaxClients; iClientIndex++)
+		{
 			clients[iClientIndex] = 0.0;
 		}
 
@@ -388,7 +391,7 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 
 public void InitComboTracker()
 {
-	if(hDmgTimer == null)
+	if (hDmgTimer == null)
 	{
 		lNpcDamageTracker = CreateArray(MaxClients + 1, GetMaxEntities());
 		hDmgTimer = CreateTimer(0.1, Timer_DamageUpdate, _, TIMER_REPEAT);
@@ -399,10 +402,12 @@ public void InitComboTracker()
 
 public Action Timer_DamageUpdate(Handle hTimer)
 {
-	for(int iClientIndex = 0; iClientIndex <= MaxClients; iClientIndex++)
+	for (int iClientIndex = 0; iClientIndex <= MaxClients; iClientIndex++)
 	{
 		CBasePlayer pPlayer = CBasePlayer(iClientIndex);
-		if(!pPlayer.IsValid()) continue;
+		if (!pPlayer.IsValid())
+			continue;
+		
 		char szPlayerName[32];
 		pPlayer.GetName(szPlayerName, sizeof(szPlayerName));
 		
@@ -412,14 +417,17 @@ public Action Timer_DamageUpdate(Handle hTimer)
 		bool bPlayerHasCombo = GetTrieValue(hDmgTrie, szPlayerName, fDamageDone) &&
 							   GetTrieValue(hComboTimeTrie, szPlayerName, iComboMsLeft);
 		
-		if(bPlayerHasCombo) {
+		if (bPlayerHasCombo)
+		{
 			// subtract 100ms from timer
 			iComboMsLeft -= 100;
 			SetTrieValue(hComboTimeTrie, szPlayerName, iComboMsLeft);
-			if(fDamageDone <= 0) continue;
+			if (fDamageDone <= 0)
+				continue;
 
 			// Timer is up!
-			if(iComboMsLeft <= 0) {
+			if (iComboMsLeft <= 0)
+			{
 				// Reset combo back to zero and notify player of their final combo
 				SetTrieValue(hDmgTrie, szPlayerName, 0.0);
 				
@@ -430,29 +438,35 @@ public Action Timer_DamageUpdate(Handle hTimer)
 				bool bMaxCombo = false;
 				
 				// Clamp max score to MAX_COMBO (in case of obscene combo bonuses)
-				if(iScoreToGive >= MAX_COMBO) {
+				if (iScoreToGive >= MAX_COMBO)
+				{
 					iScoreToGive = MAX_COMBO;
 					bMaxCombo = true;
 				}
 
-				if(GetCookieBool(pKillfeedEnabledCookie, iClientIndex)) {
-					if(iScoreToGive > 0) {
+				if (GetCookieBool(pKillfeedEnabledCookie, iClientIndex)) 
+				{
+					if (iScoreToGive > 0)
+					{
 						SendDialogToOne(iClientIndex, 255, 50, 50, "Bonus Points +%d", iScoreToGive);
 						PrintToChat(iClientIndex, "%sFinal Combo: %s(%.0f Dmg for +%d Points)%s!",
 							COLOR_WHITE, COLOR_KILL_SCORE_ENT, fDamageDone, iScoreToGive, COLOR_WHITE);
-						if(bMaxCombo)
+						if (bMaxCombo)
 							PrintCenterText(iClientIndex, "MAXIMUM COMBO COMPLETE");
 						else
 							PrintCenterText(iClientIndex, "COMBO COMPLETE");
-					} else {
+					}
+					else
+					{
 						PrintCenterText(iClientIndex, "COMBO OVER");
 					}
 				}
 
 				pPlayer.ModifyScore(iScoreToGive);
 
-				if(fDamageDone >= 400) {
-					if(bMaxCombo)
+				if (fDamageDone >= 400)
+				{
+					if (bMaxCombo)
 						PrintToChatKillfeed("%s%s%s GOT A MAX COMBO OF %s%.0f%s DAMAGE! GRANTING THEM A SCORE BONUS OF %s%d",
 						COLOR_KILL_SCORE_ENT, szPlayerName, COLOR_MURDER, COLOR_KILL_SCORE_ENT, fDamageDone, COLOR_MURDER, COLOR_KILL_SCORE_ENT, iScoreToGive);
 					else
@@ -471,7 +485,8 @@ public Action Hook_OnNpcTakeDamage(int iVictim, int &iAttacker, int &iInflictor,
 	CBaseEntity pAttacker = CBaseEntity(iAttacker);
 
 	// If the damage was done by a player, add it to the NPC's damage list
-	if(pAttacker.IsClassPlayer()) {
+	if (pAttacker.IsClassPlayer())
+	{
 		float[] attackers = new float[MaxClients + 1];
 		lNpcDamageTracker.GetArray(iVictim, attackers);
 		
@@ -485,14 +500,15 @@ public Action Hook_OnNpcTakeDamage(int iVictim, int &iAttacker, int &iInflictor,
 		int iHealth = GetEntProp(iVictim, Prop_Data, "m_iHealth", 1);
 
 		// Prevent overkill damage from being recorded
-		if(fDamage > iHealth)
+		if (fDamage > iHealth)
 			fDamageToAward = float(iHealth);
 		
 		// No negative damage
-		if(fDamageToAward <= 0) fDamageToAward = 0.0;
+		if (fDamageToAward <= 0)
+			fDamageToAward = 0.0;
 
 		// Cap the max damage awarded from any given source to prevent obscene numbers due to edge cases
-		if(fDamageToAward > MAX_DAMAGE_AWARDED_PER_HIT)
+		if (fDamageToAward > MAX_DAMAGE_AWARDED_PER_HIT)
 			fDamageToAward = MAX_DAMAGE_AWARDED_PER_HIT;
 
 		attackers[iAttacker] += fDamageToAward;

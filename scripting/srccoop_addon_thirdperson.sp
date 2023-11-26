@@ -59,7 +59,7 @@ public void ThirdPersonMenuHandler(TopMenu topmenu, TopMenuAction action, TopMen
 public void EnabledCvarChanged(ConVar convar, const char[] oldValue, const char[] newValue)
 {
 	bool enable = pEnabledCvar.BoolValue && SC_IsCurrentMapCoop();
-	for(int i = 1; i <= MaxClients; i++)
+	for (int i = 1; i <= MaxClients; i++)
 	{
 		if (IsClientInGame(i))
 		{
@@ -83,7 +83,8 @@ public void EnabledCvarChanged(ConVar convar, const char[] oldValue, const char[
 public void OnClientPutInServer(int client)
 {
 	bIsInThirdperson[client] = false;
-	if (pEnabledCvar.BoolValue && SC_IsCurrentMapCoop() && !IsFakeClient(client)) {
+	if (pEnabledCvar.BoolValue && SC_IsCurrentMapCoop() && !IsFakeClient(client))
+	{
 		SendConVarValue(client, pCheatsCvar, "1");
 	}
 }

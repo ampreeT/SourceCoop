@@ -30,9 +30,10 @@ methodmap ChangeLevelManager < ArrayList
 		{
 			this.GetArray(i, pChangeLvlLump);
 			pChangeLvlLump.votes = 0;
-			for(int j = 1; j <= MaxClients; j++)
+			for (int j = 1; j <= MaxClients; j++)
 			{
-				if(iClientVoteIndicies[j] == i) pChangeLvlLump.votes++;
+				if (iClientVoteIndicies[j] == i)
+					pChangeLvlLump.votes++;
 			}
 			this.SetArray(i, pChangeLvlLump);
 		}
@@ -58,7 +59,7 @@ methodmap ChangeLevelManager < ArrayList
 			for (int i = 0; i < pSorted.Length; i++)
 			{
 				pSorted.GetArray(i, pChangeLvlLump);
-				if(pChangeLvlLump.m_pChangeLevel.IsValid())
+				if (pChangeLvlLump.m_pChangeLevel.IsValid())
 				{
 					pChangeLvlLump.m_pChangeLevel.GetMapName(szMapName, sizeof(szMapName));
 					Format(szDisplay, sizeof(szDisplay), "%s%s (%d players) ", szDisplay, szMapName, pChangeLvlLump.votes);
@@ -83,7 +84,7 @@ methodmap ChangeLevelManager < ArrayList
 			for (int i = 0; i < pSorted.Length; i++)
 			{
 				pSorted.GetArray(i, pChangeLvlLump);
-				if(pChangeLvlLump.m_pChangeLevel.IsValid())
+				if (pChangeLvlLump.m_pChangeLevel.IsValid())
 				{
 					pChangeLvlLump.m_pChangeLevel.GetMapName(szMapName, sizeof(szMapName));
 					Format(szDisplay, sizeof(szDisplay), "%s (%d players)", szMapName, pChangeLvlLump.votes);
@@ -91,9 +92,9 @@ methodmap ChangeLevelManager < ArrayList
 				}
 			}
 			
-			for(int i = 1; i <= MaxClients; i++)
+			for (int i = 1; i <= MaxClients; i++)
 			{
-				if(IsClientInGame(i))
+				if (IsClientInGame(i))
 					panel.Send(i, ChangeLevelStatusPanelCallback, 1);
 			}
 			
@@ -109,9 +110,9 @@ methodmap ChangeLevelManager < ArrayList
 		ChangeLevelVoteLump pChangeLvlLump;
 		for (int i = 0; i < this.Length; i++)
 		{
-			if(this.GetArray(i, pChangeLvlLump) && pChangeLvlLump.m_pChangeLevel == pChangelevel)
+			if (this.GetArray(i, pChangeLvlLump) && pChangeLvlLump.m_pChangeLevel == pChangelevel)
 			{
-				if(iClientVoteIndicies[iPlayer] != i)
+				if (iClientVoteIndicies[iPlayer] != i)
 				{
 					iClientVoteIndicies[iPlayer] = i;
 					this.UpdateVotes(iClientVoteIndicies);
@@ -139,9 +140,9 @@ methodmap ChangeLevelManager < ArrayList
 public int ChangeLvlLumpSortFunc(int index1, int index2, ArrayList array, Handle hndl)
 {
 	ChangeLevelVoteLump item1, item2; array.GetArray(index1, item1); array.GetArray(index2, item2);
-	if(item1.votes < item2.votes)
+	if (item1.votes < item2.votes)
 		return 1;
-	if(item2.votes < item1.votes)
+	if (item2.votes < item1.votes)
 		return -1;
 	return 0;
 }

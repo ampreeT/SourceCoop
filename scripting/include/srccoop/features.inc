@@ -8,21 +8,21 @@
 
 enum SourceCoopFeature
 {
-	FT_INSTANCE_ITEMS			=	(1 << 0),
-	FT_INSTANCE_ITEMS_NORESET 	=	(1 << 1),
-	FT_FIRSTPERSON_DEATHCAM 	=	(1 << 2),
-	FT_NO_TELEFRAGGING			=	(1 << 3),
-	//Free						=	(1 << 4),
-	FT_NOBLOCK					=	(1 << 5),
-	FT_SHOW_WELCOME_MESSAGE		=	(1 << 6),
-	FT_HEV_SOUNDS				=	(1 << 7),
-	FT_STRIP_DEFAULT_EQUIPMENT	=	(1 << 8),
-	FT_STRIP_DEFAULT_EQUIPMENT_KEEPSUIT	=	(1 << 9),
-	FT_DISABLE_CANISTER_DROPS	=	(1 << 10),
-	FT_AUTODETECT_MAP_END		=	(1 << 11),
-	FT_CHANGELEVEL_FX			=	(1 << 12),
-	FT_KEEP_EQUIPMENT			=	(1 << 13),
-	FT_TRANSFER_PLAYER_STATE	=	(1 << 14),
+	FT_INSTANCE_ITEMS						=	(1 << 0),
+	FT_INSTANCE_ITEMS_NORESET 				=	(1 << 1),
+	FT_FIRSTPERSON_DEATHCAM 				=	(1 << 2),
+	FT_NO_TELEFRAGGING						=	(1 << 3),
+	//Free									=	(1 << 4),
+	FT_NOBLOCK								=	(1 << 5),
+	FT_SHOW_WELCOME_MESSAGE					=	(1 << 6),
+	FT_HEV_SOUNDS							=	(1 << 7),
+	FT_STRIP_DEFAULT_EQUIPMENT				=	(1 << 8),
+	FT_STRIP_DEFAULT_EQUIPMENT_KEEPSUIT		=	(1 << 9),
+	FT_DISABLE_CANISTER_DROPS				=	(1 << 10),
+	FT_AUTODETECT_MAP_END					=	(1 << 11),
+	FT_CHANGELEVEL_FX						=	(1 << 12),
+	FT_KEEP_EQUIPMENT						=	(1 << 13),
+	FT_TRANSFER_PLAYER_STATE				=	(1 << 14),
 }
 
 methodmap FeatureMap < StringMap
@@ -51,7 +51,7 @@ methodmap FeatureMap < StringMap
 	
 	public bool GetFeature(char[] szFeature, SourceCoopFeature &feature)
 	{
-		UpperCaseString(szFeature, szFeature, strlen(szFeature)+1);
+		UpperCaseString(szFeature, szFeature, strlen(szFeature) + 1);
 		return this.GetValue(szFeature, feature);
 	}
 }

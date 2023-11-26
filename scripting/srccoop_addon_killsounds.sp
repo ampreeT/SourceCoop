@@ -38,7 +38,7 @@ public void OnLibraryAdded(const char[] name)
 	{
 		TopMenu pCoopMenu = SC_GetCoopTopMenu();
 		TopMenuObject pMenuCategory = pCoopMenu.FindCategory(COOPMENU_CATEGORY_SOUNDS);
-		if(pMenuCategory != INVALID_TOPMENUOBJECT)
+		if (pMenuCategory != INVALID_TOPMENUOBJECT)
 		{
 			pCoopMenu.AddItem(MENUITEM_TOGGLE_KILLSOUNDS, MyMenuHandler, pMenuCategory);
 		}
@@ -53,9 +53,9 @@ public void MyMenuHandler(TopMenu topmenu, TopMenuAction action, TopMenuObject o
 	}
 	else if (action == TopMenuAction_SelectOption)
 	{
-		if(AreClientCookiesCached(param))
+		if (AreClientCookiesCached(param))
 		{
-			if(GetCookieBool(pEnabledCookie, param))
+			if (GetCookieBool(pEnabledCookie, param))
 			{
 				SetCookieBool(pEnabledCookie, param, false);
 				Msg(param, "Kill confirm sounds disabled.");
@@ -84,7 +84,7 @@ public void OnSndPathChange(ConVar pConvar, const char[] szOldPath, const char[]
 
 public void OnClientCookiesCached(int client)
 {
-	if(!IsCookieSet(pEnabledCookie, client))
+	if (!IsCookieSet(pEnabledCookie, client))
 	{
 		// new player - set the default
 		SetCookieBool(pEnabledCookie, client, pConvarDefault.BoolValue);
@@ -96,9 +96,9 @@ public void Event_EntityKilled(Event hEvent, const char[] szName, bool bDontBroa
 	CBaseEntity pKilled = CBaseEntity(hEvent.GetInt("entindex_killed"));
 	CBaseEntity pAttacker = CBaseEntity(hEvent.GetInt("entindex_attacker"));
 	
-	if(pAttacker.IsClassPlayer() && pKilled.IsClassNPC())
+	if (pAttacker.IsClassPlayer() && pKilled.IsClassNPC())
 	{
-		if(GetCookieBool(pEnabledCookie, pAttacker.GetEntIndex()))
+		if (GetCookieBool(pEnabledCookie, pAttacker.GetEntIndex()))
 		{
 			char szKillSnd[PLATFORM_MAX_PATH];
 			pSoundEffectPath.GetString(szKillSnd, sizeof(szKillSnd));

@@ -67,7 +67,7 @@ void LoadGameData()
 	#if defined PLAYERPATCH_SERVERSIDE_RAGDOLLS
 	char szCreateServerRagdoll[] = "CreateServerRagdoll";
 	StartPrepSDKCall(SDKCall_Static);
-	if(!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Signature, szCreateServerRagdoll))
+	if (!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Signature, szCreateServerRagdoll))
 		SetFailState("Could not obtain gamedata signature %s", szCreateServerRagdoll);
 	PrepSDKCall_SetReturnInfo(SDKType_CBaseEntity, SDKPass_Pointer);
 	PrepSDKCall_AddParameter(SDKType_CBaseEntity, SDKPass_Pointer); // CBaseAnimating *pAnimating

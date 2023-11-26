@@ -103,14 +103,14 @@ public MRESReturn Hook_BaseNPCAcceptInput(int _this, Handle hReturn, Handle hPar
 		{
 			char szParam[32];
 			DHookGetParamObjectPtrString(hParams, 4, 0, ObjectValueType_String, szParam, sizeof(szParam));
-			if(StrEqual(szParam, "!player", false) || StrEqual(szParam, "!pvsplayer", false))
+			if (StrEqual(szParam, "!player", false) || StrEqual(szParam, "!pvsplayer", false))
 			{
 				CAI_BaseNPC pThis = CAI_BaseNPC(_this);
 				CBasePlayer pPlayer;
 				float vecAbsOrigin[3];
-				for(int i = 1; i <= MaxClients; i++)
+				for (int i = 1; i <= MaxClients; i++)
 				{
-					if(IsClientInGame(i))
+					if (IsClientInGame(i))
 					{
 						pPlayer = CBasePlayer(i);
 						pPlayer.GetAbsOrigin(vecAbsOrigin);
@@ -162,7 +162,7 @@ public void Hook_ChangelevelSpawn(int iEntIndex)
 	CChangelevel pEntity = CChangelevel(iEntIndex);
 	DHookEntity(hkAcceptInput, true, pEntity.GetEntIndex(), _, Hook_ChangelevelAcceptInput);
 
-	if(!pEntity.HasSpawnFlag(SF_CHANGELEVEL_NOTOUCH))
+	if (!pEntity.HasSpawnFlag(SF_CHANGELEVEL_NOTOUCH))
 	{
 		SDKHook(pEntity.GetEntIndex(), SDKHook_Touch, Hook_ChangelevelOnTouch);
 		CreateTimer(2.0, ChangelevelEffects, pEntity, TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT);
@@ -278,7 +278,7 @@ void InitTrigger(CBaseEntity pTrigger)
 {
 	pTrigger.SetSolidType(pTrigger.GetParent().IsValid()? SOLID_VPHYSICS : SOLID_BSP);
 	int iSolidFlags = pTrigger.GetSolidFlags();
-	if(GetEntProp(pTrigger.GetEntIndex(), Prop_Data, "m_bDisabled"))
+	if (GetEntProp(pTrigger.GetEntIndex(), Prop_Data, "m_bDisabled"))
 	{
 		iSolidFlags &= ~FSOLID_TRIGGER;
 	}
@@ -286,7 +286,7 @@ void InitTrigger(CBaseEntity pTrigger)
 	{
 		iSolidFlags |= FSOLID_TRIGGER;
 	}
-	if(pTrigger.HasSpawnFlag(SF_TRIG_TOUCH_DEBRIS))
+	if (pTrigger.HasSpawnFlag(SF_TRIG_TOUCH_DEBRIS))
 	{
 		iSolidFlags |= FSOLID_TRIGGER_TOUCH_DEBRIS;
 	}
@@ -313,14 +313,14 @@ public MRESReturn Hook_PointTeleportAcceptInput(int _this, Handle hReturn, Handl
 			char szTarget[MAX_FORMAT];
 			CBaseEntity pTeleport = CBaseEntity(_this);
 			pTeleport.GetTarget(szTarget, sizeof(szTarget));
-			if(strcmp(szTarget, "!player", false) == 0)
+			if (strcmp(szTarget, "!player", false) == 0)
 			{
 				float origin[3], angles[3];
 				GetEntPropVector(_this, Prop_Data, "m_vSaveOrigin", origin);
 				GetEntPropVector(_this, Prop_Data, "m_vSaveAngles", angles);
-				for(int i = 1; i <= MaxClients; i++)
+				for (int i = 1; i <= MaxClients; i++)
 				{
-					if(IsClientInGame(i) && IsPlayerAlive(i))
+					if (IsClientInGame(i) && IsPlayerAlive(i))
 					{
 						TeleportEntity(i, origin, angles, NULL_VECTOR);
 					}
@@ -354,12 +354,12 @@ public MRESReturn Hook_PointViewcontrolAcceptInput(int _this, Handle hReturn, Ha
 			{
 				HookSingleEntityOutput(_this, "OnEndFollow", OnEndFollowBlocker);
 				bHookSkip = true;
-				for(int i = 1; i <= MaxClients; i++)
+				for (int i = 1; i <= MaxClients; i++)
 				{
-					if(IsClientInGame(i))
+					if (IsClientInGame(i))
 					{
 						CBasePlayer pPlayer = CBasePlayer(i);
-						if(pPlayer.GetViewEntity() == pThis)
+						if (pPlayer.GetViewEntity() == pThis)
 						{
 							SetEntPropEnt(_this, Prop_Data, "m_hPlayer", i);
 							pThis.AcceptInputStr("Disable");
@@ -377,15 +377,15 @@ public MRESReturn Hook_PointViewcontrolAcceptInput(int _this, Handle hReturn, Ha
 			else if (strcmp(szInputType, "Enable", false) == 0)
 			{
 				CBasePlayer pActivator;
-				if(!DHookIsNullParam(hParams, 2))
+				if (!DHookIsNullParam(hParams, 2))
 				{
 					pActivator = CBasePlayer(DHookGetParam(hParams, 2));
 				}
-				if(pActivator.IsClassPlayer())
+				if (pActivator.IsClassPlayer())
 				{
 					// prevent bugging out if already using cam
 					CBaseEntity pViewEntity = pActivator.GetViewEntity();
-					if(pViewEntity.IsValid() && pViewEntity.IsClassname("point_viewcontrol") && pViewEntity != pThis)
+					if (pViewEntity.IsValid() && pViewEntity.IsClassname("point_viewcontrol") && pViewEntity != pThis)
 					{
 						SetEntPropEnt(pViewEntity.GetEntIndex(), Prop_Data, "m_hPlayer", pActivator.GetEntIndex());
 						bHookSkip = true;
@@ -404,9 +404,9 @@ public MRESReturn Hook_PointViewcontrolAcceptInput(int _this, Handle hReturn, Ha
 			}
 			else if (strcmp(szInputType, "EnableAll", false) == 0) // new input
 			{
-				for(int i = 1; i <= MaxClients; i++)
+				for (int i = 1; i <= MaxClients; i++)
 				{
-					if(IsClientInGame(i) && IsPlayerAlive(i))
+					if (IsClientInGame(i) && IsPlayerAlive(i))
 					{
 						AcceptEntityInput(_this, "Enable", i);
 					}
@@ -447,9 +447,9 @@ public MRESReturn Hook_SpeedmodAcceptInput(int _this, Handle hReturn, Handle hPa
 				DHookGetParamObjectPtrString(hParams, 4, 0, ObjectValueType_String, szParam, sizeof(szParam));
 				LogDebug("Hook_SpeedmodAcceptInput ft=%d, %s", fieldType, szParam);
 				bHookSkip = true;
-				for(int i = 1; i <= MaxClients; i++)
+				for (int i = 1; i <= MaxClients; i++)
 				{
-					if(IsClientInGame(i))
+					if (IsClientInGame(i))
 					{
 						SetVariantString(szParam);
 						AcceptEntityInput(_this, "ModifySpeed", i);
@@ -556,9 +556,9 @@ public MRESReturn Hook_ClientCommandAcceptInput(int _this, Handle hReturn, Handl
 				return MRES_Ignored;
 			}
 			
-			if(CoopManager.IsFeatureEnabled(FT_AUTODETECT_MAP_END))
+			if (CoopManager.IsFeatureEnabled(FT_AUTODETECT_MAP_END))
 			{
-				if(StrContains(szParam, "disconnect", false) != -1 || StrContains(szParam, "startupmenu", false) != -1)
+				if (StrContains(szParam, "disconnect", false) != -1 || StrContains(szParam, "startupmenu", false) != -1)
 				{
 					CoopManager.OnMapSeriesFinished();
 					DHookSetReturn(hReturn, true);
@@ -570,18 +570,18 @@ public MRESReturn Hook_ClientCommandAcceptInput(int _this, Handle hReturn, Handl
 			{
 				// do special handling for the give command: give it to all and add to equipment for later spawns
 				int iStart = 5;
-				if(strncmp(szParam, "give ", iStart, false) == 0)
+				if (strncmp(szParam, "give ", iStart, false) == 0)
 				{
-					if(strncmp(szParam[iStart], "item_weapon_", 12, false) == 0)
+					if (strncmp(szParam[iStart], "item_weapon_", 12, false) == 0)
 					{
 						iStart += 5; // start after item_
 					}
-					for(int i = 1; i <= MaxClients; i++)
+					for (int i = 1; i <= MaxClients; i++)
 					{
-						if(IsClientInGame(i) && IsPlayerAlive(i))
+						if (IsClientInGame(i) && IsPlayerAlive(i))
 						{
 							CBasePlayer pPlayer = CBasePlayer(i);
-							if(!pPlayer.HasWeapon(szParam[iStart]))
+							if (!pPlayer.HasWeapon(szParam[iStart]))
 							{
 								pPlayer.GiveItem(szParam[iStart]);
 							}
@@ -592,9 +592,9 @@ public MRESReturn Hook_ClientCommandAcceptInput(int _this, Handle hReturn, Handl
 				else
 				{
 					bHookSkip = true;
-					for(int i = 1; i <= MaxClients; i++)
+					for (int i = 1; i <= MaxClients; i++)
 					{
-						if(IsClientInGame(i))
+						if (IsClientInGame(i))
 						{
 							SetVariantString(szParam);
 							AcceptEntityInput(_this, "Command", i);
@@ -626,7 +626,7 @@ public MRESReturn Hook_ServerCommandAcceptInput(int _this, Handle hReturn, Handl
 			{
 				char szParam[MAX_FORMAT];
 				DHookGetParamObjectPtrString(hParams, 4, 0, ObjectValueType_String, szParam, sizeof(szParam));
-				if(strncmp(szParam, "changelevel ", 12, false) == 0)
+				if (strncmp(szParam, "changelevel ", 12, false) == 0)
 				{
 					CoopManager.EndMap(szParam[12], SC_NORMAL_MAPCHANGE);
 					DHookSetReturn(hReturn, true);
@@ -651,10 +651,11 @@ public MRESReturn Hook_EnvCreditsAcceptInput(int _this, Handle hReturn, Handle h
 		if (strcmp(szInputType, "ShowLogo", false) == 0)
 		{
 			float flLogoLength = GetEntPropFloat(_this, Prop_Data, "m_flLogoLength");
-			if(flLogoLength)
+			if (flLogoLength)
 			{
 				Handle pMsg = StartMessageAll("LogoTimeMsg", USERMSG_RELIABLE);
-				if(pMsg != null) {
+				if (pMsg != null)
+				{
 					BfWriteFloat(pMsg, flLogoLength);
 					EndMessage();
 				}
@@ -662,7 +663,8 @@ public MRESReturn Hook_EnvCreditsAcceptInput(int _this, Handle hReturn, Handle h
 			else
 			{
 				Handle pMsg = StartMessageAll("CreditsMsg", USERMSG_RELIABLE);
-				if(pMsg != null) {
+				if (pMsg != null)
+				{
 					BfWriteByte(pMsg, 1);
 					EndMessage();
 				}
@@ -670,20 +672,22 @@ public MRESReturn Hook_EnvCreditsAcceptInput(int _this, Handle hReturn, Handle h
 			DHookSetReturn(hReturn, true);
 			return MRES_Supercede;
 		}
-		if(strcmp(szInputType, "RollCredits", false) == 0)
+		if (strcmp(szInputType, "RollCredits", false) == 0)
 		{
 			Handle pMsg = StartMessageAll("CreditsMsg", USERMSG_RELIABLE);
-			if(pMsg != null) {
+			if (pMsg != null)
+			{
 				BfWriteByte(pMsg, 2);
 				EndMessage();
 			}
 			DHookSetReturn(hReturn, true);
 			return MRES_Supercede;
 		}
-		if(strcmp(szInputType, "RollEndCredits", false) == 0 || strcmp(szInputType, "RollOutroCredits", false) == 0)
+		if (strcmp(szInputType, "RollEndCredits", false) == 0 || strcmp(szInputType, "RollOutroCredits", false) == 0)
 		{
 			Handle pMsg = StartMessageAll("CreditsMsg", USERMSG_RELIABLE);
-			if(pMsg != null) {
+			if (pMsg != null)
+			{
 				BfWriteByte(pMsg, 3);
 				EndMessage();
 			}
@@ -727,7 +731,7 @@ public MRESReturn Hook_ResolveNamesPost(int _this)
 	char szGoal[MAX_TARGET_LENGTH];
 	GetEntPropString(_this, Prop_Data, "m_iszGoal", szGoal, sizeof(szGoal));
 
-	if(szGoal[0] == '\0' || strcmp(szGoal, "!player", false) == 0)
+	if (szGoal[0] == '\0' || strcmp(szGoal, "!player", false) == 0)
 	{
 		CBaseEntity pEnt = CBaseEntity(_this);
 		CBasePlayer pPlayer = GetNearestPlayer(pEnt);
@@ -786,7 +790,7 @@ public MRESReturn Hook_SetPlayerAvoidState(int _this)
 	pThis.GetSequenceLinearMotion(pThis.GetSequence(), vNothing);
 	bool bIsMoving = (pThis.IsMoving() || !VecEqual(vNothing, vec3_origin));
 	
-	//If we are coming out of a script, check if we are stuck inside the player.
+	// If we are coming out of a script, check if we are stuck inside the player.
 	if (pThis.GetPerformAvoidance() || (pThis.ShouldPlayerAvoid() && bIsMoving))
 	{
 		float vMins[3], vMaxs[3], vOrigin[3], vPlrMins[3], vPlrMaxs[3], vPlrOrigin[3];
@@ -807,7 +811,7 @@ public MRESReturn Hook_SetPlayerAvoidState(int _this)
 				AddVectors(vPlrMins, vPlrOrigin, vPlrMins);
 				AddVectors(vPlrMaxs, vPlrOrigin, vPlrMaxs);
 				
-				if(IsBoxIntersectingBox(vMins, vMaxs, vPlrMins, vPlrMaxs))
+				if (IsBoxIntersectingBox(vMins, vMaxs, vPlrMins, vPlrMaxs))
 				{
 					bShouldPlayerAvoid = true;
 					break;
@@ -932,12 +936,12 @@ public MRESReturn Hook_ProtoSniperSelectSchedule(int _this, Handle hReturn)	// h
 //------------------------------------------------------
 public Action Timer_FixRotatingAngles(Handle timer, CBaseEntity pEntity)
 {
-	if(pEntity.IsValid())
+	if (pEntity.IsValid())
 	{
 		float vecAngles[3];
 		pEntity.GetAngles(vecAngles);
 		
-		for(int i = 0; i < 3; i++)
+		for (int i = 0; i < 3; i++)
 		{
 			vecAngles[i] = FloatFraction(vecAngles[i]) + RoundToFloor(vecAngles[i]) % 360;
 		}
@@ -986,7 +990,9 @@ public MRESReturn Hook_LoadSavedAcceptInput(int _this, Handle hReturn, Handle hP
 				
 				// This breaks the spectator overlay if the player is already dead
 				if (pActivator.IsAlive())
+				{
 					pActivator.Suicide();
+				}
 			}
 		}
 		DHookSetReturn(hReturn, true);

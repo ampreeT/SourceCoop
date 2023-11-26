@@ -169,8 +169,8 @@ public Action PlayerCommandListener(int client, const char[] command, int argc)
 	{
 		CBasePlayer pPlayer = CBasePlayer(client);
 		if (pPlayer.GetObserverMode() == OBS_MODE_CHASE
-				&& pPlayer.GetObserverTarget() == pPlayer.GetRagdoll() // Player dead & following our server ragdoll.
-				&& !SurvivalManager.GetMode() // Keep dead spectating in survival
+			&& pPlayer.GetObserverTarget() == pPlayer.GetRagdoll() // Player dead & following our server ragdoll.
+			&& !SurvivalManager.GetMode() // Keep dead spectating in survival
 		) {
 			// Translate commands back to buttons so spawning works as normal.
 			// (Not necessary for BM)
@@ -630,7 +630,7 @@ public void PlayAdmireGloves(CBasePlayer pPlayer, const bool bStartAnim)
 		{
 			g_bPlayingAdmireGloves[pPlayer.GetEntIndex()] = true;
 			
-			if (!IsModelPrecached("models/weapons/v_hands.mdl")) PrecacheModel("models/weapons/v_hands.mdl");
+			PrecacheModel("models/weapons/v_hands.mdl");
 			pViewModel.SetModel("models/weapons/v_hands.mdl");
 			
 			if (pPlayer.GetActiveWeapon().IsValid())
@@ -668,7 +668,8 @@ public void PlayAdmireGloves(CBasePlayer pPlayer, const bool bStartAnim)
 				char szModelName[64];
 				pVMActiveWeapon.GetModelName(szModelName, sizeof(szModelName));
 				ReplaceString(szModelName, sizeof(szModelName), "/w_", "/v_", false);
-				if (FileExists(szModelName, true, NULL_STRING)) pViewModel.SetModel(szModelName);
+				if (FileExists(szModelName, true, NULL_STRING))
+					pViewModel.SetModel(szModelName);
 			}
 		}
 	}

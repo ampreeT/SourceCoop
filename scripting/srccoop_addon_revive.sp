@@ -210,7 +210,8 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 								
 								// Give score to reviver
 								pPlayer.ModifyScore(g_pConVarReviveScore.IntValue);
-								if (g_pConVarReviveMessages.BoolValue) Msg(client, "You have revived '%N' and have gained %i score!", g_pReviveTarget[client].GetEntIndex(), g_pConVarReviveScore.IntValue);
+								if (g_pConVarReviveMessages.BoolValue)
+									Msg(client, "You have revived '%N' and have gained %i score!", g_pReviveTarget[client].GetEntIndex(), g_pConVarReviveScore.IntValue);
 								
 								ResetReviveStatus(client);
 							}
@@ -245,7 +246,8 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 											StopSound(client, SNDCHAN_STATIC, SND_START);
 											EmitSoundToAll(SND_START, client, SNDCHAN_STATIC, SNDLEVEL_NORMAL);
 											
-											if (g_pConVarReviveMessages.BoolValue) Msg(client, "You have started reviving '%N'", i);
+											if (g_pConVarReviveMessages.BoolValue)
+												Msg(client, "You have started reviving '%N'", i);
 											
 											break;
 										}
@@ -262,7 +264,8 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 			if (g_pReviveTarget[client].IsValid())
 			{
 				ResetReviveStatus(client);
-				if (g_pConVarReviveMessages.BoolValue) Msg(client, "You have canceled reviving...");
+				if (g_pConVarReviveMessages.BoolValue)
+					Msg(client, "You have canceled reviving...");
 			}
 		}
 	}
@@ -305,7 +308,8 @@ public void OnClientDisconnect_Post(int client)
 
 public bool TraceEntityFilter(int entity, int mask, any data)
 {
-	if (entity == data) return false;
+	if (entity == data)
+		return false;
 	return true;
 }
 
