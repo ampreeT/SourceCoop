@@ -1,0 +1,136 @@
+"Phrases"
+{
+	/* 
+	  SourceCoop supports built-in color placeholders.
+	  {pri} - primary color - for general text, default
+	  {sec} - secondary color - used for the SRCCOOP tag
+	  {ter} - tertiary color - for highlights
+	*/
+
+	/* Menu */
+	
+	"SkipIntroVote"
+	{
+		"en"			"Skip intro"
+	}
+
+	"RestartMapVote"
+	{
+		"en"			"Restart current map"
+	}
+
+	"MapVote"
+	{
+		"en"			"Change map"
+	}
+
+	"SurvivalVote"
+	{
+		"en"			"Survival mode"
+	}
+
+	"start disable vote"
+	{
+		"#format"		"{1:t}" // vote subject
+		"en"			"Disable {1}"
+	}
+
+	"start enable vote"
+	{
+		"#format"		"{1:t}" // vote subject
+		"en"			"Enable {1}"
+	}
+
+	"select a map"
+	{
+		"en"			"Select a map:"
+	}
+
+	"change map to?"
+	{
+		"#format"		"{1:s}" // map name
+		"en"			"Change map to {1}?"
+	}
+
+	/* chat / console */
+
+	"reloading maps"
+	{
+		"en"			"Reloading maps."
+	}
+
+	"scanned maps"
+	{
+		"#format"		"{1:d},{2:f}" // number of maps, duration
+		"en"			"Scanned {1} maps for voting in {2} seconds."
+	}
+
+	"changing map to"
+	{
+		"#format"		"{1:s}" // map name
+		"en"			"Changing map to {ter}{1}{pri}..."
+	}
+
+	"restarting map"
+	{
+		"en"			"Restarting map..."
+	}
+
+	"not intro map"
+	{
+		"en"			"This is not an intro map."
+	}
+
+	"vote disabled"
+	{
+		"#format"		"{1:t}" // vote type
+		"en"			"{ter}{1}{pri} vote is disabled on this server."
+	}
+
+	"vote cooldown"
+	{
+		"#format"		"{1:t},{2:s}" // vote type, cooldown
+		"en"			"{ter}{1}{pri} vote is not available for another {ter}{2}."
+	}
+
+	"vote started"
+	{
+		"#format"		"{1:t}" // vote type
+		"en"			"{ter}{1}{pri} vote has started!"
+	}
+
+	"vote started by player"
+	{
+		"#format"		"{1:N},{2:t}" // player, vote type
+		"en"			"{ter}{2}{pri} vote has been started by {ter}{1}{pri}!"
+	}
+
+	"player voted"
+	{
+		"#format"		"{1:N}" // player
+		"en"			"{1} voted{ter}"
+	}
+
+	"vote successful"
+	{
+		"en"			"Vote successful!"
+	}
+
+	"vote unsuccessful"
+	{
+		"en"			"Vote failed."
+	}
+
+	"disable vote successful"
+	{
+		"#format"		"{1:t}" // vote subject
+		"en"			"{ter}{1}{pri} disabled!"
+	}
+
+	"enable vote successful"
+	{
+		"#format"		"{1:t}" // vote subject
+		"en"			"{ter}{1}{pri} enabled!"
+	}
+
+}

@@ -37,6 +37,7 @@ int           g_iAttacment[MAXPLAYERS + 1];
 public void OnPluginStart()
 {
 	g_Engine = GetEngineVersion();
+	LoadTranslations("srccoop_fpd.phrases");
 	InitSourceCoopAddon();
 
 	g_pStateCookie = new Cookie("sourcecoop_fpd", "First person death", CookieAccess_Protected);
@@ -80,15 +81,16 @@ public void MyMenuHandler(TopMenu topmenu, TopMenuAction action, TopMenuObject o
 {
 	if (action == TopMenuAction_DisplayOption)
 	{
+		SetGlobalTransTarget(param);
 		int state = GetFPDState(param);
 		switch (state)
 		{
 			case FPD_DEFAULT:
-				Format(buffer, maxlength, "Death cam: Default");
+				Format(buffer, maxlength, "%t: %t", "death cam", "default");
 			case FPD_THIRDPERSON:
-				Format(buffer, maxlength, "Death cam: Third-person");
+				Format(buffer, maxlength, "%t: %t", "death cam", "third-person");
 			case FPD_FIRSTPERSON:
-				Format(buffer, maxlength, "Death cam: First-person");
+				Format(buffer, maxlength, "%t: %t", "death cam", "first-person");
 		}
 	}
 	else if (action == TopMenuAction_SelectOption)
@@ -98,7 +100,7 @@ public void MyMenuHandler(TopMenu topmenu, TopMenuAction action, TopMenuObject o
 			int state = GetFPDState(param);
 			state = (state + 1) % FPD_COUNT;
 			SetFPDState(param, state);
-			Msg(param, "Death animation setting updated.");
+			Msg(param, "%t", "death cam setting updated");
 		}
 		topmenu.Display(param, TopMenuPosition_LastCategory);
 	}

@@ -135,7 +135,7 @@ enum struct CCoopSpawnEntry
 					if (this.TeleportPlayer(pPlayer, true, true))
 					{
 						pPlayer.PlayGameSound(SND_BRINGALL);
-						ShowHudText(i, 1, "Checkpoint reached");
+						ShowHudText(i, 1, "%t", "checkpoint reached");
 					}
 				}
 			}

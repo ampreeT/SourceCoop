@@ -21,13 +21,14 @@ bool bIsInThirdperson[MAXPLAYERS+1];
 
 public void OnPluginStart()
 {
+	InitSourceCoopAddon();
+	LoadTranslations("srccoop_thirdperson.phrases");
+	
 	RegConsoleCmd("sm_thirdperson", Command_Thirdperson, "Type !thirdperson to go into thirdperson mode");
 	RegConsoleCmd("sm_firstperson", Command_Firstperson, "Type !firstperson to exit thirdperson mode");
 	pEnabledCvar = CreateConVar("sourcecoop_thirdperson_enabled", "1", "Is thirdperson enabled?");
 	pCheatsCvar = FindConVar("sv_cheats");
 	HookConVarChange(pEnabledCvar, EnabledCvarChanged);
-	
-	InitSourceCoopAddon();
 }
 
 public void OnLibraryAdded(const char[] name)
@@ -47,7 +48,7 @@ public void ThirdPersonMenuHandler(TopMenu topmenu, TopMenuAction action, TopMen
 {
 	if (action == TopMenuAction_DisplayOption)
 	{
-		Format(buffer, maxlength, "Toggle thirdperson");
+		Format(buffer, maxlength, "%T", "toggle thirdperson", param);
 	}
 	else if (action == TopMenuAction_SelectOption)
 	{
@@ -93,11 +94,11 @@ public Action Command_Thirdperson(int client, int args)
 {
 	if (!pEnabledCvar.BoolValue || !SC_IsCurrentMapCoop())
 	{
-		MsgReply(client, "Thirdperson mode is currently disabled.");
+		MsgReply(client, "%t", "thirdperson blocked");
 		return Plugin_Handled;
 	}
 	SetThirdperson(client, true);
-	MsgReply(client, "You are now in thirdperson mode.");
+	MsgReply(client, "%t", "thirdperson enter");
 	return Plugin_Handled;
 }
 
@@ -105,11 +106,11 @@ public Action Command_Firstperson(int client, int args)
 {
 	if (!pEnabledCvar.BoolValue || !SC_IsCurrentMapCoop())
 	{
-		MsgReply(client, "Thirdperson mode is currently disabled");
+		MsgReply(client, "%t", "thirdperson blocked");
 		return Plugin_Handled;
 	}
 	SetThirdperson(client, false);
-	MsgReply(client, "You are no longer in thirdperson mode.");
+	MsgReply(client, "%t", "thirdperson exit");
 	return Plugin_Handled;
 }
 

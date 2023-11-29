@@ -206,7 +206,8 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 public void OnPluginStart()
 {
 	LoadGameData();
-	LoadTranslations("common.phrases");
+	LoadTranslations("common.phrases"); /* reuse some translations (identified by use of capital letters) */
+	LoadTranslations("srccoop.phrases");
 	InitDebugLog("sourcecoop_debug", "SRCCOOP", ADMFLAG_ROOT);
 	CreateConVar("sourcecoop_version", SRCCOOP_VERSION, _, FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
 	g_pConvarCoopTeam = CreateConVar("sourcecoop_team", "scientist", "Sets which team to use in TDM mode. Valid values are [marines] or [scientist] or a team number. Setting anything else will not manage teams.");
@@ -1013,6 +1014,6 @@ void GreetPlayer(int client)
 {
 	if (CoopManager.IsFeatureEnabled(FT_SHOW_WELCOME_MESSAGE))
 	{
-		Msg(client, "This server runs SourceCoop version %s.\nPress %s=%s or type %s/coopmenu%s for extra settings.", SRCCOOP_VERSION, SRCCOOP_CHAT_COLOR_SEC, SRCCOOP_CHAT_COLOR_PRI, SRCCOOP_CHAT_COLOR_SEC, SRCCOOP_CHAT_COLOR_PRI);
+		Msg(client, "%t", "welcome", SRCCOOP_VERSION);
 	}
 }

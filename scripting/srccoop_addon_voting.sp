@@ -30,28 +30,33 @@ int nextVoteSurvival;
 char szSkipTo[MAX_MAPNAME];
 bool bAutoVoteSkip;
 
-ConVar pReloadMapsOnMapchange;
-ConVar pAllowVoteSkipIntro;
-ConVar pAllowVoteRestartMap;
-ConVar pAllowVoteChangeMap;
-ConVar pAllowVoteSurvival;
+ConVar cvReloadMapsOnMapchange;
+ConVar cvAllowVoteSkipIntro;
+ConVar cvAllowVoteRestartMap;
+ConVar cvAllowVoteChangeMap;
+ConVar cvAllowVoteSurvival;
+
+ConVar cvSurivalMode;
 
 public void OnPluginStart()
 {
-	LoadTranslations("common.phrases");
+	InitSourceCoopAddon();
+	LoadTranslations("common.phrases"); /* reuse some translations (identified by use of capital letters) */
+	LoadTranslations("srccoop_voting.phrases");
 	RegConsoleCmd("sm_skipintro", Command_VoteSkipIntro, "Starts a skip intro vote");
 	RegConsoleCmd("sm_restartmap", Command_VoteRestartMap, "Starts a restart map vote");
 	RegConsoleCmd("sm_changemap", Command_ChangeMap, "Shows a menu for changing maps");
 	RegConsoleCmd("sm_survival", Command_VoteSurvival, "Starts a survival vote");
 	RegAdminCmd("sc_reload_maps", Command_ReloadMaps, ADMFLAG_ROOT, "Reloads all entries in the votemap menu from storage");
-	pReloadMapsOnMapchange = CreateConVar("sourcecoop_voting_autoreload", "1", "Sets whether to reload all votemap menu entries on mapchange, which can prolong map loading times.", _, true, 0.0, true, 1.0);
-	pAllowVoteSkipIntro = CreateConVar("sourcecoop_voting_skipintro", "1", "Allow skip intro voting?", _, true, 0.0, true, 1.0);
-	pAllowVoteRestartMap = CreateConVar("sourcecoop_voting_restartmap", "1", "Allow restart map voting?", _, true, 0.0, true, 1.0);
-	pAllowVoteChangeMap = CreateConVar("sourcecoop_voting_changemap", "1", "Allow change map voting?", _, true, 0.0, true, 1.0);
-	pAllowVoteSurvival = CreateConVar("sourcecoop_voting_survival", "2", "Allow survival mode voting? Use one of values from sourcecoop_survival_mode to select the mode to vote for.", _, true, 0.0);
-	
-	InitSourceCoopAddon();
-	
+	cvReloadMapsOnMapchange = CreateConVar("sourcecoop_voting_autoreload", "1", "Sets whether to reload all votemap menu entries on mapchange, which can prolong map loading times.", _, true, 0.0, true, 1.0);
+	cvAllowVoteSkipIntro = CreateConVar("sourcecoop_voting_skipintro", "1", "Allow skip intro voting?", _, true, 0.0, true, 1.0);
+	cvAllowVoteRestartMap = CreateConVar("sourcecoop_voting_restartmap", "1", "Allow restart map voting?", _, true, 0.0, true, 1.0);
+	cvAllowVoteChangeMap = CreateConVar("sourcecoop_voting_changemap", "1", "Allow change map voting?", _, true, 0.0, true, 1.0);
+	cvAllowVoteSurvival = CreateConVar("sourcecoop_voting_survival", "2", "Allow survival mode voting? Use one of values from sourcecoop_survival_mode to select the mode to vote for.", _, true, 0.0);
+	if (!(cvSurivalMode = FindConVar("sourcecoop_survival_mode")))
+	{
+		ThrowError("sourcecoop_survival_mode does not exist!");
+	}
 	for (int i = 1; i <= MaxClients; i++)
 	{
 		if (IsClientInGame(i))
@@ -80,7 +85,7 @@ public void OnLibraryAdded(const char[] name)
 public void OnMapStart()
 {
 	static bool firstLoad = true;
-	if (firstLoad || pReloadMapsOnMapchange.BoolValue)
+	if (firstLoad || cvReloadMapsOnMapchange.BoolValue)
 	{
 		firstLoad = false;
 		MapParser.BuildMaps();
@@ -118,7 +123,7 @@ public void SC_OnCoopMapConfigLoaded(KeyValues kv, CoopConfigLocation location)
 
 public Action Command_ReloadMaps(int client, int args)
 {
-	MsgReply(client, "Reloading maps");
+	MsgReply(client, "%t", "reloading maps");
 	MapParser.BuildMaps();
 	return Plugin_Handled;
 }
@@ -137,21 +142,15 @@ public void MyCoopMenuHandler(TopMenu topmenu, TopMenuAction action, TopMenuObje
 	{
 		char szItem[32];
 		topmenu.GetObjName(topobj_id, szItem, sizeof(szItem));
-		if (StrEqual(szItem, MENUITEM_SKIPINTRO))
+		SetGlobalTransTarget(param);
+
+		if (StrEqual(szItem, MENUITEM_SURVIVAL))
 		{
-			Format(buffer, maxlength, "Skip intro");
+			Format(buffer, maxlength, "%t", SC_GetSurvivalMode()? "start disable vote" : "start enable vote", szItem);
 		}
-		else if (StrEqual(szItem, MENUITEM_RESTARTMAP))
+		else
 		{
-			Format(buffer, maxlength, "Restart current map");
-		}
-		else if (StrEqual(szItem, MENUITEM_MAPVOTE))
-		{
-			Format(buffer, maxlength, "Change map");
-		}
-		else if (StrEqual(szItem, MENUITEM_SURVIVAL))
-		{
-			Format(buffer, maxlength, SC_GetSurvivalMode()? "Disable survival mode" : "Enable survival mode");
+			Format(buffer, maxlength, "%t", szItem);
 		}
 	}
 	else if (action == TopMenuAction_SelectOption)
@@ -207,70 +206,66 @@ public Action Command_VoteSkipIntro(int client, int args)
 
 bool StartVoteSkipIntro(int client)
 {
-	if (!pAllowVoteSkipIntro.BoolValue)
+	if (!cvAllowVoteSkipIntro.BoolValue)
 	{
 		if (client != -1)
-			MsgReply(client, "Skip intro vote is disabled on this server");
+			MsgReply(client, "%t", "vote disabled", MENUITEM_SKIPINTRO);
 		return false;
 	}
 	if (!szSkipTo[0])
 	{
 		if (client != -1)
-			MsgReply(client, "This is not an intro map");
+			MsgReply(client, "%t", "not intro map");
 		return false;
 	}
 	if (IsVoteInProgress())
 	{
 		if (client != -1)
-			MsgReply(client, "Another vote is already in progress");
+			MsgReply(client, "%t", "Vote in Progress");
 		return false;
 	}
 	if (GetTime() < nextVoteSkip && client != -1)
 	{
-		char sTime[32];
-		FormatTimeLengthLong(nextVoteSkip - GetTime(), sTime, sizeof(sTime));
-		MsgReply(client, "Skip intro vote is not available for another %s", sTime);
+		char szTime[32];
+		FormatTimeLength(nextVoteSkip - GetTime(), szTime, sizeof(szTime));
+		MsgReply(client, "%t", "vote cooldown", MENUITEM_SKIPINTRO, szTime);
 		return false;
 	}
-	Menu menu = new Menu(VoteSkipHandler);
-	menu.SetTitle("Skip intro?");
+	Menu menu = new Menu(VoteSkipHandler, MenuAction_DisplayItem | MenuAction_Display);
+	menu.SetTitle(MENUITEM_SKIPINTRO);
 	menu.AddItem("0", "Yes");
 	menu.AddItem("1", "No");
 	menu.ExitButton = false;
 	menu.DisplayVoteToAll(VOTE_DURATION);
 	if (client >= 0)
 	{
-		MsgAll("%N started a skip intro vote!", client);
+		MsgAll("%t", "vote started by player", client, MENUITEM_SKIPINTRO);
 	}
 	else
 	{
-		MsgAll("Skip intro vote has started!");
+		MsgAll("%t", "vote started", MENUITEM_SKIPINTRO);
 	}
 	return true;
 }
 
 public int VoteSkipHandler(Menu menu, MenuAction action, int param1, int param2)
 {
-	if (action == MenuAction_Select)
+	if (action == MenuAction_DisplayItem || action == MenuAction_Display || action == MenuAction_Select || action == MenuAction_VoteCancel)
 	{
-		MsgAll("%N voted %s", param1, param2 == 0? "[YES]" : "[NO]");
+		return MenuTranslationHelper(menu, action, param1, param2);
 	}
-	if (action == MenuAction_VoteEnd)
+	else if (action == MenuAction_VoteEnd)
 	{
 		if (param1 == 0)
 		{
-			MsgAll("Vote successful!");
-			MsgAll("Changing map to %s...", szSkipTo);
+			MsgAll("%t", "vote successful");
+			MsgAll("%t", "changing map to", szSkipTo);
 			StartMapVoteFinishedTimer(szSkipTo, SC_VOTING_SKIP_MAPCHANGE);
 		}
 		else
 		{
-			MsgAll("Vote failed!");
+			MsgAll("%t", "vote unsuccessful");
 		}
-	}
-	else if (action == MenuAction_VoteCancel)
-	{
-		MsgAll("Vote cancelled!");
 	}
 	else if (action == MenuAction_End)
 	{
@@ -293,57 +288,53 @@ public Action Command_VoteRestartMap(int client, int args)
 
 bool StartVoteRestartMap(int client)
 {
-	if (!pAllowVoteRestartMap.BoolValue)
+	if (!cvAllowVoteRestartMap.BoolValue)
 	{
-		MsgReply(client, "Restart vote is disabled on this server");
+		MsgReply(client, "%t", "vote disabled", MENUITEM_RESTARTMAP);
 		return false;
 	}
 	if (IsVoteInProgress())
 	{
-		MsgReply(client, "Another vote is already in progress");
+		MsgReply(client, "%t", "Vote in Progress");
 		return false;
 	}
 	if (GetTime() < nextVoteRestart)
 	{
-		char sTime[32];
-		FormatTimeLengthLong(nextVoteRestart - GetTime(), sTime, sizeof(sTime));
-		MsgReply(client, "Restart vote is not available for another %s", sTime);
+		char szTime[32];
+		FormatTimeLength(nextVoteRestart - GetTime(), szTime, sizeof(szTime));
+		MsgReply(client, "%t", "vote cooldown", MENUITEM_RESTARTMAP, szTime);
 		return false;
 	}
-	Menu menu = new Menu(VoteRestartHandler);
-	menu.SetTitle("Restart current map?");
+	Menu menu = new Menu(VoteRestartHandler, MenuAction_DisplayItem | MenuAction_Display);
+	menu.SetTitle(MENUITEM_RESTARTMAP);
 	menu.AddItem("0", "Yes");
 	menu.AddItem("1", "No");
 	menu.ExitButton = false;
 	menu.DisplayVoteToAll(VOTE_DURATION);
-	MsgAll("%N started a map restart vote!", client);
+	MsgAll("%t", "vote started by player", client, MENUITEM_RESTARTMAP);
 	return true;
 }
 
 public int VoteRestartHandler(Menu menu, MenuAction action, int param1, int param2)
 {
-	if (action == MenuAction_Select)
+	if (action == MenuAction_DisplayItem || action == MenuAction_Display || action == MenuAction_Select || action == MenuAction_VoteCancel)
 	{
-		MsgAll("%N voted %s", param1, param2 == 0? "[YES]" : "[NO]");
+		return MenuTranslationHelper(menu, action, param1, param2);
 	}
-	if (action == MenuAction_VoteEnd)
+	else if (action == MenuAction_VoteEnd)
 	{
 		if (param1 == 0)
 		{
-			MsgAll("Vote successful!");
-			MsgAll("Restarting map...");
+			MsgAll("%t", "vote successful");
+			MsgAll("%t", "restarting map");
 			char szCurrentMap[MAX_MAPNAME];
 			GetCurrentMap(szCurrentMap, sizeof(szCurrentMap));
 			StartMapVoteFinishedTimer(szCurrentMap, SC_VOTING_RESTART_MAPCHANGE);
 		}
 		else
 		{
-			MsgAll("Vote failed!");
+			MsgAll("%t", "vote unsuccessful");
 		}
-	}
-	else if (action == MenuAction_VoteCancel)
-	{
-		MsgAll("Vote cancelled!");
 	}
 	else if (action == MenuAction_End)
 	{
@@ -366,73 +357,78 @@ public Action Command_VoteSurvival(int client, int args)
 
 bool StartVoteSurvival(int client)
 {
-	if (!pAllowVoteSurvival.IntValue)
+	if (!cvAllowVoteSurvival.IntValue)
 	{
-		MsgReply(client, "Survival vote is disabled on this server");
+		MsgReply(client, "%t", "vote disabled", MENUITEM_SURVIVAL);
 		return false;
 	}
 	if (IsVoteInProgress())
 	{
-		MsgReply(client, "Another vote is already in progress");
+		MsgReply(client, "%t", "Vote in Progress");
 		return false;
 	}
 	if (GetTime() < nextVoteSurvival)
 	{
-		char sTime[32];
-		FormatTimeLengthLong(nextVoteSurvival - GetTime(), sTime, sizeof(sTime));
-		MsgReply(client, "Survival vote is not available for another %s", sTime);
+		char szTime[32];
+		FormatTimeLength(nextVoteSurvival - GetTime(), szTime, sizeof(szTime));
+		MsgReply(client, "%t", "vote cooldown", MENUITEM_SURVIVAL, szTime);
 		return false;
 	}
-	Menu menu = new Menu(VoteSurvivalHandler);
-	menu.SetTitle(SC_GetSurvivalMode() ? "Disable survival mode" : "Enable survival mode");
+	Menu menu = new Menu(VoteSurvivalHandler, MenuAction_DisplayItem | MenuAction_Display);
 	menu.AddItem("0", "Yes");
 	menu.AddItem("1", "No");
 	menu.ExitButton = false;
 	menu.DisplayVoteToAll(VOTE_DURATION);
-	MsgAll("%N started a survival vote!", client);
+	cvSurivalMode.AddChangeHook(OnSurvivalModeChangedWhileVoting);
+	MsgAll("%t", "vote started by player", client, MENUITEM_SURVIVAL);
 	return true;
 }
 
 public int VoteSurvivalHandler(Menu menu, MenuAction action, int param1, int param2)
 {
-	if (action == MenuAction_Select)
+	if (action == MenuAction_DisplayItem || action == MenuAction_Select)
 	{
-		MsgAll("%N voted %s", param1, param2 == 0? "[YES]" : "[NO]");
+		return MenuTranslationHelper(menu, action, param1, param2);
 	}
-	if (action == MenuAction_VoteEnd)
+	else if (action == MenuAction_Display)
 	{
+		char buffer[256];
+		Format(buffer, sizeof(buffer), "%T?",
+			cvSurivalMode.IntValue ? "start disable vote" : "start enable vote",
+			param1, MENUITEM_SURVIVAL
+		);
+		view_as<Panel>(param2).SetTitle(buffer);
+	}
+	else if (action == MenuAction_VoteEnd)
+	{
+		cvSurivalMode.RemoveChangeHook(OnSurvivalModeChangedWhileVoting);
 		if (param1 == 0)
 		{
-			ConVar pSurivalMode = FindConVar("sourcecoop_survival_mode");
-			if (pSurivalMode == null)
-			{
-				ThrowError("sourcecoop_survival_mode does not exist!");
-			}
-
-			int mode = pAllowVoteSurvival.IntValue;
+			MsgAll("%t", "vote successful");
+			int mode = cvAllowVoteSurvival.IntValue;
 			if (mode)
 			{
-				char szTitle[2]; menu.GetTitle(szTitle, sizeof(szTitle));
-				if (szTitle[0] == 'E' ) // Enable
+				if (cvSurivalMode.IntValue)
 				{
-					pSurivalMode.IntValue = mode;
-					MsgAll("Survival enabled!");
+					cvSurivalMode.IntValue = 0;
+					MsgAll("%t", "disable vote successful", MENUITEM_SURVIVAL);
 				}
 				else
 				{
-					pSurivalMode.IntValue = 0;
-					MsgAll("Survival disabled!");
+					cvSurivalMode.IntValue = mode;
+					MsgAll("%t", "enable vote successful", MENUITEM_SURVIVAL);
 				}
 			}
 		}
 		else
 		{
-			MsgAll("Vote failed!");
+			MsgAll("%t", "vote unsuccessful");
 		}
 	}
 	else if (action == MenuAction_VoteCancel)
 	{
-		MsgAll("Vote cancelled!");
+		cvSurivalMode.RemoveChangeHook(OnSurvivalModeChangedWhileVoting);
+		return MenuTranslationHelper(menu, action, param1, param2);
 	}
 	else if (action == MenuAction_End)
 	{
@@ -441,6 +437,11 @@ public int VoteSurvivalHandler(Menu menu, MenuAction action, int param1, int par
 	}
 
 	return -1;
+}
+
+void OnSurvivalModeChangedWhileVoting(ConVar convar, const char[] oldValue, const char[] newValue)
+{
+	CancelVote();
 }
 
 //------------------------------------------------------
@@ -525,7 +526,7 @@ methodmap MapParser
 		MapParser.LoadMapsInPath(szConfigPath, duplicityChecker);
 		MapParser.LoadMapsInPath("maps", duplicityChecker, true);
 		
-		MsgSrv("Scanned %d maps for voting in %f seconds.", duplicityChecker.Size, GetEngineTime() - flStartTime);
+		MsgSrv("%t", "scanned maps", duplicityChecker.Size, GetEngineTime() - flStartTime);
 		delete duplicityChecker;
 	}
 
@@ -612,21 +613,21 @@ public Action Command_ChangeMap(int client, int args)
 
 bool OpenMapSelectMenu(int client)
 {
-	if (!pAllowVoteChangeMap.BoolValue)
+	if (!cvAllowVoteChangeMap.BoolValue)
 	{
-		MsgReply(client, "Votemap is disabled on this server");
+		MsgReply(client, "%t", "vote disabled", MENUITEM_MAPVOTE);
 		return false;
 	}
 	if (IsVoteInProgress())
 	{
-		MsgReply(client, "Another vote is already in progress");
+		MsgReply(client, "%t", "Vote in Progress");
 		return false;
 	}
 	if (GetTime() < nextVoteMap)
 	{
-		char sTime[32];
-		FormatTimeLengthLong(nextVoteMap - GetTime(), sTime, sizeof(sTime));
-		MsgReply(client, "Votemap is not available for another %s", sTime);
+		char szTime[32];
+		FormatTimeLength(nextVoteMap - GetTime(), szTime, sizeof(szTime));
+		MsgReply(client, "%t", "vote cooldown", MENUITEM_MAPVOTE, szTime);
 		return false;
 	}
 	pMapSection[client] = pRootMapSection;
@@ -639,9 +640,9 @@ bool OpenMapSelectMenu(int client)
 
 Menu ShowMapSelectMenu(int client)
 {
-	Menu menu = new Menu(MapSelectMenuHandler);
+	Menu menu = new Menu(MapSelectMenuHandler, MenuAction_Display);
 	menu.ExitBackButton = true;
-	menu.SetTitle("Select a map:");
+	menu.SetTitle("select a map");
 	
 	ArrayList pSubs = pMapSection[client].pSubSections;
 	MapMenuSection pSub;
@@ -665,7 +666,11 @@ Menu ShowMapSelectMenu(int client)
 
 public int MapSelectMenuHandler(Menu menu, MenuAction action, int client, int param2)
 {
-	if (action == MenuAction_Select)
+	if (action == MenuAction_Display)
+	{
+		return MenuTranslationHelper(menu, action, client, param2, false);
+	}
+	else if (action == MenuAction_Select)
 	{
 		char szInfo[10], szDisp[MAX_MAPNAME];
 		menu.GetItem(param2, szInfo, sizeof(szInfo), _, szDisp, sizeof(szDisp));
@@ -708,37 +713,38 @@ public int MapSelectMenuHandler(Menu menu, MenuAction action, int client, int pa
 void StartVoteMap(int client, const char szMap[MAX_MAPNAME])
 {
 	szCurrentMapVote = szMap;
-	Menu menu = new Menu(VoteMapHandler);
-	menu.SetTitle("Change map to %s?", szCurrentMapVote);
+	Menu menu = new Menu(VoteMapHandler, MenuAction_DisplayItem | MenuAction_Display);
 	menu.AddItem("0", "Yes");
 	menu.AddItem("1", "No");
 	menu.ExitButton = false;
 	menu.DisplayVoteToAll(VOTE_DURATION);
-	MsgAll("%N started a new map vote!", client);
+	MsgAll("%t", "vote started by player", client, MENUITEM_MAPVOTE);
 }
 
 public int VoteMapHandler(Menu menu, MenuAction action, int param1, int param2)
 {
-	if (action == MenuAction_Select)
+	if (action == MenuAction_DisplayItem || action == MenuAction_Select || action == MenuAction_VoteCancel)
 	{
-		MsgAll("%N voted %s", param1, param2 == 0? "[YES]" : "[NO]");
+		return MenuTranslationHelper(menu, action, param1, param2);
 	}
-	if (action == MenuAction_VoteEnd)
+	else if (action == MenuAction_Display)
+	{
+		char buffer[256];
+		Format(buffer, sizeof(buffer), "%T", "change map to?", param1, szCurrentMapVote);
+		view_as<Panel>(param2).SetTitle(buffer);
+	}
+	else if (action == MenuAction_VoteEnd)
 	{
 		if (param1 == 0)
 		{
-			MsgAll("Vote successful!");
-			MsgAll("Changing map to %s...", szCurrentMapVote);
+			MsgAll("%t", "vote successful");
+			MsgAll("%t", "changing map to", szCurrentMapVote);
 			StartMapVoteFinishedTimer(szCurrentMapVote, SC_VOTING_VOTEMAP_MAPCHANGE);
 		}
 		else
 		{
-			MsgAll("Vote failed!");
+			MsgAll("%t", "vote unsuccessful");
 		}
-	}
-	else if (action == MenuAction_VoteCancel)
-	{
-		MsgAll("Vote cancelled!");
 	}
 	else if (action == MenuAction_End)
 	{
@@ -768,4 +774,35 @@ public Action Timer_ChangeMap(Handle timer, DataPack dp)
 	dp.ReadString(szReason, sizeof(szReason));
 	ForceChangeLevel(szMap, szReason);
 	return Plugin_Handled;
+}
+
+int MenuTranslationHelper(Menu menu, MenuAction action, int param1, int param2, bool appendQuestionMark = true)
+{
+	char buffer[256];
+	if (action == MenuAction_DisplayItem)
+	{
+		/* Get the display string, we'll use it as a translation phrase */
+		menu.GetItem(param2, "", 0, _, buffer, sizeof(buffer));
+		Format(buffer, sizeof(buffer), "%T", buffer, param1);
+		return RedrawMenuItem(buffer);
+	}
+	else if (action == MenuAction_Display)
+	{
+		/* Get the menu title, we'll use it as a translation phrase */
+		menu.GetTitle(buffer, sizeof(buffer));
+		Format(buffer, sizeof(buffer), "%T%s", buffer, param1, appendQuestionMark? "?" : "");
+		view_as<Panel>(param2).SetTitle(buffer);
+	}
+	else if (action == MenuAction_Select)
+	{
+		/* Get the display string, we'll use it as a translation phrase */
+		menu.GetItem(param2, "", 0, _, buffer, sizeof(buffer));
+		MsgAll("%t [%t]", "player voted", param1, buffer);
+	}
+	else if (action == MenuAction_VoteCancel)
+	{
+		MsgAll("%t", "Cancelled Vote");
+	}
+
+	return -1;
 }

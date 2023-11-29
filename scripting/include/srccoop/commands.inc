@@ -19,7 +19,7 @@ public Action Command_SetFeature(int iClient, int iArgs)
 			snapshot.GetKey(i, szKey, len);
 			SourceCoopFeature iFeature;
 			g_pFeatureMap.GetValue(szKey, iFeature);
-			MsgReply(iClient, "%s : %s", szKey, CoopManager.IsFeatureEnabled(iFeature)? "Enabled" : "Disabled");
+			MsgReply(iClient, "%s : %t", szKey, CoopManager.IsFeatureEnabled(iFeature)? "On" : "Off");
 		}
 		MsgReply(iClient, "------------------------------");
 		snapshot.Close();
@@ -38,17 +38,17 @@ public Action Command_SetFeature(int iClient, int iArgs)
 			if (StrEqual(szVal, "1") || IsEnableSynonym(szVal))
 			{
 				CoopManager.EnableFeature(feature);
-				MsgReply(iClient, "Enabled feature %s", szFeature);
+				MsgReply(iClient, "%t", "feature enabled", szFeature);
 			}
 			else if (StrEqual(szVal, "0") || IsDisableSynonym(szVal))
 			{
 				CoopManager.DisableFeature(feature);
-				MsgReply(iClient, "Disabled feature %s", szFeature);
+				MsgReply(iClient, "%t", "feature disabled", szFeature);
 			}
 		}
 		else
 		{
-			MsgReply(iClient, "Unknown feature: %s", szFeature);
+			MsgReply(iClient, "%t", "feature unknown", szFeature);
 		}
 		return Plugin_Handled;
 	}
@@ -61,7 +61,7 @@ public Action Command_DumpMapEntities(int iArgs)
 {
 	if (g_szEntityString[0] == '\0')
 	{
-		PrintToServer("No entity data recorded for current map.");
+		MsgSrv("No entity data recorded for current map.");
 		return Plugin_Handled;
 	}
 	
@@ -77,11 +77,11 @@ public Action Command_DumpMapEntities(int iArgs)
 	{
 		pDumpFile.WriteString(g_szEntityString, false);
 		CloseHandle(pDumpFile);
-		PrintToServer("Dumped map entities in %s", szDumpPath);
+		MsgSrv("Dumped map entities in %s", szDumpPath);
 	}
 	else
 	{
-		PrintToServer("Failed opening file for writing: %s", szDumpPath);
+		MsgSrv("Failed opening file for writing: %s", szDumpPath);
 	}
 	return Plugin_Handled;
 }

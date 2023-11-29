@@ -33,6 +33,9 @@ bool g_bEnabled;
 
 public void OnPluginStart()
 {
+	LoadTranslations("srccoop_difficulty.phrases");
+	InitSourceCoopAddon();
+
 	g_pConvarDifficulty = CreateConVar("sourcecoop_difficulty", "0", "Sets the difficulty - from 0 (base difficulty) and up.", _, true, 0.0);
 	g_pConvarDifficultyAuto = CreateConVar("sourcecoop_difficulty_auto", "2", "Sets automatic difficulty mode. -1 disables. 0 balances difficulty between min and max convars. Values above 0 set the difficulty increment per player, ignoring the min and max cvars.", _, true, -1.0);
 	g_pConvarDifficultyAutoMin = CreateConVar("sourcecoop_difficulty_auto_min", "1", "When automatic difficulty mode is set to 0, this is the difficulty at 1 player.", _, true, 0.0);
@@ -54,7 +57,6 @@ public void OnPluginStart()
 	RefreshIgnoreMap(g_pMapIgnoredFrom, g_pConvarDifficultyIgnoreDamageFrom);
 	
 	HookEvent("player_team", Event_PlayerChangeTeam, EventHookMode_PostNoCopy);
-	InitSourceCoopAddon();
 }
 
 public void OnMapStart()
@@ -67,7 +69,7 @@ void OnDifficultyChanged(ConVar convar, const char[] oldValue, const char[] newV
 	g_iDifficulty = convar.IntValue;
 	if (g_bEnabled && g_pConvarDifficultyAnnounce.BoolValue)
 	{
-		MsgAll("Difficulty has changed to %d", g_iDifficulty);
+		MsgAll("%t", "difficulty changed", g_iDifficulty);
 	}
 }
 
@@ -75,7 +77,7 @@ public void OnClientSayCommand_Post(int client, const char[] command, const char
 {
 	if (StrEqual(sArgs, "difficulty", false))
 	{
-		MsgAllNoSrv("Current difficulty: %s%d", SRCCOOP_CHAT_COLOR_TER, g_iDifficulty);
+		MsgAll("%t", "current difficulty", g_iDifficulty);
 	}
 }
 
@@ -123,7 +125,7 @@ void UpdateAutoDifficulty()
 		
 		if (min > max)
 		{
-			MsgSrv("Unable to set difficulty: sourcecoop_difficulty_auto_max is lower than sourcecoop_difficulty_auto_min");
+			MsgSrv("%t", "unable to set");
 			return;
 		}
 		

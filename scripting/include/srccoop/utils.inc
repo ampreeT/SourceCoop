@@ -60,7 +60,9 @@ stock void Msg(int client, const char[] msg, any ...)
 {
 	int len = strlen(msg) + 255;
 	char[] formatMsg = new char[len];
+	SetGlobalTransTarget(client);
 	VFormat(formatMsg, len, msg, 3);
+	ReplaceMsgColors(formatMsg, len);
  	PrintToChat(client, "%s%s", SRCCOOP_CHAT_TAG, formatMsg);
 }
 
@@ -68,33 +70,78 @@ stock void MsgReply(int client, const char[] msg, any ...)
 {
 	int len = strlen(msg) + 255;
 	char[] formatMsg = new char[len];
+	SetGlobalTransTarget(client);
 	VFormat(formatMsg, len, msg, 3);
- 	ReplyToCommand(client, "%s%s", client && GetCmdReplySource() == SM_REPLY_TO_CHAT? SRCCOOP_CHAT_TAG : SRCCOOP_CONSOLE_TAG, formatMsg);
+	if (client && GetCmdReplySource() == SM_REPLY_TO_CHAT)
+	{
+		ReplaceMsgColors(formatMsg, len);
+		ReplyToCommand(client, "%s%s", SRCCOOP_CHAT_TAG, formatMsg);
+	}
+	else
+	{
+		PurgeMsgColors(formatMsg, len);
+		ReplyToCommand(client, "%s%s", SRCCOOP_CONSOLE_TAG, formatMsg);
+	}
 }
 
 stock void MsgAll(const char[] msg, any ...)
 {
 	int len = strlen(msg) + 255;
 	char[] formatMsg = new char[len];
+	SetGlobalTransTarget(LANG_SERVER);
 	VFormat(formatMsg, len, msg, 2);
+	PurgeMsgColors(formatMsg, len);
 	PrintToServer("%s(chat) %s", SRCCOOP_CONSOLE_TAG, formatMsg);
- 	PrintToChatAll("%s%s", SRCCOOP_CHAT_TAG, formatMsg);
+	for (int i = 1; i <= MaxClients; i++)
+	{
+		if (IsClientInGame(i))
+		{
+			SetGlobalTransTarget(i);
+			VFormat(formatMsg, len, msg, 2);
+			ReplaceMsgColors(formatMsg, len);
+ 			PrintToChat(i, "%s%s", SRCCOOP_CHAT_TAG, formatMsg);
+		}
+	}
 }
 
 stock void MsgAllNoSrv(const char[] msg, any ...)
 {
 	int len = strlen(msg) + 255;
 	char[] formatMsg = new char[len];
-	VFormat(formatMsg, len, msg, 2);
- 	PrintToChatAll("%s%s", SRCCOOP_CHAT_TAG, formatMsg);
+	for (int i = 1; i <= MaxClients; i++)
+	{
+		if (IsClientInGame(i))
+		{
+			SetGlobalTransTarget(i);
+			VFormat(formatMsg, len, msg, 2);
+			ReplaceMsgColors(formatMsg, len);
+ 			PrintToChat(i, "%s%s", SRCCOOP_CHAT_TAG, formatMsg);
+		}
+	}
 }
 
 stock void MsgSrv(const char[] msg, any ...)
 {
 	int len = strlen(msg) + 255;
 	char[] formatMsg = new char[len];
+	SetGlobalTransTarget(LANG_SERVER);
 	VFormat(formatMsg, len, msg, 2);
+	PurgeMsgColors(formatMsg, len);
 	PrintToServer("%s%s", SRCCOOP_CONSOLE_TAG, formatMsg);
+}
+
+stock void ReplaceMsgColors(char[] msg, int maxLen)
+{
+	ReplaceString(msg, maxLen, "{pri}", SRCCOOP_CHAT_COLOR_PRI, false);
+	ReplaceString(msg, maxLen, "{sec}", SRCCOOP_CHAT_COLOR_SEC, false);
+	ReplaceString(msg, maxLen, "{ter}", SRCCOOP_CHAT_COLOR_TER, false);
+}
+
+stock void PurgeMsgColors(char[] msg, int maxLen)
+{
+	ReplaceString(msg, maxLen, "{pri}", "", false);
+	ReplaceString(msg, maxLen, "{sec}", "", false);
+	ReplaceString(msg, maxLen, "{ter}", "", false);
 }
 
 #if defined _regex_included
@@ -144,17 +191,17 @@ stock void FormatTimeLengthLong(int seconds, char[] out, int size)
 	char separator[10];
 	if (hours != 0)
 	{
-		Format(out, size, "%d hour%s", hours, hours == 1? "":"s");
+		Format(out, size, "%d hour%s", hours, hours == 1? "" : "s");
 		separator = " ";
 	}
 	if (mins != 0)
 	{
-		Format(out, size, "%s%s%d minute%s", out, separator, mins, mins == 1? "":"s");
+		Format(out, size, "%s%s%d minute%s", out, separator, mins, mins == 1? "" : "s");
 		separator = " ";
 	}
 	if (secs != 0)
 	{
-		Format(out, size, "%s%s%d second%s", out, mins == 0? separator : " and ", secs, secs == 1? "":"s");
+		Format(out, size, "%s%s%d second%s", out, mins == 0? separator : " and ", secs, secs == 1? "" : "s");
 	}
 }
 

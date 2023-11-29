@@ -115,11 +115,11 @@ methodmap SurvivalManager {
 				if (SurvivalManager.GetRespawnAtCheckpoints())
 				{
 					// ToDo: verify there are any survival CP's left.
-					ShowHudText(pPlayer.GetEntIndex(), 1, "You will respawn at the next survival checkpoint");
+					ShowHudText(pPlayer.GetEntIndex(), 1, "%t", "survival respawn hint checkpoint");
 				}
 				else
 				{
-					ShowHudText(pPlayer.GetEntIndex(), 1, "You will respawn once everyone is dead");
+					ShowHudText(pPlayer.GetEntIndex(), 1, "%t", "survival respawn hint no checkpoint");
 				}
 				
 				return false;
@@ -172,7 +172,7 @@ methodmap SurvivalManager {
 		}
 	}
 	
-	public static void RespawnPlayers(const char[] szHudText = "Checkpoint reached")
+	public static void RespawnPlayers(const char[] szHudText = "checkpoint reached")
 	{
 		SurvivalManager.ClearDead();
 		
@@ -186,7 +186,7 @@ methodmap SurvivalManager {
 					if (szHudText[0])
 					{
 						SetHudTextParams(-1.0, 0.9, 1.5, 200, 200, 200, 255, 0, 1.0, 1.0, 1.0);
-						ShowHudText(i, 2, szHudText);
+						ShowHudText(i, 2, "%t", szHudText);
 					}
 				}
 			}
@@ -237,10 +237,13 @@ methodmap SurvivalManager {
 				Client_ScreenFade(i, 1000, FFADE_OUT|FFADE_STAYOUT, _, 0, 0, 0, 255);
 				
 				#if defined SRCCOOP_BLACKMESA
-				ShowHudText(i, 2, "#BMS_GameOver_Ally");
-				#else
-				ShowHudText(i, 2, "ASSIGNMENT: TERMINATED\nSUBJECT: FREEMAN\nREASON: FAILURE TO PRESERVE MISSION-CRITICAL PERSONNEL");
+				if (!IsTranslatedForLanguage("survival game over", GetClientLanguage(i)))
+				{
+					ShowHudText(i, 2, "#BMS_GameOver_Ally");
+					continue;
+				}
 				#endif
+				ShowHudText(i, 2, "%t", "survival game over");
 			}
 		}
 	}
@@ -249,7 +252,7 @@ methodmap SurvivalManager {
 public Action Timer_SurvivalRespawnPlayers(Handle timer)
 {
 	data.m_pRestartTimer = null;
-	SurvivalManager.RespawnPlayers("Try again! Starting at last checkpoint...");
+	SurvivalManager.RespawnPlayers("survival restart last checkpoint");
 	return Plugin_Handled;
 }
 

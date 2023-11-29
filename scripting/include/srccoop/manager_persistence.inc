@@ -107,13 +107,13 @@ methodmap EquipmentManager
 	{
 		if (strlen(g_szSteamIds[iTarget]) == 0)
 		{
-			FormatEx(error, errorLength, "SteamID is unknown");
+			FormatEx(error, errorLength, "%t", "equipment load unknown steamid");
 			return false;
 		}
 
 		if (!kv.JumpToKey(g_szSteamIds[iTarget]))
 		{
-			FormatEx(error, errorLength, "Save data not found for SteamID: %s", g_szSteamIds[iTarget]);
+			FormatEx(error, errorLength, "%t", "equipment load player not found", g_szSteamIds[iTarget]);
 			return false;
 		}
 
@@ -124,7 +124,7 @@ methodmap EquipmentManager
 
 		if (!kv.JumpToKey("weapons"))
 		{
-			FormatEx(error, errorLength, "Unable to find weapons section in KeyValues file");
+			FormatEx(error, errorLength, "%t", "equipment load missing section", "weapons");
 			equipment.Close();
 			return false;	
 		}
@@ -147,7 +147,7 @@ methodmap EquipmentManager
 		
 		if (!kv.JumpToKey("ammo"))
 		{
-			FormatEx(error, errorLength, "Unable to find ammo section in KeyValues file");
+			FormatEx(error, errorLength, "%t", "equipment load missing section", "ammo");
 			equipment.Close();
 			return false;	
 		}
@@ -251,13 +251,13 @@ public Action Command_ExportEquipment(int iClient, int iArgs)
 		
 		kv.Rewind();
 		if (kv.ExportToFile(szFullPath))
-			MsgReply(iClient, "Saved equipment successfully.");
+			MsgReply(iClient, "%t", "equipment saved");
 		else
-			MsgReply(iClient, "Issue occurred when exporting to file: %s", szFullPath);
+			MsgReply(iClient, "%t", "equipment export fail", szFullPath);
 	}
 	else
 	{
-		MsgReply(iClient, "No valid players found. Could not save data.");
+		MsgReply(iClient, "%t", "equipment export no players");
 	}
 
 	delete kv;
@@ -280,14 +280,14 @@ public Action Command_ImportEquipment(int iClient, int iArgs)
 
 	if (!FileExists(szFullPath))
 	{
-		MsgReply(iClient, "Could not find specified save file: %s", szFullPath);
+		MsgReply(iClient, "%t", "equipment import file not found", szFullPath);
 		return Plugin_Handled;
 	}
 
 	KeyValues kv = new KeyValues("SaveData");
 	if (!kv.ImportFromFile(szFullPath))
 	{
-		MsgReply(iClient, "Failed to parse KeyValues file: %s", szFullPath);
+		MsgReply(iClient, "%t", "equipment import fail", szFullPath);
 		delete kv;
 		return Plugin_Handled;	
 	}
@@ -307,6 +307,7 @@ public Action Command_ImportEquipment(int iClient, int iArgs)
 	}
 
 	char szError[512];
+	SetGlobalTransTarget(iClient);
 
 	for (; i <= iMax; i++)
 	{
@@ -314,11 +315,11 @@ public Action Command_ImportEquipment(int iClient, int iArgs)
 		{
 			if (EquipmentManager.ImportEquipment(kv, i, szError, sizeof(szError)))
 			{
-				MsgReply(iClient, "Loaded player state for: %N", i);
+				MsgReply(iClient, "%t", "equipment loaded", i);
 			}
 			else
 			{
-				MsgReply(iClient, "Failed to load data for player: %N. %s", i, szError);
+				MsgReply(iClient, "%t", "equipment not loaded", i, szError);
 			}
 			kv.Rewind();
 		}
@@ -347,7 +348,7 @@ public Action Command_ClearEquipment(int iClient, int iArgs)
 		}
 	}
 
-	MsgReply(iClient, "Cleared player state successfully.");
+	MsgReply(iClient, "%t", "equipment cleared");
 	return Plugin_Handled;
 }
 

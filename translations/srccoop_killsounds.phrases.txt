@@ -1,0 +1,32 @@
+"Phrases"
+{
+	/* 
+	  SourceCoop supports built-in color placeholders.
+	  {pri} - primary color - for general text, default
+	  {sec} - secondary color - used for the SRCCOOP tag
+	  {ter} - tertiary color - for highlights
+	*/
+
+	"killsounds disabled"
+	{
+		"en"			"Kill confirm sounds disabled."
+	}
+
+	"killsounds enabled"
+	{
+		"en"			"Kill confirm sounds enabled."
+	}
+
+	/* Menu */
+	
+	"disable killsounds"
+	{
+		"en"			"Disable killsounds"
+	}
+
+	"enable killsounds"
+	{
+		"en"			"Enable killsounds"
+	}
+
+}

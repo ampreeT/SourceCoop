@@ -23,13 +23,14 @@ ConVar pSoundEffectPath;
 
 public void OnPluginStart()
 {
+	LoadTranslations("srccoop_killsounds.phrases");
+	InitSourceCoopAddon();
+
 	HookEvent("entity_killed", Event_EntityKilled, EventHookMode_Post);
 	pEnabledCookie = new Cookie("sourcecoop_ks_enabled", "Killsounds", CookieAccess_Protected);
 	pConvarDefault = CreateConVar("sourcecoop_ks_default", "0", "Sets the default setting of the killsounds player preference.", _, true, 0.0, true, 1.0);
 	pSoundEffectPath = CreateConVar("sourcecoop_ks_path", "buttons/button10.wav", "Sets the path to the kill sound effect.");
 	pSoundEffectPath.AddChangeHook(OnSndPathChange);
-
-	InitSourceCoopAddon();
 }
 
 public void OnLibraryAdded(const char[] name)
@@ -49,7 +50,7 @@ public void MyMenuHandler(TopMenu topmenu, TopMenuAction action, TopMenuObject o
 {
 	if (action == TopMenuAction_DisplayOption)
 	{
-		Format(buffer, maxlength, GetCookieBool(pEnabledCookie, param) ? "Disable killsounds" : "Enable killsounds");
+		Format(buffer, maxlength, "%T", GetCookieBool(pEnabledCookie, param) ? "disable killsounds" : "enable killsounds", param);
 	}
 	else if (action == TopMenuAction_SelectOption)
 	{
@@ -58,12 +59,12 @@ public void MyMenuHandler(TopMenu topmenu, TopMenuAction action, TopMenuObject o
 			if (GetCookieBool(pEnabledCookie, param))
 			{
 				SetCookieBool(pEnabledCookie, param, false);
-				Msg(param, "Kill confirm sounds disabled.");
+				Msg(param, "%t", "killsounds disabled");
 			}
 			else
 			{
 				SetCookieBool(pEnabledCookie, param, true);
-				Msg(param, "Kill confirm sounds enabled.");
+				Msg(param, "%t", "killsounds enabled");
 			}
 		}
 		topmenu.Display(param, TopMenuPosition_LastCategory);

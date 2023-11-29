@@ -52,53 +52,61 @@ methodmap ChangeLevelManager < ArrayList
 		ChangeLevelManager pSorted = this.Sorted();
 		ChangeLevelVoteLump pChangeLvlLump;
 		
+		// Purge invalid entities
+		for (int i = 0; i < pSorted.Length; i++)
+		{
+			if (!view_as<CChangelevel>(pSorted.Get(i, ChangeLevelVoteLump::m_pChangeLevel)).IsValid())
+			{
+				pSorted.Erase(i--);
+			}
+		}
+
 		if (g_pConvarEndWaitDisplayMode.BoolValue)
 		{
-			Format(szDisplay, sizeof(szDisplay), "Changing map (%d)\n", iSecondsLeft);
-			
-			for (int i = 0; i < pSorted.Length; i++)
-			{
-				pSorted.GetArray(i, pChangeLvlLump);
-				if (pChangeLvlLump.m_pChangeLevel.IsValid())
-				{
-					pChangeLvlLump.m_pChangeLevel.GetMapName(szMapName, sizeof(szMapName));
-					Format(szDisplay, sizeof(szDisplay), "%s%s (%d players) ", szDisplay, szMapName, pChangeLvlLump.votes);
-				}
-			}
-			
 			SetHudTextParams(-1.0, 0.05, 1.0, 200, 200, 200, 255, 0, 0.5, 0.1, 0.1);
 			
-			for (int i = 1; i <= MaxClients; i++)
+			for (int client = 1; client <= MaxClients; client++)
 			{
-				if (IsClientInGame(i))
-					ShowHudText(i, 2, szDisplay);
+				if (IsClientInGame(client))
+				{
+					SetGlobalTransTarget(client);
+					FormatEx(szDisplay, sizeof(szDisplay), "%t (%d)\n", "changing map", iSecondsLeft);
+			
+					for (int i = 0; i < pSorted.Length; i++)
+					{
+						pSorted.GetArray(i, pChangeLvlLump);
+						pChangeLvlLump.m_pChangeLevel.GetMapName(szMapName, sizeof(szMapName));
+						Format(szDisplay, sizeof(szDisplay), "%s%s (%dx) ", szDisplay, szMapName, pChangeLvlLump.votes);
+					}
+					
+					ShowHudText(client, 2, szDisplay);
+				}
 			}
 		}
 		else
 		{
-			Panel panel = new Panel();
-			
-			Format(szDisplay, sizeof(szDisplay), "Changing map.. (%d)", iSecondsLeft);
-			panel.SetTitle(szDisplay);
-			
-			for (int i = 0; i < pSorted.Length; i++)
+			for (int client = 1; client <= MaxClients; client++)
 			{
-				pSorted.GetArray(i, pChangeLvlLump);
-				if (pChangeLvlLump.m_pChangeLevel.IsValid())
-				{
-					pChangeLvlLump.m_pChangeLevel.GetMapName(szMapName, sizeof(szMapName));
-					Format(szDisplay, sizeof(szDisplay), "%s (%d players)", szMapName, pChangeLvlLump.votes);
-					panel.DrawItem(szDisplay);
+				if (IsClientInGame(client))
+				{	
+					SetGlobalTransTarget(client);
+
+					Panel panel = new Panel();
+					FormatEx(szDisplay, sizeof(szDisplay), "%t.. (%d)", "changing map", iSecondsLeft);
+					panel.SetTitle(szDisplay);
+					
+					for (int i = 0; i < pSorted.Length; i++)
+					{
+						pSorted.GetArray(i, pChangeLvlLump);
+						pChangeLvlLump.m_pChangeLevel.GetMapName(szMapName, sizeof(szMapName));
+						Format(szDisplay, sizeof(szDisplay), "%s (%d %t)", szMapName, pChangeLvlLump.votes, pChangeLvlLump.votes == 1? "player" : "players");
+						panel.DrawItem(szDisplay);
+					}
+
+					panel.Send(client, ChangeLevelStatusPanelCallback, 1);
+					delete panel;
 				}
 			}
-			
-			for (int i = 1; i <= MaxClients; i++)
-			{
-				if (IsClientInGame(i))
-					panel.Send(i, ChangeLevelStatusPanelCallback, 1);
-			}
-			
-			delete panel;
 		}
 		
 		delete pSorted;

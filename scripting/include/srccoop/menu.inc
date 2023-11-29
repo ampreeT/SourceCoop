@@ -37,27 +37,28 @@ void InitializeMenus()
 
 public void CoopTopMenuHandler(TopMenu topmenu, TopMenuAction action, TopMenuObject topobj_id, int param, char[] buffer, int maxlength)
 {
+	SetGlobalTransTarget(param);
 	if (action == TopMenuAction_DisplayTitle && topobj_id == INVALID_TOPMENUOBJECT)
 	{
-		Format(buffer, maxlength, "SourceCoop Menu");
+		Format(buffer, maxlength, "%t", "menu title");
 	}
 	else if (action == TopMenuAction_DisplayOption || action == TopMenuAction_DisplayTitle)
 	{
 		if (topobj_id == g_pCoopPlayerSettingsMenu)
 		{
-			Format(buffer, maxlength, "Player settings");
+			Format(buffer, maxlength, "%t", "menu category player");
 		}
 		else if (topobj_id == g_pCoopSoundSettingsMenu)
 		{
-			Format(buffer, maxlength, "Sound settings");
+			Format(buffer, maxlength, "%t", "menu category sounds");
 		}
 		else if (topobj_id == g_pCoopVotingMenu)
 		{
-			Format(buffer, maxlength, "Votes");
+			Format(buffer, maxlength, "%t", "menu category votes");
 		}
 		else if (topobj_id == g_pCoopOthersMenu)
 		{
-			Format(buffer, maxlength, "Other");
+			Format(buffer, maxlength, "%t", "menu category other");
 		}
 	}
 }
@@ -70,7 +71,7 @@ public Action Command_CoopMenu(int client, int args)
 	}
 	if (!CoopManager.IsCoopModeEnabled())
 	{
-		MsgReply(client, "Coop menu is currently unavailable.");
+		MsgReply(client, "%t", "menu unavailable");
 		return Plugin_Handled;
 	}
 	g_pCoopTopMenu.Display(client, TopMenuPosition_Start);

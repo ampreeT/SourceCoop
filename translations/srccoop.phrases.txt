@@ -1,0 +1,172 @@
+"Phrases"
+{
+	/* 
+	  SourceCoop supports built-in color placeholders.
+	  {pri} - primary color - for general text, default
+	  {sec} - secondary color - used for the SRCCOOP tag
+	  {ter} - tertiary color - for highlights
+	*/
+
+	"welcome"
+	{
+		"#format"		"{1:s}" // version
+		"en"			"This server runs {ter}SourceCoop v{1}{pri}\nPress {sec}={pri} or type {sec}/{ter}coopmenu{pri} for extra options."
+	}
+
+	"map start"
+	{
+		"#format"		"{1:s}" // map name
+		"en"			"Co-op map {1} has begun"
+	}
+
+	"changing map"
+	{
+		"en"			"Changing map"
+	}
+
+	"player"
+	{
+		"en"			"player"
+	}
+
+	"players"
+	{
+		"en"			"players"
+	}
+
+	"feature enabled"
+	{
+		"#format"		"{1:s}" // feature
+		"en"			"Enabled feature {1}"
+	}
+
+	"feature disabled"
+	{
+		"#format"		"{1:s}" // feature
+		"en"			"Disabled feature {1}"
+	}
+
+	"feature unknown"
+	{
+		"#format"		"{1:s}" // feature
+		"en"			"Unknown feature: {1}"
+	}
+
+	"menu unavailable"
+	{
+		"en"			"Coop menu is currently unavailable."
+	}
+
+	"menu title"
+	{
+		"en"			"SourceCoop Menu"
+	}
+
+	"menu category player"
+	{
+		"en"			"Player settings"
+	}
+
+	"menu category sounds"
+	{
+		"en"			"Sound settings"
+	}
+
+	"menu category votes"
+	{
+		"en"			"Votes"
+	}
+
+	"menu category other"
+	{
+		"en"			"Other"
+	}
+
+	"checkpoint reached"
+	{
+		"en"			"Checkpoint reached"
+	}
+
+	"survival respawn hint checkpoint"
+	{
+		"en"			"You will respawn at the next survival checkpoint"
+	}
+
+	"survival respawn hint no checkpoint"
+	{
+		"en"			"You will respawn once everyone is dead"
+	}
+
+	"survival restart last checkpoint"
+	{
+		"en"			"Try again! Starting at last checkpoint..."
+	}
+
+	"survival game over"
+	{
+		"en"			"ASSIGNMENT: TERMINATED\nSUBJECT: FREEMAN\nREASON: FAILURE TO PRESERVE MISSION-CRITICAL PERSONNEL"
+	}
+
+	"equipment saved"
+	{
+		"en"			"Saved equipment successfully."
+	}
+
+	"equipment export fail"
+	{
+		"#format"		"{1:s}" // filepath
+		"en"			"Issue occurred when saving equipment to file: {1}"
+	}
+
+	"equipment export no players"
+	{
+		"en"			"No valid players found. Save cancelled."
+	}
+
+	"equipment import file not found"
+	{
+		"#format"		"{1:s}" // filepath
+		"en"			"Could not find specified save file: {1}"
+	}
+
+	"equipment import fail"
+	{
+		"#format"		"{1:s}" // filepath
+		"en"			"The save file is in incorrect format: {1}"
+	}
+
+	"equipment loaded"
+	{
+		"#format"		"{1:N}" // player
+		"en"			"Loaded player state for: {1}"
+	}
+
+	"equipment not loaded"
+	{
+		"#format"		"{1:N},{2:s}" // player, error message
+		"en"			"Failed to load data for player: {1}. {2}"
+	}
+
+	"equipment load unknown steamid"
+	{
+		"en"			"SteamID is unknown."
+	}
+
+	"equipment load player not found"
+	{
+		"#format"		"{1:s}" // steamid
+		"en"			"Save data not found for SteamID: {1}"
+	}
+
+	"equipment load missing section"
+	{
+		"#format"		"{1:s}" // section
+		"en"			"Missing section \"{1}\" in save file!"
+	}
+
+	"equipment cleared"
+	{
+		"en"			"Cleared player state successfully."
+	}
+
+}
