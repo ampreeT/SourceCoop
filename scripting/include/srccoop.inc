@@ -10,10 +10,10 @@
 // Compile defs
 //------------------------------------------------------
 
+#if !defined SRCCOOP_CUSTOM_COMPILE
+
 // Uncomment to disable debugging
 // #define NO_DEBUG
-
-#if !defined SRCCOOP_CUSTOM_COMPILE
 
 #if defined SRCCOOP_HL2DM
 	

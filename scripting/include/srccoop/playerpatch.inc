@@ -168,9 +168,9 @@ public Action PlayerCommandListener(int client, const char[] command, int argc)
 	if (spec2Buttons)
 	{
 		CBasePlayer pPlayer = CBasePlayer(client);
-		if (pPlayer.GetObserverMode() == OBS_MODE_CHASE
-			&& pPlayer.GetObserverTarget() == pPlayer.GetRagdoll() // Player dead & following our server ragdoll.
-			&& !SurvivalManager.GetMode() // Keep dead spectating in survival
+		if (pPlayer.GetObserverMode() != OBS_MODE_NONE /* We are spectating something */
+			&& pPlayer.GetTeam() != TEAM_SPECTATOR /* But we're still able to respawn */
+			&& (!SurvivalManager.GetMode() || !g_pSurvivalManagerData.m_bSpecInit[client]) /* In survival, allow spectate controls */
 		) {
 			// Translate commands back to buttons so spawning works as normal.
 			// (Not necessary for BM)
@@ -268,9 +268,6 @@ public MRESReturn Hook_PlayerSpawn(int _this, Handle hReturn, Handle hParams)
 	if (CoopManager.IsCoopModeEnabled())
 	{
 		CBasePlayer pPlayer = CBasePlayer(_this);
-		
-		// Clear ragdoll parent
-		pPlayer.ClearParent();
 
 		// ignore initial in-game spawn
 		if (pPlayer.GetTeam() != TEAM_UNASSIGNED)
@@ -287,10 +284,10 @@ public MRESReturn Hook_PlayerSpawn(int _this, Handle hReturn, Handle hParams)
 //------------------------------------------------------
 // Player spawn post
 //------------------------------------------------------
-public void Hook_PlayerSpawnPost(int iClient)
+public MRESReturn Hook_PlayerSpawnPost(int iClient, Handle hReturn, Handle hParams)
 {
 	if (!CoopManager.IsCoopModeEnabled())
-		return;
+		return MRES_Ignored;
 
 	CBasePlayer pPlayer = CBasePlayer(iClient);
 	if (pPlayer.IsValid())
@@ -312,19 +309,16 @@ public void Hook_PlayerSpawnPost(int iClient)
 			// Fix for if player died on a ladder
 			SetEntPropEnt(pPlayer.GetEntIndex(), Prop_Data, "m_hLadder", -1);
 
-			if (!IsFakeClient(iClient))
-			{
-				// Apply on-spawn convars
-				SendClientConvars(iClient, true);
+			// Apply on-spawn convars
+			SendClientConvars(iClient, true);
 
-				#if defined SRCCOOP_BLACKMESA
-				QueryClientConVar(iClient, "r_bloomtintexponent_nextgen", QueryConVar_Bloom, 2.2);
-				QueryClientConVar(iClient, "r_bloomtintr_nextgen", QueryConVar_Bloom, 0.25);
-				QueryClientConVar(iClient, "r_bloomtintb_nextgen", QueryConVar_Bloom, 0.25);
-				QueryClientConVar(iClient, "r_bloomtintb_nextgen", QueryConVar_Bloom, 0.25);
-				QueryClientConVar(iClient, "gb_flashlight_intensity", QueryConVar_Bloom, 0.8);
-				#endif // SRCCOOP_BLACKMESA
-			}
+			#if defined SRCCOOP_BLACKMESA
+			QueryClientConVar(iClient, "r_bloomtintexponent_nextgen", QueryConVar_Bloom, 2.2);
+			QueryClientConVar(iClient, "r_bloomtintr_nextgen", QueryConVar_Bloom, 0.25);
+			QueryClientConVar(iClient, "r_bloomtintb_nextgen", QueryConVar_Bloom, 0.25);
+			QueryClientConVar(iClient, "r_bloomtintb_nextgen", QueryConVar_Bloom, 0.25);
+			QueryClientConVar(iClient, "gb_flashlight_intensity", QueryConVar_Bloom, 0.8);
+			#endif // SRCCOOP_BLACKMESA
 			
 			#if defined SRCCOOP_BLACKMESA
 
@@ -341,6 +335,8 @@ public void Hook_PlayerSpawnPost(int iClient)
 
 			// Stop HEV sounds
 			StopSound(iClient, SNDCHAN_STATIC, szLastSuitSound[iClient]);
+
+			CoopManager.OnPlayerSpawned(pPlayer);
 		}
 		else // Not alive => entered the game
 		{
@@ -366,10 +362,8 @@ public void Hook_PlayerSpawnPost(int iClient)
 
 			#endif // GAMEPATCH_TEAMSELECT_UI
 		}
-
-		CoopManager.OnPlayerSpawned(pPlayer);
-		g_pInstancingManager.OnPlayerSpawned(pPlayer);
 	}
+	return MRES_Ignored;
 }
 
 //------------------------------------------------------
@@ -384,30 +378,33 @@ public MRESReturn Hook_PlayerKilled(int _this, DHookParam hParams)
 {
 	#if defined PLAYERPATCH_SERVERSIDE_RAGDOLLS
 	g_pNewRagdoll = NULL_CBASEENTITY;
+	#endif
 
 	if (!CoopManager.IsCoopModeEnabled())
 		return MRES_Ignored;
 	
 	CBasePlayer pPlayer = CBasePlayer(_this);
-	if (pPlayer.IsValid())
+	if (!pPlayer.IsValid())
+		return MRES_Ignored;
+	
+	PackPlayerItems(pPlayer);
+
+	#if defined PLAYERPATCH_SERVERSIDE_RAGDOLLS
+	Address pTakeDmgInfo = hParams.GetAddress(1);
+	int dmgType = LoadFromAddress(pTakeDmgInfo + view_as<Address>(60), NumberType_Int32);
+	if (dmgType & DMG_DISSOLVE)
 	{
-		Address pTakeDmgInfo = hParams.GetAddress(1);
-		int dmgType = LoadFromAddress(pTakeDmgInfo + view_as<Address>(60), NumberType_Int32);
-		if (dmgType & DMG_DISSOLVE)
-		{
-			// Dont bother
-			return MRES_Ignored;
-		}
-
-		int iForceBone = GetEntProp(_this, Prop_Send, "m_nForceBone");
-		g_pNewRagdoll = CBaseAnimating(SDKCall(g_pCreateServerRagdoll, _this, iForceBone, pTakeDmgInfo, COLLISION_GROUP_DEBRIS_TRIGGER, false));
-		SDKHook(g_pNewRagdoll.GetEntIndex(), SDKHook_OnTakeDamage, Hook_NoDmg);
-
-		#if defined SRCCOOP_HL2DM
-		PlayerPatch_ApplyServerRagdoll(pPlayer);
-		#endif
+		// Dont bother
+		return MRES_Ignored;
 	}
 
+	int iForceBone = GetEntProp(_this, Prop_Send, "m_nForceBone");
+	g_pNewRagdoll = CBaseAnimating(SDKCall(g_pCreateServerRagdoll, _this, iForceBone, pTakeDmgInfo, COLLISION_GROUP_DEBRIS_TRIGGER, false));
+	SDKHook(g_pNewRagdoll.GetEntIndex(), SDKHook_OnTakeDamage, Hook_NoDmg);
+
+	#if defined SRCCOOP_HL2DM
+	PlayerPatch_ApplyServerRagdoll(pPlayer);
+	#endif
 	#endif // PLAYERPATCH_SERVERSIDE_RAGDOLLS
 
 	return MRES_Ignored;
@@ -463,20 +460,23 @@ public MRESReturn Hook_CreateRagdollEntity(int _this)
 // OnClientDisconnect
 //------------------------------------------------------
 public void PlayerPatch_OnClientDisconnect(CBasePlayer pPlayer)
-{	
-	#if defined SRCCOOP_HL2DM && defined PLAYERPATCH_SERVERSIDE_RAGDOLLS
+{
+	if (!CoopManager.IsCoopModeEnabled())
+		return;
 
 	if (pPlayer.IsValid())
 	{
+		ClearPackedItems(pPlayer);
+
+		#if defined SRCCOOP_HL2DM && defined PLAYERPATCH_SERVERSIDE_RAGDOLLS
 		// prevent hl2dm crash with serverside ragdolls
 		CBaseEntity pRagdoll = pPlayer.GetRagdoll();
 		if (pRagdoll.IsValid())
 		{
 			pRagdoll.Kill();
 		}
+		#endif // SRCCOOP_HL2DM && PLAYERPATCH_SERVERSIDE_RAGDOLLS
 	}
-
-	#endif // SRCCOOP_HL2DM && PLAYERPATCH_SERVERSIDE_RAGDOLLS
 }
 
 //------------------------------------------------------
@@ -617,6 +617,65 @@ public MRESReturn Hook_ForcePlayerToDropThisObject(Handle hParams)
 }
 
 //------------------------------------------------------
+// Item packing
+// Detaches and stores player's equipped items.
+// Makes it possible to re-equip the player on potential revives.
+//------------------------------------------------------
+CCoopEquipment g_pPackedEquipment[MAXPLAYERS + 1];
+
+bool HasPackedItems(CBasePlayer pPlayer)
+{
+	return g_pPackedEquipment[pPlayer.GetEntIndex()].IsInitialized();
+}
+
+void PackPlayerItems(CBasePlayer pPlayer)
+{
+	ClearPackedItems(pPlayer);
+	
+	int client = pPlayer.GetEntIndex();
+	g_pPackedEquipment[client].Initialize(true);
+	g_pPackedEquipment[client].Fill(pPlayer);
+	
+	int size = g_pPackedEquipment[client].m_pWeaponEntityList.Length;
+	for (int i = 0; i < size; i++)
+	{
+		CBaseCombatWeapon pWeapon = g_pPackedEquipment[client].m_pWeaponEntityList.Get(i);
+		pPlayer.RemoveWeapon(pWeapon);
+		pWeapon.SetSpawnFlags(pWeapon.GetSpawnFlags() | SF_ITEM_NORESPAWN);
+		pWeapon.SetEffects(pWeapon.GetEffects() | EF_NODRAW);
+	}
+	pPlayer.RemoveAllItems();
+}
+
+void RestorePackedItems(CBasePlayer pPlayer)
+{
+	int client = pPlayer.GetEntIndex();
+	if (!g_pPackedEquipment[client].IsInitialized())
+		return;
+
+	g_pPackedEquipment[client].Equip(pPlayer);
+	g_pPackedEquipment[client].Close();
+}
+
+void ClearPackedItems(CBasePlayer pPlayer)
+{
+	int client = pPlayer.GetEntIndex();
+	if (!g_pPackedEquipment[client].IsInitialized())
+		return;
+
+	int size = g_pPackedEquipment[client].m_pWeaponEntityList.Length;
+	for (int i = 0; i < size; i++)
+	{
+		CBaseEntity pItem = g_pPackedEquipment[client].m_pWeaponEntityList.Get(i);
+		if (pItem.IsValid())
+		{
+			pItem.Kill();
+		}
+	}
+	g_pPackedEquipment[client].Close();
+}
+
+//------------------------------------------------------
 // Admire gloves animation
 //------------------------------------------------------
 bool g_bPlayingAdmireGloves[MAXPLAYERS+1];
@@ -652,7 +711,7 @@ public void PlayAdmireGloves(CBasePlayer pPlayer, const bool bStartAnim)
 			g_bPlayingAdmireGloves[pPlayer.GetEntIndex()] = false;
 			
 			CBaseCombatWeapon pVMActiveWeapon = pViewModel.GetOwningWeapon();
-			pPlayer.EquipPlayerWeapon(pVMActiveWeapon);
+			pPlayer.EquipWeapon(pVMActiveWeapon);
 			
 			CBaseCombatWeapon pLastWeapon = pPlayer.GetLastWeapon();
 			if (pLastWeapon.IsValid())

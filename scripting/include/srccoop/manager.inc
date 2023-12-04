@@ -54,7 +54,8 @@ CoopManagerData g_pCoopManagerData;
 // local shortcut for data:
 #define data g_pCoopManagerData
 
-methodmap CoopManager {
+methodmap CoopManager
+{
 
 	public static void Initialize()
 	{
@@ -79,7 +80,7 @@ methodmap CoopManager {
 		}
 		g_SpawnSystem.Clear();
 		g_pLevelLump.Clear();
-		SurvivalManager.Clear();
+		SurvivalManager.Clear(true);
 		
 		KeyValues kv = CoopManager.LoadMapConfig(g_szMapName, data.m_mapConfigLoc);
 	
@@ -134,32 +135,51 @@ methodmap CoopManager {
 		if (CoopManager.IsCoopModeEnabled())
 		{
 			CoopManager.CheckStart();
+			
+			// initial teleport
+			g_SpawnSystem.SpawnPlayer(pPlayer, false);
 		}
 	}
 
 	public static void OnPlayerSpawned(CBasePlayer pPlayer)
 	{
-		bool bActuallySpawned = pPlayer.IsAlive();
-		
-		g_SpawnSystem.SpawnPlayer(pPlayer, bActuallySpawned);
-		
-		if (bActuallySpawned)
-		{				
-			data.m_bPlayerSpawned = true;
-			if (!data.m_bStarted)
+		bool bDefaultSpawn = true;
+
+		// got saved items from last death?
+		if (HasPackedItems(pPlayer))
+		{
+			// are we survival respawning rn?
+			if (SurvivalManager.IsRespawning())
 			{
-				if (g_pLevelLump.m_iIntroType == INTRO_FADE)
-				{
-					Client_ScreenFade(pPlayer.GetEntIndex(), 0, FFADE_STAYOUT);
-					pPlayer.SetFlags(pPlayer.GetFlags() | FL_ATCONTROLS);
-				}
-				else if (g_pLevelLump.m_iIntroType == INTRO_FREEZE)
-				{
-					pPlayer.SetFlags(pPlayer.GetFlags() | FL_ATCONTROLS);
-					Client_ScreenFade(pPlayer.GetEntIndex(), FROZEN_FADE_DUR_IN, FFADE_OUT|FFADE_STAYOUT, _, FROZEN_FADE_R, FROZEN_FADE_G, FROZEN_FADE_B, FROZEN_FADE_A);
-				}
-				CoopManager.CheckStart();
+				pPlayer.RemoveAllItems();
+				RestorePackedItems(pPlayer);
+				bDefaultSpawn = false;
 			}
+			else
+			{
+				// no use anymore, dont linger with these ents
+				ClearPackedItems(pPlayer);
+			}
+		}
+
+		g_SpawnSystem.SpawnPlayer(pPlayer, bDefaultSpawn);
+
+		ItemInstancingManager.OnPlayerSpawned(pPlayer);
+		
+		data.m_bPlayerSpawned = true;
+		if (!data.m_bStarted)
+		{
+			if (g_pLevelLump.m_iIntroType == INTRO_FADE)
+			{
+				Client_ScreenFade(pPlayer.GetEntIndex(), 0, FFADE_STAYOUT);
+				pPlayer.SetFlags(pPlayer.GetFlags() | FL_ATCONTROLS);
+			}
+			else if (g_pLevelLump.m_iIntroType == INTRO_FREEZE)
+			{
+				pPlayer.SetFlags(pPlayer.GetFlags() | FL_ATCONTROLS);
+				Client_ScreenFade(pPlayer.GetEntIndex(), FROZEN_FADE_DUR_IN, FFADE_OUT|FFADE_STAYOUT, _, FROZEN_FADE_R, FROZEN_FADE_G, FROZEN_FADE_B, FROZEN_FADE_A);
+			}
+			CoopManager.CheckStart();
 		}
 	}
 

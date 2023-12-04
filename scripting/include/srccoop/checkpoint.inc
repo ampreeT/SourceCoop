@@ -154,15 +154,25 @@ enum struct CCoopWeaponEntry
 enum struct CCoopEquipment
 {
 	ArrayList m_pWeaponList;
+	ArrayList m_pWeaponEntityList;
 	int m_iHealth;
 	int m_iArmor;
 	int m_iAmmoCount[MAX_AMMO_TYPES];
 	char m_szActiveWeapon[MAX_CLASSNAME];
 	
-	void Initialize()
+	void Initialize(bool bUseWeaponEntities = false)
 	{
 		this.m_pWeaponList = new ArrayList(sizeof(CCoopWeaponEntry));
+		if (bUseWeaponEntities)
+		{
+			this.m_pWeaponEntityList = new ArrayList();
+		}
 		this.Clear();
+	}
+
+	bool IsInitialized()
+	{
+		return this.m_pWeaponList != null;
 	}
 
 	void Clear()
@@ -171,6 +181,10 @@ enum struct CCoopEquipment
 		this.m_iHealth = -1;
 		this.m_iArmor = -1;
 		this.m_szActiveWeapon = "";
+		if (this.m_pWeaponEntityList)
+		{
+			this.m_pWeaponEntityList.Clear();
+		}
 		
 		for (int i = 0; i < MAX_AMMO_TYPES; i++)
 		{
@@ -180,7 +194,8 @@ enum struct CCoopEquipment
 
 	void Close()
 	{
-		CloseHandle(this.m_pWeaponList);
+		delete this.m_pWeaponList;
+		delete this.m_pWeaponEntityList;
 	}
 
 	void AddItem(const char[] szClassname, int iPrimaryAmmo = -1, int iSecondaryAmmo = -1)
@@ -204,7 +219,22 @@ enum struct CCoopEquipment
 			pPlayer.SetArmor(this.m_iArmor);	
 		}
 		
-		for (int i = 0; i < this.m_pWeaponList.Length; i++)
+		int size;
+		if (this.m_pWeaponEntityList)
+		{
+			size = this.m_pWeaponEntityList.Length;
+			for (int i = 0; i < size; i++)
+			{
+				CBaseCombatWeapon pWeapon = this.m_pWeaponEntityList.Get(i);
+				if (pWeapon.IsValid())
+				{
+					pPlayer.EquipWeapon(pWeapon);
+				}
+			}
+		}
+
+		size = this.m_pWeaponList.Length;
+		for (int i = 0; i < size; i++)
 		{
 			CCoopWeaponEntry pWeaponEntry;
 			if (this.m_pWeaponList.GetArray(i, pWeaponEntry, sizeof(pWeaponEntry)))
@@ -237,7 +267,12 @@ enum struct CCoopEquipment
 				pPlayer.SetAmmoFromIndex(i, this.m_iAmmoCount[i]);
 		}
 
-		ClientCommand(pPlayer.GetEntIndex(), "use %s", this.m_szActiveWeapon);
+		if (this.m_szActiveWeapon[0] != '\0')
+		{
+			CBaseCombatWeapon pWeapon = pPlayer.GetWeapon(this.m_szActiveWeapon);
+			if (pWeapon != NULL_CBASEENTITY)
+				pPlayer.WeaponSwitch(pWeapon);
+		}
 	}
 
 	void Fill(CBasePlayer pPlayer)
@@ -251,15 +286,26 @@ enum struct CCoopEquipment
 			pActiveWeapon.GetClassname(this.m_szActiveWeapon, sizeof(this.m_szActiveWeapon));
 		}
 
-		for (int iWeapon = 0; iWeapon < MAX_WEAPONS; iWeapon++)
+		if (this.m_pWeaponEntityList)
 		{
-			CBaseCombatWeapon pWeapon = pPlayer.GetWeaponFromIndex(iWeapon);
-			char weaponClassName[MAX_CLASSNAME];
-			if (pWeapon.IsValid() && pWeapon.GetClassname(weaponClassName, sizeof(weaponClassName)))
+			for (int i = 0; i < MAX_WEAPONS; i++)
 			{
-				if (pPlayer.HasWeapon(weaponClassName))
+				CBaseCombatWeapon pWeapon = pPlayer.GetWeaponFromIndex(i);
+				if (pWeapon.IsValid())
 				{
-					this.AddItem(weaponClassName, pWeapon.GetPrimaryAmmo(), pWeapon.GetSecondaryAmmo());
+					this.m_pWeaponEntityList.Push(pWeapon);
+				}
+			}
+		}
+		else
+		{
+			char szClassname[MAX_CLASSNAME];
+			for (int i = 0; i < MAX_WEAPONS; i++)
+			{
+				CBaseCombatWeapon pWeapon = pPlayer.GetWeaponFromIndex(i);
+				if (pWeapon.IsValid() && pWeapon.GetClassname(szClassname, sizeof(szClassname)))
+				{
+					this.AddItem(szClassname, pWeapon.GetPrimaryAmmo(), pWeapon.GetSecondaryAmmo());
 				}
 			}
 		}

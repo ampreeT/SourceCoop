@@ -40,8 +40,14 @@
 		}
 		"Functions"
 		{
-			// Virtual functions:
-
+			
+			// __      _______ _____ _______ _    _         _      
+			// \ \    / /_   _|  __ \__   __| |  | |  /\   | |     
+			//  \ \  / /  | | | |__) | | |  | |  | | /  \  | |     
+			//   \ \/ /   | | |  _  /  | |  | |  | |/ /\ \ | |     
+			//    \  /   _| |_| | \ \  | |  | |__| / ____ \| |____ 
+			//     \/   |_____|_|  \_\ |_|   \____/_/    \_\______|
+			
 			"CMultiplayRules::FAllowFlashlight"
 			{
 				"offset"	"CMultiplayRules::FAllowFlashlight"
@@ -324,20 +330,6 @@
 				"return"	"void"
 				"this"		"entity"
 			}
-//			"CBaseCombatWeapon::SendWeaponAnim"
-//			{
-//				"offset"	"CBaseCombatWeapon::SendWeaponAnim"
-//				"hooktype"	"entity"
-//				"return"	"bool"
-//				"this"		"entity"
-//				"arguments"
-//				{
-//					"anim"
-//					{
-//						"type"	"int"
-//					}
-//				}
-//			}
 			"CServerGameDLL::LevelInit"
 			{
 				"offset"	"CServerGameDLL::LevelInit"
@@ -372,21 +364,6 @@
 					}
 				}
 			}
-			// "CBaseEntity::OnTakeDamage"
-			// {
-			// 	"offset"	"CBaseEntity::OnTakeDamage"
-			// 	"hooktype"	"entity"
-			// 	"return"	"int"
-			// 	"this"		"entity"
-			// 	"arguments"
-			// 	{
-			// 		"info"
-			// 		{
-			// 			"type"	"objectptr"
-			// 			"flags"	"byref"
-			// 		}
-			// 	}
-			// }
 			"CBaseEntity::Event_Killed"
 			{
 				"offset"	"CBaseEntity::Event_Killed"
@@ -428,7 +405,12 @@
 				"this"		"entity"
 			}
 
-			// Detours:
+			//   _____  ______ _______ ____  _    _ _____  
+			//  |  __ \|  ____|__   __/ __ \| |  | |  __ \ 
+			//  | |  | | |__     | | | |  | | |  | | |__) |
+			//  | |  | |  __|    | | | |  | | |  | |  _  / 
+			//  | |__| | |____   | | | |__| | |__| | | \ \ 
+			//  |_____/|______|  |_|  \____/ \____/|_|  \_\
 
 			"CBasePlayer::SetSuitUpdate"
 			{
@@ -532,8 +514,17 @@
 			}
 		}
 	}
+	
 	"bms"
 	{
+		
+		//   _____ _____ _____ _   _       _______ _    _ _____  ______  _____ 
+		//  / ____|_   _/ ____| \ | |   /\|__   __| |  | |  __ \|  ____|/ ____|
+		// | (___   | || |  __|  \| |  /  \  | |  | |  | | |__) | |__  | (___  
+		//  \___ \  | || | |_ | . ` | / /\ \ | |  | |  | |  _  /|  __|  \___ \ 
+		//  ____) |_| || |__| | |\  |/ ____ \| |  | |__| | | \ \| |____ ____) |
+		// |_____/|_____\_____|_| \_/_/    \_\_|   \____/|_|  \_\______|_____/ 
+		
 		"Signatures"
 		{
 			"CBasePlayer::SetSuitUpdate" // CBasePlayer::SetSuitUpdate(CBasePlayer*, const char*, int, int)
@@ -626,6 +617,14 @@
 				"linux" 	"@_ZN10CBoneSetup14AccumulatePoseEP6VectorP10QuaternionifffP10CIKContext"
 			}
 		}
+
+		//    ____  ______ ______ _____ ______ _______ _____ 
+		//   / __ \|  ____|  ____/ ____|  ____|__   __/ ____|
+		//  | |  | | |__  | |__ | (___ | |__     | | | (___  
+		//  | |  | |  __| |  __| \___ \|  __|    | |  \___ \ 
+		//  | |__| | |    | |    ____) | |____   | |  ____) |
+		//   \____/|_|    |_|   |_____/|______|  |_| |_____/ 
+		
 		"Offsets"
 		{
 			"CBlackMesaPlayer::PickupObject" // CBlackMesaPlayer::PickupObject(CBaseEntity*, bool)
@@ -768,11 +767,6 @@
 				"windows"	"3"
 				"linux"		"3"
 			}
-			// "CBaseEntity::OnTakeDamage" // CBaseEntity::OnTakeDamage(CTakeDamageInfo const&)
-			// {
-			// 	"windows"	"68"
-			// 	"linux"		"69"
-			// }
 			"CBaseEntity::Event_Killed" // CBaseEntity::Event_Killed(CTakeDamageInfo const&)
 			{
 				"windows"	"72"
@@ -788,10 +782,96 @@
 				"windows"	"111"
 				"linux"		"112"
 			}
+			"CBaseCombatCharacter::Weapon_Switch" // CBaseCombatCharacter::Weapon_Switch( CBaseCombatWeapon *pWeapon, int viewmodelindex /*=0*/ )
+			{
+				"windows"	"284"
+				"linux"		"285"
+			}
 		}
 	}
+
 	"hl2mp"
 	{
+		
+		//   _____ _____ _____ _   _       _______ _    _ _____  ______  _____ 
+		//  / ____|_   _/ ____| \ | |   /\|__   __| |  | |  __ \|  ____|/ ____|
+		// | (___   | || |  __|  \| |  /  \  | |  | |  | | |__) | |__  | (___  
+		//  \___ \  | || | |_ | . ` | / /\ \ | |  | |  | |  _  /|  __|  \___ \ 
+		//  ____) |_| || |__| | |\  |/ ____ \| |  | |__| | | \ \| |____ ____) |
+		// |_____/|_____\_____|_| \_/_/    \_\_|   \____/|_|  \_\______|_____/ 
+		
+		"Signatures"
+		{
+			"CBaseEntity::SetCollisionBounds" // void CBaseEntity::SetCollisionBounds(Vector  const&,Vector  const&)
+			{
+				"windows"	"\x55\x8B\xEC\x81\xC1\x4C\x01\x00\x00"
+				"linux"		"@_ZN11CBaseEntity18SetCollisionBoundsERK6VectorS2_"
+			}
+			"CreateServerRagdoll" // CBaseEntity CreateServerRagdoll(CBaseAnimating *, int, const CTakeDamageInfo *, int, bool)
+			{
+				"windows"	"\x53\x8B\xDC\x83\xEC\x08\x83\xE4\xF0\x83\xC4\x04\x55\x8B\x6B\x04\x89\x6C\x24\x04\x8B\xEC\xB8\x68\x32\x00\x00"
+				"linux" 	"@_Z19CreateServerRagdollP14CBaseAnimatingiRK15CTakeDamageInfoib"
+			}
+			"UTIL_GetLocalPlayer" // CBasePlayer UTIL_GetLocalPlayer(void)
+			{
+				"windows"	"\xA1\x2A\x2A\x2A\x2A\x8B\x40\x14\x83\xF8\x01\x7E\x2A\x33\xC0"
+				"linux" 	"@_Z19UTIL_GetLocalPlayerv"
+			}
+			"Pickup_ForcePlayerToDropThisObject" // void Pickup_ForcePlayerToDropThisObject(CBaseEntity *)
+			{
+				"windows"	"\x55\x8B\xEC\x56\x8B\x75\x08\x85\xF6\x74\x2A\x8B\x8E\xE4\x01\x00\x00"
+				"linux" 	"@_Z34Pickup_ForcePlayerToDropThisObjectP11CBaseEntity"
+			}
+			"GlobalEntity_GetIndex" // int GlobalEntity_GetIndex( const char *pGlobalname );
+			{
+				"windows"	"\x55\x8B\xEC\x51\xFF\x75\x08\x8D\x45\xFC"
+				"linux" 	"@_Z21GlobalEntity_GetIndexPKc"
+			}
+			"GlobalEntity_GetState" // GLOBALESTATE GlobalEntity_GetState( int globalIndex );
+			{
+				"windows"	"\x55\x8B\xEC\x8B\x45\x08\x85\xC0\x78\x2A\x3B\x05\x2A\x2A\x2A\x2A\x7D\x2A\x8D\x0C\x40\xA1\x2A\x2A\x2A\x2A\x8B\x44\x88\x04"
+				"linux" 	"@_Z21GlobalEntity_GetStatei"
+			}
+			"GlobalEntity_GetName" // const char *GlobalEntity_GetName( int globalIndex );
+			{
+				"windows"	"\x55\x8B\xEC\x8B\x45\x08\x85\xC0\x78\x2A\x3B\x05\x2A\x2A\x2A\x2A\x7D\x2A\x51\x8D\x0C\x40\x8B\xD4\xA1\x2A\x2A\x2A\x2A\x66\x8B\x04\x88"
+				"linux"		"@_Z20GlobalEntity_GetNamei"
+			}
+			"GlobalEntity_GetCounter" // int GlobalEntity_GetCounter( int globalIndex );
+			{
+				"windows"	"\x55\x8B\xEC\x8B\x45\x08\x85\xC0\x78\x2A\x3B\x05\x2A\x2A\x2A\x2A\x7D\x2A\x8D\x0C\x40\xA1\x2A\x2A\x2A\x2A\x8B\x44\x88\x08"
+				"linux"		"@_Z23GlobalEntity_GetCounteri"
+			}
+			"GlobalEntity_GetMap" // const char *GlobalEntity_GetMap( int globalIndex );
+			{
+				"windows"	"\x55\x8B\xEC\x8B\x45\x08\x85\xC0\x78\x2A\x3B\x05\x2A\x2A\x2A\x2A\x7D\x2A\x51\x8D\x0C\x40\x8B\xD4\xA1\x2A\x2A\x2A\x2A\x66\x8B\x44\x88\x02"
+				"linux"		"@_Z19GlobalEntity_GetMapi"
+			}
+			"GlobalEntity_SetState" // void GlobalEntity_SetState( int globalIndex, GLOBALESTATE state )
+			{
+				"windows"	"\x55\x8B\xEC\x80\x3D\x2A\x2A\x2A\x2A\x00\x75\x2A\x8B\x45\x08\x85\xC0\x78\x2A\x3B\x05\x2A\x2A\x2A\x2A\x7D\x2A\x8B\x4D\x0C\x8D\x14\x40\xA1\x2A\x2A\x2A\x2A\x89\x4C\x90\x04"
+				"linux"		"@_Z21GlobalEntity_SetStatei12GLOBALESTATE"
+			}
+			"GlobalEntity_SetCounter" // void GlobalEntity_SetCounter( int globalIndex, int counter )
+			{
+				"windows"	"\x55\x8B\xEC\x80\x3D\x2A\x2A\x2A\x2A\x00\x75\x2A\x8B\x45\x08\x85\xC0\x78\x2A\x3B\x05\x2A\x2A\x2A\x2A\x7D\x2A\x8B\x4D\x0C\x8D\x14\x40\xA1\x2A\x2A\x2A\x2A\x89\x4C\x90\x08"
+				"linux"		"@_Z23GlobalEntity_SetCounterii"
+			}
+			"GlobalEntity_Add" // int GlobalEntity_Add( string_t const char *pGlobalname, const char *pMapName, GLOBALESTATE state )
+			{
+				// Fn is too short; 3 instances of this sig; str: "is_pc"
+				"windows"	"\x55\x8B\xEC\xFF\x75\x10\xB9\x2A\x2A\x2A\x2A\xFF\x75\x0C\xFF\x75\x08\xE8\x2A\x2A\x2A\x2A\x5D\xC3"
+				"linux"		"@_Z16GlobalEntity_AddPKcS0_12GLOBALESTATE"
+			}
+		}
+
+		//    ____  ______ ______ _____ ______ _______ _____ 
+		//   / __ \|  ____|  ____/ ____|  ____|__   __/ ____|
+		//  | |  | | |__  | |__ | (___ | |__     | | | (___  
+		//  | |  | |  __| |  __| \___ \|  __|    | |  \___ \ 
+		//  | |__| | |    | |    ____) | |____   | |  ____) |
+		//   \____/|_|    |_|   |_____/|______|  |_| |_____/ 
+		
 		"Offsets"
 		{
 			"CBasePlayer::CreateRagdollEntity" // void CBasePlayer::CreateRagdollEntity()
@@ -869,69 +949,10 @@
 				"windows"	"496"
 				"linux"		"500"
 			}
-		}
-		"Signatures"
-		{
-			"CBaseEntity::SetCollisionBounds" // void CBaseEntity::SetCollisionBounds(Vector  const&,Vector  const&)
+			"CBaseCombatCharacter::Weapon_Switch" // CBaseCombatCharacter::Weapon_Switch( CBaseCombatWeapon *pWeapon, int viewmodelindex /*=0*/ )
 			{
-				"windows"	"\x55\x8B\xEC\x81\xC1\x4C\x01\x00\x00"
-				"linux"		"@_ZN11CBaseEntity18SetCollisionBoundsERK6VectorS2_"
-			}
-			"CreateServerRagdoll" // CBaseEntity CreateServerRagdoll(CBaseAnimating *, int, const CTakeDamageInfo *, int, bool)
-			{
-				"windows"	"\x53\x8B\xDC\x83\xEC\x08\x83\xE4\xF0\x83\xC4\x04\x55\x8B\x6B\x04\x89\x6C\x24\x04\x8B\xEC\xB8\x68\x32\x00\x00"
-				"linux" 	"@_Z19CreateServerRagdollP14CBaseAnimatingiRK15CTakeDamageInfoib"
-			}
-			"UTIL_GetLocalPlayer" // CBasePlayer UTIL_GetLocalPlayer(void)
-			{
-				"windows"	"\xA1\x2A\x2A\x2A\x2A\x8B\x40\x14\x83\xF8\x01\x7E\x2A\x33\xC0"
-				"linux" 	"@_Z19UTIL_GetLocalPlayerv"
-			}
-			"Pickup_ForcePlayerToDropThisObject" // void Pickup_ForcePlayerToDropThisObject(CBaseEntity *)
-			{
-				"windows"	"\x55\x8B\xEC\x56\x8B\x75\x08\x85\xF6\x74\x2A\x8B\x8E\xE4\x01\x00\x00"
-				"linux" 	"@_Z34Pickup_ForcePlayerToDropThisObjectP11CBaseEntity"
-			}
-			"GlobalEntity_GetIndex" // int GlobalEntity_GetIndex( const char *pGlobalname );
-			{
-				"windows"	"\x55\x8B\xEC\x51\xFF\x75\x08\x8D\x45\xFC"
-				"linux" 	"@_Z21GlobalEntity_GetIndexPKc"
-			}
-			"GlobalEntity_GetState" // GLOBALESTATE GlobalEntity_GetState( int globalIndex );
-			{
-				"windows"	"\x55\x8B\xEC\x8B\x45\x08\x85\xC0\x78\x2A\x3B\x05\x2A\x2A\x2A\x2A\x7D\x2A\x8D\x0C\x40\xA1\x2A\x2A\x2A\x2A\x8B\x44\x88\x04"
-				"linux" 	"@_Z21GlobalEntity_GetStatei"
-			}
-			"GlobalEntity_GetName" // const char *GlobalEntity_GetName( int globalIndex );
-			{
-				"windows"	"\x55\x8B\xEC\x8B\x45\x08\x85\xC0\x78\x2A\x3B\x05\x2A\x2A\x2A\x2A\x7D\x2A\x51\x8D\x0C\x40\x8B\xD4\xA1\x2A\x2A\x2A\x2A\x66\x8B\x04\x88"
-				"linux"		"@_Z20GlobalEntity_GetNamei"
-			}
-			"GlobalEntity_GetCounter" // int GlobalEntity_GetCounter( int globalIndex );
-			{
-				"windows"	"\x55\x8B\xEC\x8B\x45\x08\x85\xC0\x78\x2A\x3B\x05\x2A\x2A\x2A\x2A\x7D\x2A\x8D\x0C\x40\xA1\x2A\x2A\x2A\x2A\x8B\x44\x88\x08"
-				"linux"		"@_Z23GlobalEntity_GetCounteri"
-			}
-			"GlobalEntity_GetMap" // const char *GlobalEntity_GetMap( int globalIndex );
-			{
-				"windows"	"\x55\x8B\xEC\x8B\x45\x08\x85\xC0\x78\x2A\x3B\x05\x2A\x2A\x2A\x2A\x7D\x2A\x51\x8D\x0C\x40\x8B\xD4\xA1\x2A\x2A\x2A\x2A\x66\x8B\x44\x88\x02"
-				"linux"		"@_Z19GlobalEntity_GetMapi"
-			}
-			"GlobalEntity_SetState" // void GlobalEntity_SetState( int globalIndex, GLOBALESTATE state )
-			{
-				"windows"	"\x55\x8B\xEC\x80\x3D\x2A\x2A\x2A\x2A\x00\x75\x2A\x8B\x45\x08\x85\xC0\x78\x2A\x3B\x05\x2A\x2A\x2A\x2A\x7D\x2A\x8B\x4D\x0C\x8D\x14\x40\xA1\x2A\x2A\x2A\x2A\x89\x4C\x90\x04"
-				"linux"		"@_Z21GlobalEntity_SetStatei12GLOBALESTATE"
-			}
-			"GlobalEntity_SetCounter" // void GlobalEntity_SetCounter( int globalIndex, int counter )
-			{
-				"windows"	"\x55\x8B\xEC\x80\x3D\x2A\x2A\x2A\x2A\x00\x75\x2A\x8B\x45\x08\x85\xC0\x78\x2A\x3B\x05\x2A\x2A\x2A\x2A\x7D\x2A\x8B\x4D\x0C\x8D\x14\x40\xA1\x2A\x2A\x2A\x2A\x89\x4C\x90\x08"
-				"linux"		"@_Z23GlobalEntity_SetCounterii"
-			}
-			"GlobalEntity_Add" // int GlobalEntity_Add( string_t const char *pGlobalname, const char *pMapName, GLOBALESTATE state )
-			{
-				// Fn is too short; 3 instances of this sig; str: "is_pc"
-				"windows"	"\x55\x8B\xEC\xFF\x75\x10\xB9\x2A\x2A\x2A\x2A\xFF\x75\x0C\xFF\x75\x08\xE8\x2A\x2A\x2A\x2A\x5D\xC3"
-				"linux"		"@_Z16GlobalEntity_AddPKcS0_12GLOBALESTATE"
+				"windows"	"264"
+				"linux"		"265"
 			}
 		}
 	}

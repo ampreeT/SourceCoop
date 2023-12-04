@@ -105,7 +105,7 @@ native TopMenu SC_GetCoopTopMenu();
 native bool SC_IsCurrentMapCoop();
 
 /**
- * Respawns a dead player.
+ * Respawns a dead player. Clears death state in survival.
  * @return    true if player was dead and respawned
  * @error     Invalid CBasePlayer
  */

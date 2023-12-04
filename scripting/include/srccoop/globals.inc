@@ -16,6 +16,7 @@ ConVar g_pConvarEndWaitPeriod;
 ConVar g_pConvarEndWaitFactor;
 ConVar g_pConvarHomeMap;
 ConVar g_pConvarEndWaitDisplayMode;
+ConVar g_pConvarValidateSteamIds;
 
 #if defined GAMEPATCH_TEAMSELECT_UI
 ConVar g_pConvarDisableTeamSelect;

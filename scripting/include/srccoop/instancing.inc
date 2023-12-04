@@ -6,59 +6,57 @@
 #pragma newdecls required
 #pragma semicolon 1
 
-enum struct ItemInstancingManager
+StringMap g_pPickedUpItems[MAXPLAYERS + 1];
+
+methodmap ItemInstancingManager
 {
-	StringMap m_pPickedUpItems[MAXPLAYERS + 1];
-	
-	void Initialize()
+	public static void Initialize()
 	{
 		DHookAddEntityListener(ListenType_Deleted, Hook_Instancing_ItemDeleted);
 	}
 	
-	void OnClientPutInServer(int client)
+	public static void OnClientPutInServer(int client)
 	{
-		this.m_pPickedUpItems[client] = new StringMap();
+		g_pPickedUpItems[client] = new StringMap();
 	}
 	
-	void OnClientDisconnect(int client)
+	public static void OnClientDisconnect(int client)
 	{
-		delete this.m_pPickedUpItems[client];
+		delete g_pPickedUpItems[client];
 	}
 	
-	void OnPlayerSpawned(CBasePlayer pPlayer)
+	public static void OnPlayerSpawned(CBasePlayer pPlayer)
 	{
 		if (!CoopManager.IsFeatureEnabled(FT_INSTANCE_ITEMS_NORESET))
 		{
-			this.m_pPickedUpItems[pPlayer.GetEntIndex()].Clear();
+			g_pPickedUpItems[pPlayer.GetEntIndex()].Clear();
 		}
 	}
 	
-	void AddPickedUpItem(CBasePlayer pPlayer, CBaseEntity pItem)
+	public static void AddPickedUpItem(CBasePlayer pPlayer, CBaseEntity pItem)
 	{
 		char key[32]; IntToString(view_as<int>(pItem), key, sizeof(key));
-		this.m_pPickedUpItems[pPlayer.GetEntIndex()].SetValue(key, true);
+		g_pPickedUpItems[pPlayer.GetEntIndex()].SetValue(key, true);
 	}
 	
-	bool HasPickedUpItem(CBasePlayer pPlayer, CBaseEntity pItem)
+	public static bool HasPickedUpItem(CBasePlayer pPlayer, CBaseEntity pItem)
 	{
 		char key[32]; bool _val; IntToString(view_as<int>(pItem), key, sizeof(key));
-		return this.m_pPickedUpItems[pPlayer.GetEntIndex()].GetValue(key, _val);
+		return g_pPickedUpItems[pPlayer.GetEntIndex()].GetValue(key, _val);
 	}
 	
-	void ClearPickedUpItem(CBaseEntity pItem)
+	public static void ClearPickedUpItem(CBaseEntity pItem)
 	{
 		char key[32]; IntToString(view_as<int>(pItem), key, sizeof(key));
 		for (int i = 0; i <= MaxClients; i++)
 		{
-			if (this.m_pPickedUpItems[i] != null)
+			if (g_pPickedUpItems[i] != null)
 			{
-				this.m_pPickedUpItems[i].Remove(key);
+				g_pPickedUpItems[i].Remove(key);
 			}
 		}
 	}
 }
-
-ItemInstancingManager g_pInstancingManager;
 
 public void Hook_Instancing_ItemSpawn(int iEntIndex)
 {
@@ -90,7 +88,7 @@ public MRESReturn Hook_Instancing_OnTryPickUpPre(int _this, Handle hReturn, Hand
 	if (pPlayer.IsClassPlayer())
 	{
 		CBaseEntity pItem = CBaseEntity(_this);
-		if (g_pInstancingManager.HasPickedUpItem(pPlayer, pItem))
+		if (ItemInstancingManager.HasPickedUpItem(pPlayer, pItem))
 		{
 			DHookSetReturn(hReturn, false);
 			return MRES_Supercede;
@@ -109,7 +107,7 @@ public MRESReturn Hook_Instancing_OnTryPickUpPost(int _this, Handle hReturn, Han
 		if (pPlayer.IsClassPlayer())
 		{
 			CBaseEntity pItem = CBaseEntity(_this);
-			g_pInstancingManager.AddPickedUpItem(pPlayer, pItem);
+			ItemInstancingManager.AddPickedUpItem(pPlayer, pItem);
 		}
 	}
 	return MRES_Ignored;
@@ -118,7 +116,7 @@ public MRESReturn Hook_Instancing_OnTryPickUpPost(int _this, Handle hReturn, Han
 // Do not transmit picked up items. This is not optimal - better option would be to show some effect/as translucent
 public Action Hook_Instancing_ItemTransmit(int entity, int client)
 {
-	if (g_pInstancingManager.HasPickedUpItem(CBasePlayer(client), CBaseEntity(entity)))
+	if (ItemInstancingManager.HasPickedUpItem(CBasePlayer(client), CBaseEntity(entity)))
 	{
 		return Plugin_Stop;
 	}
@@ -127,7 +125,7 @@ public Action Hook_Instancing_ItemTransmit(int entity, int client)
 
 public Action Hook_Instancing_Use(int entity, int activator, int caller, UseType type, float value)
 {
-	if (g_pInstancingManager.HasPickedUpItem(CBasePlayer(caller), CBaseEntity(entity)))
+	if (ItemInstancingManager.HasPickedUpItem(CBasePlayer(caller), CBaseEntity(entity)))
 	{
 		return Plugin_Handled;
 	}
@@ -141,5 +139,5 @@ public Action Hook_Instancing_NeverTransmit(int entity, int client)
 
 public void Hook_Instancing_ItemDeleted(int entity)
 {
-	g_pInstancingManager.ClearPickedUpItem(CBaseEntity(entity));
+	ItemInstancingManager.ClearPickedUpItem(CBaseEntity(entity));
 }

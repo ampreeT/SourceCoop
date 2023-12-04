@@ -220,6 +220,7 @@ public void OnPluginStart()
 	g_pConvarEndWaitFactor = CreateConVar("sourcecoop_end_wait_factor", "1.0", "Controls how much the number of finished players increases the changelevel timer speed. 1.0 means full, 0 means none (timer will run full length).", _, true, 0.0, true, 1.0);
 	g_pConvarHomeMap = CreateConVar("sourcecoop_homemap", "", "The map to return to after finishing a campaign/map.");
 	g_pConvarEndWaitDisplayMode = CreateConVar("sourcecoop_end_wait_display_mode", "1", "Sets which method to show countdown. 0 is panel, 1 is hud text.", _, true, 0.0, true, 1.0);
+	g_pConvarValidateSteamIds = CreateConVar("sourcecoop_validate_steamids", "0", "Validate players steam id's? Increases security at the cost of some functionality breakage when Steam goes down.\n At the time of writing this includes survival mode and equipment persistence.", _, true, 0.0, true, 1.0);
 
 	mp_friendlyfire = FindConVar("mp_friendlyfire");
 	mp_flashlight = FindConVar("mp_flashlight");
@@ -232,7 +233,7 @@ public void OnPluginStart()
 	g_pLevelLump.Initialize();
 	g_SpawnSystem.Initialize();
 	CoopManager.Initialize();
-	g_pInstancingManager.Initialize();
+	ItemInstancingManager.Initialize();
 	g_pPostponedSpawns = CreateArray();
 	g_pFeatureMap = new FeatureMap();
 	EquipmentManager.Initialize();
@@ -386,13 +387,12 @@ public void OnClientPutInServer(int client)
 		return;
 	
 	CBasePlayer pPlayer = CBasePlayer(client);
+	ItemInstancingManager.OnClientPutInServer(client);
 	PlayerPatch_OnClientPutInServer(client);
 	CoopManager.OnClientPutInServer(pPlayer);
-	g_pInstancingManager.OnClientPutInServer(client);
 	
 	SDKHook(client, SDKHook_PreThinkPost, Hook_PlayerPreThinkPost);
 	SDKHook(client, SDKHook_PreThink, Hook_PlayerPreThink);
-	SDKHook(client, SDKHook_SpawnPost, Hook_PlayerSpawnPost);
 	SDKHook(client, SDKHook_TraceAttack, Hook_PlayerTraceAttack);
 	SDKHook(client, SDKHook_OnTakeDamage, Hook_PlayerTakeDamage);
 	SDKHook(client, SDKHook_WeaponEquipPost, Hook_PlayerWeaponEquipPost);
@@ -400,6 +400,7 @@ public void OnClientPutInServer(int client)
 	DHookEntity(hkChangeTeam, true, client, _, Hook_PlayerChangeTeamPost);
 	DHookEntity(hkShouldCollide, false, client, _, Hook_PlayerShouldCollide);
 	DHookEntity(hkPlayerSpawn, false, client, _, Hook_PlayerSpawn);
+	DHookEntity(hkPlayerSpawn, true, client, _, Hook_PlayerSpawnPost);
 	DHookEntity(hkAcceptInput, false, client, _, Hook_PlayerAcceptInput);
 	DHookEntity(hkEvent_Killed, false, client, _, Hook_PlayerKilled);
 	DHookEntity(hkEvent_Killed, true, client, _, Hook_PlayerKilledPost);
@@ -411,7 +412,7 @@ public void OnClientPutInServer(int client)
 
 public void OnClientAuthorized(int client, const char[] auth)
 {
-	int sid = GetSteamAccountID(client);
+	int sid = GetSteamAccountID(client, g_pConvarValidateSteamIds.BoolValue);
 	if (sid)
 	{
 		IntToString(sid, g_szSteamIds[client], sizeof(g_szSteamIds[]));
@@ -425,11 +426,11 @@ public void OnClientDisconnect(int client)
 	
 	CBasePlayer pPlayer = CBasePlayer(client);
 	PlayerPatch_OnClientDisconnect(pPlayer);
+	ItemInstancingManager.OnClientDisconnect(client);
 }
 
 public void OnClientDisconnect_Post(int client)
 {
-	g_pInstancingManager.OnClientDisconnect(client);
 	SurvivalManager.GameOverCheck();
 	g_szSteamIds[client] = "";
 	g_bPostTeamSelect[client] = false;

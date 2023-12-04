@@ -11,16 +11,25 @@
 #define SND_DENY "items/suitchargeno1.wav"
 #define SND_RESPAWN "weapons/tau/gauss_undercharge.wav"
 
-ConVar g_pConVarReviveTime, g_pConVarReviveScore, g_pConVarReviveMessages, g_pConVarRagdollParticle;
+ConVar g_pConVarReviveTime;
+ConVar g_pConVarReviveScore;
+ConVar g_pConVarReviveMessages;
+ConVar g_pConVarRagdollEffectsTimer;
+ConVar g_pConVarRagdollBlink;
+ConVar g_pConVarRagdollParticle;
+ConVar g_pConvarAllowInClassicMode;
+
 ConVar g_pConVarSurvivalMode;
 
 int g_BeamSprite = -1;
 int g_ColorGreen[4] = {0, 255, 0, 255};
 
-CBasePlayer g_pReviveTarget[MAXPLAYERS+1] = {view_as<CBasePlayer>(-1), ...};
-float g_flReviveTime[MAXPLAYERS+1];
-float g_flLastSpriteUpdate[MAXPLAYERS+1];
+CBasePlayer g_pReviveTarget[MAXPLAYERS + 1] = {NULL_CBASEENTITY, ...};
+float g_flReviveTime[MAXPLAYERS + 1];
+float g_flLastSpriteUpdate[MAXPLAYERS + 1];
 bool g_bEnabled;
+
+Handle g_pRagdollEffectsTimer[MAXPLAYERS + 1];
 
 public Plugin myinfo =
 {
@@ -38,12 +47,14 @@ public void OnPluginStart()
 	g_pConVarReviveTime = CreateConVar("sourcecoop_revive_time", "4.0", "Sets time that you have to hold E to revive.", _, true, 0.0, false);
 	g_pConVarReviveScore = CreateConVar("sourcecoop_revive_score", "1", "Sets score to give for reviving a player.", _, true, 0.0, false);
 	g_pConVarReviveMessages = CreateConVar("sourcecoop_revive_messages", "0", "Shows messages such as You have started reviving x.", _, true, 0.0, true, 1.0);
-	g_pConVarRagdollParticle = CreateConVar("sourcecoop_revive_ragdoll_particle", "water_trail_medium_b", "Particle name to improve players' ragdoll visibility. Empty to disable.");
+	g_pConVarRagdollEffectsTimer = CreateConVar("sourcecoop_revive_ragdoll_effects_timer", "4.0", "Delay for applying ragdoll highlighting effects. -1 to disable all ragdoll effects.", _, true, -1.0);
+	g_pConVarRagdollParticle = CreateConVar("sourcecoop_revive_ragdoll_particle", "water_trail_medium_b", "Particle name to spawn in player ragdolls to improve their visibility. Empty for no particles.");
+	g_pConVarRagdollBlink = CreateConVar("sourcecoop_revive_ragdoll_blink", "1", "Whether to blink player ragdolls to improve their visibility.", _, true, 0.0, true, 1.0);
+	g_pConvarAllowInClassicMode = CreateConVar("sourcecoop_revive_in_classic_mode", "1", "Whether to allow reviving in non-survival mode.", _, true, 0.0, true, 1.0);
+	g_pConvarAllowInClassicMode.AddChangeHook(OnAllowInClassicModeChanged);
 	
 	RegAdminCmd("sourcecoop_revive", Command_ForceRespawn, ADMFLAG_ROOT, "Force respawn player.");
 	RegAdminCmd("sc_revive", Command_ForceRespawn, ADMFLAG_ROOT, "Force respawn player.");
-
-	HookEvent("player_death", Event_PlayerDeath);
 }
 
 public void OnAllPluginsLoaded()
@@ -54,13 +65,11 @@ public void OnAllPluginsLoaded()
 	g_pConVarSurvivalMode.AddChangeHook(OnSurvivalModeChanged);
 }
 
-public void OnMapStart()
+public void OnConfigsExecuted()
 {
-	if (!SC_IsCurrentMapCoop())
-	{
-		return;
-	}
 	SetEnabledState();
+	if (!SC_IsCurrentMapCoop())
+		return;
 	
 	PrecacheSound(SND_RESPAWN, true);
 	PrecacheSound(SND_START, true);
@@ -83,9 +92,14 @@ public void OnSurvivalModeChanged(ConVar convar, const char[] oldValue, const ch
 	SetEnabledState();
 }
 
+public void OnAllowInClassicModeChanged(ConVar convar, const char[] oldValue, const char[] newValue)
+{
+	SetEnabledState();
+}
+
 void SetEnabledState()
 {
-	if (g_pConVarSurvivalMode.IntValue && SC_IsCurrentMapCoop())
+	if (SC_IsCurrentMapCoop() && (g_pConVarSurvivalMode.IntValue || g_pConvarAllowInClassicMode.BoolValue))
 	{
 		g_bEnabled = true;
 	}
@@ -167,7 +181,7 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 							// Client left range to revive, play deny sound and stop previous start sound
 							ResetReviveStatus(client);
 							
-							StopSound(client, SNDCHAN_STATIC, SND_START);
+							StopSound(client, SNDCHAN_ITEM, SND_START);
 							EmitSoundToAll(SND_DENY, client, SNDCHAN_AUTO, SNDLEVEL_NORMAL);
 							
 							if (g_pConVarReviveMessages.BoolValue) Msg(client, "You have canceled reviving...");
@@ -243,8 +257,8 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 											g_pReviveTarget[client] = CBasePlayer(i);
 											
 											// Prevent multiple sounds if player is spamming E
-											StopSound(client, SNDCHAN_STATIC, SND_START);
-											EmitSoundToAll(SND_START, client, SNDCHAN_STATIC, SNDLEVEL_NORMAL);
+											StopSound(client, SNDCHAN_ITEM, SND_START);
+											EmitSoundToAll(SND_START, client, SNDCHAN_ITEM, SNDLEVEL_NORMAL);
 											
 											if (g_pConVarReviveMessages.BoolValue)
 												Msg(client, "You have started reviving '%N'", i);
@@ -296,7 +310,7 @@ public Action Timer_DelayRespawn(Handle timer, DataPack dp)
 		
 		pTarget.Teleport(vecOrigin, vecEyeAngles, NULL_VECTOR);
 		
-		EmitSoundToAll(SND_RESPAWN, pPlayer.GetEntIndex(), SNDCHAN_ITEM, SNDLEVEL_NORMAL, _, _, 150);
+		EmitSoundToAll(SND_RESPAWN, pTarget.GetEntIndex(), SNDCHAN_ITEM, SNDLEVEL_NORMAL, _, _, 150);
 	}
 	return Plugin_Handled;
 }
@@ -304,6 +318,7 @@ public Action Timer_DelayRespawn(Handle timer, DataPack dp)
 public void OnClientDisconnect_Post(int client)
 {
 	ResetReviveStatus(client);
+	g_pRagdollEffectsTimer[client] = null;
 }
 
 public bool TraceEntityFilter(int entity, int mask, any data)
@@ -313,14 +328,16 @@ public bool TraceEntityFilter(int entity, int mask, any data)
 	return true;
 }
 
-public void Event_PlayerDeath(Event hEvent, const char[] szName, bool bDontBroadcast)
+public void SC_OnPlayerRagdollCreated(CBasePlayer pPlayer, CBaseAnimating pRagdoll)
 {
+	int client = pPlayer.GetEntIndex();
+	delete g_pRagdollEffectsTimer[client];
 	if (g_bEnabled)
 	{
-		CBasePlayer pPlayer = CBasePlayer(GetClientOfUserId(hEvent.GetInt("userid")));
-		if (pPlayer.IsValid())
+		float delay = g_pConVarRagdollEffectsTimer.FloatValue;
+		if (delay >= 0.0)
 		{
-			CreateTimer(3.0, Timer_SetRagdollEffects, pPlayer, TIMER_FLAG_NO_MAPCHANGE);
+			g_pRagdollEffectsTimer[client] = CreateTimer(delay, Timer_SetRagdollEffects, pPlayer, TIMER_FLAG_NO_MAPCHANGE);
 		}
 	}
 }
@@ -329,10 +346,12 @@ public Action Timer_SetRagdollEffects(Handle timer, CBasePlayer pPlayer)
 {
 	if (pPlayer.IsInGame())
 	{
+		g_pRagdollEffectsTimer[pPlayer.GetEntIndex()] = null;
 		CBaseEntity pRagdoll = pPlayer.GetRagdoll();
 		if (pRagdoll.IsValid())
 		{
-			pRagdoll.SetEffects(pRagdoll.GetEffects() | EF_ITEM_BLINK);
+			if (g_pConVarRagdollBlink.BoolValue)
+				pRagdoll.SetEffects(pRagdoll.GetEffects() | EF_ITEM_BLINK);
 
 			char szBuffer[128]; g_pConVarRagdollParticle.GetString(szBuffer, sizeof(szBuffer));
 			if (szBuffer[0] != '\0')
