@@ -135,25 +135,23 @@ methodmap CoopManager
 		if (CoopManager.IsCoopModeEnabled())
 		{
 			CoopManager.CheckStart();
-			
-			// initial teleport
-			g_SpawnSystem.SpawnPlayer(pPlayer, false);
+			g_SpawnSystem.TeleportPlayer(pPlayer);
 		}
 	}
 
 	public static void OnPlayerSpawned(CBasePlayer pPlayer)
 	{
-		bool bDefaultSpawn = true;
+		bool bDefaultTeleport = g_pSpawnOptions.bUseSpawnSystem;
+		bool bDefaultEquipment = g_pSpawnOptions.bUseSpawnEquipment;
 
 		// got saved items from last death?
 		if (HasPackedItems(pPlayer))
 		{
-			// are we survival respawning rn?
-			if (SurvivalManager.IsRespawning())
+			if (g_pSpawnOptions.bRevive)
 			{
 				pPlayer.RemoveAllItems();
 				RestorePackedItems(pPlayer);
-				bDefaultSpawn = false;
+				bDefaultEquipment = false;
 			}
 			else
 			{
@@ -162,7 +160,17 @@ methodmap CoopManager
 			}
 		}
 
-		g_SpawnSystem.SpawnPlayer(pPlayer, bDefaultSpawn);
+		if (!VecEqual(g_pSpawnOptions.vecOrigin, vec3_origin))
+		{
+			pPlayer.Teleport(g_pSpawnOptions.vecOrigin, g_pSpawnOptions.vecAngles);
+			bDefaultTeleport = false;
+		}
+
+		if (bDefaultTeleport)
+			g_SpawnSystem.TeleportPlayer(pPlayer);
+		if (bDefaultEquipment)
+			g_SpawnSystem.SpawnPlayerEquipment(pPlayer);
+		g_pSpawnOptions.Reset();
 
 		ItemInstancingManager.OnPlayerSpawned(pPlayer);
 		

@@ -19,8 +19,8 @@
 
 #include <topmenus>
 
-#include <srccoop/typedef>
 #include <srccoop/typedef_game>
+#include <srccoop/public>
 #include <srccoop/classdef>
 #if defined SRCCOOP_BLACKMESA
 #include <srccoop/blackmesa/typedef>
@@ -28,24 +28,6 @@
 #endif
 #include <srccoop/utils>
 #include <srccoop/features>
-
-#define SRCCOOP_VERSION "1.2"
-#define SRCCOOP_URL "https://github.com/ampreeT/SourceCoop"
-
-/* The library name registered by the core plugin */
-#define SRCCOOP_LIBRARY "SRCCOOP"
-
-/* Predefined TopMenu category for player settings */
-#define COOPMENU_CATEGORY_PLAYER "PlayerSettings"
-
-/* Predefined TopMenu category for sound settings */
-#define COOPMENU_CATEGORY_SOUNDS "SoundSettings"
-
-/* Predefined TopMenu category for voting actions */
-#define COOPMENU_CATEGORY_VOTING "Voting"
-
-/* Predefined TopMenu category for other settings */
-#define COOPMENU_CATEGORY_OTHER "Other"
 
 stock void InitSourceCoopAddon()
 {
@@ -78,7 +60,7 @@ forward void SC_OnCoopMapStart();
  * game_end, trigger_changelevel, point_servercommand, point_clientcommand in SP conversions.
  * 
  * @param szNextMap     The map that would be changed to if not intercepted.
- * @param szReason      The reason that would be passed to ForceChangeLevel if not intercepted. Defined in typedef.inc
+ * @param szReason      The reason that would be passed to ForceChangeLevel if not intercepted. Defined in public.inc
  *                      Should be preserved, unless there is a specific reason not to.
  * @param isFinal       True if a final map of a series just completed. False for all other reasons.
  * @return              Plugin_Continue to proceed with the mapchange, other values to block it.
@@ -106,10 +88,12 @@ native bool SC_IsCurrentMapCoop();
 
 /**
  * Respawns a dead player. Clears death state in survival.
- * @return    true if player was dead and respawned
- * @error     Invalid CBasePlayer
+ * 
+ * @param options	The spawn options enum struct from public.inc
+ * @return    		true if player was dead and respawned
+ * @error     		Invalid CBasePlayer
  */
-native bool SC_SurvivalRespawn(CBasePlayer pPlayer);
+native bool SC_Respawn(CBasePlayer pPlayer, any options[sizeof(SpawnOptions)]);
 
 /**
  * Gets the survival mode.

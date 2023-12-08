@@ -466,6 +466,11 @@ enum struct CCoopSpawn
 	
 	void SpawnPlayerEquipment(CBasePlayer pPlayer)
 	{
+		#if !defined SRCCOOP_BLACKMESA
+		// bm uses game_player_equip
+		this.StripPlayer(pPlayer);
+		#endif
+
 		CCoopEquipment pSavedEquipment;
 		if (this.m_iCurrentCheckpoint == 0 && EquipmentManager.GetEquipment(pPlayer, pSavedEquipment))
 		{
@@ -477,21 +482,12 @@ enum struct CCoopSpawn
 		}
 	}
 	
-	void SpawnPlayer(CBasePlayer pPlayer, bool bSpawnEquipment = true)
+	void TeleportPlayer(CBasePlayer pPlayer)
 	{
 		CCoopSpawnEntry pCheckpoint;
 		if (this.GetCurrentCheckpoint(pCheckpoint))
 		{
 			pCheckpoint.TeleportPlayer(pPlayer, true);
-		}
-		if (bSpawnEquipment)
-		{
-			#if !defined SRCCOOP_BLACKMESA
-			// bm uses game_player_equip
-			this.StripPlayer(pPlayer);
-			#endif
-			
-			this.SpawnPlayerEquipment(pPlayer);
 		}
 	}
 	

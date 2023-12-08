@@ -130,7 +130,16 @@
 
 #include <logdebug>
 
-#include <srccoop_api>
+#include <srccoop/typedef>
+#include <srccoop/typedef_game>
+#include <srccoop/public>
+#include <srccoop/classdef>
+#if defined SRCCOOP_BLACKMESA
+#include <srccoop/blackmesa/typedef>
+#include <srccoop/blackmesa/classdef>
+#endif
+#include <srccoop/utils>
+#include <srccoop/features>
 #include <srccoop/globals>
 #include <srccoop/kv_shared>
 #include <srccoop/manager_changelevel>

@@ -314,13 +314,13 @@ methodmap CBaseEntity
 	public bool AcceptInputVector(const char[] szInput, const float vecValue[3], CBaseEntity pActivator = view_as<CBaseEntity>(-1), CBaseEntity pCaller = view_as<CBaseEntity>(-1), const int iOutputID = 0)
 	{
 		// ToDo: Should this use SetVariantPosVector3D or SetVariantVector3D?
-		char szBuffer[MAX_FORMAT];
+		char szBuffer[256];
 		Format(szBuffer, sizeof(szBuffer), "%f %f %f", vecValue[0], vecValue[1], vecValue[2]);
 		return this.AcceptInputStr(szInput, szBuffer, pActivator, pCaller, iOutputID);
 	}
 	public bool OutputAdd(const char[] szOutput, const char[] szTarget, const char[] szTargetInput, const char[] szParameter = "", float flDelay = 0.0, int timesToFire = -1)
 	{
-		 char szBuffer[MAX_FORMAT];
+		 char szBuffer[256];
 		 Format(szBuffer, sizeof(szBuffer), "%s %s:%s:%s:%f:%d", szOutput, szTarget, szTargetInput, szParameter, flDelay, timesToFire);
 		 return this.AcceptInputStr("AddOutput", szBuffer);
 	}

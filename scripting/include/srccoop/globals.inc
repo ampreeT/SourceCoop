@@ -151,6 +151,7 @@ bool g_bTempDontHookEnts;
 bool g_bMapStarted;
 bool g_bPostTeamSelect[MAXPLAYERS+1];
 int g_iAddButtons[MAXPLAYERS+1];
+SpawnOptions g_pSpawnOptions;
 OperatingSystem g_serverOS;
 FeatureMap g_pFeatureMap;
 

@@ -236,6 +236,7 @@ public void OnPluginStart()
 	ItemInstancingManager.Initialize();
 	g_pPostponedSpawns = CreateArray();
 	g_pFeatureMap = new FeatureMap();
+	g_pSpawnOptions.Reset();
 	EquipmentManager.Initialize();
 	InitializeMenus();
 	

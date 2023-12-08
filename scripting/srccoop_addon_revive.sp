@@ -28,6 +28,7 @@ CBasePlayer g_pReviveTarget[MAXPLAYERS + 1] = {NULL_CBASEENTITY, ...};
 float g_flReviveTime[MAXPLAYERS + 1];
 float g_flLastSpriteUpdate[MAXPLAYERS + 1];
 bool g_bEnabled;
+SpawnOptions g_pSpawnOptions;
 
 Handle g_pRagdollEffectsTimer[MAXPLAYERS + 1];
 
@@ -55,6 +56,8 @@ public void OnPluginStart()
 	
 	RegAdminCmd("sourcecoop_revive", Command_ForceRespawn, ADMFLAG_ROOT, "Force respawn player.");
 	RegAdminCmd("sc_revive", Command_ForceRespawn, ADMFLAG_ROOT, "Force respawn player.");
+
+	g_pSpawnOptions.bRevive = true;
 }
 
 public void OnAllPluginsLoaded()
@@ -131,7 +134,8 @@ public Action Command_ForceRespawn(int client, int args)
 	if (iTarget > 0)
 	{
 		CBasePlayer pTarget = CBasePlayer(iTarget);
-		if (SC_SurvivalRespawn(pTarget))
+		g_pSpawnOptions.vecOrigin = vec3_origin;
+		if (SC_Respawn(pTarget, g_pSpawnOptions))
 		{
 			MsgReply(client, "Spawned '%N'.", iTarget);
 		}
@@ -209,23 +213,20 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 						
 						if (GetGameTime() >= g_flReviveTime[client])
 						{
-							if (SC_SurvivalRespawn(g_pReviveTarget[client]))
+							pPlayer.GetAbsOrigin(g_pSpawnOptions.vecOrigin);
+							pPlayer.GetEyeAngles(g_pSpawnOptions.vecAngles);
+
+							if (SC_Respawn(g_pReviveTarget[client], g_pSpawnOptions))
 							{
 								// Effects
-								Client_ScreenFade(g_pReviveTarget[client].GetEntIndex(), 256, FFADE_PURGE|FFADE_IN, 1, 0, 0, 200, 255);
-								
-								g_pReviveTarget[client].GetRagdoll().Kill();
-								
-								// Delay to allow equip time
-								DataPack dp;
-								CreateDataTimer(0.1, Timer_DelayRespawn, dp, TIMER_FLAG_NO_MAPCHANGE);
-								WritePackCell(dp, pPlayer);
-								WritePackCell(dp, g_pReviveTarget[client]);
-								
+								int iTarget = g_pReviveTarget[client].GetEntIndex();
+								Client_ScreenFade(iTarget, 256, FFADE_PURGE|FFADE_IN, 1, 0, 0, 200, 255);
+								EmitSoundToAll(SND_RESPAWN, iTarget, SNDCHAN_ITEM, SNDLEVEL_NORMAL, _, _, 150);
+
 								// Give score to reviver
 								pPlayer.ModifyScore(g_pConVarReviveScore.IntValue);
 								if (g_pConVarReviveMessages.BoolValue)
-									Msg(client, "You have revived '%N' and have gained %i score!", g_pReviveTarget[client].GetEntIndex(), g_pConVarReviveScore.IntValue);
+									Msg(client, "You have revived '%N' and gained %i score!", iTarget, g_pConVarReviveScore.IntValue);
 								
 								ResetReviveStatus(client);
 							}
@@ -235,7 +236,7 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 			}
 			else
 			{
-				for (int i = 1;i<MaxClients+1;i++)
+				for (int i = 1; i<MaxClients+1; i++)
 				{
 					if (i != client)
 					{

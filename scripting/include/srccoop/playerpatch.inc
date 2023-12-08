@@ -642,7 +642,7 @@ void PackPlayerItems(CBasePlayer pPlayer)
 		CBaseCombatWeapon pWeapon = g_pPackedEquipment[client].m_pWeaponEntityList.Get(i);
 		pPlayer.RemoveWeapon(pWeapon);
 		pWeapon.SetSpawnFlags(pWeapon.GetSpawnFlags() | SF_ITEM_NORESPAWN);
-		pWeapon.SetEffects(pWeapon.GetEffects() | EF_NODRAW);
+		pWeapon.SetEffects(pWeapon.GetEffects() | EF_NODRAW | EF_NOSHADOW);
 	}
 	pPlayer.RemoveAllItems();
 }
