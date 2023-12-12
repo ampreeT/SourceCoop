@@ -75,7 +75,7 @@ enum struct CCoopSpawnEntry
 			{
 				pPlayer.StopDucking();
 			}
-			pPlayer.Teleport(vecPosition, vecAngles, view_as<float>({0.0, 0.0, 0.0}));
+			pPlayer.Teleport(vecPosition, vecAngles, vec3_origin);
 			return true;
 		}
 		return false;
@@ -130,7 +130,7 @@ enum struct CCoopSpawnEntry
 			for (int i = 1; i <= MaxClients; i++)
 			{
 				CBasePlayer pPlayer = CBasePlayer(i);
-				if (pPlayer.IsValid() && pPlayer.IsAlive())
+				if (pPlayer.IsValid() && pPlayer.IsAlive() && !IsFakeClient(i))
 				{
 					if (this.TeleportPlayer(pPlayer, true, true))
 					{

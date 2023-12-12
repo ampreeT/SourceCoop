@@ -92,6 +92,7 @@ enum struct SpawnOptions
 	bool bRevive;				/* Restore pre-death state if possible. Overrides bUseSpawnEquipment. Does not teleport by itself. */
 	float vecOrigin[3];			/* New origin or zeroes for null. Overrides other teleport options. */
 	float vecAngles[3];			/* New angles to use if vecOrigin is set. */
+	bool bUnstuck;				/* Allow checking for empty space around vecOrigin. */
 
 	void Reset()
 	{
@@ -100,5 +101,6 @@ enum struct SpawnOptions
 		this.bRevive = false;
 		this.vecOrigin = vec3_origin;
 		this.vecAngles = vec3_origin;
+		this.bUnstuck = true;
 	}
 }

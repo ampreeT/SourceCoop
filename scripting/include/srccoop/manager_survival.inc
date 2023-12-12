@@ -221,9 +221,9 @@ methodmap SurvivalManager {
 		
 		for (int i = 1; i <= MaxClients; i++)
 		{
-			CBasePlayer pPlayer = CBasePlayer(i);
-			if (pPlayer.IsInGame())
+			if (IsClientInGame(i) && !IsFakeClient(i))
 			{
+				CBasePlayer pPlayer = CBasePlayer(i);
 				if (SurvivalManager.RespawnPlayer(pPlayer))
 				{
 					if (szHudText[0])
@@ -274,9 +274,9 @@ methodmap SurvivalManager {
 		SetHudTextParams(-1.0, 0.45, 6.0, 200, 200, 200, 255, 0, 0.5, 1.0, 1.0);
 		for (int i = 1; i <= MaxClients; i++)
 		{
-			CBasePlayer pPlayer = CBasePlayer(i);
-			if (pPlayer.IsInGame())
+			if (IsClientInGame(i) && !IsFakeClient(i))
 			{
+				CBasePlayer pPlayer = CBasePlayer(i);
 				if (pPlayer.GetTeam() != TEAM_SPECTATOR)
 					Client_ScreenFade(i, 1000, FFADE_OUT|FFADE_STAYOUT, _, 0, 0, 0, 255);
 				

@@ -374,7 +374,7 @@ stock CBasePlayer GetNearestPlayer(CBaseEntity pOriginEntity, bool bOnlyAlive = 
 	for (int i = 1; i < (MaxClients + 1); i++)
 	{
 		CBasePlayer pPlayer = CBasePlayer(i);
-		if (pPlayer.IsValid() && (!bOnlyAlive || pPlayer.IsAlive()))
+		if (pPlayer.IsValid() && !IsFakeClient(i) && (!bOnlyAlive || pPlayer.IsAlive()))
 		{
 			float vecPlayerPosition[3];
 			pPlayer.GetAbsOrigin(vecPlayerPosition);
@@ -413,7 +413,7 @@ enum CanTeleportResult
 	CAN_TP_MUSTDUCK		//🦆//
 }
 
-stock CanTeleportResult CanTeleportPlayer(CBasePlayer pPlayer, float vecOrigin[3], bool bExact = false)
+stock CanTeleportResult CanTeleportPlayer(CBasePlayer pPlayer, float vecOrigin[3], bool bExact = false, bool bDuckCheck = true)
 {
 	bool bDidHit;
 
@@ -421,9 +421,12 @@ stock CanTeleportResult CanTeleportPlayer(CBasePlayer pPlayer, float vecOrigin[3
 	bDidHit = TR_DidHit();
 	if (!bDidHit) return CAN_TP_YES;
 	
-	TR_TraceHullFilter(vecOrigin, vecOrigin, view_as<float>(VEC_DUCK_HULL_MIN), view_as<float>(VEC_DUCK_HULL_MAX), MASK_PLAYERSOLID|CONTENTS_HITBOX, CanTeleportPlayer_TraceFilter);
-	bDidHit = TR_DidHit();
-	if (!bDidHit) return CAN_TP_MUSTDUCK;
+	if (bDuckCheck)
+	{
+		TR_TraceHullFilter(vecOrigin, vecOrigin, view_as<float>(VEC_DUCK_HULL_MIN), view_as<float>(VEC_DUCK_HULL_MAX), MASK_PLAYERSOLID|CONTENTS_HITBOX, CanTeleportPlayer_TraceFilter);
+		bDidHit = TR_DidHit();
+		if (!bDidHit) return CAN_TP_MUSTDUCK;
+	}
 	
 	if (!bExact)
 	{

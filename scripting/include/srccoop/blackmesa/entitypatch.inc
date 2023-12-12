@@ -312,7 +312,7 @@ public MRESReturn Hook_MarionettistAcceptInput(int _this, Handle hReturn, Handle
 				{
 					for (int i = 1; i <= MaxClients; i++)
 					{
-						if (IsClientInGame(i) && IsPlayerAlive(i))
+						if (IsClientInGame(i) && !IsFakeClient(i) && IsPlayerAlive(i))
 						{
 							MarionettistManipulate(_this, i, CBasePlayer(i));
 						}

@@ -36,6 +36,9 @@
 
 		// prevents client crash after pvp deaths due to freezecam, shortens respawn time
 		"spec_freeze_time" "0"
+
+		// this removes the quick (0.4s) & awkward zoom-in
+		"spec_freeze_traveltime" "0.01"
 	}
 
 	"client_console"

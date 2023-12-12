@@ -110,7 +110,7 @@ public MRESReturn Hook_BaseNPCAcceptInput(int _this, Handle hReturn, Handle hPar
 				float vecAbsOrigin[3];
 				for (int i = 1; i <= MaxClients; i++)
 				{
-					if (IsClientInGame(i))
+					if (IsClientInGame(i) && !IsFakeClient(i) && IsPlayerAlive(i))
 					{
 						pPlayer = CBasePlayer(i);
 						pPlayer.GetAbsOrigin(vecAbsOrigin);
@@ -320,7 +320,7 @@ public MRESReturn Hook_PointTeleportAcceptInput(int _this, Handle hReturn, Handl
 				GetEntPropVector(_this, Prop_Data, "m_vSaveAngles", angles);
 				for (int i = 1; i <= MaxClients; i++)
 				{
-					if (IsClientInGame(i) && IsPlayerAlive(i))
+					if (IsClientInGame(i) && !IsFakeClient(i) && IsPlayerAlive(i))
 					{
 						TeleportEntity(i, origin, angles, NULL_VECTOR);
 					}
@@ -578,7 +578,7 @@ public MRESReturn Hook_ClientCommandAcceptInput(int _this, Handle hReturn, Handl
 					}
 					for (int i = 1; i <= MaxClients; i++)
 					{
-						if (IsClientInGame(i) && IsPlayerAlive(i))
+						if (IsClientInGame(i) && !IsFakeClient(i) && IsPlayerAlive(i))
 						{
 							CBasePlayer pPlayer = CBasePlayer(i);
 							if (!pPlayer.HasWeapon(szParam[iStart]))
@@ -802,7 +802,7 @@ public MRESReturn Hook_SetPlayerAvoidState(int _this)
 		
 		for (int i = 1; i <= MaxClients; i++)
 		{
-			if (IsClientInGame(i) && IsPlayerAlive(i))
+			if (IsClientInGame(i) && !IsFakeClient(i) && IsPlayerAlive(i))
 			{
 				CBasePlayer pPlayer = CBasePlayer(i);
 				pPlayer.GetMins(vPlrMins);

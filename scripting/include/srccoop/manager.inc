@@ -162,7 +162,15 @@ methodmap CoopManager
 
 		if (!VecEqual(g_pSpawnOptions.vecOrigin, vec3_origin))
 		{
-			pPlayer.Teleport(g_pSpawnOptions.vecOrigin, g_pSpawnOptions.vecAngles);
+			CanTeleportResult res;
+			if ((res = CanTeleportPlayer(pPlayer, g_pSpawnOptions.vecOrigin, !g_pSpawnOptions.bUnstuck)))
+			{
+				if (res == CAN_TP_MUSTDUCK)
+					pPlayer.StartDucking();
+				else
+					pPlayer.StopDucking();
+			}
+			pPlayer.Teleport(g_pSpawnOptions.vecOrigin, g_pSpawnOptions.vecAngles, vec3_origin);
 			bDefaultTeleport = false;
 		}
 
@@ -270,7 +278,7 @@ methodmap CoopManager
 		{
 			for (int i = 1; i <= MaxClients; i++)
 			{
-				if (IsClientInGame(i))
+				if (IsClientInGame(i) && !IsFakeClient(i))
 				{
 					CBasePlayer pClient = CBasePlayer(i);
 					pClient.SetFlags(pClient.GetFlags() & ~FL_ATCONTROLS);

@@ -235,6 +235,14 @@ methodmap CBaseEntity
 		return CBaseEntity(CreateEntityByName(szClassname));
 	}
 
+	property int entindex
+	{
+		public get()
+		{
+			return EntRefToEntIndex(view_as<int>(this));
+		}
+	}
+	/** Deprecated: Use entindex property instead */
 	public int GetEntIndex()
 	{
 		return EntRefToEntIndex(view_as<int>(this));
