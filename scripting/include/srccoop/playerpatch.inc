@@ -91,8 +91,7 @@ public void Hook_PlayerPreThinkPost(int iClient)
 	{
 		if (pPlayer.GetTeam() != TEAM_SPECTATOR)
 		{
-			float flRespawnTime = g_pConvarCoopRespawnTime.FloatValue;
-			if (flRespawnTime && !SurvivalManager.IsDead(pPlayer) && GetGameTime() - pPlayer.GetDeathTime() > flRespawnTime)
+			if (GetGameTime() - pPlayer.GetDeathTime() > g_pConvarCoopRespawnTime.FloatValue)
 			{
 				int iPressed = pPlayer.GetPressedButtons();
 				if (iPressed != 0 && iPressed != IN_SCORE)
@@ -102,6 +101,48 @@ public void Hook_PlayerPreThinkPost(int iClient)
 			}
 		}
 	}
+}
+
+//------------------------------------------------------
+// CBasePlayer::ForceRespawn
+// [Black Mesa] Restores mp_forcerespawn functionality
+//------------------------------------------------------
+public MRESReturn Hook_PlayerForceRespawn(int iClient)
+{
+	if (!CoopManager.IsCoopModeEnabled())
+		return MRES_Ignored;
+	
+	CBasePlayer pPlayer = CBasePlayer(iClient);
+	float flDeathTime = pPlayer.GetDeathTime();
+	
+	if (flDeathTime == 0.0 || (mp_forcerespawn.BoolValue && (GetGameTime() - flDeathTime) > g_pConvarCoopRespawnTime.FloatValue))
+	{
+		return MRES_Ignored;
+	}
+	return MRES_Supercede;
+}
+
+//------------------------------------------------------
+// CBasePlayer::StartObserverMode
+// [Black Mesa] Force "chase" death camera. This skips the problematic freezecam.
+//------------------------------------------------------
+public MRESReturn Hook_PlayerStartObserverMode(int iClient, DHookReturn hReturn, DHookParam hParams)
+{
+	if (!CoopManager.IsCoopModeEnabled())
+		return MRES_Ignored;
+	
+	Obs_Mode mode = hParams.Get(1);
+	if (mode == OBS_MODE_FREEZECAM)
+	{
+		hParams.Set(1, OBS_MODE_CHASE);
+		return MRES_Handled;
+	}
+	else if (mode == OBS_MODE_DEATHCAM)
+	{
+		hReturn.Value = false;
+		return MRES_Supercede;
+	}
+	return MRES_Ignored;
 }
 
 //------------------------------------------------------
@@ -270,7 +311,7 @@ public MRESReturn Hook_PlayerSpawn(int _this, Handle hReturn, Handle hParams)
 		CBasePlayer pPlayer = CBasePlayer(_this);
 
 		// ignore initial in-game spawn
-		if (pPlayer.GetTeam() != TEAM_UNASSIGNED)
+		if (pPlayer.GetSimulationTick() != -1)
 		{
 			if (!SurvivalManager.HandlePlayerSpawn(pPlayer))
 			{
@@ -313,14 +354,12 @@ public MRESReturn Hook_PlayerSpawnPost(int iClient, Handle hReturn, Handle hPara
 			SendClientConvars(iClient, true);
 
 			#if defined SRCCOOP_BLACKMESA
+
 			QueryClientConVar(iClient, "r_bloomtintexponent_nextgen", QueryConVar_Bloom, 2.2);
 			QueryClientConVar(iClient, "r_bloomtintr_nextgen", QueryConVar_Bloom, 0.25);
 			QueryClientConVar(iClient, "r_bloomtintb_nextgen", QueryConVar_Bloom, 0.25);
 			QueryClientConVar(iClient, "r_bloomtintb_nextgen", QueryConVar_Bloom, 0.25);
 			QueryClientConVar(iClient, "gb_flashlight_intensity", QueryConVar_Bloom, 0.8);
-			#endif // SRCCOOP_BLACKMESA
-			
-			#if defined SRCCOOP_BLACKMESA
 
 			// Fix for lag no collide with mp_teamplay 0
 			if (!CBM_MP_GameRules.IsTeamplay()) pPlayer.SetCollisionGroup(COLLISION_GROUP_INTERACTIVE_DEBRIS);
@@ -423,7 +462,7 @@ public MRESReturn Hook_PlayerKilledPost(int _this, DHookParam hParams)
 		}
 		#endif
 
-		SurvivalManager.HandlePlayerDeath(pPlayer);
+		SurvivalManager.OnPlayerDeath(pPlayer);
 	}
 	return MRES_Ignored;
 }
@@ -525,9 +564,9 @@ public Action Hook_PlayerTakeDamage(int victim, int &attacker, int &inflictor, f
 // Player team change hooks
 // - Force everyone to single team in TDM
 //------------------------------------------------------
-public MRESReturn Hook_PlayerChangeTeam(int client, Handle hParams)
+public MRESReturn Hook_PlayerChangeTeam(int iClient, Handle hParams)
 {
-	if (CoopManager.IsCoopModeEnabled() && client != -1)
+	if (CoopManager.IsCoopModeEnabled() && iClient != -1)
 	{
 		if (!CMultiplayRules.IsTeamplay())
 			return MRES_Ignored;
@@ -556,11 +595,14 @@ public MRESReturn Hook_PlayerChangeTeam(int client, Handle hParams)
 	return MRES_Ignored;
 }
 
-public MRESReturn Hook_PlayerChangeTeamPost(int _this, Handle hParams)
+public MRESReturn Hook_PlayerChangeTeamPost(int iClient, Handle hParams)
 {
 	if (CoopManager.IsCoopModeEnabled())
 	{
-		SurvivalManager.GameOverCheck();
+		CBasePlayer pPlayer = CBasePlayer(iClient);
+		int iTeamNum = DHookGetParam(hParams, 1);
+
+		SurvivalManager.OnPlayerChangeTeam(pPlayer, iTeamNum);
 	}
 	return MRES_Ignored;
 }

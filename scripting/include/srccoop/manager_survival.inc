@@ -143,13 +143,15 @@ methodmap SurvivalManager {
 					pPlayer.SetSolidFlags(pPlayer.GetSolidFlags() | FSOLID_NOT_SOLID);
 					pPlayer.SetEffects(pPlayer.GetEffects() | EF_NODRAW);
 					
+					// Show spectate gui
+					ShowVGUIPanel(client, "specgui", null);
+					
 					// Remove previous fades
 					Client_ScreenFade(client, 1500, FFADE_IN|FFADE_PURGE, 1, 0, 0, 0, 255);
 					
 					SetHudTextParams(0.016, 0.04, 5.0, 255, 255, 255, 255, 1, 1.0, 1.0, 1.0);
-					if (SurvivalManager.GetRespawnAtCheckpoints())
+					if (SurvivalManager.GetRespawnAtCheckpoints() && g_SpawnSystem.CountCheckpoints(true, true))
 					{
-						// ToDo: verify there are any survival CP's left.
 						ShowHudText(client, 1, "%t", "survival respawn hint checkpoint");
 					}
 					else
@@ -164,12 +166,30 @@ methodmap SurvivalManager {
 		return true;
 	}
 	
-	public static void HandlePlayerDeath(CBasePlayer pPlayer)
+	public static void OnPlayerChangeTeam(CBasePlayer pPlayer, int iTeamNum)
+	{
+		if (SurvivalManager.GetMode())
+		{
+			data.m_bSpecInit[pPlayer.GetEntIndex()] = false;
+			SurvivalManager.GameOverCheck();
+		}
+	}
+
+	public static void OnPlayerDeath(CBasePlayer pPlayer)
 	{
 		if (SurvivalManager.GetMode())
 		{
 			data.m_bSpecInit[pPlayer.GetEntIndex()] = false;
 			SurvivalManager.SetDead(pPlayer, true);
+			SurvivalManager.GameOverCheck();
+		}
+	}
+	
+	public static void OnClientDisconnectPost(int client)
+	{
+		if (SurvivalManager.GetMode())
+		{
+			data.m_bSpecInit[client] = false;
 			SurvivalManager.GameOverCheck();
 		}
 	}

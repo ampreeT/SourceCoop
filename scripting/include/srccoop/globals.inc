@@ -25,6 +25,7 @@ ConVar g_pConvarDisableTeamSelect;
 // Existing ConVars
 ConVar mp_friendlyfire;
 ConVar mp_flashlight;
+ConVar mp_forcerespawn;
 
 // ----------------------------
 // SDK Calls
@@ -100,6 +101,14 @@ DynamicHook hkRunAI;
 
 #if defined ENTPATCH_BM_FUNC_TRACKAUTOCHANGE || defined ENTPATCH_BM_FUNC_TRACKTRAIN
 DynamicHook hkBlocked;
+#endif
+
+#if defined PLAYERPATCH_RESTORE_MP_FORCERESPAWN
+DynamicHook hkForceRespawn;
+#endif
+
+#if defined PLAYERPATCH_OVERRIDE_DEATH_OBSMODE
+DynamicHook hkStartObserverMode;
 #endif
 
 #if defined PLAYERPATCH_SETSUITUPDATE

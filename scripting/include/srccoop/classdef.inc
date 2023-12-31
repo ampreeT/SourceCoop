@@ -567,6 +567,10 @@ methodmap CBaseEntity
 		int iThinkTick = (flThinkTime == -1) ? -1 : (TIME_TO_TICKS(flThinkTime));
 		this.SetNextThinkTick(iThinkTick);
 	}
+	public int GetSimulationTick()
+	{
+		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_nSimulationTick");
+	}
 	public void GetViewOffset(float vec[3])
 	{
 		GetEntPropVector(this.GetEntIndex(), Prop_Data, "m_vecViewOffset", vec);
@@ -971,10 +975,14 @@ methodmap CBaseCombatCharacter < CBaseAnimating
 		return view_as<CBaseCombatCharacter>(CBaseEntity(iEntIndex));
 	}
 
+	public int GetLifeState()
+	{
+		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_lifeState");
+	}
 	public bool IsAlive()
 	{
 		// Any value above 0 indicates dead or other death information
-		return !GetEntProp(this.GetEntIndex(), Prop_Data, "m_lifeState");
+		return !this.GetLifeState();
 	}
 	public CBaseCombatWeapon GetActiveWeapon()
 	{

@@ -404,6 +404,27 @@
 				"return"	"void"
 				"this"		"entity"
 			}
+			"CBasePlayer::ForceRespawn"
+			{
+				"offset"	"CBasePlayer::ForceRespawn"
+				"hooktype"	"entity"
+				"return"	"void"
+				"this"		"entity"
+			}
+			"CBasePlayer::StartObserverMode"
+			{
+				"offset"	"CBasePlayer::StartObserverMode"
+				"hooktype"	"entity"
+				"return"	"bool"
+				"this"		"entity"
+				"arguments"
+				{
+					"mode"
+					{
+						"type"	"int"
+					}
+				}
+			}
 
 			//   _____  ______ _______ ____  _    _ _____  
 			//  |  __ \|  ____|__   __/ __ \| |  | |  __ \ 
@@ -786,6 +807,16 @@
 			{
 				"windows"	"284"
 				"linux"		"285"
+			}
+			"CBasePlayer::ForceRespawn" // void CBasePlayer::ForceRespawn(void)
+			{
+				"windows"	"347"
+				"linux"		"348"
+			}
+			"CBasePlayer::StartObserverMode" // bool CBasePlayer::StartObserverMode(int)
+			{
+				"windows"	"389"
+				"linux"		"390"
 			}
 		}
 	}

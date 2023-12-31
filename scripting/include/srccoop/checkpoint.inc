@@ -329,7 +329,7 @@ enum struct CCoopEquipment
 	}
 }
 
-enum struct CCoopSpawn
+enum struct CCoopSpawnSystem
 {
 	ArrayList m_pCheckpointList;
 	int m_iCurrentCheckpoint;
@@ -367,6 +367,22 @@ enum struct CCoopSpawn
 		return this.GetCheckpointByIndex(this.m_iCurrentCheckpoint, pCheckpoint);
 	}
 	
+	int CountCheckpoints(bool bRemaining, bool bRespawnOnly = false)
+	{
+		int iStartIndex = bRemaining? this.m_iCurrentCheckpoint + 1 : 0;
+		int count;
+		
+		CCoopSpawnEntry pEntry;
+		for (int i = iStartIndex; i < this.m_pCheckpointList.Length; i++)
+		{
+			this.m_pCheckpointList.GetArray(i, pEntry);
+			if (bRespawnOnly && !pEntry.m_bRespawnPlayers)
+				continue;
+			count++;
+		}
+		return count;
+	}
+
 	int FindCheckpointByOutput(CBaseEntity pCaller, const char[] szOutput, CCoopSpawnEntry pCheckpoint, int iStartIndex = 0)
 	{
 		CCoopSpawnEntry pEntry;
@@ -827,7 +843,7 @@ enum struct CCoopSpawn
 	}
 }
 
-CCoopSpawn g_SpawnSystem;
+CCoopSpawnSystem g_SpawnSystem;
 
 public void Hook_OutputCheckpoint(const char[] szName, int iCaller, int iActivator, float flDelay)
 {
