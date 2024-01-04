@@ -148,9 +148,13 @@ public Action Command_ForceRespawn(int client, int args)
 
 		if (SC_Respawn(pTarget, g_pSpawnOptions))
 		{
-			Client_ScreenFade(client, 512, FFADE_PURGE|FFADE_IN, 1, 0, 0, 200, 255);
-			EmitSoundToClient(client, SND_RESPAWN, client, SNDCHAN_STATIC, 0, .pitch = 150);
+			Client_ScreenFade(iTarget, 512, FFADE_PURGE|FFADE_IN, 1, 0, 0, 200, 255);
+			EmitSoundToClient(iTarget, SND_RESPAWN, iTarget, SNDCHAN_STATIC, 0, .pitch = 150);
 			MsgReply(client, "Spawned '%N'.", iTarget);
+			if (client != iTarget)
+			{
+				Msg(iTarget, "%N respawned you!", client);
+			}
 		}
 		else
 		{

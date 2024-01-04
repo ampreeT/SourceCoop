@@ -96,6 +96,8 @@ public void Hook_PlayerPreThinkPost(int iClient)
 				int iPressed = pPlayer.GetPressedButtons();
 				if (iPressed != 0 && iPressed != IN_SCORE)
 				{
+					pPlayer.SetGroundEntity(NULL_CBASEENTITY);
+					pPlayer.SetButtons(0);
 					DispatchSpawn(iClient);
 				}
 			}
@@ -105,7 +107,8 @@ public void Hook_PlayerPreThinkPost(int iClient)
 
 //------------------------------------------------------
 // CBasePlayer::ForceRespawn
-// [Black Mesa] Restores mp_forcerespawn functionality
+// [Black Mesa] Restores mp_forcerespawn functionality,
+// allowing the player to stay dead (e.g. for revives) 
 //------------------------------------------------------
 public MRESReturn Hook_PlayerForceRespawn(int iClient)
 {
@@ -114,9 +117,11 @@ public MRESReturn Hook_PlayerForceRespawn(int iClient)
 	
 	CBasePlayer pPlayer = CBasePlayer(iClient);
 	float flDeathTime = pPlayer.GetDeathTime();
-	
-	if (flDeathTime == 0.0 || (mp_forcerespawn.BoolValue && (GetGameTime() - flDeathTime) > g_pConvarCoopRespawnTime.FloatValue))
-	{
+	if (g_bUnblockRespawn[iClient]
+		|| flDeathTime == 0.0
+		|| (mp_forcerespawn.BoolValue && (GetGameTime() - flDeathTime) > g_pConvarCoopRespawnTime.FloatValue)
+	) {
+		g_bUnblockRespawn[iClient] = false;
 		return MRES_Ignored;
 	}
 	return MRES_Supercede;
@@ -568,6 +573,9 @@ public MRESReturn Hook_PlayerChangeTeam(int iClient, Handle hParams)
 {
 	if (CoopManager.IsCoopModeEnabled() && iClient != -1)
 	{
+		// Allow next ForceRespawn() call after a team change
+		g_bUnblockRespawn[iClient] = true;
+
 		if (!CMultiplayRules.IsTeamplay())
 			return MRES_Ignored;
 		
@@ -601,6 +609,14 @@ public MRESReturn Hook_PlayerChangeTeamPost(int iClient, Handle hParams)
 	{
 		CBasePlayer pPlayer = CBasePlayer(iClient);
 		int iTeamNum = DHookGetParam(hParams, 1);
+		if (iTeamNum == TEAM_SPECTATOR)
+		{
+			CBaseEntity pRagdoll = pPlayer.GetRagdoll();
+			if (pRagdoll.IsValid())
+			{
+				pRagdoll.Kill();
+			}
+		}
 
 		SurvivalManager.OnPlayerChangeTeam(pPlayer, iTeamNum);
 	}

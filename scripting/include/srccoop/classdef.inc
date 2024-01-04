@@ -694,7 +694,11 @@ methodmap CBaseEntity
 	}
 	public CBaseEntity GetGroundEntity()
 	{
-		return CBaseEntity(GetEntPropEnt(this.GetEntIndex(), Prop_Data, "m_hGroundEntity"));
+		return CBaseEntity(GetEntPropEnt(this.entindex, Prop_Data, "m_hGroundEntity"));
+	}
+	public void SetGroundEntity(CBaseEntity pGroundEntity)
+	{
+		SetEntPropEnt(this.entindex, Prop_Data, "m_hGroundEntity", pGroundEntity.entindex);
 	}
 	public int GetHealth()
 	{
