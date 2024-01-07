@@ -330,6 +330,20 @@
 				"return"	"void"
 				"this"		"entity"
 			}
+			"CBaseCombatWeapon::SendWeaponAnim"
+			{
+				"offset"	"CBaseCombatWeapon::SendWeaponAnim"
+				"hooktype"	"entity"
+				"return"	"bool"
+				"this"		"entity"
+				"arguments"
+				{
+					"iActivity"
+					{
+						"type"	"int"
+					}
+				}
+			}
 			"CServerGameDLL::LevelInit"
 			{
 				"offset"	"CServerGameDLL::LevelInit"

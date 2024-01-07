@@ -129,7 +129,7 @@ public MRESReturn Hook_PlayerForceRespawn(int iClient)
 
 //------------------------------------------------------
 // CBasePlayer::StartObserverMode
-// [Black Mesa] Force "chase" death camera. This skips the problematic freezecam.
+// [Black Mesa] Force "chase" death camera. This skips the problematic death/freezecam.
 //------------------------------------------------------
 public MRESReturn Hook_PlayerStartObserverMode(int iClient, DHookReturn hReturn, DHookParam hParams)
 {
@@ -137,15 +137,10 @@ public MRESReturn Hook_PlayerStartObserverMode(int iClient, DHookReturn hReturn,
 		return MRES_Ignored;
 	
 	Obs_Mode mode = hParams.Get(1);
-	if (mode == OBS_MODE_FREEZECAM)
+	if (mode == OBS_MODE_FREEZECAM || mode == OBS_MODE_DEATHCAM)
 	{
 		hParams.Set(1, OBS_MODE_CHASE);
 		return MRES_Handled;
-	}
-	else if (mode == OBS_MODE_DEATHCAM)
-	{
-		hReturn.Value = false;
-		return MRES_Supercede;
 	}
 	return MRES_Ignored;
 }
@@ -699,6 +694,7 @@ void PackPlayerItems(CBasePlayer pPlayer)
 	{
 		CBaseCombatWeapon pWeapon = g_pPackedEquipment[client].m_pWeaponEntityList.Get(i);
 		pPlayer.RemoveWeapon(pWeapon);
+		pWeapon.SetModelIndex(pWeapon.GetWeaponModelIndex(.bViewModel = false));
 		pWeapon.SetSpawnFlags(pWeapon.GetSpawnFlags() | SF_ITEM_NORESPAWN);
 		pWeapon.SetEffects(pWeapon.GetEffects() | EF_NODRAW | EF_NOSHADOW);
 	}

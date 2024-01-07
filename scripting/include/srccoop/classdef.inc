@@ -937,6 +937,14 @@ methodmap CBaseCombatWeapon < CBaseAnimating
 	{
 		SetEntProp(this.GetEntIndex(), Prop_Data, "m_nViewModelIndex", iViewModelIndex);
 	}
+	public int GetWeaponModelIndex(bool bViewModel)
+	{
+		return GetEntProp(this.GetEntIndex(), Prop_Send, bViewModel ? "m_iViewModelIndex" : "m_iWorldModelIndex");
+	}
+	public void SetWeaponModelIndex(int iViewModelIndex, bool bViewModel)
+	{
+		SetEntProp(this.GetEntIndex(), Prop_Send, bViewModel ? "m_iViewModelIndex" : "m_iWorldModelIndex", iViewModelIndex);
+	}
 	public float GetWeaponTimeIdle()
 	{
 		return GetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flTimeWeaponIdle");
