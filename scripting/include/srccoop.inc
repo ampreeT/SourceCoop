@@ -10,10 +10,10 @@
 // Compile defs
 //------------------------------------------------------
 
+#if !defined SRCCOOP_CUSTOM_COMPILE
+
 // Uncomment to disable debugging
 // #define NO_DEBUG
-
-#if !defined SRCCOOP_CUSTOM_COMPILE
 
 #if defined SRCCOOP_HL2DM
 	
@@ -100,6 +100,8 @@
 	#define PLAYERPATCH_SETSUITUPDATE
 	#define PLAYERPATCH_PICKUP_FORCEPLAYERTODROPTHISOBJECT
 	#define PLAYERPATCH_SERVERSIDE_RAGDOLLS
+	#define PLAYERPATCH_RESTORE_MP_FORCERESPAWN
+	#define PLAYERPATCH_OVERRIDE_DEATH_OBSMODE
 
 	#define GAMEPATCH_UTIL_GETLOCALPLAYER
 	#define GAMEPATCH_IS_MULTIPLAYER
@@ -130,7 +132,16 @@
 
 #include <logdebug>
 
-#include <srccoop_api>
+#include <srccoop/typedef>
+#include <srccoop/typedef_game>
+#include <srccoop/public>
+#include <srccoop/classdef>
+#if defined SRCCOOP_BLACKMESA
+#include <srccoop/blackmesa/typedef>
+#include <srccoop/blackmesa/classdef>
+#endif
+#include <srccoop/utils>
+#include <srccoop/features>
 #include <srccoop/globals>
 #include <srccoop/kv_shared>
 #include <srccoop/manager_changelevel>

@@ -83,10 +83,10 @@ methodmap EquipmentManager
 
 	public static bool StoreCurrentEquipment(int client)
 	{
-		CBasePlayer pPlayer = CBasePlayer(client);
-		if (!pPlayer.IsValid() || !pPlayer.IsAlive() || strlen(g_szSteamIds[client]) == 0)
+		if (!IsClientInGame(client) || IsFakeClient(client) || !IsPlayerAlive(client) || strlen(g_szSteamIds[client]) == 0)
 			return false;
 		
+		CBasePlayer pPlayer = CBasePlayer(client);
 		CCoopEquipment playerEquipment;
 		playerEquipment.Initialize();
 		playerEquipment.Fill(pPlayer);
@@ -176,10 +176,10 @@ methodmap EquipmentManager
 		bool shouldSave = false;
 		for (int i = 1; i <= MaxClients; i++)
 		{
-			CBasePlayer pPlayer = CBasePlayer(i);
-			if (!pPlayer.IsValid())
+			if (!IsClientInGame(i) || IsFakeClient(i))
 				continue;
 			
+			CBasePlayer pPlayer = CBasePlayer(i);
 			CCoopEquipment equipment;
 			bool close;
 			if (pPlayer.IsAlive())
@@ -311,7 +311,7 @@ public Action Command_ImportEquipment(int iClient, int iArgs)
 
 	for (; i <= iMax; i++)
 	{
-		if (IsClientInGame(i))
+		if (IsClientInGame(i) && !IsFakeClient(i))
 		{
 			if (EquipmentManager.ImportEquipment(kv, i, szError, sizeof(szError)))
 			{
@@ -340,9 +340,9 @@ public Action Command_ClearEquipment(int iClient, int iArgs)
 	EquipmentManager.ClearAll();
 	for (int i = 1; i <= MaxClients; i++)
 	{
-		CBasePlayer pPlayer = CBasePlayer(i);
-		if (pPlayer.IsInGame() && pPlayer.IsAlive())
+		if (IsClientInGame(i) && !IsFakeClient(i) && IsPlayerAlive(i))
 		{
+			CBasePlayer pPlayer = CBasePlayer(i);
 			pPlayer.RemoveAllItems();
 			g_SpawnSystem.SpawnPlayerEquipment(pPlayer);
 		}

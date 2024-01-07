@@ -18,6 +18,7 @@ enum struct SurvivalManagerData
 	ConVar m_pConvarSpawnTimeout;
 	Handle m_pRestartTimer;
 	bool m_bRespawning;
+	bool m_bSpecInit[MAXPLAYERS + 1];
 }
 
 SurvivalManagerData g_pSurvivalManagerData;
@@ -37,15 +38,35 @@ methodmap SurvivalManager {
 		data.m_pConvarMode.AddChangeHook(ConVarSurvivalModeChanged);
 	}
 	
-	public static void Clear()
+	public static void Clear(bool bMapChange)
 	{
 		SurvivalManager.ClearDead();
-		data.m_pRestartTimer = null;
+		if (bMapChange)
+		{
+			data.m_pRestartTimer = null;
+		}
+		else
+		{
+			delete data.m_pRestartTimer;
+		}
+
+		for (int i = 1; i <= MaxClients; i++)
+		{
+			data.m_bSpecInit[i] = false;
+		}
 	}
-	
+
 	public static SurvivalMode GetMode()
 	{
 		return view_as<SurvivalMode>(data.m_pConvarMode.IntValue);
+	}
+
+	/**
+	 * Is currently respawning a player?
+	 */
+	public static bool IsRespawning()
+	{
+		return data.m_bRespawning;
 	}
 	
 	public static bool GetRespawnAtCheckpoints()
@@ -58,14 +79,20 @@ methodmap SurvivalManager {
 		return data.m_pConvarSpawnTimeout.FloatValue;
 	}
 	
+	/**
+	 * Returns true if players can spawn, false if spawn timeout is up.
+	 */
 	public static bool CheckSpawnTimeout()
 	{
 		float timeout = SurvivalManager.GetSpawnTimeout();
 		return timeout == -1
-				|| !g_pCoopManagerData.m_bStarted
-				|| g_pCoopManagerData.m_flStartTime + timeout > GetGameTime();
+			|| !g_pCoopManagerData.m_bStarted
+			|| g_pCoopManagerData.m_flStartTime + timeout > GetGameTime();
 	}
 	
+	/**
+	 * Clears saved dead players
+	 */
 	public static void ClearDead()
 	{
 		data.m_pDeadPlayerIDs.Clear();
@@ -73,13 +100,13 @@ methodmap SurvivalManager {
 
 	public static bool IsDead(CBasePlayer pPlayer)
 	{
-		int iSteamID = GetSteamAccountID(pPlayer.GetEntIndex());
+		int iSteamID = GetSteamAccountID(pPlayer.GetEntIndex(), g_pConvarValidateSteamIds.BoolValue);
 		return data.m_pDeadPlayerIDs.FindValue(iSteamID) != -1;
 	}
 
 	public static void SetDead(CBasePlayer pPlayer, bool bDead)
 	{
-		int iSteamID = GetSteamAccountID(pPlayer.GetEntIndex());
+		int iSteamID = GetSteamAccountID(pPlayer.GetEntIndex(), g_pConvarValidateSteamIds.BoolValue);
 		int index = data.m_pDeadPlayerIDs.FindValue(iSteamID);
 
 		if ((index == -1) == bDead)
@@ -95,31 +122,42 @@ methodmap SurvivalManager {
 		}
 	}
 	
+	/**
+	 * Returns false if player spawn should be blocked.
+	 */
 	public static bool HandlePlayerSpawn(CBasePlayer pPlayer)
 	{
 		if (SurvivalManager.GetMode())
 		{
 			if (!data.m_bRespawning && (!SurvivalManager.CheckSpawnTimeout() || SurvivalManager.IsDead(pPlayer)))
 			{
-				// Enable spectator mode
-				pPlayer.SetViewEntity(pPlayer);
-				pPlayer.SetObserverMode(OBS_MODE_CHASE);
-				// Do not touch things when spectating
-				pPlayer.SetSolidFlags(pPlayer.GetSolidFlags() | FSOLID_NOT_SOLID);
-				// Do not render by FX, RenderMode is constantly reset
-				pPlayer.SetRenderFx(RENDERFX_FADE_FAST);
-				// Remove previous fades
-				Client_ScreenFade(pPlayer.GetEntIndex(), 1500, FFADE_IN|FFADE_PURGE, 1, 0, 0, 0, 255);
+				int client = pPlayer.GetEntIndex();
 				
-				SetHudTextParams(0.016, 0.04, 5.0, 255, 255, 255, 255, 1, 1.0, 1.0, 1.0);
-				if (SurvivalManager.GetRespawnAtCheckpoints())
+				if (!data.m_bSpecInit[client] && data.m_pRestartTimer == null)
 				{
-					// ToDo: verify there are any survival CP's left.
-					ShowHudText(pPlayer.GetEntIndex(), 1, "%t", "survival respawn hint checkpoint");
-				}
-				else
-				{
-					ShowHudText(pPlayer.GetEntIndex(), 1, "%t", "survival respawn hint no checkpoint");
+					// Enable spectator mode
+					data.m_bSpecInit[client] = true;
+					pPlayer.SetViewEntity(pPlayer);
+					pPlayer.SetObserverMode(OBS_MODE_CHASE);
+					pPlayer.SetMoveType(MOVETYPE_OBSERVER);
+					pPlayer.SetSolidFlags(pPlayer.GetSolidFlags() | FSOLID_NOT_SOLID);
+					pPlayer.SetEffects(pPlayer.GetEffects() | EF_NODRAW);
+					
+					// Show spectate gui
+					ShowVGUIPanel(client, "specgui", null);
+					
+					// Remove previous fades
+					Client_ScreenFade(client, 1500, FFADE_IN|FFADE_PURGE, 1, 0, 0, 0, 255);
+					
+					SetHudTextParams(0.016, 0.04, 5.0, 255, 255, 255, 255, 1, 1.0, 1.0, 1.0);
+					if (SurvivalManager.GetRespawnAtCheckpoints() && g_SpawnSystem.CountCheckpoints(true, true))
+					{
+						ShowHudText(client, 1, "%t", "survival respawn hint checkpoint");
+					}
+					else
+					{
+						ShowHudText(client, 1, "%t", "survival respawn hint no checkpoint");
+					}
 				}
 				
 				return false;
@@ -128,15 +166,37 @@ methodmap SurvivalManager {
 		return true;
 	}
 	
-	public static void HandlePlayerDeath(CBasePlayer pVictim)
+	public static void OnPlayerChangeTeam(CBasePlayer pPlayer, int iTeamNum)
 	{
 		if (SurvivalManager.GetMode())
 		{
-			SurvivalManager.SetDead(pVictim, true);
+			data.m_bSpecInit[pPlayer.GetEntIndex()] = false;
+			SurvivalManager.GameOverCheck();
+		}
+	}
+
+	public static void OnPlayerDeath(CBasePlayer pPlayer)
+	{
+		if (SurvivalManager.GetMode())
+		{
+			data.m_bSpecInit[pPlayer.GetEntIndex()] = false;
+			SurvivalManager.SetDead(pPlayer, true);
 			SurvivalManager.GameOverCheck();
 		}
 	}
 	
+	public static void OnClientDisconnectPost(int client)
+	{
+		if (SurvivalManager.GetMode())
+		{
+			data.m_bSpecInit[client] = false;
+			SurvivalManager.GameOverCheck();
+		}
+	}
+	
+	/**
+	 * Respawn logic for logic_autosave entities
+	 */
 	public static void OnLogicAutosave(int iEntIndex, bool bSaveDangerous)
 	{
 		if (!SurvivalManager.GetMode() || !SurvivalManager.GetRespawnAtCheckpoints() || !g_SpawnSystem.m_bRespawnOnLogicAutosave)
@@ -164,6 +224,9 @@ methodmap SurvivalManager {
 		}
 	}
 	
+	/**
+	 * Checkpoint activation respawn handler
+	 */
 	public static void OnCheckpointActivation(CCoopSpawnEntry pCheckpoint)
 	{
 		if (pCheckpoint.m_bRespawnPlayers && SurvivalManager.GetMode() && SurvivalManager.GetRespawnAtCheckpoints())
@@ -178,9 +241,9 @@ methodmap SurvivalManager {
 		
 		for (int i = 1; i <= MaxClients; i++)
 		{
-			CBasePlayer pPlayer = CBasePlayer(i);
-			if (pPlayer.IsInGame())
+			if (IsClientInGame(i) && !IsFakeClient(i))
 			{
+				CBasePlayer pPlayer = CBasePlayer(i);
 				if (SurvivalManager.RespawnPlayer(pPlayer))
 				{
 					if (szHudText[0])
@@ -195,7 +258,7 @@ methodmap SurvivalManager {
 	
 	public static bool RespawnPlayer(CBasePlayer pPlayer)
 	{
-		if (!pPlayer.IsAlive() && pPlayer.GetTeam() > TEAM_SPECTATOR)
+		if (!pPlayer.IsAlive() && pPlayer.GetTeam() != TEAM_SPECTATOR)
 		{
 			SurvivalManager.SetDead(pPlayer, false);
 			data.m_bRespawning = true;
@@ -231,10 +294,11 @@ methodmap SurvivalManager {
 		SetHudTextParams(-1.0, 0.45, 6.0, 200, 200, 200, 255, 0, 0.5, 1.0, 1.0);
 		for (int i = 1; i <= MaxClients; i++)
 		{
-			CBasePlayer pPlayer = CBasePlayer(i);
-			if (pPlayer.IsInGame() && pPlayer.GetTeam() > TEAM_SPECTATOR)
+			if (IsClientInGame(i) && !IsFakeClient(i))
 			{
-				Client_ScreenFade(i, 1000, FFADE_OUT|FFADE_STAYOUT, _, 0, 0, 0, 255);
+				CBasePlayer pPlayer = CBasePlayer(i);
+				if (pPlayer.GetTeam() != TEAM_SPECTATOR)
+					Client_ScreenFade(i, 1000, FFADE_OUT|FFADE_STAYOUT, _, 0, 0, 0, 255);
 				
 				#if defined SRCCOOP_BLACKMESA
 				if (!IsTranslatedForLanguage("survival game over", GetClientLanguage(i)))
@@ -273,7 +337,7 @@ public void ConVarSurvivalModeChanged(ConVar hConVar, const char[] szOldValue, c
 {
 	if (strcmp(szNewValue, "0", false) == 0)
 	{
-		SurvivalManager.Clear();
+		SurvivalManager.Clear(false);
 	}
 }
 

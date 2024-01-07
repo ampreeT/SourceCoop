@@ -24,6 +24,7 @@ Handle g_pShouldPlayerAvoid;
 Handle g_pRemoveAllItems;
 Handle g_pIsNPC;
 Handle g_pSendWeaponAnim;
+Handle g_pWeaponSwitch;
 
 stock void InitClassdef(GameData pGameConfig)
 {
@@ -204,6 +205,18 @@ stock void InitClassdef(GameData pGameConfig)
 		if (!(g_pSendWeaponAnim = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szSendWeaponAnim);
 	}
 
+	char szWeaponSwitch[] = "CBaseCombatCharacter::Weapon_Switch";
+	StartPrepSDKCall(SDKCall_Entity);
+	if (!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Virtual, szWeaponSwitch))
+		LogMessage("Could not obtain gamedata offset %s", szWeaponSwitch);
+	else
+	{
+		PrepSDKCall_SetReturnInfo(SDKType_Bool, SDKPass_Plain);
+		PrepSDKCall_AddParameter(SDKType_CBaseEntity, SDKPass_Pointer);
+		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
+		if (!(g_pWeaponSwitch = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szWeaponSwitch);
+	}
+
 	#if defined SRCCOOP_BLACKMESA
 	InitClassdefBM(pGameConfig);
 	#endif
@@ -222,6 +235,14 @@ methodmap CBaseEntity
 		return CBaseEntity(CreateEntityByName(szClassname));
 	}
 
+	property int entindex
+	{
+		public get()
+		{
+			return EntRefToEntIndex(view_as<int>(this));
+		}
+	}
+	/** Deprecated: Use entindex property instead */
 	public int GetEntIndex()
 	{
 		return EntRefToEntIndex(view_as<int>(this));
@@ -301,13 +322,13 @@ methodmap CBaseEntity
 	public bool AcceptInputVector(const char[] szInput, const float vecValue[3], CBaseEntity pActivator = view_as<CBaseEntity>(-1), CBaseEntity pCaller = view_as<CBaseEntity>(-1), const int iOutputID = 0)
 	{
 		// ToDo: Should this use SetVariantPosVector3D or SetVariantVector3D?
-		char szBuffer[MAX_FORMAT];
+		char szBuffer[256];
 		Format(szBuffer, sizeof(szBuffer), "%f %f %f", vecValue[0], vecValue[1], vecValue[2]);
 		return this.AcceptInputStr(szInput, szBuffer, pActivator, pCaller, iOutputID);
 	}
 	public bool OutputAdd(const char[] szOutput, const char[] szTarget, const char[] szTargetInput, const char[] szParameter = "", float flDelay = 0.0, int timesToFire = -1)
 	{
-		 char szBuffer[MAX_FORMAT];
+		 char szBuffer[256];
 		 Format(szBuffer, sizeof(szBuffer), "%s %s:%s:%s:%f:%d", szOutput, szTarget, szTargetInput, szParameter, flDelay, timesToFire);
 		 return this.AcceptInputStr("AddOutput", szBuffer);
 	}
@@ -546,6 +567,10 @@ methodmap CBaseEntity
 		int iThinkTick = (flThinkTime == -1) ? -1 : (TIME_TO_TICKS(flThinkTime));
 		this.SetNextThinkTick(iThinkTick);
 	}
+	public int GetSimulationTick()
+	{
+		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_nSimulationTick");
+	}
 	public void GetViewOffset(float vec[3])
 	{
 		GetEntPropVector(this.GetEntIndex(), Prop_Data, "m_vecViewOffset", vec);
@@ -646,6 +671,7 @@ methodmap CBaseEntity
 		char szNetClass[32];
 		if (this.GetNetClassname(szNetClass, sizeof(szNetClass)))
 		{
+			// Todo - support all games
 			return (strcmp(szNetClass, "CBasePickup") == 0 || strcmp(szNetClass, "CItem_Battery") == 0 || strcmp(szNetClass, "CAmmoCanister") == 0);
 		}
 		return false;
@@ -668,7 +694,11 @@ methodmap CBaseEntity
 	}
 	public CBaseEntity GetGroundEntity()
 	{
-		return CBaseEntity(GetEntPropEnt(this.GetEntIndex(), Prop_Data, "m_hGroundEntity"));
+		return CBaseEntity(GetEntPropEnt(this.entindex, Prop_Data, "m_hGroundEntity"));
+	}
+	public void SetGroundEntity(CBaseEntity pGroundEntity)
+	{
+		SetEntPropEnt(this.entindex, Prop_Data, "m_hGroundEntity", pGroundEntity.entindex);
 	}
 	public int GetHealth()
 	{
@@ -907,6 +937,14 @@ methodmap CBaseCombatWeapon < CBaseAnimating
 	{
 		SetEntProp(this.GetEntIndex(), Prop_Data, "m_nViewModelIndex", iViewModelIndex);
 	}
+	public int GetWeaponModelIndex(bool bViewModel)
+	{
+		return GetEntProp(this.GetEntIndex(), Prop_Send, bViewModel ? "m_iViewModelIndex" : "m_iWorldModelIndex");
+	}
+	public void SetWeaponModelIndex(int iViewModelIndex, bool bViewModel)
+	{
+		SetEntProp(this.GetEntIndex(), Prop_Send, bViewModel ? "m_iViewModelIndex" : "m_iWorldModelIndex", iViewModelIndex);
+	}
 	public float GetWeaponTimeIdle()
 	{
 		return GetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flTimeWeaponIdle");
@@ -949,12 +987,14 @@ methodmap CBaseCombatCharacter < CBaseAnimating
 		return view_as<CBaseCombatCharacter>(CBaseEntity(iEntIndex));
 	}
 
+	public int GetLifeState()
+	{
+		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_lifeState");
+	}
 	public bool IsAlive()
 	{
-		//return view_as<bool>(this.GetHealth() > 0);
-		
 		// Any value above 0 indicates dead or other death information
-		return !GetEntProp(this.GetEntIndex(), Prop_Data, "m_lifeState");
+		return !this.GetLifeState();
 	}
 	public CBaseCombatWeapon GetActiveWeapon()
 	{
@@ -964,9 +1004,63 @@ methodmap CBaseCombatCharacter < CBaseAnimating
 	{
 		SetEntPropEnt(this.GetEntIndex(), Prop_Send, "m_hActiveWeapon", pWeapon.GetEntIndex());
 	}
+	public bool HasWeapon(const char[] szWeaponName)
+	{
+		return this.GetWeapon(szWeaponName) != NULL_CBASEENTITY;
+	}
+	public CBaseCombatWeapon GetWeapon(const char[] szWeaponName, int startIndex = 0)
+	{
+		for (int i = startIndex; i < MAX_WEAPONS; i++)
+		{
+			CBaseCombatWeapon pWeapon = this.GetWeaponFromIndex(i);
+			if (pWeapon.IsValid() && pWeapon.IsClassname(szWeaponName))
+			{
+				return pWeapon;
+			}
+		}
+		return NULL_CBASEENTITY;
+	}
+	public bool WeaponSwitch(CBaseCombatWeapon pWeapon, int viewmodelindex = 0)
+	{
+		return SDKCall(g_pWeaponSwitch, this.GetEntIndex(), pWeapon.GetEntIndex(), viewmodelindex);
+	}
+	// Deprecated, WeaponSwitch() prefered instead
+	public bool SetActiveWeaponByClass(const char[] szWeaponName)
+	{
+		for (int i = 0; i < MAX_WEAPONS; i++)
+		{
+			CBaseCombatWeapon pWeapon = this.GetWeaponFromIndex(i);
+			if (pWeapon.IsValid() && pWeapon.IsClassname(szWeaponName))
+			{
+				this.SetActiveWeapon(pWeapon);
+				return true;
+			}
+		}
+		return false;
+	}
 	public CBaseCombatWeapon GetLastWeapon()
 	{
 		return CBaseCombatWeapon(GetEntPropEnt(this.GetEntIndex(), Prop_Data, "m_hLastWeapon"));
+	}
+	public void SetLastWeapon(CBaseCombatWeapon pWeapon)
+	{
+		SetEntPropEnt(this.GetEntIndex(), Prop_Data, "m_hLastWeapon", pWeapon.GetEntIndex());
+	}
+	public CBaseCombatWeapon GetWeaponFromIndex(const int iIndex)
+	{
+		return CBaseCombatWeapon(GetEntPropEnt(this.GetEntIndex(), Prop_Send, "m_hMyWeapons", iIndex));
+	}
+	public void SetWeaponAtIndex(const int iIndex, CBaseCombatWeapon pWeapon)
+	{
+		SetEntPropEnt(this.GetEntIndex(), Prop_Send, "m_hMyWeapons", pWeapon.GetEntIndex(), iIndex);
+	}
+	public int GetAmmoFromIndex(const int iIndex)
+	{
+		return GetEntProp(this.GetEntIndex(), Prop_Send, "m_iAmmo", _, iIndex);
+	}
+	public void SetAmmoFromIndex(const int iIndex, const int iAmmoCount)
+	{
+		SetEntProp(this.GetEntIndex(), Prop_Send, "m_iAmmo", iAmmoCount, _, iIndex);
 	}
 	public float GetNextAttack()
 	{
@@ -1114,11 +1208,11 @@ methodmap CBasePlayer < CBaseCombatCharacter
 	}
 	public int GetArmor()
 	{
-		return GetEntProp(this.GetEntIndex(), Prop_Send, "m_ArmorValue", 1);
+		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_ArmorValue", 1);
 	}
 	public void SetArmor(const int iArmor)
 	{
-		SetEntProp(this.GetEntIndex(), Prop_Send, "m_ArmorValue", iArmor, 1);
+		SetEntProp(this.GetEntIndex(), Prop_Data, "m_ArmorValue", iArmor, 1);
 	}
 	public bool HasSuit()
 	{
@@ -1144,24 +1238,12 @@ methodmap CBasePlayer < CBaseCombatCharacter
 	{
 		SetEntProp(this.GetEntIndex(), Prop_Send, "m_bSprintEnabled", bSprintEnabled);
 	}
-	public CBaseCombatWeapon GetWeaponFromIndex(const int iIndex)
-	{
-		return CBaseCombatWeapon(GetEntPropEnt(this.GetEntIndex(), Prop_Send, "m_hMyWeapons", iIndex));
-	}
-	public int GetAmmoFromIndex(const int iIndex)
-	{
-		return GetEntProp(this.GetEntIndex(), Prop_Send, "m_iAmmo", _, iIndex);
-	}
-	public void SetAmmoFromIndex(const int iIndex, const int iAmmoCount)
-	{
-		SetEntProp(this.GetEntIndex(), Prop_Send, "m_iAmmo", iAmmoCount, _, iIndex);
-	}
 	public CBaseAnimating GiveItem(const char[] szItemName)
 	{
 		if (strcmp(szItemName, "item_suit", false) == 0)
 		{
 			this.SetSuit(true);
-			return CBaseAnimating(-1);
+			return NULL_CBASEENTITY;
 		}
 		
 		int iNameOffset = (strncmp(szItemName, "item_weapon_", 12, false) == 0) ? 5 : 0;
@@ -1186,36 +1268,7 @@ methodmap CBasePlayer < CBaseCombatCharacter
 	{
 		SDKCall(g_pRemoveAllItems, this.GetEntIndex(), bRemoveSuit);
 	}
-	public bool HasWeapon(const char[] szWeaponName)
-	{
-		for (int i = 0; i < MAX_WEAPONS; i++)
-		{
-			CBaseCombatWeapon pWeapon = this.GetWeaponFromIndex(i);
-			if (pWeapon.IsValid() && pWeapon.IsClassname(szWeaponName))
-			{
-				return true;
-			}
-		}
-		return false;
-	}
-	public bool EquipWeapon(const char[] szWeaponName)	// change to CBaseEntity
-	{
-		for (int i = 0; i < MAX_WEAPONS; i++)
-		{
-			CBaseCombatWeapon pWeapon = this.GetWeaponFromIndex(i);
-			if (pWeapon.IsValid())
-			{
-				if (pWeapon.IsClassname(szWeaponName))
-				{
-					SetEntPropEnt(this.GetEntIndex(), Prop_Send, "m_hActiveWeapon", pWeapon.GetEntIndex());
-					return true;
-				}
-			}
-		}
-		
-		return false;
-	}
-	public bool EquipPlayerWeapon(CBaseCombatWeapon pWeapon)
+	public bool EquipWeapon(CBaseCombatWeapon pWeapon)
 	{
 		if (pWeapon.IsValid())
 		{

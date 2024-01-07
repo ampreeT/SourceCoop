@@ -9,18 +9,29 @@
 
 #define SND_START "items/suitchargeok1.wav"
 #define SND_DENY "items/suitchargeno1.wav"
-#define SND_RESPAWN "weapons/tau/gauss_undercharge.wav"
+#define SND_RESPAWN "items/medshot4.wav"
+#define REVIVE_SNDLEVEL SNDLEVEL_DRYER
 
-ConVar g_pConVarReviveTime, g_pConVarReviveScore, g_pConVarReviveMessages, g_pConVarRagdollParticle;
+ConVar g_pConVarReviveTime;
+ConVar g_pConVarReviveScore;
+ConVar g_pConVarReviveMessages;
+ConVar g_pConVarRagdollEffectsTimer;
+ConVar g_pConVarRagdollBlink;
+ConVar g_pConVarRagdollParticle;
+ConVar g_pConvarAllowInClassicMode;
+
 ConVar g_pConVarSurvivalMode;
 
 int g_BeamSprite = -1;
 int g_ColorGreen[4] = {0, 255, 0, 255};
 
-CBasePlayer g_pReviveTarget[MAXPLAYERS+1] = {view_as<CBasePlayer>(-1), ...};
-float g_flReviveTime[MAXPLAYERS+1];
-float g_flLastSpriteUpdate[MAXPLAYERS+1];
+CBasePlayer g_pReviveTarget[MAXPLAYERS + 1] = {NULL_CBASEENTITY, ...};
+float g_flReviveTime[MAXPLAYERS + 1];
+float g_flNextSpriteUpdate[MAXPLAYERS + 1];
 bool g_bEnabled;
+SpawnOptions g_pSpawnOptions;
+
+Handle g_pRagdollEffectsTimer[MAXPLAYERS + 1];
 
 public Plugin myinfo =
 {
@@ -38,12 +49,17 @@ public void OnPluginStart()
 	g_pConVarReviveTime = CreateConVar("sourcecoop_revive_time", "4.0", "Sets time that you have to hold E to revive.", _, true, 0.0, false);
 	g_pConVarReviveScore = CreateConVar("sourcecoop_revive_score", "1", "Sets score to give for reviving a player.", _, true, 0.0, false);
 	g_pConVarReviveMessages = CreateConVar("sourcecoop_revive_messages", "0", "Shows messages such as You have started reviving x.", _, true, 0.0, true, 1.0);
-	g_pConVarRagdollParticle = CreateConVar("sourcecoop_revive_ragdoll_particle", "water_trail_medium_b", "Particle name to improve players' ragdoll visibility. Empty to disable.");
+	g_pConVarRagdollEffectsTimer = CreateConVar("sourcecoop_revive_ragdoll_effects_timer", "4.0", "Delay for applying ragdoll highlighting effects. -1 to disable all ragdoll effects.", _, true, -1.0);
+	g_pConVarRagdollParticle = CreateConVar("sourcecoop_revive_ragdoll_particle", "water_trail_medium_b", "Particle name to spawn in player ragdolls to improve their visibility. Empty for no particles.");
+	g_pConVarRagdollBlink = CreateConVar("sourcecoop_revive_ragdoll_blink", "1", "Whether to blink player ragdolls to improve their visibility.", _, true, 0.0, true, 1.0);
+	g_pConvarAllowInClassicMode = CreateConVar("sourcecoop_revive_in_classic_mode", "1", "Whether to allow reviving in non-survival mode.", _, true, 0.0, true, 1.0);
+	g_pConvarAllowInClassicMode.AddChangeHook(OnAllowInClassicModeChanged);
 	
 	RegAdminCmd("sourcecoop_revive", Command_ForceRespawn, ADMFLAG_ROOT, "Force respawn player.");
 	RegAdminCmd("sc_revive", Command_ForceRespawn, ADMFLAG_ROOT, "Force respawn player.");
 
-	HookEvent("player_death", Event_PlayerDeath);
+	g_pSpawnOptions.bRevive = true;
+	g_pSpawnOptions.bUnstuck = true;
 }
 
 public void OnAllPluginsLoaded()
@@ -54,13 +70,11 @@ public void OnAllPluginsLoaded()
 	g_pConVarSurvivalMode.AddChangeHook(OnSurvivalModeChanged);
 }
 
-public void OnMapStart()
+public void OnConfigsExecuted()
 {
-	if (!SC_IsCurrentMapCoop())
-	{
-		return;
-	}
 	SetEnabledState();
+	if (!SC_IsCurrentMapCoop())
+		return;
 	
 	PrecacheSound(SND_RESPAWN, true);
 	PrecacheSound(SND_START, true);
@@ -83,9 +97,14 @@ public void OnSurvivalModeChanged(ConVar convar, const char[] oldValue, const ch
 	SetEnabledState();
 }
 
+public void OnAllowInClassicModeChanged(ConVar convar, const char[] oldValue, const char[] newValue)
+{
+	SetEnabledState();
+}
+
 void SetEnabledState()
 {
-	if (g_pConVarSurvivalMode.IntValue && SC_IsCurrentMapCoop())
+	if (SC_IsCurrentMapCoop() && (g_pConVarSurvivalMode.IntValue || g_pConvarAllowInClassicMode.BoolValue))
 	{
 		g_bEnabled = true;
 	}
@@ -117,9 +136,25 @@ public Action Command_ForceRespawn(int client, int args)
 	if (iTarget > 0)
 	{
 		CBasePlayer pTarget = CBasePlayer(iTarget);
-		if (SC_SurvivalRespawn(pTarget))
+		if (pTarget.GetRagdoll().IsValid())
 		{
+			pTarget.GetRagdoll().GetAbsOrigin(g_pSpawnOptions.vecOrigin);
+			pTarget.GetEyeAngles(g_pSpawnOptions.vecAngles);
+		}
+		else
+		{
+			g_pSpawnOptions.vecOrigin = vec3_origin;
+		}
+
+		if (SC_Respawn(pTarget, g_pSpawnOptions))
+		{
+			Client_ScreenFade(iTarget, 512, FFADE_PURGE|FFADE_IN, 1, 0, 0, 200, 255);
+			EmitSoundToClient(iTarget, SND_RESPAWN, iTarget, SNDCHAN_STATIC, 0, .pitch = 150);
 			MsgReply(client, "Spawned '%N'.", iTarget);
+			if (client != iTarget)
+			{
+				Msg(iTarget, "%N respawned you!", client);
+			}
 		}
 		else
 		{
@@ -130,26 +165,28 @@ public Action Command_ForceRespawn(int client, int args)
 	return Plugin_Handled;
 }
 
-public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3], float angles[3], int &weapon)
+public void OnPlayerRunCmdPost(int client, int buttons)
 {
 	if (g_bEnabled && IsPlayerAlive(client))
 	{
 		if (buttons & IN_USE)
 		{
 			CBasePlayer pPlayer = CBasePlayer(client);
+			CBasePlayer pTarget = g_pReviveTarget[client];
 			static float vecEyeAngles[3];
-			static float vecOrigin[3];
+			static float vecEyeOrigin[3];
 			static float vecRagdollPosition[3];
 			
-			pPlayer.GetEyePosition(vecOrigin);
+			pPlayer.GetEyePosition(vecEyeOrigin);
 			pPlayer.GetEyeAngles(vecEyeAngles);
 			
-			if (g_pReviveTarget[client].IsValid())
+			if (pTarget.IsValid())
 			{
-				if (g_pReviveTarget[client].IsAlive())
+				if (pTarget.IsAlive())
 				{
 					ResetReviveStatus(client);
-					if (g_pConVarReviveMessages.BoolValue) Msg(client, "Your revive target respawned...");
+					if (g_pConVarReviveMessages.BoolValue)
+						Msg(client, "Your revive target respawned...");
 				}
 				else
 				{
@@ -157,61 +194,53 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 					{
 						g_flReviveTime[client] = GetGameTime() + g_pConVarReviveTime.FloatValue;
 					}
-					
-					if (g_pReviveTarget[client].GetRagdoll().IsValid())
+
+					CBaseEntity pRagdoll = pTarget.GetRagdoll();
+					if (pRagdoll.IsValid())
 					{
-						g_pReviveTarget[client].GetRagdoll().GetAbsOrigin(vecRagdollPosition);
+						pRagdoll.GetAbsOrigin(vecRagdollPosition);
 						
-						if (GetVectorDistance(vecOrigin, vecRagdollPosition, false) > 120.0)
+						if (GetVectorDistance(vecEyeOrigin, vecRagdollPosition, false) > 120.0)
 						{
 							// Client left range to revive, play deny sound and stop previous start sound
 							ResetReviveStatus(client);
 							
-							StopSound(client, SNDCHAN_STATIC, SND_START);
-							EmitSoundToAll(SND_DENY, client, SNDCHAN_AUTO, SNDLEVEL_NORMAL);
+							StopSound(pRagdoll.entindex, SNDCHAN_STATIC, SND_START);
+							EmitSoundToAll(SND_DENY, pRagdoll.entindex, SNDCHAN_STATIC, REVIVE_SNDLEVEL);
 							
-							if (g_pConVarReviveMessages.BoolValue) Msg(client, "You have canceled reviving...");
+							if (g_pConVarReviveMessages.BoolValue)
+								Msg(client, "You have canceled reviving...");
 							
-							return Plugin_Continue;
+							return;
 						}
 						
 						// This delay is only here to prevent massive spam of tempents
-						if (g_flLastSpriteUpdate[client] <= GetGameTime())
+						if (g_flNextSpriteUpdate[client] <= GetGameTime())
 						{
-							/*
-							// IN VALUES
-							CBasePlayer pPlayer
-							float flTimeToComplete = 4.0;
-							float flLengthBeam = 40.0;
-							float flWidthBeam = 0.3;
-							int Color[4];
-							float flDistFromPly = 10.0;
-							*/
+							Client_ProgressBar(pPlayer,
+								.flTime = g_pConVarReviveTime.FloatValue,
+								.flBarLength = 30.0,
+								.flBarWidth = 0.3,
+								.Color = g_ColorGreen,
+								.flDistFromPlayer = 20.0);
 							
-							Client_ProgressBar(pPlayer, g_pConVarReviveTime.FloatValue, 30.0, 0.3, g_ColorGreen, 20.0);
-							
-							g_flLastSpriteUpdate[client] = GetGameTime() + g_pConVarReviveTime.FloatValue;
+							g_flNextSpriteUpdate[client] = GetGameTime() + g_pConVarReviveTime.FloatValue;
 						}
 						
 						if (GetGameTime() >= g_flReviveTime[client])
 						{
-							if (SC_SurvivalRespawn(g_pReviveTarget[client]))
+							pPlayer.GetAbsOrigin(g_pSpawnOptions.vecOrigin);
+							pPlayer.GetEyeAngles(g_pSpawnOptions.vecAngles);
+
+							if (SC_Respawn(pTarget, g_pSpawnOptions))
 							{
-								// Effects
-								Client_ScreenFade(g_pReviveTarget[client].GetEntIndex(), 256, FFADE_PURGE|FFADE_IN, 1, 0, 0, 200, 255);
-								
-								g_pReviveTarget[client].GetRagdoll().Kill();
-								
-								// Delay to allow equip time
-								DataPack dp;
-								CreateDataTimer(0.1, Timer_DelayRespawn, dp, TIMER_FLAG_NO_MAPCHANGE);
-								WritePackCell(dp, pPlayer);
-								WritePackCell(dp, g_pReviveTarget[client]);
+								Client_ScreenFade(pTarget.entindex, 512, FFADE_PURGE|FFADE_IN, 1, 0, 0, 200, 255);
+								EmitAmbientSound(SND_RESPAWN, g_pSpawnOptions.vecOrigin, .level = REVIVE_SNDLEVEL, .pitch = 150);
 								
 								// Give score to reviver
 								pPlayer.ModifyScore(g_pConVarReviveScore.IntValue);
 								if (g_pConVarReviveMessages.BoolValue)
-									Msg(client, "You have revived '%N' and have gained %i score!", g_pReviveTarget[client].GetEntIndex(), g_pConVarReviveScore.IntValue);
+									Msg(client, "You have revived '%N' and gained %i score!", pTarget.entindex, g_pConVarReviveScore.IntValue);
 								
 								ResetReviveStatus(client);
 							}
@@ -221,38 +250,33 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 			}
 			else
 			{
-				for (int i = 1;i<MaxClients+1;i++)
+				for (int i = 1; i <= MaxClients; i++)
 				{
-					if (i != client)
+					if (i == client || !IsClientInGame(i) || IsFakeClient(i))
+						continue;
+					
+					pTarget = CBasePlayer(i);
+					CBaseEntity pRagdoll = pTarget.GetRagdoll();
+					if (pRagdoll.IsValid())
 					{
-						CBasePlayer pTarget = CBasePlayer(i);
-						if (pTarget.IsValid())
+						pRagdoll.GetAbsOrigin(vecRagdollPosition);
+						
+						if (GetVectorDistance(vecEyeOrigin, vecRagdollPosition, false) < 100.0)
 						{
-							if (!pTarget.IsAlive())
+							TR_TraceRayFilter(vecEyeOrigin, vecEyeAngles, MASK_SOLID, RayType_Infinite, TraceEntityFilter, client);
+							TR_GetEndPosition(vecEyeOrigin);
+							if (GetVectorDistance(vecEyeOrigin, vecRagdollPosition, false) < 100.0)
 							{
-								if (pTarget.GetRagdoll().IsValid())
-								{
-									pTarget.GetRagdoll().GetAbsOrigin(vecRagdollPosition);
-									
-									if (GetVectorDistance(vecOrigin, vecRagdollPosition, false) < 100.0)
-									{
-										TR_TraceRayFilter(vecOrigin, vecEyeAngles, MASK_SOLID, RayType_Infinite, TraceEntityFilter, client);
-										TR_GetEndPosition(vecOrigin);
-										if (GetVectorDistance(vecOrigin, vecRagdollPosition, false) < 100.0)
-										{
-											g_pReviveTarget[client] = CBasePlayer(i);
-											
-											// Prevent multiple sounds if player is spamming E
-											StopSound(client, SNDCHAN_STATIC, SND_START);
-											EmitSoundToAll(SND_START, client, SNDCHAN_STATIC, SNDLEVEL_NORMAL);
-											
-											if (g_pConVarReviveMessages.BoolValue)
-												Msg(client, "You have started reviving '%N'", i);
-											
-											break;
-										}
-									}
-								}
+								g_pReviveTarget[client] = pTarget;
+								
+								// Prevent multiple sounds if player is spamming E
+								StopSound(pRagdoll.entindex, SNDCHAN_STATIC, SND_START);
+								EmitSoundToAll(SND_START, pRagdoll.entindex, SNDCHAN_STATIC, REVIVE_SNDLEVEL);
+								
+								if (g_pConVarReviveMessages.BoolValue)
+									Msg(client, "You have started reviving '%N'", i);
+								
+								break;
 							}
 						}
 					}
@@ -269,41 +293,20 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 			}
 		}
 	}
-	return Plugin_Continue;
 }
 
 void ResetReviveStatus(int client)
 {
-	g_pReviveTarget[client] = view_as<CBasePlayer>(-1);
+	g_pReviveTarget[client] = NULL_CBASEENTITY;
 	g_flReviveTime[client] = 0.0;
-	g_flLastSpriteUpdate[client] = 0.0;
+	g_flNextSpriteUpdate[client] = 0.0;
 	Client_RemoveProgressBar(client);
-}
-
-public Action Timer_DelayRespawn(Handle timer, DataPack dp)
-{
-	ResetPack(dp);
-	CBasePlayer pPlayer = ReadPackCell(dp);
-	CBasePlayer pTarget = ReadPackCell(dp);
-	
-	if ((pTarget.IsValid()) && (pPlayer.IsValid()))
-	{
-		float vecOrigin[3];
-		float vecEyeAngles[3];
-		
-		pPlayer.GetAbsOrigin(vecOrigin);
-		pPlayer.GetEyeAngles(vecEyeAngles);
-		
-		pTarget.Teleport(vecOrigin, vecEyeAngles, NULL_VECTOR);
-		
-		EmitSoundToAll(SND_RESPAWN, pPlayer.GetEntIndex(), SNDCHAN_ITEM, SNDLEVEL_NORMAL, _, _, 150);
-	}
-	return Plugin_Handled;
 }
 
 public void OnClientDisconnect_Post(int client)
 {
 	ResetReviveStatus(client);
+	g_pRagdollEffectsTimer[client] = null;
 }
 
 public bool TraceEntityFilter(int entity, int mask, any data)
@@ -313,14 +316,16 @@ public bool TraceEntityFilter(int entity, int mask, any data)
 	return true;
 }
 
-public void Event_PlayerDeath(Event hEvent, const char[] szName, bool bDontBroadcast)
+public void SC_OnPlayerRagdollCreated(CBasePlayer pPlayer, CBaseAnimating pRagdoll)
 {
+	int client = pPlayer.GetEntIndex();
+	delete g_pRagdollEffectsTimer[client];
 	if (g_bEnabled)
 	{
-		CBasePlayer pPlayer = CBasePlayer(GetClientOfUserId(hEvent.GetInt("userid")));
-		if (pPlayer.IsValid())
+		float delay = g_pConVarRagdollEffectsTimer.FloatValue;
+		if (delay >= 0.0)
 		{
-			CreateTimer(3.0, Timer_SetRagdollEffects, pPlayer, TIMER_FLAG_NO_MAPCHANGE);
+			g_pRagdollEffectsTimer[client] = CreateTimer(delay, Timer_SetRagdollEffects, pPlayer, TIMER_FLAG_NO_MAPCHANGE);
 		}
 	}
 }
@@ -329,10 +334,12 @@ public Action Timer_SetRagdollEffects(Handle timer, CBasePlayer pPlayer)
 {
 	if (pPlayer.IsInGame())
 	{
+		g_pRagdollEffectsTimer[pPlayer.GetEntIndex()] = null;
 		CBaseEntity pRagdoll = pPlayer.GetRagdoll();
 		if (pRagdoll.IsValid())
 		{
-			pRagdoll.SetEffects(pRagdoll.GetEffects() | EF_ITEM_BLINK);
+			if (g_pConVarRagdollBlink.BoolValue)
+				pRagdoll.SetEffects(pRagdoll.GetEffects() | EF_ITEM_BLINK);
 
 			char szBuffer[128]; g_pConVarRagdollParticle.GetString(szBuffer, sizeof(szBuffer));
 			if (szBuffer[0] != '\0')
@@ -351,7 +358,8 @@ public Action Timer_SetRagdollEffects(Handle timer, CBasePlayer pPlayer)
 //------------------------------------------------------
 // Progress bar rendering
 //------------------------------------------------------
-CBaseEntity g_pProgressBar[MAXPLAYERS+1] = {view_as<CBaseEntity>(-1), ...};
+CBaseEntity g_pProgressBar[MAXPLAYERS+1] = {NULL_CBASEENTITY, ...};
+
 stock void Client_ProgressBar(CBasePlayer pPlayer, float flTime = 4.0, float flBarLength = 30.0, float flBarWidth = 0.3, int Color[4] = {0, 255, 0, 255}, float flDistFromPlayer = 20.0)
 {
 	// Always remove previous bar if there is one
@@ -431,7 +439,7 @@ stock void Client_RemoveProgressBar(int iPlayer)
 		}
 		
 		g_pProgressBar[iPlayer].Kill();
-		g_pProgressBar[iPlayer] = CBaseEntity(-1);
+		g_pProgressBar[iPlayer] = NULL_CBASEENTITY;
 	}
 	
 	return;

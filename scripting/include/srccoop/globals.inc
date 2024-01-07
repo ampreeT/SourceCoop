@@ -16,6 +16,7 @@ ConVar g_pConvarEndWaitPeriod;
 ConVar g_pConvarEndWaitFactor;
 ConVar g_pConvarHomeMap;
 ConVar g_pConvarEndWaitDisplayMode;
+ConVar g_pConvarValidateSteamIds;
 
 #if defined GAMEPATCH_TEAMSELECT_UI
 ConVar g_pConvarDisableTeamSelect;
@@ -24,6 +25,7 @@ ConVar g_pConvarDisableTeamSelect;
 // Existing ConVars
 ConVar mp_friendlyfire;
 ConVar mp_flashlight;
+ConVar mp_forcerespawn;
 
 // ----------------------------
 // SDK Calls
@@ -101,6 +103,14 @@ DynamicHook hkRunAI;
 DynamicHook hkBlocked;
 #endif
 
+#if defined PLAYERPATCH_RESTORE_MP_FORCERESPAWN
+DynamicHook hkForceRespawn;
+#endif
+
+#if defined PLAYERPATCH_OVERRIDE_DEATH_OBSMODE
+DynamicHook hkStartObserverMode;
+#endif
+
 #if defined PLAYERPATCH_SETSUITUPDATE
 DynamicDetour hkSetSuitUpdate;
 #endif
@@ -150,6 +160,8 @@ bool g_bTempDontHookEnts;
 bool g_bMapStarted;
 bool g_bPostTeamSelect[MAXPLAYERS+1];
 int g_iAddButtons[MAXPLAYERS+1];
+int g_bUnblockRespawn[MAXPLAYERS+1];
+SpawnOptions g_pSpawnOptions;
 OperatingSystem g_serverOS;
 FeatureMap g_pFeatureMap;
 

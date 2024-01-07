@@ -24,6 +24,9 @@
 	{
 		// enable flashlight by default
 		"mp_flashlight" "1"
+
+		// disable forced respawn by default
+		"mp_forcerespawn" "0"
 		
 		// fix for breakmodels not appearing
 		"breakable_multiplayer" "0"
@@ -33,9 +36,6 @@
 		
 		// disable warmup intermission pause
 		"mp_warmup_intermission_time" "0"
-
-		// prevents client crash after pvp deaths due to freezecam, shortens respawn time
-		"spec_freeze_time" "0"
 	}
 
 	"client_console"

@@ -54,7 +54,8 @@ CoopManagerData g_pCoopManagerData;
 // local shortcut for data:
 #define data g_pCoopManagerData
 
-methodmap CoopManager {
+methodmap CoopManager
+{
 
 	public static void Initialize()
 	{
@@ -79,7 +80,7 @@ methodmap CoopManager {
 		}
 		g_SpawnSystem.Clear();
 		g_pLevelLump.Clear();
-		SurvivalManager.Clear();
+		SurvivalManager.Clear(true);
 		
 		KeyValues kv = CoopManager.LoadMapConfig(g_szMapName, data.m_mapConfigLoc);
 	
@@ -134,32 +135,67 @@ methodmap CoopManager {
 		if (CoopManager.IsCoopModeEnabled())
 		{
 			CoopManager.CheckStart();
+			g_SpawnSystem.TeleportPlayer(pPlayer);
 		}
 	}
 
 	public static void OnPlayerSpawned(CBasePlayer pPlayer)
 	{
-		bool bActuallySpawned = pPlayer.IsAlive();
-		
-		g_SpawnSystem.SpawnPlayer(pPlayer, bActuallySpawned);
-		
-		if (bActuallySpawned)
-		{				
-			data.m_bPlayerSpawned = true;
-			if (!data.m_bStarted)
+		bool bDefaultTeleport = g_pSpawnOptions.bUseSpawnSystem;
+		bool bDefaultEquipment = g_pSpawnOptions.bUseSpawnEquipment;
+
+		// got saved items from last death?
+		if (HasPackedItems(pPlayer))
+		{
+			if (g_pSpawnOptions.bRevive)
 			{
-				if (g_pLevelLump.m_iIntroType == INTRO_FADE)
-				{
-					Client_ScreenFade(pPlayer.GetEntIndex(), 0, FFADE_STAYOUT);
-					pPlayer.SetFlags(pPlayer.GetFlags() | FL_ATCONTROLS);
-				}
-				else if (g_pLevelLump.m_iIntroType == INTRO_FREEZE)
-				{
-					pPlayer.SetFlags(pPlayer.GetFlags() | FL_ATCONTROLS);
-					Client_ScreenFade(pPlayer.GetEntIndex(), FROZEN_FADE_DUR_IN, FFADE_OUT|FFADE_STAYOUT, _, FROZEN_FADE_R, FROZEN_FADE_G, FROZEN_FADE_B, FROZEN_FADE_A);
-				}
-				CoopManager.CheckStart();
+				pPlayer.RemoveAllItems();
+				RestorePackedItems(pPlayer);
+				bDefaultEquipment = false;
 			}
+			else
+			{
+				// no use anymore, dont linger with these ents
+				ClearPackedItems(pPlayer);
+			}
+		}
+
+		if (!VecEqual(g_pSpawnOptions.vecOrigin, vec3_origin))
+		{
+			CanTeleportResult res;
+			if ((res = CanTeleportPlayer(pPlayer, g_pSpawnOptions.vecOrigin, !g_pSpawnOptions.bUnstuck)))
+			{
+				if (res == CAN_TP_MUSTDUCK)
+					pPlayer.StartDucking();
+				else
+					pPlayer.StopDucking();
+			}
+			pPlayer.Teleport(g_pSpawnOptions.vecOrigin, g_pSpawnOptions.vecAngles, vec3_origin);
+			bDefaultTeleport = false;
+		}
+
+		if (bDefaultTeleport)
+			g_SpawnSystem.TeleportPlayer(pPlayer);
+		if (bDefaultEquipment)
+			g_SpawnSystem.SpawnPlayerEquipment(pPlayer);
+		g_pSpawnOptions.Reset();
+
+		ItemInstancingManager.OnPlayerSpawned(pPlayer);
+		
+		data.m_bPlayerSpawned = true;
+		if (!data.m_bStarted)
+		{
+			if (g_pLevelLump.m_iIntroType == INTRO_FADE)
+			{
+				Client_ScreenFade(pPlayer.GetEntIndex(), 0, FFADE_STAYOUT);
+				pPlayer.SetFlags(pPlayer.GetFlags() | FL_ATCONTROLS);
+			}
+			else if (g_pLevelLump.m_iIntroType == INTRO_FREEZE)
+			{
+				pPlayer.SetFlags(pPlayer.GetFlags() | FL_ATCONTROLS);
+				Client_ScreenFade(pPlayer.GetEntIndex(), FROZEN_FADE_DUR_IN, FFADE_OUT|FFADE_STAYOUT, _, FROZEN_FADE_R, FROZEN_FADE_G, FROZEN_FADE_B, FROZEN_FADE_A);
+			}
+			CoopManager.CheckStart();
 		}
 	}
 
@@ -242,7 +278,7 @@ methodmap CoopManager {
 		{
 			for (int i = 1; i <= MaxClients; i++)
 			{
-				if (IsClientInGame(i))
+				if (IsClientInGame(i) && !IsFakeClient(i))
 				{
 					CBasePlayer pClient = CBasePlayer(i);
 					pClient.SetFlags(pClient.GetFlags() & ~FL_ATCONTROLS);
