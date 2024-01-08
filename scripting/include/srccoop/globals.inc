@@ -47,6 +47,7 @@ DynamicHook hkPlayerSpawn;
 DynamicHook hkSetModel;
 DynamicHook hkAcceptInput;
 DynamicHook hkThink;
+DynamicHook hkUpdateOnRemove;
 DynamicHook hkEvent_Killed;
 DynamicHook hkKeyValue_char;
 

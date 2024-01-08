@@ -241,6 +241,13 @@
 				"return"	"void"
 				"this"		"entity"
 			}
+			"CBaseEntity::UpdateOnRemove"
+			{
+				"offset"	"CBaseEntity::UpdateOnRemove"
+				"hooktype"	"entity"
+				"return"	"void"
+				"this"		"entity"
+			}
 			"CBaseEntity::Blocked"
 			{
 				"offset"	"CBaseEntity::Blocked"
@@ -832,6 +839,16 @@
 				"windows"	"389"
 				"linux"		"390"
 			}
+			"CBaseEntity::UpdateOnRemove" // void CBaseEntity::UpdateOnRemove( void )
+			{
+				"windows"	"115"
+				"linux"		"116"
+			}
+			"CBaseEntity::WorldSpaceCenter" // const Vector& CBaseEntity::WorldSpaceCenter( ) const
+			{
+				"windows"	"160"
+				"linux"		"161"
+			}
 		}
 	}
 
@@ -998,6 +1015,16 @@
 			{
 				"windows"	"264"
 				"linux"		"265"
+			}
+			"CBaseEntity::UpdateOnRemove" // void CBaseEntity::UpdateOnRemove( void )
+			{
+				"windows"	"105"
+				"linux"		"106"
+			}
+			"CBaseEntity::WorldSpaceCenter" // const Vector& CBaseEntity::WorldSpaceCenter( ) const
+			{
+				"windows"	"149"
+				"linux"		"150"
 			}
 		}
 	}

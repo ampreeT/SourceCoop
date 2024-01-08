@@ -25,6 +25,7 @@ Handle g_pRemoveAllItems;
 Handle g_pIsNPC;
 Handle g_pSendWeaponAnim;
 Handle g_pWeaponSwitch;
+Handle g_pWorldSpaceCenter;
 
 stock void InitClassdef(GameData pGameConfig)
 {
@@ -215,6 +216,16 @@ stock void InitClassdef(GameData pGameConfig)
 		PrepSDKCall_AddParameter(SDKType_CBaseEntity, SDKPass_Pointer);
 		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
 		if (!(g_pWeaponSwitch = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szWeaponSwitch);
+	}
+
+	char szWorldSpaceCenter[] = "CBaseEntity::WorldSpaceCenter";
+	StartPrepSDKCall(SDKCall_Entity);
+	if (!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Virtual, szWorldSpaceCenter))
+		LogMessage("Could not obtain gamedata offset %s", szWorldSpaceCenter);
+	else
+	{
+		PrepSDKCall_SetReturnInfo(SDKType_Vector, SDKPass_ByRef);
+		if (!(g_pWorldSpaceCenter = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szWorldSpaceCenter);
 	}
 
 	#if defined SRCCOOP_BLACKMESA
@@ -500,6 +511,10 @@ methodmap CBaseEntity
 	public void SetCollisionBounds(const float vecMins[3], const float vecMaxs[3])
 	{
 		SDKCall(g_pSetCollisionBounds, this.GetEntIndex(), vecMins, vecMaxs);
+	}
+	public void WorldSpaceCenter(float vecCenter[3])
+	{
+		SDKCall(g_pWorldSpaceCenter, this.GetEntIndex(), vecCenter);
 	}
 	public CBaseEntity GetOwner()
 	{

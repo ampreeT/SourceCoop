@@ -89,6 +89,7 @@ void LoadGameData()
 	LoadDHookVirtual(pGameConfig, hkSetModel, "CBaseEntity::SetModel");
 	LoadDHookVirtual(pGameConfig, hkAcceptInput, "CBaseEntity::AcceptInput");
 	LoadDHookVirtual(pGameConfig, hkThink, "CBaseEntity::Think");
+	LoadDHookVirtual(pGameConfig, hkUpdateOnRemove, "CBaseEntity::UpdateOnRemove");
 	LoadDHookVirtual(pGameConfig, hkEvent_Killed, "CBaseEntity::Event_Killed");
 	LoadDHookVirtual(pGameConfig, hkKeyValue_char, "CBaseEntity::KeyValue_char");
 

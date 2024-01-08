@@ -40,16 +40,7 @@ enum struct CCoopSpawnEntry
 		
 		if (this.m_pFollowEnt.IsValid())
 		{
-			this.m_pFollowEnt.GetAbsOrigin(vecPosition);
-			this.m_pFollowEnt.GetAbsAngles(vecAngles);
-			
-			vecPosition[0] += this.m_vecPosition[0];
-			vecPosition[1] += this.m_vecPosition[1];
-			vecPosition[2] += this.m_vecPosition[2];
-			
-			vecAngles[0] += this.m_vecAngles[0];
-			vecAngles[1] += this.m_vecAngles[1];
-			vecAngles[2] += this.m_vecAngles[2];
+			this.CalcFollowEntDestination(vecPosition, vecAngles);
 		}
 		else
 		{
@@ -79,6 +70,14 @@ enum struct CCoopSpawnEntry
 			return true;
 		}
 		return false;
+	}
+
+	void CalcFollowEntDestination(float vecPosition[3], float vecAngles[3])
+	{
+		this.m_pFollowEnt.WorldSpaceCenter(vecPosition);
+		this.m_pFollowEnt.GetAbsAngles(vecAngles);
+		AddVectors(vecPosition, this.m_vecPosition, vecPosition);
+		AddVectors(vecAngles, this.m_vecAngles, vecAngles);
 	}
 	
 	bool ActivatePre(CBasePlayer pActivator)
@@ -398,15 +397,22 @@ enum struct CCoopSpawnSystem
 		return -1;
 	}
 	
-	int FindCheckpointByTouchEnt(CBaseEntity pTouchEnt, CCoopSpawnEntry pCheckpoint, int iStartIndex = 0)
+	int FindCheckpointByTouchEnt(CBaseEntity pTouchEnt, int iStartIndex = 0)
 	{
-		CCoopSpawnEntry pEntry;
+		return this.FindCheckpointGeneric(pTouchEnt, CCoopSpawnEntry::m_pTouchEnt, iStartIndex);
+	}
+
+	int FindCheckpointByFollowEnt(CBaseEntity pFollowEnt, int iStartIndex = 0)
+	{
+		return this.FindCheckpointGeneric(pFollowEnt, CCoopSpawnEntry::m_pFollowEnt, iStartIndex);
+	}
+
+	int FindCheckpointGeneric(any val, int block, int iStartIndex = 0)
+	{
 		for (int i = iStartIndex; i < this.m_pCheckpointList.Length; i++)
 		{
-			this.m_pCheckpointList.GetArray(i, pEntry);
-			if (pTouchEnt == pEntry.m_pTouchEnt)
+			if (this.m_pCheckpointList.Get(i, block) == val)
 			{
-				pCheckpoint = pEntry;
 				return i;
 			}
 		}
@@ -607,6 +613,7 @@ enum struct CCoopSpawnSystem
 								{
 									if (!(pEntry.m_pFollowEnt = this.FindEntity(szValue)).IsValid())
 										ThrowError("Couldn't find followid entity %s", szValue);
+									hkUpdateOnRemove.HookEntity(Hook_Post, pEntry.m_pFollowEnt.entindex, Hook_FollowEntityRemoved);
 								}
 								else if (strcmp(szKey, "triggerid", false) == 0)	
 								{
@@ -875,8 +882,10 @@ public void Hook_TouchCheckpoint(int iEntity, int iOther)
 		CCoopSpawnEntry pCheckpoint;
 		int iIndex = g_SpawnSystem.m_iCurrentCheckpoint + 1;
 		
-		while ((iIndex = g_SpawnSystem.FindCheckpointByTouchEnt(pTouched, pCheckpoint, iIndex)) != -1)
+		while ((iIndex = g_SpawnSystem.FindCheckpointByTouchEnt(pTouched, iIndex)) != -1)
 		{
+			g_SpawnSystem.m_pCheckpointList.GetArray(iIndex, pCheckpoint);
+			
 			if (pCheckpoint.ActivatePre(pActivator))
 			{
 				g_SpawnSystem.m_pCheckpointList.SetArray(iIndex, pCheckpoint);
@@ -912,4 +921,25 @@ public void Hook_TouchPortal(int iEntity, int iOther)
 			pPlayer.PlayGameSound(SND_PORTAL);
 		}
 	}
+}
+
+MRESReturn Hook_FollowEntityRemoved(int _this)
+{
+	// check for follow entity removal, save last known position
+	CBaseEntity pEntity = CBaseEntity(_this);
+	int iIndex;
+	while ((iIndex = g_SpawnSystem.FindCheckpointByFollowEnt(pEntity, iIndex)) != -1)
+	{
+		CCoopSpawnEntry pCheckpoint;
+		g_SpawnSystem.m_pCheckpointList.GetArray(iIndex, pCheckpoint);
+
+		float vecPosition[3], vecAngles[3]; // prevent self-overwrite
+		pCheckpoint.CalcFollowEntDestination(vecPosition, vecAngles);
+		pCheckpoint.m_pFollowEnt = NULL_CBASEENTITY;
+		pCheckpoint.m_vecPosition = vecPosition;
+		pCheckpoint.m_vecAngles = vecAngles;
+		pCheckpoint.m_bHasPosition = pCheckpoint.m_bHasAngles = true;
+		g_SpawnSystem.m_pCheckpointList.SetArray(iIndex, pCheckpoint);
+	}
+	return MRES_Ignored;
 }
