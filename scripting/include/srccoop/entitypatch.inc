@@ -546,15 +546,18 @@ public MRESReturn Hook_ClientCommandAcceptInput(int _this, Handle hReturn, Handl
 	{
 		if (!DHookIsNullParam(hParams, 1))
 		{
-			char szInput[MAX_FORMAT]; char szParam[MAX_FORMAT];
+			char szInput[MAX_FORMAT];
 			DHookGetParamString(hParams, 1, szInput, sizeof(szInput));
-			DHookGetParamObjectPtrString(hParams, 4, 0, ObjectValueType_String, szParam, sizeof(szParam));
-			LogDebug("Hook_ClientCommandAcceptInput input=%s, param=%s", szInput, szParam);
 			
 			if (!StrEqual(szInput, "CommandAll", false) && !StrEqual(szInput, "Command", false))
 			{
 				return MRES_Ignored;
 			}
+			
+			char szParam[MAX_FORMAT];
+			DHookGetParamObjectPtrString(hParams, 4, 0, ObjectValueType_String, szParam, sizeof(szParam));
+			LogDebug("Hook_ClientCommandAcceptInput input=%s, param=%s", szInput, szParam);
+			TrimString(szParam);
 			
 			if (CoopManager.IsFeatureEnabled(FT_AUTODETECT_MAP_END))
 			{
@@ -626,11 +629,22 @@ public MRESReturn Hook_ServerCommandAcceptInput(int _this, Handle hReturn, Handl
 			{
 				char szParam[MAX_FORMAT];
 				DHookGetParamObjectPtrString(hParams, 4, 0, ObjectValueType_String, szParam, sizeof(szParam));
+				TrimString(szParam);
+
 				if (strncmp(szParam, "changelevel ", 12, false) == 0)
 				{
 					CoopManager.EndMap(szParam[12], SC_NORMAL_MAPCHANGE);
 					DHookSetReturn(hReturn, true);
 					return MRES_Supercede;
+				}
+				if (CoopManager.IsFeatureEnabled(FT_AUTODETECT_MAP_END))
+				{
+					if (StrEqual(szParam, "disconnect", false))
+					{
+						CoopManager.OnMapSeriesFinished();
+						DHookSetReturn(hReturn, true);
+						return MRES_Supercede;
+					}
 				}
 			}
 		}
