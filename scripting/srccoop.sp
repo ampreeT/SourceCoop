@@ -26,7 +26,7 @@ void LoadGameData()
 {
 	GameData pGameConfig = LoadGameConfigFile(SRCCOOP_GAMEDATA_NAME);
 	if (pGameConfig == null)
-		SetFailState("Couldn't load game config %s", SRCCOOP_GAMEDATA_NAME);
+		SetFailState("Couldn't load game config: \"%s\"", SRCCOOP_GAMEDATA_NAME);
 	
 	g_serverOS = view_as<OperatingSystem>(pGameConfig.GetOffset("_OS_Detector_"));
 
@@ -194,7 +194,17 @@ void LoadGameData()
 	// Init SDKCalls for classdef
 	InitClassdef(pGameConfig);
 	
-	CloseHandle(pGameConfig);
+	pGameConfig.Close();
+}
+
+void LoadConfig()
+{
+	GameData pGameConfig = LoadGameConfigFile(SRCCOOP_CONFIG_GAMEDATA_NAME);
+	if (pGameConfig == null)
+		SetFailState("Couldn't load game config: \"%s\"", SRCCOOP_CONFIG_GAMEDATA_NAME);
+	
+	Conf.Initialize(pGameConfig);
+	pGameConfig.Close();
 }
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
@@ -214,6 +224,7 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 
 public void OnPluginStart()
 {
+	LoadConfig();
 	LoadGameData();
 	LoadTranslations("common.phrases"); /* reuse some translations (identified by use of capital letters) */
 	LoadTranslations("srccoop.phrases");

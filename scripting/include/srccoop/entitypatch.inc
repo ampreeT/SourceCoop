@@ -222,14 +222,14 @@ public Action ChangelevelEffects(Handle timer, CChangelevel pChangelevel)
 
 				vecMins[2] -= 100.0;
 				
-				int model = PrecacheModel("particle/xen_portal_tracer.vmt");
+				int model = PrecacheModel(Conf.CHANGELEVEL_EFFECT_MODEL);
 				TE_Start("Bubbles");
 				TE_WriteVector("m_vecMins", vecMins);
 				TE_WriteVector("m_vecMaxs", vecMaxs);
 				TE_WriteNum("m_nModelIndex", model);
-				TE_WriteNum("m_nCount", 100);
+				TE_WriteNum("m_nCount", Conf.CHANGELEVEL_EFFECT_AMOUNT);
 				TE_WriteFloat("m_fHeight", vecMaxs[2] - vecMins[2]);
-				TE_WriteFloat("m_fSpeed", 10.0);
+				TE_WriteFloat("m_fSpeed", Conf.CHANGELEVEL_EFFECT_SPEED);
 				TE_SendToAll();
 			}
 		}

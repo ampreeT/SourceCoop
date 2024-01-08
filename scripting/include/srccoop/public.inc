@@ -58,6 +58,7 @@
 #define SRCCOOP_VERSION "1.2"
 #define SRCCOOP_URL "https://github.com/ampreeT/SourceCoop"
 #define SRCCOOP_GAMEDATA_NAME "srccoop.games"
+#define SRCCOOP_CONFIG_GAMEDATA_NAME "srccoop_config.games"
 #define SRCCOOP_LIBRARY "SRCCOOP" /* The library name registered by the core plugin */
 
 #define CHAR_BIT 8

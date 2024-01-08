@@ -140,6 +140,7 @@
 #include <srccoop/blackmesa/typedef>
 #include <srccoop/blackmesa/classdef>
 #endif
+#include <srccoop/config>
 #include <srccoop/utils>
 #include <srccoop/features>
 #include <srccoop/globals>

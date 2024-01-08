@@ -6,9 +6,6 @@
 #pragma newdecls required
 #pragma semicolon 1
 
-#define SND_BRINGALL "sfx.beep5"
-#define SND_PORTAL "xen.energy_hit"
-
 enum struct CCoopSpawnEntry
 {
 	bool m_bHasPosition;
@@ -105,12 +102,12 @@ enum struct CCoopSpawnEntry
 	{
 		if (this.m_bHasPortal)
 		{
-			CParticleSystem pParticle = CParticleSystem.Create("teleport_lambda_entrance");
+			CParticleSystem pParticle = CParticleSystem.Create(Conf.PORTAL_PARTICLE);
 			if (pParticle.IsValid())
 			{
-				#define PORTAL_TOUCH_SIZE 16.0
-				float mins[3] = {-PORTAL_TOUCH_SIZE, -PORTAL_TOUCH_SIZE, -PORTAL_TOUCH_SIZE};
-				float maxs[3] = {PORTAL_TOUCH_SIZE, PORTAL_TOUCH_SIZE, PORTAL_TOUCH_SIZE};
+				float mins[3], maxs[3];
+				mins[0] = mins[1] = mins[2] = -Conf.PORTAL_TOUCH_SIZE;
+				maxs[0] = maxs[1] = maxs[2] = Conf.PORTAL_TOUCH_SIZE;
 				pParticle.SetMins(mins);
 				pParticle.SetMaxs(maxs);
 				pParticle.Teleport(this.m_vecPortalPosition);
@@ -133,7 +130,7 @@ enum struct CCoopSpawnEntry
 				{
 					if (this.TeleportPlayer(pPlayer, true, true))
 					{
-						pPlayer.PlayGameSound(SND_BRINGALL);
+						EmitSoundToClient(i, Conf.SND_BRINGALL, .level = SNDLEVEL_NONE, .volume = Conf.SND_BRINGALL_VOL);
 						ShowHudText(i, 1, "%t", "checkpoint reached");
 					}
 				}
@@ -338,8 +335,6 @@ enum struct CCoopSpawnSystem
 	
 	void Initialize()
 	{
-		PrecacheScriptSound(SND_BRINGALL);
-		PrecacheScriptSound(SND_PORTAL);
 		this.m_pCheckpointList = new ArrayList(sizeof(CCoopSpawnEntry));
 		this.m_pDefaultEquipment.Initialize();
 	}
@@ -515,6 +510,9 @@ enum struct CCoopSpawnSystem
 	
 	void ParseConfigFile(KeyValues kv)
 	{
+		PrecacheSound(Conf.SND_BRINGALL);
+		PrecacheSound(Conf.SND_PORTAL);
+		
 		if (kv.GotoFirstSubKey(false))
 		{
 			do
@@ -918,7 +916,7 @@ public void Hook_TouchPortal(int iEntity, int iOther)
 		CCoopSpawnEntry pCheckpoint;
 		if (g_SpawnSystem.GetCurrentCheckpoint(pCheckpoint) && pCheckpoint.TeleportPlayer(pPlayer))
 		{
-			pPlayer.PlayGameSound(SND_PORTAL);
+			EmitSoundToClient(iOther, Conf.SND_PORTAL, .level = SNDLEVEL_NONE, .volume = Conf.SND_PORTAL_VOL);
 		}
 	}
 }
@@ -939,6 +937,7 @@ MRESReturn Hook_FollowEntityRemoved(int _this)
 		pCheckpoint.m_vecPosition = vecPosition;
 		pCheckpoint.m_vecAngles = vecAngles;
 		pCheckpoint.m_bHasPosition = pCheckpoint.m_bHasAngles = true;
+
 		g_SpawnSystem.m_pCheckpointList.SetArray(iIndex, pCheckpoint);
 	}
 	return MRES_Ignored;

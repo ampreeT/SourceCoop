@@ -6,27 +6,6 @@
 #pragma newdecls required
 #pragma semicolon 1
 
-// Freeze intro - screenfade properties
-#define FROZEN_FADE_R 15
-#define FROZEN_FADE_G 15
-#define FROZEN_FADE_B 15
-#define FROZEN_FADE_A 245
-#define FROZEN_FADE_DUR_IN 700
-#define FROZEN_FADE_DUR_OUT 1500
-
-// Intro timer sounds
-#define SND_TICK "bms_objects/clickbeep/click1.wav"
-#define SND_TICK_VOL 0.5
-#define SND_3 "vox/three.wav"
-#define SND_2 "vox/two.wav"
-#define SND_1 "vox/one.wav"
-
-// Changelevel sounds
-#define SND_CHANGELEVEL "vox/doop.wav"
-#define SND_CHANGELEVEL_VOL 0.5
-#define SND_CHANGELEVEL_TICK "bms_objects/clickbeep/click1.wav"
-#define SND_CHANGELEVEL_TICK_VOL 0.2
-
 //------------------------------------------------------
 // Coop manager
 //------------------------------------------------------
@@ -105,12 +84,12 @@ methodmap CoopManager
 	{
 		if (data.m_bIsCoopMap)
 		{
-			PrecacheSound(SND_TICK);
-			PrecacheSound(SND_3);
-			PrecacheSound(SND_2);
-			PrecacheSound(SND_1);
-			PrecacheSound(SND_CHANGELEVEL);
-			PrecacheSound(SND_CHANGELEVEL_TICK);
+			PrecacheSound(Conf.SND_TICK);
+			PrecacheSound(Conf.SND_3);
+			PrecacheSound(Conf.SND_2);
+			PrecacheSound(Conf.SND_1);
+			PrecacheSound(Conf.SND_CHANGELEVEL);
+			PrecacheSound(Conf.SND_CHANGELEVEL_TICK);
 
 			#if defined SRCCOOP_BLACKMESA
 			CBM_MP_GameRules.SetStateEndTime(STATE_WARMUP, GetGameTime() + 60 * 60 * 24 * 7);
@@ -193,7 +172,8 @@ methodmap CoopManager
 			else if (g_pLevelLump.m_iIntroType == INTRO_FREEZE)
 			{
 				pPlayer.SetFlags(pPlayer.GetFlags() | FL_ATCONTROLS);
-				Client_ScreenFade(pPlayer.GetEntIndex(), FROZEN_FADE_DUR_IN, FFADE_OUT|FFADE_STAYOUT, _, FROZEN_FADE_R, FROZEN_FADE_G, FROZEN_FADE_B, FROZEN_FADE_A);
+				Client_ScreenFade(pPlayer.GetEntIndex(), Conf.FROZEN_FADE_DUR_IN, FFADE_OUT|FFADE_STAYOUT, _,
+					Conf.FROZEN_FADE_R, Conf.FROZEN_FADE_G, Conf.FROZEN_FADE_B, Conf.FROZEN_FADE_A);
 			}
 			CoopManager.CheckStart();
 		}
@@ -235,7 +215,7 @@ methodmap CoopManager
 		if ((data.m_bGetReadyTimer = bGetReadyTimer))
 		{
 			data.m_iSecondsToStart = 3;
-			EmitSoundToAll(SND_3, .volume = SND_TICK_VOL);
+			EmitSoundToAll(Conf.SND_3, .volume = Conf.SND_TICK_VOL);
 		}
 		else
 		{
@@ -284,7 +264,8 @@ methodmap CoopManager
 					pClient.SetFlags(pClient.GetFlags() & ~FL_ATCONTROLS);
 					if (g_pLevelLump.m_iIntroType == INTRO_FREEZE)
 					{
-						Client_ScreenFade(pClient.GetEntIndex(), FROZEN_FADE_DUR_OUT, FFADE_PURGE|FFADE_IN, 1, FROZEN_FADE_R, FROZEN_FADE_G, FROZEN_FADE_B, FROZEN_FADE_A);
+						Client_ScreenFade(pClient.GetEntIndex(), Conf.FROZEN_FADE_DUR_OUT, FFADE_PURGE|FFADE_IN, 1,
+							Conf.FROZEN_FADE_R, Conf.FROZEN_FADE_G, Conf.FROZEN_FADE_B, Conf.FROZEN_FADE_A);
 					}
 				}
 			}
@@ -347,7 +328,7 @@ methodmap CoopManager
 		{
 			data.m_iTicksToEnd = g_pConvarEndWaitPeriod.IntValue;
 			data.m_pChangeLevelTimer = CreateTimer(CoopManager.GetChangeLevelTimerInterval(), ChangeLevelTimerCallback, _, TIMER_FLAG_NO_MAPCHANGE);
-			EmitSoundToAll(SND_CHANGELEVEL, .volume = SND_CHANGELEVEL_VOL);
+			EmitSoundToAll(Conf.SND_CHANGELEVEL, .volume = Conf.SND_CHANGELEVEL_VOL);
 		}
 		if (data.m_pChangeLevelMgr.SetPlayerVote(pChangelevel, pActivator, data.m_iClientChangeLvlIndicies))
 		{
@@ -494,19 +475,19 @@ public Action StartTimerCallback(Handle pTimer)
 	
 	if (data.m_iSecondsToStart == 3)
 	{
-		EmitSoundToAll(SND_3, .volume = SND_TICK_VOL);
+		EmitSoundToAll(Conf.SND_3, .volume = Conf.SND_TICK_VOL);
 	}
 	else if (data.m_iSecondsToStart == 2)
 	{
-		EmitSoundToAll(SND_2, .volume = SND_TICK_VOL);
+		EmitSoundToAll(Conf.SND_2, .volume = Conf.SND_TICK_VOL);
 	}
 	else if (data.m_iSecondsToStart == 1)
 	{
-		EmitSoundToAll(SND_1, .volume = SND_TICK_VOL);
+		EmitSoundToAll(Conf.SND_1, .volume = Conf.SND_TICK_VOL);
 	}
 	else
 	{
-		EmitSoundToAll(SND_TICK, .volume = SND_TICK_VOL);
+		EmitSoundToAll(Conf.SND_TICK, .volume = Conf.SND_TICK_VOL);
 	}
 	
 	return Plugin_Continue;
@@ -524,7 +505,7 @@ public Action ChangeLevelTimerCallback(Handle pTimer)
 	}
 	else
 	{
-		EmitSoundToAll(SND_CHANGELEVEL_TICK, .volume = SND_CHANGELEVEL_TICK_VOL);
+		EmitSoundToAll(Conf.SND_CHANGELEVEL_TICK, .volume = Conf.SND_CHANGELEVEL_TICK_VOL);
 		data.m_pChangeLevelMgr.UpdateStatus(data.m_iTicksToEnd);
 		data.m_pChangeLevelTimer = CreateTimer(CoopManager.GetChangeLevelTimerInterval(), ChangeLevelTimerCallback, _, TIMER_FLAG_NO_MAPCHANGE);
 	}

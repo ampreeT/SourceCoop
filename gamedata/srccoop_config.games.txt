@@ -1,0 +1,56 @@
+"Games"
+{
+	"#default"
+	{
+		"Keys"
+		{
+			"SND_BRINGALL" "buttons/button17.wav"
+			"SND_BRINGALL_VOL" "1.0"
+			"SND_PORTAL" "ambient/machines/teleport1.wav"
+			"SND_PORTAL_VOL" "1.0"
+			"PORTAL_PARTICLE" "vortigaunt_hand_glow_c"
+			"PORTAL_TOUCH_SIZE" "16.0"
+			"FROZEN_FADE_R" "15"
+			"FROZEN_FADE_G" "15"
+			"FROZEN_FADE_B" "15"
+			"FROZEN_FADE_A" "245"
+			"FROZEN_FADE_DUR_IN" "700"
+			"FROZEN_FADE_DUR_OUT" "1500"
+			"SND_TICK" "ui/buttonclickrelease.wav"
+			"SND_TICK_VOL" "0.5"
+			"SND_3" "npc/overwatch/radiovoice/three.wav"
+			"SND_2" "npc/overwatch/radiovoice/two.wav"
+			"SND_1" "npc/overwatch/radiovoice/one.wav"
+			"SND_CHANGELEVEL" "ambient/alarms/warningbell1.wav"
+			"SND_CHANGELEVEL_VOL" "0.8"
+			"SND_CHANGELEVEL_TICK" "ui/buttonclickrelease.wav"
+			"SND_CHANGELEVEL_TICK_VOL" "0.2"
+			"CHANGELEVEL_EFFECT_MODEL" "effects/energysplash.vmt"
+			"CHANGELEVEL_EFFECT_AMOUNT" "100"
+			"CHANGELEVEL_EFFECT_SPEED" "10.0"
+		}
+	}
+	"bms"
+	{
+		"Keys"
+		{
+			"SND_BRINGALL" "bms_objects/clickbeep/beep5.wav"
+			"SND_PORTAL" "xen/object/loud/hub_energyburst01.wav"
+			"PORTAL_PARTICLE" "teleport_lambda_entrance"
+			"SND_TICK" "bms_objects/clickbeep/click1.wav"
+			"SND_3" "vox/three.wav"
+			"SND_2" "vox/two.wav"
+			"SND_1" "vox/one.wav"
+			"SND_CHANGELEVEL" "vox/doop.wav"
+			"SND_CHANGELEVEL_VOL" "0.5"
+			"SND_CHANGELEVEL_TICK" "bms_objects/clickbeep/click1.wav"
+			"CHANGELEVEL_EFFECT_MODEL" "particle/xen_portal_tracer.vmt"
+		}
+	}
+	"hl2mp"
+	{
+		"Keys"
+		{
+		}
+	}
+}
