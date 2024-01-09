@@ -961,6 +961,11 @@
 				"windows"	"16"
 				"linux"		"17"
 			}
+			"CAI_BaseNPC::ShouldPlayerAvoid" // CAI_BaseNPC::ShouldPlayerAvoid()
+			{
+				"windows"	"347"
+				"linux"		"348"
+			}
 			"CBasePlayer::RemoveAllItems" // CBasePlayer::RemoveAllItems(bool)
 			{
 				"windows"	"342"
