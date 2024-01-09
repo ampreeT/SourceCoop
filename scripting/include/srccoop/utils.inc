@@ -413,19 +413,22 @@ enum CanTeleportResult
 	CAN_TP_MUSTDUCK		//🦆//
 }
 
-stock CanTeleportResult CanTeleportPlayer(CBasePlayer pPlayer, float vecOrigin[3], bool bExact = false, bool bDuckCheck = true)
+stock CanTeleportResult CanTeleportPlayer(CBasePlayer pPlayer, float vecOrigin[3], bool bExact = false, bool bDuckCheck = true, bool bOnlyVaried = false)
 {
-	bool bDidHit;
-
-	TR_TraceHullFilter(vecOrigin, vecOrigin, view_as<float>(VEC_HULL_MIN), view_as<float>(VEC_HULL_MAX), MASK_PLAYERSOLID|CONTENTS_HITBOX, CanTeleportPlayer_TraceFilter);
-	bDidHit = TR_DidHit();
-	if (!bDidHit) return CAN_TP_YES;
-	
-	if (bDuckCheck)
+	if (!bOnlyVaried)
 	{
-		TR_TraceHullFilter(vecOrigin, vecOrigin, view_as<float>(VEC_DUCK_HULL_MIN), view_as<float>(VEC_DUCK_HULL_MAX), MASK_PLAYERSOLID|CONTENTS_HITBOX, CanTeleportPlayer_TraceFilter);
+		bool bDidHit;
+
+		TR_TraceHullFilter(vecOrigin, vecOrigin, view_as<float>(VEC_HULL_MIN), view_as<float>(VEC_HULL_MAX), MASK_PLAYERSOLID|CONTENTS_HITBOX, CanTeleportPlayer_TraceFilter);
 		bDidHit = TR_DidHit();
-		if (!bDidHit) return CAN_TP_MUSTDUCK;
+		if (!bDidHit) return CAN_TP_YES;
+		
+		if (bDuckCheck)
+		{
+			TR_TraceHullFilter(vecOrigin, vecOrigin, view_as<float>(VEC_DUCK_HULL_MIN), view_as<float>(VEC_DUCK_HULL_MAX), MASK_PLAYERSOLID|CONTENTS_HITBOX, CanTeleportPlayer_TraceFilter);
+			bDidHit = TR_DidHit();
+			if (!bDidHit) return CAN_TP_MUSTDUCK;
+		}
 	}
 	
 	if (!bExact)

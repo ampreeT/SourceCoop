@@ -1011,6 +1011,11 @@
 				"windows"	"496"
 				"linux"		"500"
 			}
+			"CBaseEntity::Blocked" // bool CBaseEntity::Blocked(CBaseEntity*)
+			{
+				"windows"	"102"
+				"linux"		"103"
+			}
 			"CBaseCombatCharacter::Weapon_Switch" // CBaseCombatCharacter::Weapon_Switch( CBaseCombatWeapon *pWeapon, int viewmodelindex /*=0*/ )
 			{
 				"windows"	"264"

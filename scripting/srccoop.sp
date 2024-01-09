@@ -142,7 +142,7 @@ void LoadGameData()
 	LoadDHookVirtual(pGameConfig, hkRunAI, "CAI_BaseNPC::RunAI");
 	#endif
 
-	#if defined ENTPATCH_BM_FUNC_TRACKAUTOCHANGE || defined ENTPATCH_BM_FUNC_TRACKTRAIN
+	#if defined ENTPATCH_FUNC_TRACKAUTOCHANGE || defined ENTPATCH_FUNC_TRACKTRAIN
 	LoadDHookVirtual(pGameConfig, hkBlocked, "CBaseEntity::Blocked");
 	#endif
 
@@ -808,7 +808,7 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 		}
 		#endif
 
-		#if defined ENTPATCH_BM_FUNC_TRACKAUTOCHANGE
+		#if defined ENTPATCH_FUNC_TRACKAUTOCHANGE
 		if (strcmp(szClassname, "func_trackautochange") == 0)
 		{
 			DHookEntity(hkBlocked, false, iEntIndex, _, Hook_TrackChangeBlocked);
@@ -816,7 +816,7 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 		}
 		#endif
 
-		#if defined ENTPATCH_BM_FUNC_TRACKTRAIN
+		#if defined ENTPATCH_FUNC_TRACKTRAIN
 		if (strcmp(szClassname, "func_tracktrain") == 0)
 		{
 			DHookEntity(hkBlocked, false, iEntIndex, _, Hook_TrackTrainBlocked);

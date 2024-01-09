@@ -489,6 +489,19 @@ public Action StartTimerCallback(Handle pTimer)
 	{
 		EmitSoundToAll(Conf.SND_TICK, .volume = Conf.SND_TICK_VOL);
 	}
+
+	#if defined INTRO_TIMER_HUDTEXT
+	
+	SetHudTextParams(-1.0, 0.05, 1.0, 200, 200, 200, 255, 0, 0.5, 0.1, 0.1);
+	for (int i = 1; i <= MaxClients; i++)
+	{
+		if (IsClientInGame(i))
+		{
+			ShowHudText(i, 2, "%d", data.m_iSecondsToStart);
+		}
+	}
+
+	#endif
 	
 	return Plugin_Continue;
 }

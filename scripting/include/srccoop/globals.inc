@@ -100,7 +100,7 @@ DynamicHook hkHandleAnimEvent;
 DynamicHook hkRunAI;
 #endif
 
-#if defined ENTPATCH_BM_FUNC_TRACKAUTOCHANGE || defined ENTPATCH_BM_FUNC_TRACKTRAIN
+#if defined ENTPATCH_FUNC_TRACKAUTOCHANGE || defined ENTPATCH_FUNC_TRACKTRAIN
 DynamicHook hkBlocked;
 #endif
 
