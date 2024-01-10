@@ -10,10 +10,7 @@
 			"SND_PORTAL_VOL" "1.0"
 			"PORTAL_PARTICLE" "vortigaunt_hand_glow_c"
 			"PORTAL_TOUCH_SIZE" "16.0"
-			"FROZEN_FADE_R" "15"
-			"FROZEN_FADE_G" "15"
-			"FROZEN_FADE_B" "15"
-			"FROZEN_FADE_A" "245"
+			"FROZEN_FADE_COLOR" "15 15 15 245"
 			"FROZEN_FADE_DUR_IN" "700"
 			"FROZEN_FADE_DUR_OUT" "1500"
 			"SND_TICK" "ui/buttonclickrelease.wav"
@@ -28,6 +25,18 @@
 			"CHANGELEVEL_EFFECT_MODEL" "effects/energysplash.vmt"
 			"CHANGELEVEL_EFFECT_AMOUNT" "100"
 			"CHANGELEVEL_EFFECT_SPEED" "10.0"
+			
+			"KILLSOUNDS_SND" "buttons/button10.wav"
+			"KILLSOUNDS_SND_VOL" "1.0"
+
+			"REVIVE_SND_START" "items/suitchargeok1.wav"
+			"REVIVE_SND_DENY" "items/suitchargeno1.wav"
+			"REVIVE_SND_RESPAWN" "items/medshot4.wav"
+			"REVIVE_SND_RESPAWN_PITCH" "150"
+			"REVIVE_SNDLEVEL" "60"
+			"REVIVE_BAR_COLOR" "0 255 0 255"
+			"REVIVE_BAR_MODEL" "sprites/laser.vmt"
+			"REVIVE_RAGDOLL_PARTICLE" "water_trail_medium_b"
 		}
 	}
 	"bms"

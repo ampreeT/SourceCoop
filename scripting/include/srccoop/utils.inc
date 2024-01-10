@@ -7,6 +7,51 @@
 #pragma semicolon 1
 
 //------------------------------------------------------
+// Gamedata utils
+//------------------------------------------------------
+stock void GetGamedataString(GameData pGameConfig, const char[] szKey, char[] szVal, int len)
+{
+	if (!pGameConfig.GetKeyValue(szKey, szVal, len))
+		SetFailState("Missing config key: \"%s\"", szKey);
+}
+
+stock float GetGamedataFloat(GameData pGameConfig, const char[] szKey)
+{
+	char szVal[16]; float flVal;
+	GetGamedataString(pGameConfig, szKey, szVal, sizeof(szVal));
+
+	if (!StringToFloatEx(szVal, flVal))
+		SetFailState("Config value for key: \"%s\" should be a float.", szKey);
+
+	return flVal;
+}
+
+stock int GetGamedataInt(GameData pGameConfig, const char[] szKey)
+{
+	char szVal[16]; int iVal;
+	GetGamedataString(pGameConfig, szKey, szVal, sizeof(szVal));
+
+	if (!StringToIntEx(szVal, iVal))
+		SetFailState("Config value for key: \"%s\" should be an int.", szKey);
+
+	return iVal;
+}
+
+stock void GetGamedataColor(GameData pGameConfig, const char[] szKey, int color[4], const char[] delimiter = " ")
+{
+	char szVal[16]; char szColor[4][4];
+	GetGamedataString(pGameConfig, szKey, szVal, sizeof(szVal));
+	
+	if (3 > ExplodeString(szVal, delimiter, szColor, sizeof(szColor), sizeof(szColor[])))
+		SetFailState("Config value for key: \"%s\" is not a valid color.", szKey);
+	
+	color[0] = StringToInt(szColor[0]);
+	color[1] = StringToInt(szColor[1]);
+	color[2] = StringToInt(szColor[2]);
+	color[3] = StringToInt(szColor[3]);
+}
+
+//------------------------------------------------------
 // DHooks utils
 //------------------------------------------------------
 #if defined _dhooks_included

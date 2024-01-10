@@ -25,10 +25,7 @@ enum struct SourceCoopConfig
 	//------------------------------------------------------
 
 	// Freeze intro - screenfade properties
-	int FROZEN_FADE_R;
-	int FROZEN_FADE_G;
-	int FROZEN_FADE_B;
-	int FROZEN_FADE_A;
+	int FROZEN_FADE_COLOR[4];
 	int FROZEN_FADE_DUR_IN;
 	int FROZEN_FADE_DUR_OUT;
 
@@ -55,12 +52,12 @@ enum struct SourceCoopConfig
 
 	//------------------------------------------------------
 
-
 	void Initialize(GameData pGameConfig)
 	{
-		#define STR(%1) this.GetString(pGameConfig, #%1, this.%1, sizeof(this.%1))
-		#define FLT(%1) this.%1 = this.GetFloat(pGameConfig, #%1)
-		#define INT(%1) this.%1 = this.GetInt(pGameConfig, #%1)
+		#define STR(%1) GetGamedataString(pGameConfig, #%1, this.%1, sizeof(this.%1))
+		#define FLT(%1) this.%1 = GetGamedataFloat(pGameConfig, #%1)
+		#define INT(%1) this.%1 = GetGamedataInt(pGameConfig, #%1)
+		#define CLR(%1) GetGamedataColor(pGameConfig, #%1, this.%1)
 
 		STR(SND_BRINGALL);
 		FLT(SND_BRINGALL_VOL);
@@ -68,10 +65,7 @@ enum struct SourceCoopConfig
 		FLT(SND_PORTAL_VOL);
 		STR(PORTAL_PARTICLE);
 		FLT(PORTAL_TOUCH_SIZE);
-		INT(FROZEN_FADE_R);
-		INT(FROZEN_FADE_G);
-		INT(FROZEN_FADE_B);
-		INT(FROZEN_FADE_A);
+		CLR(FROZEN_FADE_COLOR);
 		INT(FROZEN_FADE_DUR_IN);
 		INT(FROZEN_FADE_DUR_OUT);
 		STR(SND_TICK);
@@ -90,34 +84,7 @@ enum struct SourceCoopConfig
 		#undef STR
 		#undef FLT
 		#undef INT
-	}
-
-	void GetString(GameData pGameConfig, const char[] szKey, char[] szVal, int len)
-	{
-		if (!pGameConfig.GetKeyValue(szKey, szVal, len))
-			SetFailState("Missing config key: \"%s\"", szKey);
-	}
-
-	float GetFloat(GameData pGameConfig, const char[] szKey)
-	{
-		char szVal[16]; float flVal;
-		this.GetString(pGameConfig, szKey, szVal, sizeof(szVal));
-
-		if (!StringToFloatEx(szVal, flVal))
-			SetFailState("Config value for key: \"%s\" should be a float.", szKey);
-
-		return flVal;
-	}
-
-	int GetInt(GameData pGameConfig, const char[] szKey)
-	{
-		char szVal[16]; int iVal;
-		this.GetString(pGameConfig, szKey, szVal, sizeof(szVal));
-
-		if (!StringToIntEx(szVal, iVal))
-			SetFailState("Config value for key: \"%s\" should be an int.", szKey);
-
-		return iVal;
+		#undef CLR
 	}
 
 }

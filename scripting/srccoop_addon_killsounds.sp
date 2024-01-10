@@ -19,18 +19,22 @@ public Plugin myinfo =
 
 Cookie pEnabledCookie;
 ConVar pConvarDefault;
-ConVar pSoundEffectPath;
+char szSoundPath[PLATFORM_MAX_PATH];
+float flSoundVol;
 
 public void OnPluginStart()
 {
 	LoadTranslations("srccoop_killsounds.phrases");
 	InitSourceCoopAddon();
+	
+	GameData pConfig = LoadSourceCoopConfig();
+	GetGamedataString(pConfig, "KILLSOUNDS_SND", szSoundPath, sizeof(szSoundPath));
+	flSoundVol = GetGamedataFloat(pConfig, "KILLSOUNDS_SND_VOL");
+	pConfig.Close();
 
 	HookEvent("entity_killed", Event_EntityKilled, EventHookMode_Post);
 	pEnabledCookie = new Cookie("sourcecoop_ks_enabled", "Killsounds", CookieAccess_Protected);
 	pConvarDefault = CreateConVar("sourcecoop_ks_default", "0", "Sets the default setting of the killsounds player preference.", _, true, 0.0, true, 1.0);
-	pSoundEffectPath = CreateConVar("sourcecoop_ks_path", "buttons/button10.wav", "Sets the path to the kill sound effect.");
-	pSoundEffectPath.AddChangeHook(OnSndPathChange);
 }
 
 public void OnLibraryAdded(const char[] name)
@@ -73,14 +77,7 @@ public void MyMenuHandler(TopMenu topmenu, TopMenuAction action, TopMenuObject o
 
 public void OnConfigsExecuted()
 {
-	char szKillSnd[PLATFORM_MAX_PATH];
-	pSoundEffectPath.GetString(szKillSnd, sizeof(szKillSnd));
-	PrecacheSound(szKillSnd);
-}
-
-public void OnSndPathChange(ConVar pConvar, const char[] szOldPath, const char[] szNewPath)
-{
-	PrecacheSound(szNewPath);
+	PrecacheSound(szSoundPath, true);
 }
 
 public void OnClientCookiesCached(int client)
@@ -99,13 +96,9 @@ public void Event_EntityKilled(Event hEvent, const char[] szName, bool bDontBroa
 	
 	if (pAttacker.IsClassPlayer() && pKilled.IsClassNPC())
 	{
-		if (GetCookieBool(pEnabledCookie, pAttacker.GetEntIndex()))
+		if (GetCookieBool(pEnabledCookie, pAttacker.entindex))
 		{
-			char szKillSnd[PLATFORM_MAX_PATH];
-			pSoundEffectPath.GetString(szKillSnd, sizeof(szKillSnd));
-			// double the sound, double the fun (actualy just to hear it over gunfire..)
-			EmitSoundToClient(pAttacker.GetEntIndex(), szKillSnd);
-			EmitSoundToClient(pAttacker.GetEntIndex(), szKillSnd);
+			EmitSoundToClient(pAttacker.entindex, szSoundPath, .level = SNDLEVEL_NONE, .volume = flSoundVol);
 		}
 	}
 }

@@ -7,10 +7,46 @@
 #pragma semicolon 1;
 #pragma newdecls required;
 
-#define SND_START "items/suitchargeok1.wav"
-#define SND_DENY "items/suitchargeno1.wav"
-#define SND_RESPAWN "items/medshot4.wav"
-#define REVIVE_SNDLEVEL SNDLEVEL_DRYER
+public Plugin myinfo =
+{
+	name = "SourceCoop Revive",
+	author = "Balimbanana",
+	description = "Enables revive by pressing <USE> while looking at player ragdoll",
+	version = SRCCOOP_VERSION,
+	url = SRCCOOP_URL
+};
+
+enum struct ReviveConfig
+{
+	char SND_START[PLATFORM_MAX_PATH];
+	char SND_DENY[PLATFORM_MAX_PATH];
+	char SND_RESPAWN[PLATFORM_MAX_PATH];
+	int SND_RESPAWN_PITCH;
+	int SNDLEVEL;
+	int BAR_COLOR[4];
+	char BAR_MODEL[PLATFORM_MAX_PATH];
+	char RAGDOLL_PARTICLE[128];
+
+	void Init(GameData pGameConfig)
+	{
+		#define CONF_PREFIX "REVIVE_"
+		#define STR(%1) GetGamedataString(pGameConfig, CONF_PREFIX...#%1, this.%1, sizeof(this.%1))
+		#define FLT(%1) this.%1 = GetGamedataFloat(pGameConfig, CONF_PREFIX...#%1)
+		#define INT(%1) this.%1 = GetGamedataInt(pGameConfig, CONF_PREFIX...#%1)
+		#define CLR(%1) GetGamedataColor(pGameConfig, CONF_PREFIX...#%1, this.%1)
+
+		STR(SND_START);
+		STR(SND_DENY);
+		STR(SND_RESPAWN);
+		INT(SND_RESPAWN_PITCH);
+		INT(SNDLEVEL);
+		CLR(BAR_COLOR);
+		STR(BAR_MODEL);
+		STR(RAGDOLL_PARTICLE);
+	}
+}
+
+ReviveConfig Conf;
 
 ConVar g_pConVarReviveTime;
 ConVar g_pConVarReviveScore;
@@ -22,35 +58,28 @@ ConVar g_pConvarAllowInClassicMode;
 
 ConVar g_pConVarSurvivalMode;
 
-int g_BeamSprite = -1;
-int g_ColorGreen[4] = {0, 255, 0, 255};
-
 CBasePlayer g_pReviveTarget[MAXPLAYERS + 1] = {NULL_CBASEENTITY, ...};
 float g_flReviveTime[MAXPLAYERS + 1];
 float g_flNextSpriteUpdate[MAXPLAYERS + 1];
+int g_iBeamSprite = -1;
 bool g_bEnabled;
 SpawnOptions g_pSpawnOptions;
 
 Handle g_pRagdollEffectsTimer[MAXPLAYERS + 1];
 
-public Plugin myinfo =
-{
-	name = "SourceCoop Revive",
-	author = "Balimbanana",
-	description = "Enables revive by pressing <USE> while looking at player ragdoll",
-	version = SRCCOOP_VERSION,
-	url = SRCCOOP_URL
-};
-
 public void OnPluginStart()
 {
 	LoadTranslations("common.phrases");
+	
+	GameData pConfig = LoadSourceCoopConfig();
+	Conf.Init(pConfig);
+	pConfig.Close();
 	
 	g_pConVarReviveTime = CreateConVar("sourcecoop_revive_time", "4.0", "Sets time that you have to hold E to revive.", _, true, 0.0, false);
 	g_pConVarReviveScore = CreateConVar("sourcecoop_revive_score", "1", "Sets score to give for reviving a player.", _, true, 0.0, false);
 	g_pConVarReviveMessages = CreateConVar("sourcecoop_revive_messages", "0", "Shows messages such as You have started reviving x.", _, true, 0.0, true, 1.0);
 	g_pConVarRagdollEffectsTimer = CreateConVar("sourcecoop_revive_ragdoll_effects_timer", "4.0", "Delay for applying ragdoll highlighting effects. -1 to disable all ragdoll effects.", _, true, -1.0);
-	g_pConVarRagdollParticle = CreateConVar("sourcecoop_revive_ragdoll_particle", "water_trail_medium_b", "Particle name to spawn in player ragdolls to improve their visibility. Empty for no particles.");
+	g_pConVarRagdollParticle = CreateConVar("sourcecoop_revive_ragdoll_particle", "1", "Whether to spawn a particle inside player ragdolls to improve their visibility.", _, true, 0.0, true, 1.0);
 	g_pConVarRagdollBlink = CreateConVar("sourcecoop_revive_ragdoll_blink", "1", "Whether to blink player ragdolls to improve their visibility.", _, true, 0.0, true, 1.0);
 	g_pConvarAllowInClassicMode = CreateConVar("sourcecoop_revive_in_classic_mode", "1", "Whether to allow reviving in non-survival mode.", _, true, 0.0, true, 1.0);
 	g_pConvarAllowInClassicMode.AddChangeHook(OnAllowInClassicModeChanged);
@@ -76,20 +105,10 @@ public void OnConfigsExecuted()
 	if (!SC_IsCurrentMapCoop())
 		return;
 	
-	PrecacheSound(SND_RESPAWN, true);
-	PrecacheSound(SND_START, true);
-	PrecacheSound(SND_DENY, true);
-	
-	GameData gameConfig = new GameData("funcommands.games");
-	if (gameConfig)
-	{
-		char buffer[PLATFORM_MAX_PATH];
-		if (gameConfig.GetKeyValue("SpriteBeam", buffer, sizeof(buffer)) && buffer[0])
-		{
-			g_BeamSprite = PrecacheModel(buffer);
-		}
-		CloseHandle(gameConfig);
-	}
+	PrecacheSound(Conf.SND_RESPAWN, true);
+	PrecacheSound(Conf.SND_START, true);
+	PrecacheSound(Conf.SND_DENY, true);
+	g_iBeamSprite = PrecacheModel(Conf.BAR_MODEL);
 }
 
 public void OnSurvivalModeChanged(ConVar convar, const char[] oldValue, const char[] newValue)
@@ -149,7 +168,7 @@ public Action Command_ForceRespawn(int client, int args)
 		if (SC_Respawn(pTarget, g_pSpawnOptions))
 		{
 			Client_ScreenFade(iTarget, 512, FFADE_PURGE|FFADE_IN, 1, 0, 0, 200, 255);
-			EmitSoundToClient(iTarget, SND_RESPAWN, iTarget, SNDCHAN_STATIC, 0, .pitch = 150);
+			EmitSoundToClient(iTarget, Conf.SND_RESPAWN, iTarget, SNDCHAN_STATIC, SNDLEVEL_NONE, .pitch = Conf.SND_RESPAWN_PITCH);
 			MsgReply(client, "Spawned '%N'.", iTarget);
 			if (client != iTarget)
 			{
@@ -205,8 +224,8 @@ public void OnPlayerRunCmdPost(int client, int buttons)
 							// Client left range to revive, play deny sound and stop previous start sound
 							ResetReviveStatus(client);
 							
-							StopSound(pRagdoll.entindex, SNDCHAN_STATIC, SND_START);
-							EmitSoundToAll(SND_DENY, pRagdoll.entindex, SNDCHAN_STATIC, REVIVE_SNDLEVEL);
+							StopSound(pRagdoll.entindex, SNDCHAN_STATIC, Conf.SND_START);
+							EmitSoundToAll(Conf.SND_DENY, pRagdoll.entindex, SNDCHAN_STATIC, Conf.SNDLEVEL);
 							
 							if (g_pConVarReviveMessages.BoolValue)
 								Msg(client, "You have canceled reviving...");
@@ -221,7 +240,7 @@ public void OnPlayerRunCmdPost(int client, int buttons)
 								.flTime = g_pConVarReviveTime.FloatValue,
 								.flBarLength = 30.0,
 								.flBarWidth = 0.3,
-								.Color = g_ColorGreen,
+								.Color = Conf.BAR_COLOR,
 								.flDistFromPlayer = 20.0);
 							
 							g_flNextSpriteUpdate[client] = GetGameTime() + g_pConVarReviveTime.FloatValue;
@@ -235,7 +254,7 @@ public void OnPlayerRunCmdPost(int client, int buttons)
 							if (SC_Respawn(pTarget, g_pSpawnOptions))
 							{
 								Client_ScreenFade(pTarget.entindex, 512, FFADE_PURGE|FFADE_IN, 1, 0, 0, 200, 255);
-								EmitAmbientSound(SND_RESPAWN, g_pSpawnOptions.vecOrigin, .level = REVIVE_SNDLEVEL, .pitch = 150);
+								EmitAmbientSound(Conf.SND_RESPAWN, g_pSpawnOptions.vecOrigin, .level = Conf.SNDLEVEL, .pitch = Conf.SND_RESPAWN_PITCH);
 								
 								// Give score to reviver
 								pPlayer.ModifyScore(g_pConVarReviveScore.IntValue);
@@ -270,8 +289,8 @@ public void OnPlayerRunCmdPost(int client, int buttons)
 								g_pReviveTarget[client] = pTarget;
 								
 								// Prevent multiple sounds if player is spamming E
-								StopSound(pRagdoll.entindex, SNDCHAN_STATIC, SND_START);
-								EmitSoundToAll(SND_START, pRagdoll.entindex, SNDCHAN_STATIC, REVIVE_SNDLEVEL);
+								StopSound(pRagdoll.entindex, SNDCHAN_STATIC, Conf.SND_START);
+								EmitSoundToAll(Conf.SND_START, pRagdoll.entindex, SNDCHAN_STATIC, Conf.SNDLEVEL);
 								
 								if (g_pConVarReviveMessages.BoolValue)
 									Msg(client, "You have started reviving '%N'", i);
@@ -341,10 +360,9 @@ public Action Timer_SetRagdollEffects(Handle timer, CBasePlayer pPlayer)
 			if (g_pConVarRagdollBlink.BoolValue)
 				pRagdoll.SetEffects(pRagdoll.GetEffects() | EF_ITEM_BLINK);
 
-			char szBuffer[128]; g_pConVarRagdollParticle.GetString(szBuffer, sizeof(szBuffer));
-			if (szBuffer[0] != '\0')
+			if (g_pConVarRagdollParticle.BoolValue && Conf.RAGDOLL_PARTICLE[0] != EOS)
 			{
-				CParticleSystem pParticle = CParticleSystem.Create(szBuffer);
+				CParticleSystem pParticle = CParticleSystem.Create(Conf.RAGDOLL_PARTICLE);
 				pParticle.SetParent(pRagdoll);
 				pParticle.Teleport(vec3_origin);
 				pParticle.Spawn();
@@ -403,9 +421,9 @@ stock int SetupBeamBar(float flBarWidth, float vecInitOrigin[3], int Color[4], i
 	iBeam = CreateEntityByName("beam");
 	if (IsValidEntity(iBeam))
 	{
-		DispatchKeyValue(iBeam, "model", "sprites/laser.vmt");
+		DispatchKeyValue(iBeam, "model", Conf.BAR_MODEL);
 		DispatchKeyValue(iBeam, "texture", "sprites/halo01.vmt");
-		SetEntProp(iBeam, Prop_Data, "m_nModelIndex", g_BeamSprite);
+		SetEntProp(iBeam, Prop_Data, "m_nModelIndex", g_iBeamSprite);
 		SetEntProp(iBeam, Prop_Data, "m_nHaloIndex", 0);
 		TeleportEntity(iBeam, vecInitOrigin, NULL_VECTOR, NULL_VECTOR);
 		DispatchSpawn(iBeam);

@@ -33,11 +33,18 @@ stock void InitSourceCoopAddon()
 {
 	GameData pGameConfig = LoadGameConfigFile(SRCCOOP_GAMEDATA_NAME);
 	if (pGameConfig == null)
-	{
-		SetFailState("Couldn't load game config %s", SRCCOOP_GAMEDATA_NAME);
-	}
+		SetFailState("Couldn't load game config: \"%s\"", SRCCOOP_GAMEDATA_NAME);
+	
 	InitClassdef(pGameConfig);
 	CloseHandle(pGameConfig);
+}
+
+stock GameData LoadSourceCoopConfig()
+{
+	GameData pGameConfig = LoadGameConfigFile(SRCCOOP_CONFIG_GAMEDATA_NAME);
+	if (pGameConfig == null)
+		SetFailState("Couldn't load game config: \"%s\"", SRCCOOP_CONFIG_GAMEDATA_NAME);
+	return pGameConfig;
 }
 
 /**

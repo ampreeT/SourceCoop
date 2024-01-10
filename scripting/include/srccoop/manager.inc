@@ -173,7 +173,7 @@ methodmap CoopManager
 			{
 				pPlayer.SetFlags(pPlayer.GetFlags() | FL_ATCONTROLS);
 				Client_ScreenFade(pPlayer.GetEntIndex(), Conf.FROZEN_FADE_DUR_IN, FFADE_OUT|FFADE_STAYOUT, _,
-					Conf.FROZEN_FADE_R, Conf.FROZEN_FADE_G, Conf.FROZEN_FADE_B, Conf.FROZEN_FADE_A);
+					Conf.FROZEN_FADE_COLOR[0], Conf.FROZEN_FADE_COLOR[1], Conf.FROZEN_FADE_COLOR[2], Conf.FROZEN_FADE_COLOR[3]);
 			}
 			CoopManager.CheckStart();
 		}
@@ -265,7 +265,7 @@ methodmap CoopManager
 					if (g_pLevelLump.m_iIntroType == INTRO_FREEZE)
 					{
 						Client_ScreenFade(pClient.GetEntIndex(), Conf.FROZEN_FADE_DUR_OUT, FFADE_PURGE|FFADE_IN, 1,
-							Conf.FROZEN_FADE_R, Conf.FROZEN_FADE_G, Conf.FROZEN_FADE_B, Conf.FROZEN_FADE_A);
+							Conf.FROZEN_FADE_COLOR[0], Conf.FROZEN_FADE_COLOR[1], Conf.FROZEN_FADE_COLOR[2], Conf.FROZEN_FADE_COLOR[3]);
 					}
 				}
 			}
