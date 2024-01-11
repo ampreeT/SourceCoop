@@ -387,12 +387,13 @@ enum struct CGlobalLevelLump
 			}
 		}
 		
-		LogDebug("CGlobalLevelLump.ParseMapEntities took %f", GetEngineTime() - flStartTime);
+		LogDebug("Parsed %d entities in %fs", this.m_pEntityList.Length, GetEngineTime() - flStartTime);
 	}
 	
 	int ToString(char szBuffer[ENTITYSTRING_LENGTH])	// absolutely do not care for bounds checking, this 2 mb buffer is big enough for everything
 	{
 		float flStartTime = GetEngineTime();
+		szBuffer = "";
 		
 		int n = 0;
 		for (int i = 0; i < this.m_pEntityList.Length; i++)
@@ -424,7 +425,7 @@ enum struct CGlobalLevelLump
 			n += 2;
 		}
 		
-		LogDebug("CGlobalLevelLump.ToString took %f", GetEngineTime() - flStartTime);
+		LogDebug("Saving %d entities to string took %fs", this.m_pEntityList.Length, GetEngineTime() - flStartTime);
 		return n;
 	}
 	
@@ -500,7 +501,7 @@ enum struct CGlobalLevelLump
 		}
 		this.m_pOutputHookList.Validate(this.m_pEntityList);
 		
-		LogDebug("CGlobalLevelLump.ParseConfigFile took %f", GetEngineTime() - flStartTime);
+		LogDebug("Processing edt file took %fs", GetEngineTime() - flStartTime);
 	}
 	
 	void ParseEquipment(KeyValues kv)
@@ -776,9 +777,9 @@ enum struct CGlobalLevelLump
 					}
 					else if (remove)
 					{
+						CEntityInfoLump pEntityInfo = new CEntityInfoLump(CreateArray(sizeof(CEntityKeyLump)));
 						if (kv.GotoFirstSubKey(false))
 						{
-							CEntityInfoLump pEntityInfo = new CEntityInfoLump(CreateArray(sizeof(CEntityKeyLump)));
 							do
 							{
 								CEntityKeyLump pEntityKeyInfo;
@@ -790,19 +791,27 @@ enum struct CGlobalLevelLump
 							}
 							while (kv.GotoNextKey(false));
 							kv.GoBack();
-							
-							for (int i = 0; i < this.m_pEntityList.Length; i++)
-							{
-								CEntityInfoLump pThisEntityInfo = this.m_pEntityList.Get(i);
-								if (pEntityInfo.Matches(pThisEntityInfo))
-								{
-									pThisEntityInfo.Close();
-									this.m_pEntityList.Erase(i);
-									i--;
-								}
-							}
-							pEntityInfo.Close();
 						}
+						
+						#if defined DEBUG
+						int iEntCount = this.m_pEntityList.Length;
+						#endif
+
+						for (int i = 0; i < this.m_pEntityList.Length; i++)
+						{
+							CEntityInfoLump pThisEntityInfo = this.m_pEntityList.Get(i);
+							if (pEntityInfo.Matches(pThisEntityInfo))
+							{
+								pThisEntityInfo.Close();
+								this.m_pEntityList.Erase(i);
+								i--;
+							}
+						}
+						pEntityInfo.Close();
+						
+						#if defined DEBUG
+						LogDebug("Deleted %d entities", iEntCount - this.m_pEntityList.Length);
+						#endif
 					}
 					else if (modify)
 					{
