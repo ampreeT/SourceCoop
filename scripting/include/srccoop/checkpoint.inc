@@ -78,6 +78,7 @@ enum struct CCoopSpawnEntry
 	bool m_bBringAllPlayers;
 	float m_fBringAllGraceRadius;
 	bool m_bRespawnPlayers;
+	bool m_bSpawnPlayers;
 	
 	void Initialize()
 	{
@@ -85,6 +86,7 @@ enum struct CCoopSpawnEntry
 		this.m_pTouchEnt = NULL_CBASEENTITY;
 		this.m_pFollowEnt = NULL_CBASEENTITY;
 		this.m_pPortalList = new ArrayList(sizeof(CCoopPortal));
+		this.m_bSpawnPlayers = true;
 	}
 	
 	void Close()
@@ -402,6 +404,7 @@ enum struct CCoopSpawnSystemData
 {
 	ArrayList m_pCheckpointList;
 	int m_iCurrentCheckpoint;
+	int m_iSpawnAtCheckpoint;
 	CCoopEquipment m_pDefaultEquipment;
 	bool m_bStrictOrder;
 	bool m_bRespawnOnLogicAutosave;
@@ -423,6 +426,7 @@ methodmap CCoopSpawnSystem
 	public static void Clear()
 	{
 		data.m_iCurrentCheckpoint = -1;
+		data.m_iSpawnAtCheckpoint = -1;
 		data.m_pDefaultEquipment.Clear();
 
 		CCoopSpawnEntry pEntry;
@@ -458,8 +462,13 @@ methodmap CCoopSpawnSystem
 	{
 		return CCoopSpawnSystem.GetCheckpointByIndex(data.m_iCurrentCheckpoint, pCheckpoint);
 	}
+
+	public static bool GetCurrentSpawnCheckpoint(CCoopSpawnEntry pCheckpoint)
+	{
+		return CCoopSpawnSystem.GetCheckpointByIndex(data.m_iSpawnAtCheckpoint, pCheckpoint);
+	}
 	
-	public static int CountCheckpoints(bool bRemaining, bool bRespawnOnly = false)
+	public static int CountCheckpoints(bool bRemaining, bool bRespawnOnly = false, bool bSpawnOnly = false)
 	{
 		int iStartIndex = bRemaining? data.m_iCurrentCheckpoint + 1 : 0;
 		int count;
@@ -469,6 +478,8 @@ methodmap CCoopSpawnSystem
 		{
 			data.m_pCheckpointList.GetArray(i, pEntry);
 			if (bRespawnOnly && !pEntry.m_bRespawnPlayers)
+				continue;
+			if (bSpawnOnly && !pEntry.m_bSpawnPlayers)
 				continue;
 			count++;
 		}
@@ -534,7 +545,7 @@ methodmap CCoopSpawnSystem
 		}
 	}
 	
-	public static bool ActivateCheckpoint(int iIndex, CBasePlayer pActivator = view_as<CBasePlayer>(-1))
+	public static bool ActivateCheckpoint(int iIndex, CBasePlayer pActivator = NULL_CBASEENTITY)
 	{
 		if (data.m_iCurrentCheckpoint < iIndex < data.m_pCheckpointList.Length)
 		{
@@ -545,6 +556,10 @@ methodmap CCoopSpawnSystem
 				for (int i = data.m_iCurrentCheckpoint+1; ; i++)
 				{
 					data.m_pCheckpointList.GetArray(i, pCheckpoint);
+					if (pCheckpoint.m_bSpawnPlayers)
+					{
+						data.m_iSpawnAtCheckpoint = i;
+					}
 					
 					if (i == iIndex)
 					{
@@ -563,6 +578,10 @@ methodmap CCoopSpawnSystem
 				data.m_iCurrentCheckpoint++;
 				data.m_pCheckpointList.SwapAt(iIndex, data.m_iCurrentCheckpoint);
 				data.m_pCheckpointList.GetArray(data.m_iCurrentCheckpoint, pCheckpoint);
+				if (pCheckpoint.m_bSpawnPlayers)
+				{
+					data.m_iSpawnAtCheckpoint = data.m_iCurrentCheckpoint;
+				}
 
 				pCheckpoint.ActivatePost(false);
 				return true;
@@ -600,7 +619,7 @@ methodmap CCoopSpawnSystem
 	public static void TeleportPlayer(CBasePlayer pPlayer)
 	{
 		CCoopSpawnEntry pCheckpoint;
-		if (CCoopSpawnSystem.GetCurrentCheckpoint(pCheckpoint))
+		if (CCoopSpawnSystem.GetCurrentSpawnCheckpoint(pCheckpoint))
 		{
 			pCheckpoint.TeleportPlayer(pPlayer, true);
 		}
@@ -740,6 +759,10 @@ methodmap CCoopSpawnSystem
 								else if (strcmp(szKey, "bringall_radius", false) == 0)
 								{
 									pEntry.m_fBringAllGraceRadius = StringToFloat(szValue);
+								}
+								else if (strcmp(szKey, "spawn", false) == 0)
+								{
+									pEntry.m_bSpawnPlayers = !!StringToInt(szValue);
 								}
 								else if (strcmp(szKey, "respawn", false) == 0)
 								{
