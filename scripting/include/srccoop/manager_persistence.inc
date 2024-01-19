@@ -344,7 +344,7 @@ public Action Command_ClearEquipment(int iClient, int iArgs)
 		{
 			CBasePlayer pPlayer = CBasePlayer(i);
 			pPlayer.RemoveAllItems();
-			g_SpawnSystem.SpawnPlayerEquipment(pPlayer);
+			CCoopSpawnSystem.SpawnPlayerEquipment(pPlayer);
 		}
 	}
 

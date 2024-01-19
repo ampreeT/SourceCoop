@@ -461,7 +461,7 @@
 	{
 		"spawn"
 		{
-			"origin"	"0 0 30"
+			"origin"	"0 0 -50"
 			"angles"	"0 180 0"
 			"followid"	"c1a4a_elevatorprop"
 		}

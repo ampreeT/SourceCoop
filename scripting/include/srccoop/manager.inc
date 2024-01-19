@@ -57,7 +57,7 @@ methodmap CoopManager
 		{
 			data.m_iClientChangeLvlIndicies[i] = -1;
 		}
-		g_SpawnSystem.Clear();
+		CCoopSpawnSystem.Clear();
 		g_pLevelLump.Clear();
 		SurvivalManager.Clear(true);
 		
@@ -98,7 +98,7 @@ methodmap CoopManager
 			KeyValues kv = CoopManager.LoadMapConfig(g_szMapName, data.m_mapConfigLoc);
 			if (kv != null)
 			{
-				g_SpawnSystem.ParseConfigFile(kv);
+				CCoopSpawnSystem.ParseConfigFile(kv);
 				
 				Call_StartForward(g_CoopMapConfigLoadedFwd);
 				Call_PushCell(kv);
@@ -114,7 +114,7 @@ methodmap CoopManager
 		if (CoopManager.IsCoopModeEnabled())
 		{
 			CoopManager.CheckStart();
-			g_SpawnSystem.TeleportPlayer(pPlayer);
+			CCoopSpawnSystem.TeleportPlayer(pPlayer);
 		}
 	}
 
@@ -154,9 +154,9 @@ methodmap CoopManager
 		}
 
 		if (bDefaultTeleport)
-			g_SpawnSystem.TeleportPlayer(pPlayer);
+			CCoopSpawnSystem.TeleportPlayer(pPlayer);
 		if (bDefaultEquipment)
-			g_SpawnSystem.SpawnPlayerEquipment(pPlayer);
+			CCoopSpawnSystem.SpawnPlayerEquipment(pPlayer);
 		g_pSpawnOptions.Reset();
 
 		ItemInstancingManager.OnPlayerSpawned(pPlayer);

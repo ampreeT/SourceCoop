@@ -49,6 +49,7 @@ enum struct SourceCoopConfig
 	char CHANGELEVEL_EFFECT_MODEL[PLATFORM_MAX_PATH];
 	int CHANGELEVEL_EFFECT_AMOUNT;
 	float CHANGELEVEL_EFFECT_SPEED;
+	float CHANGELEVEL_EFFECT_PERIOD;
 
 	//------------------------------------------------------
 
@@ -80,6 +81,7 @@ enum struct SourceCoopConfig
 		STR(CHANGELEVEL_EFFECT_MODEL);
 		INT(CHANGELEVEL_EFFECT_AMOUNT);
 		FLT(CHANGELEVEL_EFFECT_SPEED);
+		FLT(CHANGELEVEL_EFFECT_PERIOD);
 
 		#undef STR
 		#undef FLT

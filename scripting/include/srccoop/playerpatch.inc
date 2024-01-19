@@ -330,6 +330,10 @@ public MRESReturn Hook_PlayerSpawnPost(int iClient, Handle hReturn, Handle hPara
 	if (!CoopManager.IsCoopModeEnabled())
 		return MRES_Ignored;
 
+	// BUG: sometimes SourceTV can slip through even though we never hook it?
+	if (IsFakeClient(iClient))
+		return MRES_Ignored;
+	
 	CBasePlayer pPlayer = CBasePlayer(iClient);
 	if (pPlayer.IsValid())
 	{

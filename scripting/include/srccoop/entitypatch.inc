@@ -10,16 +10,23 @@
 
 void SetLocalPlayerCallingEntity(int iEntIndex)
 {
-	if (g_pLocalPlayerEntity.IsValid())
+	SetLocalPlayerCallingEntityEx(CBaseEntity(iEntIndex));
+}
+
+void SetLocalPlayerCallingEntityEx(CBaseEntity pEntity)
+{
+	#if defined DEBUG
+	if (g_pLocalPlayerEntity != NULL_CBASEENTITY)
 	{
-		LogDebug("WARN: SetLocalPlayerCallingEntity, but one has already been set (%d).", g_pLocalPlayerEntity.GetEntIndex());
+		LogDebug("WARN: SetLocalPlayerCallingEntity, but one has already been set (%d).", g_pLocalPlayerEntity.entindex);
 	}
-	g_pLocalPlayerEntity = CBaseEntity(iEntIndex);
+	#endif
+	g_pLocalPlayerEntity = pEntity;
 }
 
 void ClearLocalPlayerCallingEntity()
 {
-	g_pLocalPlayerEntity = CBaseEntity();
+	g_pLocalPlayerEntity = NULL_CBASEENTITY;
 }
 
 //------------------------------------------------------
@@ -165,7 +172,7 @@ public void Hook_ChangelevelSpawn(int iEntIndex)
 	if (!pEntity.HasSpawnFlag(SF_CHANGELEVEL_NOTOUCH))
 	{
 		SDKHook(pEntity.GetEntIndex(), SDKHook_Touch, Hook_ChangelevelOnTouch);
-		CreateTimer(2.0, ChangelevelEffects, pEntity, TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT);
+		CreateTimer(Conf.CHANGELEVEL_EFFECT_PERIOD, ChangelevelEffects, pEntity, TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT);
 	}
 }
 
@@ -590,7 +597,7 @@ public MRESReturn Hook_ClientCommandAcceptInput(int _this, Handle hReturn, Handl
 							}
 						}
 					}
-					g_SpawnSystem.AddSpawnItem(szParam[iStart]);
+					CCoopSpawnSystem.AddSpawnItem(szParam[iStart]);
 				}
 				else
 				{

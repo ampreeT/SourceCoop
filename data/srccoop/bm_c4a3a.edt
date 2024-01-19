@@ -88,6 +88,7 @@
 		"first elevator"
 		{
 			"followid" 	"agrunt_elevator_prop"
+			"origin"	"0 0 -50"
 			"angles"	"0 -90 0"
 			"triggerid"	"3483674"
 			"output"	"OnPressed"
@@ -103,6 +104,7 @@
 		"second elevator"
 		{
 			"followid" 	"4744958"
+			"origin"	"0 0 -50"
 			"angles"	"0 -90 0"
 			"triggerid"	"4744955"
 			"output"	"OnPressed"

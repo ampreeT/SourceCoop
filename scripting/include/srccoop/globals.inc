@@ -96,7 +96,7 @@ DynamicHook hkIchthyosaurIdleSound;
 DynamicHook hkHandleAnimEvent;
 #endif
 
-#if defined ENTPATCH_BM_XENTURRET || defined ENTPATCH_BM_NIHILANTH || defined ENTPATCH_BM_GONARCH
+#if defined ENTPATCH_BM_XENTURRET || defined ENTPATCH_BM_NIHILANTH || defined ENTPATCH_BM_GONARCH || defined ENTPATCH_PLAYER_COMPANION
 DynamicHook hkRunAI;
 #endif
 

@@ -213,7 +213,7 @@
 			{
 				"elevator"
 				{
-					"origin"	"0 0 -60"
+					"origin"	"0 0 0"
 					"angles"	"0 0 0"
 					"followid"	"transition_elevator"
 				}

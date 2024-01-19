@@ -6,6 +6,63 @@
 #pragma newdecls required
 #pragma semicolon 1
 
+enum struct CCoopPortal
+{
+	float m_vecPosition[3];
+	CParticleSystem m_pParticle;
+
+	void Initialize()
+	{
+		this.m_pParticle = NULL_CBASEENTITY;
+	}
+
+	bool Spawn()
+	{
+		this.m_pParticle = CParticleSystem.Create(Conf.PORTAL_PARTICLE);
+		if (this.m_pParticle.IsValid())
+		{
+			float mins[3], maxs[3];
+			mins[0] = mins[1] = mins[2] = -Conf.PORTAL_TOUCH_SIZE;
+			maxs[0] = maxs[1] = maxs[2] = Conf.PORTAL_TOUCH_SIZE;
+			this.m_pParticle.SetMins(mins);
+			this.m_pParticle.SetMaxs(maxs);
+			this.m_pParticle.Teleport(this.m_vecPosition);
+			this.m_pParticle.Spawn();
+			this.m_pParticle.Activate();
+			this.m_pParticle.SetSolidType(SOLID_BBOX);
+			this.m_pParticle.SetSolidFlags(FSOLID_TRIGGER);
+			this.m_pParticle.SetCollisionGroup(COLLISION_GROUP_DEBRIS_TRIGGER);
+			SDKHook(this.m_pParticle.entindex, SDKHook_StartTouchPost, Hook_TouchPortal);
+			return true;
+		}
+		return false;
+	}
+
+	bool IsSpawned()
+	{
+		return this.m_pParticle.IsValid();
+	}
+
+	void Despawn()
+	{
+		this.m_pParticle.Kill();
+		this.m_pParticle = NULL_CBASEENTITY;
+	}
+
+	bool Overlaps(CCoopPortal pOther)
+	{
+		float minsA[3], maxsA[3], minsB[3], maxsB[3];
+		minsA[0] = minsA[1] = minsA[2] = minsB[0] = minsB[1] = minsB[2] = -Conf.PORTAL_TOUCH_SIZE;
+		maxsA[0] = maxsA[1] = maxsA[2] = maxsB[0] = maxsB[1] = maxsB[2] = Conf.PORTAL_TOUCH_SIZE;
+		AddVectors(minsA, this.m_vecPosition, minsA);
+		AddVectors(maxsA, this.m_vecPosition, maxsA);
+		AddVectors(minsB, pOther.m_vecPosition, minsB);
+		AddVectors(maxsB, pOther.m_vecPosition, maxsB);
+
+		return IsBoxIntersectingBox(minsA, maxsA, minsB, maxsB);
+	}
+}
+
 enum struct CCoopSpawnEntry
 {
 	bool m_bHasPosition;
@@ -17,19 +74,24 @@ enum struct CCoopSpawnEntry
 	CBaseEntity m_pTouchEnt;
 	CBaseEntity m_pFollowEnt;
 	char m_szOutputName[MAX_FORMAT];
-	bool m_bHasPortal;
-	float m_vecPortalPosition[3];
+	ArrayList m_pPortalList;
 	bool m_bBringAllPlayers;
 	float m_fBringAllGraceRadius;
 	bool m_bRespawnPlayers;
 	
 	void Initialize()
 	{
-		this.m_pTriggerEnt = CBaseEntity();
-		this.m_pTouchEnt = CBaseEntity();
-		this.m_pFollowEnt = CBaseEntity();
+		this.m_pTriggerEnt = NULL_CBASEENTITY;
+		this.m_pTouchEnt = NULL_CBASEENTITY;
+		this.m_pFollowEnt = NULL_CBASEENTITY;
+		this.m_pPortalList = new ArrayList(sizeof(CCoopPortal));
 	}
 	
+	void Close()
+	{
+		delete this.m_pPortalList;
+	}
+
 	bool TeleportPlayer(CBasePlayer pPlayer, bool bForceTeleport = false, bool bIsBringAllTP = false)
 	{
 		float vecPosition[3];
@@ -100,23 +162,34 @@ enum struct CCoopSpawnEntry
 	
 	void ActivatePost(bool bIntermediate)
 	{
-		if (this.m_bHasPortal)
+		// spawn portals
+		for (int i = 0; i < this.m_pPortalList.Length; i++)
 		{
-			CParticleSystem pParticle = CParticleSystem.Create(Conf.PORTAL_PARTICLE);
-			if (pParticle.IsValid())
+			CCoopPortal pPortal;
+			this.m_pPortalList.GetArray(i, pPortal);
+			if (pPortal.Spawn())
 			{
-				float mins[3], maxs[3];
-				mins[0] = mins[1] = mins[2] = -Conf.PORTAL_TOUCH_SIZE;
-				maxs[0] = maxs[1] = maxs[2] = Conf.PORTAL_TOUCH_SIZE;
-				pParticle.SetMins(mins);
-				pParticle.SetMaxs(maxs);
-				pParticle.Teleport(this.m_vecPortalPosition);
-				pParticle.Spawn();
-				pParticle.Activate();
-				pParticle.SetSolidType(SOLID_BBOX);
-				pParticle.SetSolidFlags(FSOLID_TRIGGER);
-				pParticle.SetCollisionGroup(COLLISION_GROUP_DEBRIS_TRIGGER);
-				SDKHook(pParticle.GetEntIndex(), SDKHook_StartTouchPost, Hook_TouchPortal);
+				this.m_pPortalList.SetArray(i, pPortal);
+				
+				// despawn any previous overlapping portals
+				int j = -1;
+				ArrayList pOtherPortalList;
+				CCoopPortal pOtherPortal;
+				while (CCoopSpawnSystem.GetCheckpointFieldByIndex(++j, CCoopSpawnEntry::m_pPortalList, pOtherPortalList))
+				{
+					if (this.m_pPortalList == pOtherPortalList)
+						continue;
+					
+					for (int k = 0; k < pOtherPortalList.Length; k++)
+					{
+						pOtherPortalList.GetArray(k, pOtherPortal);
+						if (pOtherPortal.IsSpawned() && pOtherPortal.Overlaps(pPortal))
+						{
+							pOtherPortal.Despawn();
+							pOtherPortalList.SetArray(k, pOtherPortal);
+						}
+					}
+				}
 			}
 		}
 		
@@ -325,51 +398,76 @@ enum struct CCoopEquipment
 	}
 }
 
-enum struct CCoopSpawnSystem
+enum struct CCoopSpawnSystemData
 {
 	ArrayList m_pCheckpointList;
 	int m_iCurrentCheckpoint;
 	CCoopEquipment m_pDefaultEquipment;
 	bool m_bStrictOrder;
 	bool m_bRespawnOnLogicAutosave;
-	
-	void Initialize()
+}
+
+CCoopSpawnSystemData g_pSpawnSystemData;
+
+// local shortcut for data:
+#define data g_pSpawnSystemData
+
+methodmap CCoopSpawnSystem
+{
+	public static void Initialize()
 	{
-		this.m_pCheckpointList = new ArrayList(sizeof(CCoopSpawnEntry));
-		this.m_pDefaultEquipment.Initialize();
+		data.m_pCheckpointList = new ArrayList(sizeof(CCoopSpawnEntry));
+		data.m_pDefaultEquipment.Initialize();
 	}
 	
-	void Clear()
+	public static void Clear()
 	{
-		this.m_iCurrentCheckpoint = -1;
-		this.m_pCheckpointList.Clear();
-		this.m_pDefaultEquipment.Clear();
-	}
-	
-	bool GetCheckpointByIndex(int iIndex, CCoopSpawnEntry pCheckpoint)
-	{
-		if (0 <= iIndex < this.m_pCheckpointList.Length)
+		data.m_iCurrentCheckpoint = -1;
+		data.m_pDefaultEquipment.Clear();
+
+		CCoopSpawnEntry pEntry;
+		for (int i = 0; i < data.m_pCheckpointList.Length; i++)
 		{
-			this.m_pCheckpointList.GetArray(iIndex, pCheckpoint);
+			data.m_pCheckpointList.GetArray(i, pEntry);
+			pEntry.Close();
+		}
+		data.m_pCheckpointList.Clear();
+	}
+	
+	public static bool GetCheckpointByIndex(int iIndex, CCoopSpawnEntry pCheckpoint)
+	{
+		if (0 <= iIndex < data.m_pCheckpointList.Length)
+		{
+			data.m_pCheckpointList.GetArray(iIndex, pCheckpoint);
+			return true;
+		}
+		return false;
+	}
+
+	public static bool GetCheckpointFieldByIndex(int iIndex, int block, any &val)
+	{
+		if (0 <= iIndex < data.m_pCheckpointList.Length)
+		{
+			val = data.m_pCheckpointList.Get(iIndex, block);
 			return true;
 		}
 		return false;
 	}
 	
-	bool GetCurrentCheckpoint(CCoopSpawnEntry pCheckpoint)
+	public static bool GetCurrentCheckpoint(CCoopSpawnEntry pCheckpoint)
 	{
-		return this.GetCheckpointByIndex(this.m_iCurrentCheckpoint, pCheckpoint);
+		return CCoopSpawnSystem.GetCheckpointByIndex(data.m_iCurrentCheckpoint, pCheckpoint);
 	}
 	
-	int CountCheckpoints(bool bRemaining, bool bRespawnOnly = false)
+	public static int CountCheckpoints(bool bRemaining, bool bRespawnOnly = false)
 	{
-		int iStartIndex = bRemaining? this.m_iCurrentCheckpoint + 1 : 0;
+		int iStartIndex = bRemaining? data.m_iCurrentCheckpoint + 1 : 0;
 		int count;
 		
 		CCoopSpawnEntry pEntry;
-		for (int i = iStartIndex; i < this.m_pCheckpointList.Length; i++)
+		for (int i = iStartIndex; i < data.m_pCheckpointList.Length; i++)
 		{
-			this.m_pCheckpointList.GetArray(i, pEntry);
+			data.m_pCheckpointList.GetArray(i, pEntry);
 			if (bRespawnOnly && !pEntry.m_bRespawnPlayers)
 				continue;
 			count++;
@@ -377,12 +475,12 @@ enum struct CCoopSpawnSystem
 		return count;
 	}
 
-	int FindCheckpointByOutput(CBaseEntity pCaller, const char[] szOutput, CCoopSpawnEntry pCheckpoint, int iStartIndex = 0)
+	public static int FindCheckpointByOutput(CBaseEntity pCaller, const char[] szOutput, CCoopSpawnEntry pCheckpoint, int iStartIndex = 0)
 	{
 		CCoopSpawnEntry pEntry;
-		for (int i = iStartIndex; i < this.m_pCheckpointList.Length; i++)
+		for (int i = iStartIndex; i < data.m_pCheckpointList.Length; i++)
 		{
-			this.m_pCheckpointList.GetArray(i, pEntry);
+			data.m_pCheckpointList.GetArray(i, pEntry);
 			if (pCaller == pEntry.m_pTriggerEnt && StrEqual(szOutput, pEntry.m_szOutputName))
 			{
 				pCheckpoint = pEntry;
@@ -392,21 +490,21 @@ enum struct CCoopSpawnSystem
 		return -1;
 	}
 	
-	int FindCheckpointByTouchEnt(CBaseEntity pTouchEnt, int iStartIndex = 0)
+	public static int FindCheckpointByTouchEnt(CBaseEntity pTouchEnt, int iStartIndex = 0)
 	{
-		return this.FindCheckpointGeneric(pTouchEnt, CCoopSpawnEntry::m_pTouchEnt, iStartIndex);
+		return CCoopSpawnSystem.FindCheckpointGeneric(pTouchEnt, CCoopSpawnEntry::m_pTouchEnt, iStartIndex);
 	}
 
-	int FindCheckpointByFollowEnt(CBaseEntity pFollowEnt, int iStartIndex = 0)
+	public static int FindCheckpointByFollowEnt(CBaseEntity pFollowEnt, int iStartIndex = 0)
 	{
-		return this.FindCheckpointGeneric(pFollowEnt, CCoopSpawnEntry::m_pFollowEnt, iStartIndex);
+		return CCoopSpawnSystem.FindCheckpointGeneric(pFollowEnt, CCoopSpawnEntry::m_pFollowEnt, iStartIndex);
 	}
 
-	int FindCheckpointGeneric(any val, int block, int iStartIndex = 0)
+	public static int FindCheckpointGeneric(any val, int block, int iStartIndex = 0)
 	{
-		for (int i = iStartIndex; i < this.m_pCheckpointList.Length; i++)
+		for (int i = iStartIndex; i < data.m_pCheckpointList.Length; i++)
 		{
-			if (this.m_pCheckpointList.Get(i, block) == val)
+			if (data.m_pCheckpointList.Get(i, block) == val)
 			{
 				return i;
 			}
@@ -414,9 +512,9 @@ enum struct CCoopSpawnSystem
 		return -1;
 	}
 	
-	void AddCheckpoint(const CCoopSpawnEntry pCheckpoint)
+	public static void AddCheckpoint(const CCoopSpawnEntry pCheckpoint)
 	{
-		int iIndex = this.m_pCheckpointList.PushArray(pCheckpoint);
+		int iIndex = data.m_pCheckpointList.PushArray(pCheckpoint);
 		bool bHasTrigger;
 		
 		if (pCheckpoint.m_pTriggerEnt.IsValid())
@@ -432,26 +530,26 @@ enum struct CCoopSpawnSystem
 		
 		if (!bHasTrigger)
 		{
-			this.ActivateCheckpoint(iIndex);
+			CCoopSpawnSystem.ActivateCheckpoint(iIndex);
 		}
 	}
 	
-	bool ActivateCheckpoint(int iIndex, CBasePlayer pActivator = view_as<CBasePlayer>(-1))
+	public static bool ActivateCheckpoint(int iIndex, CBasePlayer pActivator = view_as<CBasePlayer>(-1))
 	{
-		if (this.m_iCurrentCheckpoint < iIndex < this.m_pCheckpointList.Length)
+		if (data.m_iCurrentCheckpoint < iIndex < data.m_pCheckpointList.Length)
 		{
 			CCoopSpawnEntry pCheckpoint;
 			
-			if (this.m_bStrictOrder)
+			if (data.m_bStrictOrder)
 			{
-				for (int i = this.m_iCurrentCheckpoint+1; ; i++)
+				for (int i = data.m_iCurrentCheckpoint+1; ; i++)
 				{
-					this.m_pCheckpointList.GetArray(i, pCheckpoint);
+					data.m_pCheckpointList.GetArray(i, pCheckpoint);
 					
 					if (i == iIndex)
 					{
 						pCheckpoint.ActivatePost(false);
-						this.m_iCurrentCheckpoint = i;
+						data.m_iCurrentCheckpoint = i;
 						return true;
 					}
 					else
@@ -462,9 +560,9 @@ enum struct CCoopSpawnSystem
 			}
 			else
 			{
-				this.m_iCurrentCheckpoint++;
-				this.m_pCheckpointList.SwapAt(iIndex, this.m_iCurrentCheckpoint);
-				this.m_pCheckpointList.GetArray(this.m_iCurrentCheckpoint, pCheckpoint);
+				data.m_iCurrentCheckpoint++;
+				data.m_pCheckpointList.SwapAt(iIndex, data.m_iCurrentCheckpoint);
+				data.m_pCheckpointList.GetArray(data.m_iCurrentCheckpoint, pCheckpoint);
 
 				pCheckpoint.ActivatePost(false);
 				return true;
@@ -473,7 +571,7 @@ enum struct CCoopSpawnSystem
 		return false;
 	}
 	
-	void StripPlayer(CBasePlayer pPlayer)
+	public static void StripPlayer(CBasePlayer pPlayer)
 	{
 		if (CoopManager.IsFeatureEnabled(FT_STRIP_DEFAULT_EQUIPMENT))
 		{
@@ -481,34 +579,34 @@ enum struct CCoopSpawnSystem
 		}
 	}
 	
-	void SpawnPlayerEquipment(CBasePlayer pPlayer)
+	public static void SpawnPlayerEquipment(CBasePlayer pPlayer)
 	{
 		#if !defined SRCCOOP_BLACKMESA
 		// bm uses game_player_equip
-		this.StripPlayer(pPlayer);
+		CCoopSpawnSystem.StripPlayer(pPlayer);
 		#endif
 
 		CCoopEquipment pSavedEquipment;
-		if (this.m_iCurrentCheckpoint == 0 && EquipmentManager.GetEquipment(pPlayer, pSavedEquipment))
+		if (data.m_iCurrentCheckpoint == 0 && EquipmentManager.GetEquipment(pPlayer, pSavedEquipment))
 		{
 			pSavedEquipment.Equip(pPlayer);
 		}
 		else
 		{
-			this.m_pDefaultEquipment.Equip(pPlayer);
+			data.m_pDefaultEquipment.Equip(pPlayer);
 		}
 	}
 	
-	void TeleportPlayer(CBasePlayer pPlayer)
+	public static void TeleportPlayer(CBasePlayer pPlayer)
 	{
 		CCoopSpawnEntry pCheckpoint;
-		if (this.GetCurrentCheckpoint(pCheckpoint))
+		if (CCoopSpawnSystem.GetCurrentCheckpoint(pCheckpoint))
 		{
 			pCheckpoint.TeleportPlayer(pPlayer, true);
 		}
 	}
 	
-	void ParseConfigFile(KeyValues kv)
+	public static void ParseConfigFile(KeyValues kv)
 	{
 		PrecacheSound(Conf.SND_BRINGALL);
 		PrecacheSound(Conf.SND_PORTAL);
@@ -525,11 +623,11 @@ enum struct CCoopSpawnSystem
 					}
 					else if (strcmp(szType, "checkpoint", false) == 0)
 					{
-						this.ParseCheckpoint(kv);
+						CCoopSpawnSystem.ParseCheckpoint(kv);
 					}
 					else if (strcmp(szType, "equipment", false) == 0)
 					{
-						this.ParseEquipment(kv);
+						CCoopSpawnSystem.ParseEquipment(kv);
 					}
 				}
 			}
@@ -538,22 +636,22 @@ enum struct CCoopSpawnSystem
 		}
 	}
 
-	void ParseCheckpoint(KeyValues kv)
+	public static void ParseCheckpoint(KeyValues kv)
 	{
 		if (view_as<bool>(kv.GetNum("use_map_spawnpoint")))
 		{
-			this.AddSpawnPointFromMap();
+			CCoopSpawnSystem.AddSpawnPointFromMap();
 		}
 		if (view_as<bool>(kv.GetNum("use_map_autosave")))
 		{
-			this.m_bStrictOrder = false;
-			this.AddCheckpointsFromMap();
+			data.m_bStrictOrder = false;
+			CCoopSpawnSystem.AddCheckpointsFromMap();
 		}
 		else
 		{
-			this.m_bStrictOrder = view_as<bool>(kv.GetNum("strict_order", 1));
+			data.m_bStrictOrder = view_as<bool>(kv.GetNum("strict_order", 1));
 		}
-		this.m_bRespawnOnLogicAutosave = view_as<bool>(kv.GetNum("respawn_on_logic_autosave", 1));
+		data.m_bRespawnOnLogicAutosave = view_as<bool>(kv.GetNum("respawn_on_logic_autosave", 1));
 		
 		if (kv.GotoFirstSubKey(true))
 		{
@@ -565,7 +663,7 @@ enum struct CCoopSpawnSystem
 			{
 				if (kv.GetSectionName(szSectionName, sizeof(szSectionName)))
 				{
-					EVAL_CONDITIONS(szSectionName, kv, this.ParseCheckpoint(kv))
+					EVAL_CONDITIONS(szSectionName, kv, CCoopSpawnSystem.ParseCheckpoint(kv))
 					CCoopSpawnEntry pEntry;
 					pEntry.Initialize();
 					
@@ -609,29 +707,31 @@ enum struct CCoopSpawnSystem
 								}
 								else if (strcmp(szKey, "followid", false) == 0)
 								{
-									if (!(pEntry.m_pFollowEnt = this.FindEntity(szValue)).IsValid())
-										ThrowError("Couldn't find followid entity %s", szValue);
+									if (!(pEntry.m_pFollowEnt = CCoopSpawnSystem.FindEntity(szValue)).IsValid())
+										ThrowError("Couldn't find followid entity \"%s\"", szValue);
 									hkUpdateOnRemove.HookEntity(Hook_Post, pEntry.m_pFollowEnt.entindex, Hook_FollowEntityRemoved);
 								}
 								else if (strcmp(szKey, "triggerid", false) == 0)	
 								{
-									if (!(pEntry.m_pTriggerEnt = this.FindEntity(szValue)).IsValid())
-										ThrowError("Couldn't find triggerid entity %s", szValue);
+									if (!(pEntry.m_pTriggerEnt = CCoopSpawnSystem.FindEntity(szValue)).IsValid())
+										ThrowError("Couldn't find triggerid entity \"%s\"", szValue);
 								}
 								else if (strcmp(szKey, "touchid", false) == 0)
 								{
-									if (!(pEntry.m_pTouchEnt = this.FindEntity(szValue)).IsValid())
-										ThrowError("Couldn't find touchid entity %s", szValue);
+									if (!(pEntry.m_pTouchEnt = CCoopSpawnSystem.FindEntity(szValue)).IsValid())
+										ThrowError("Couldn't find touchid entity \"%s\"", szValue);
 								}
 								else if (strcmp(szKey, "portal", false) == 0 && ExplodeString(szValue, " ", szVector, 3, MAX_FORMAT, false) == 3)
 								{
-									if (!StringToFloatEx(szVector[0], pEntry.m_vecPortalPosition[0]))
+									CCoopPortal pPortal;
+									pPortal.Initialize();
+									if (!StringToFloatEx(szVector[0], pPortal.m_vecPosition[0]))
 										ThrowError("Portal x parameter is not a float");
-									if (!StringToFloatEx(szVector[1], pEntry.m_vecPortalPosition[1]))
+									if (!StringToFloatEx(szVector[1], pPortal.m_vecPosition[1]))
 										ThrowError("Portal y parameter is not a float");
-									if (!StringToFloatEx(szVector[2], pEntry.m_vecPortalPosition[2]))
+									if (!StringToFloatEx(szVector[2], pPortal.m_vecPosition[2]))
 										ThrowError("Portal z parameter is not a float");
-									pEntry.m_bHasPortal = true;
+									pEntry.m_pPortalList.PushArray(pPortal);
 								}
 								else if (strcmp(szKey, "bringall", false) == 0)
 								{
@@ -647,14 +747,14 @@ enum struct CCoopSpawnSystem
 								}
 								else
 								{
-									ThrowError("Unknown checkpoint parameter type %s", szKey);
+									ThrowError("Unknown checkpoint parameter type \"%s\"", szKey);
 								}
 							}
 						}
 						while (kv.GotoNextKey(false));
 						kv.GoBack();
 					}
-					this.AddCheckpoint(pEntry);
+					CCoopSpawnSystem.AddCheckpoint(pEntry);
 				}
 			}
 			while (kv.GotoNextKey(true));
@@ -662,7 +762,7 @@ enum struct CCoopSpawnSystem
 		}
 	}
 	
-	CBaseEntity FindEntity(const char szValue[MAX_VALUE]) // accepts a int hammerid or a string targetname
+	public static CBaseEntity FindEntity(const char szValue[MAX_VALUE]) // accepts a int hammerid or a string targetname
 	{
 		int iHammerID;
 		if (StringToIntEx(szValue, iHammerID))
@@ -676,31 +776,31 @@ enum struct CCoopSpawnSystem
 		return CBaseEntity(FindEntityByTargetname(-1, szValue));
 	}
 	
-	void AddSpawnPointFromMap()
-	{
-		CCoopSpawnEntry pEntry; pEntry.Initialize();
-		
+	public static void AddSpawnPointFromMap()
+	{	
 		int ent = -1;
 		if ((ent = FindEntityByClassname(ent, "info_player_start")) != -1)
 		{
+			CCoopSpawnEntry pEntry;
+			pEntry.Initialize();
 			pEntry.m_pFollowEnt = CBaseEntity(ent);
-			this.AddCheckpoint(pEntry);
+			CCoopSpawnSystem.AddCheckpoint(pEntry);
 		}
 	}
 	
-	void AddCheckpointsFromMap()
+	public static void AddCheckpointsFromMap()
 	{
-		CCoopSpawnEntry pEntry; pEntry.Initialize();
-		
 		int ent = -1;
 		while ((ent = FindEntityByClassname(ent, "trigger_autosave")) != -1)
 		{
+			CCoopSpawnEntry pEntry;
+			pEntry.Initialize();
 			pEntry.m_pTouchEnt = CBaseEntity(ent);
-			this.AddCheckpoint(pEntry);
+			CCoopSpawnSystem.AddCheckpoint(pEntry);
 		}
 	}
 	
-	void ParseEquipment(KeyValues kv)
+	public static void ParseEquipment(KeyValues kv)
 	{
 		if (kv.GotoFirstSubKey(false))
 		{
@@ -710,28 +810,28 @@ enum struct CCoopSpawnSystem
 				char szValue[MAX_VALUE];
 				if (kv.GetSectionName(szKey, sizeof(szKey)))
 				{
-					EVAL_CONDITIONS(szKey, kv, this.ParseEquipment(kv))
+					EVAL_CONDITIONS(szKey, kv, CCoopSpawnSystem.ParseEquipment(kv))
 					
 					if (kv.GetDataType(NULL_STRING) != KvData_None)
 					{
 						kv.GetString(NULL_STRING, szValue, sizeof(szValue));
 						if (strcmp(szKey, "health", false) == 0)
 						{
-							if (!StringToIntEx(szValue, this.m_pDefaultEquipment.m_iHealth))
+							if (!StringToIntEx(szValue, data.m_pDefaultEquipment.m_iHealth))
 								ThrowError("Health parameter is not a integer");
 						}
 						else if (strcmp(szKey, "armor", false) == 0)
 						{
-							if (!StringToIntEx(szValue, this.m_pDefaultEquipment.m_iArmor))
+							if (!StringToIntEx(szValue, data.m_pDefaultEquipment.m_iArmor))
 								ThrowError("Armor parameter is not a integer");
 						}
 						else if (strcmp(szKey, "item", false) == 0)
 						{
-							this.m_pDefaultEquipment.AddItem(szValue);
+							data.m_pDefaultEquipment.AddItem(szValue);
 						}
 						else
 						{
-							ThrowError("Could not find parameter type %s", szKey);
+							ThrowError("Could not find equipment parameter type \"%s\"", szKey);
 						}
 					}
 					else
@@ -750,67 +850,67 @@ enum struct CCoopSpawnSystem
 										
 										if (strcmp(szAmmoKey, "9mm", false) == 0)
 										{
-											if (!StringToIntEx(szValue, this.m_pDefaultEquipment.m_iAmmoCount[AMMO_9MM]))
-												ThrowError("Ammo parameter %s is not a integer", szAmmoKey);
+											if (!StringToIntEx(szValue, data.m_pDefaultEquipment.m_iAmmoCount[AMMO_9MM]))
+												ThrowError("Ammo parameter \"%s\" is not a integer", szAmmoKey);
 										}
 										else if (strcmp(szAmmoKey, "357", false) == 0)
 										{
-											if (!StringToIntEx(szValue, this.m_pDefaultEquipment.m_iAmmoCount[AMMO_357]))
-												ThrowError("Ammo parameter %s is not a integer", szAmmoKey);
+											if (!StringToIntEx(szValue, data.m_pDefaultEquipment.m_iAmmoCount[AMMO_357]))
+												ThrowError("Ammo parameter \"%s\" is not a integer", szAmmoKey);
 										}
 										else if (strcmp(szAmmoKey, "bolts", false) == 0)
 										{
-											if (!StringToIntEx(szValue, this.m_pDefaultEquipment.m_iAmmoCount[AMMO_BOLTS]))
-												ThrowError("Ammo parameter %s is not a integer", szAmmoKey);
+											if (!StringToIntEx(szValue, data.m_pDefaultEquipment.m_iAmmoCount[AMMO_BOLTS]))
+												ThrowError("Ammo parameter \"%s\" is not a integer", szAmmoKey);
 										}
 										else if (strcmp(szAmmoKey, "shells", false) == 0)
 										{
-											if (!StringToIntEx(szValue, this.m_pDefaultEquipment.m_iAmmoCount[AMMO_SHELLS]))
-												ThrowError("Ammo parameter %s is not a integer", szAmmoKey);
+											if (!StringToIntEx(szValue, data.m_pDefaultEquipment.m_iAmmoCount[AMMO_SHELLS]))
+												ThrowError("Ammo parameter \"%s\" is not a integer", szAmmoKey);
 										}
 										else if (strcmp(szAmmoKey, "energy", false) == 0)
 										{
-											if (!StringToIntEx(szValue, this.m_pDefaultEquipment.m_iAmmoCount[AMMO_ENERGY]))
-												ThrowError("Ammo parameter %s is not a integer", szAmmoKey);
+											if (!StringToIntEx(szValue, data.m_pDefaultEquipment.m_iAmmoCount[AMMO_ENERGY]))
+												ThrowError("Ammo parameter \"%s\" is not a integer", szAmmoKey);
 										}
 										else if (strcmp(szAmmoKey, "mp5nade", false) == 0)
 										{
-											if (!StringToIntEx(szValue, this.m_pDefaultEquipment.m_iAmmoCount[AMMO_MP5NADE]))
-												ThrowError("Ammo parameter %s is not a integer", szAmmoKey);
+											if (!StringToIntEx(szValue, data.m_pDefaultEquipment.m_iAmmoCount[AMMO_MP5NADE]))
+												ThrowError("Ammo parameter \"%s\" is not a integer", szAmmoKey);
 										}
 										else if (strcmp(szAmmoKey, "rockets", false) == 0)
 										{
-											if (!StringToIntEx(szValue, this.m_pDefaultEquipment.m_iAmmoCount[AMMO_ROCKETS]))
-												ThrowError("Ammo parameter %s is not a integer", szAmmoKey);
+											if (!StringToIntEx(szValue, data.m_pDefaultEquipment.m_iAmmoCount[AMMO_ROCKETS]))
+												ThrowError("Ammo parameter \"%s\" is not a integer", szAmmoKey);
 										}
 										else if (strcmp(szAmmoKey, "nades", false) == 0)
 										{
-											if (!StringToIntEx(szValue, this.m_pDefaultEquipment.m_iAmmoCount[AMMO_NADES]))
-												ThrowError("Ammo parameter %s is not a integer", szAmmoKey);
+											if (!StringToIntEx(szValue, data.m_pDefaultEquipment.m_iAmmoCount[AMMO_NADES]))
+												ThrowError("Ammo parameter \"%s\" is not a integer", szAmmoKey);
 										}
 										else if (strcmp(szAmmoKey, "satchels", false) == 0)
 										{
-											if (!StringToIntEx(szValue, this.m_pDefaultEquipment.m_iAmmoCount[AMMO_SATCHELS]))
-												ThrowError("Ammo parameter %s is not a integer", szAmmoKey);
+											if (!StringToIntEx(szValue, data.m_pDefaultEquipment.m_iAmmoCount[AMMO_SATCHELS]))
+												ThrowError("Ammo parameter \"%s\" is not a integer", szAmmoKey);
 										}
 										else if (strcmp(szAmmoKey, "tripmines", false) == 0)
 										{
-											if (!StringToIntEx(szValue, this.m_pDefaultEquipment.m_iAmmoCount[AMMO_TRIPMINES]))
-												ThrowError("Ammo parameter %s is not a integer", szAmmoKey);
+											if (!StringToIntEx(szValue, data.m_pDefaultEquipment.m_iAmmoCount[AMMO_TRIPMINES]))
+												ThrowError("Ammo parameter \"%s\" is not a integer", szAmmoKey);
 										}
 										else if (strcmp(szAmmoKey, "hivegun", false) == 0)
 										{
-											if (!StringToIntEx(szValue, this.m_pDefaultEquipment.m_iAmmoCount[AMMO_HIVEGUN]))
-												ThrowError("Ammo parameter %s is not a integer", szAmmoKey);
+											if (!StringToIntEx(szValue, data.m_pDefaultEquipment.m_iAmmoCount[AMMO_HIVEGUN]))
+												ThrowError("Ammo parameter \"%s\" is not a integer", szAmmoKey);
 										}
 										else if (strcmp(szAmmoKey, "snarks", false) == 0)
 										{
-											if (!StringToIntEx(szValue, this.m_pDefaultEquipment.m_iAmmoCount[AMMO_SNARKS]))
-												ThrowError("Ammo parameter %s is not a integer", szAmmoKey);
+											if (!StringToIntEx(szValue, data.m_pDefaultEquipment.m_iAmmoCount[AMMO_SNARKS]))
+												ThrowError("Ammo parameter \"%s\" is not a integer", szAmmoKey);
 										}
 										else
 										{
-											ThrowError("Could not find ammo parameter type %s", szAmmoKey);
+											ThrowError("Could not find ammo parameter type \"%s\"", szAmmoKey);
 										}
 									}
 								}
@@ -826,14 +926,14 @@ enum struct CCoopSpawnSystem
 		}
 	}
 	
-	bool AddSpawnItem(const char[] szItem, bool bAllowDuplicates = false)
+	public static bool AddSpawnItem(const char[] szItem, bool bAllowDuplicates = false)
 	{
 		if (!bAllowDuplicates)
 		{
-			for (int i = 0; i < this.m_pDefaultEquipment.m_pWeaponList.Length; i++)
+			for (int i = 0; i < data.m_pDefaultEquipment.m_pWeaponList.Length; i++)
 			{
 				CCoopWeaponEntry pWeaponEntry;
-				if (this.m_pDefaultEquipment.m_pWeaponList.GetArray(i, pWeaponEntry, sizeof(pWeaponEntry)))
+				if (data.m_pDefaultEquipment.m_pWeaponList.GetArray(i, pWeaponEntry, sizeof(pWeaponEntry)))
 				{
 					// does basic checking of item_weapon vs weapon_ strings
 					if (StrContains(pWeaponEntry.m_szClassname, szItem, false) != -1 || StrContains(szItem, pWeaponEntry.m_szClassname, false) != -1)
@@ -843,25 +943,23 @@ enum struct CCoopSpawnSystem
 				}
 			}
 		}
-		this.m_pDefaultEquipment.AddItem(szItem);
+		data.m_pDefaultEquipment.AddItem(szItem);
 		return true;
 	}
 }
-
-CCoopSpawnSystem g_SpawnSystem;
 
 public void Hook_OutputCheckpoint(const char[] szName, int iCaller, int iActivator, float flDelay)
 {
 	CBaseEntity pCaller = CBaseEntity(iCaller);
 	CBaseEntity pActivator = CBaseEntity(iActivator);
 	CCoopSpawnEntry pCheckpoint;
-	int iIndex = g_SpawnSystem.m_iCurrentCheckpoint + 1;
+	int iIndex = data.m_iCurrentCheckpoint + 1;
 	
-	while ((iIndex = g_SpawnSystem.FindCheckpointByOutput(pCaller, szName, pCheckpoint, iIndex)) != -1)
+	while ((iIndex = CCoopSpawnSystem.FindCheckpointByOutput(pCaller, szName, pCheckpoint, iIndex)) != -1)
 	{
 		if (pActivator.IsClassPlayer() && pCheckpoint.ActivatePre(view_as<CBasePlayer>(pActivator)))
 		{
-			g_SpawnSystem.m_pCheckpointList.SetArray(iIndex, pCheckpoint);
+			data.m_pCheckpointList.SetArray(iIndex, pCheckpoint);
 		}
 		
 		DataPack dp; CreateDataTimer(pCheckpoint.m_flDelay, Timer_Checkpoint, dp, TIMER_FLAG_NO_MAPCHANGE);
@@ -878,15 +976,15 @@ public void Hook_TouchCheckpoint(int iEntity, int iOther)
 	{
 		CBaseEntity pTouched = CBaseEntity(iEntity);
 		CCoopSpawnEntry pCheckpoint;
-		int iIndex = g_SpawnSystem.m_iCurrentCheckpoint + 1;
+		int iIndex = data.m_iCurrentCheckpoint + 1;
 		
-		while ((iIndex = g_SpawnSystem.FindCheckpointByTouchEnt(pTouched, iIndex)) != -1)
+		while ((iIndex = CCoopSpawnSystem.FindCheckpointByTouchEnt(pTouched, iIndex)) != -1)
 		{
-			g_SpawnSystem.m_pCheckpointList.GetArray(iIndex, pCheckpoint);
+			data.m_pCheckpointList.GetArray(iIndex, pCheckpoint);
 			
 			if (pCheckpoint.ActivatePre(pActivator))
 			{
-				g_SpawnSystem.m_pCheckpointList.SetArray(iIndex, pCheckpoint);
+				data.m_pCheckpointList.SetArray(iIndex, pCheckpoint);
 			}
 			
 			DataPack dp; CreateDataTimer(pCheckpoint.m_flDelay, Timer_Checkpoint, dp, TIMER_FLAG_NO_MAPCHANGE);
@@ -904,7 +1002,7 @@ public Action Timer_Checkpoint(Handle timer, DataPack dp)
 	dp.Reset();
 	int iCheckpointIndex = dp.ReadCell();
 	CBasePlayer pActivator = dp.ReadCell();
-	g_SpawnSystem.ActivateCheckpoint(iCheckpointIndex, pActivator);
+	CCoopSpawnSystem.ActivateCheckpoint(iCheckpointIndex, pActivator);
 	return Plugin_Handled;
 }
 
@@ -914,7 +1012,7 @@ public void Hook_TouchPortal(int iEntity, int iOther)
 	if (pPlayer.IsClassPlayer())
 	{
 		CCoopSpawnEntry pCheckpoint;
-		if (g_SpawnSystem.GetCurrentCheckpoint(pCheckpoint) && pCheckpoint.TeleportPlayer(pPlayer))
+		if (CCoopSpawnSystem.GetCurrentCheckpoint(pCheckpoint) && pCheckpoint.TeleportPlayer(pPlayer))
 		{
 			EmitSoundToClient(iOther, Conf.SND_PORTAL, .level = SNDLEVEL_NONE, .volume = Conf.SND_PORTAL_VOL);
 		}
@@ -926,10 +1024,10 @@ MRESReturn Hook_FollowEntityRemoved(int _this)
 	// check for follow entity removal, save last known position
 	CBaseEntity pEntity = CBaseEntity(_this);
 	int iIndex;
-	while ((iIndex = g_SpawnSystem.FindCheckpointByFollowEnt(pEntity, iIndex)) != -1)
+	while ((iIndex = CCoopSpawnSystem.FindCheckpointByFollowEnt(pEntity, iIndex)) != -1)
 	{
 		CCoopSpawnEntry pCheckpoint;
-		g_SpawnSystem.m_pCheckpointList.GetArray(iIndex, pCheckpoint);
+		data.m_pCheckpointList.GetArray(iIndex, pCheckpoint);
 
 		float vecPosition[3], vecAngles[3]; // prevent self-overwrite
 		pCheckpoint.CalcFollowEntDestination(vecPosition, vecAngles);
@@ -938,7 +1036,10 @@ MRESReturn Hook_FollowEntityRemoved(int _this)
 		pCheckpoint.m_vecAngles = vecAngles;
 		pCheckpoint.m_bHasPosition = pCheckpoint.m_bHasAngles = true;
 
-		g_SpawnSystem.m_pCheckpointList.SetArray(iIndex, pCheckpoint);
+		data.m_pCheckpointList.SetArray(iIndex, pCheckpoint);
 	}
 	return MRES_Ignored;
 }
+
+// end shortcut
+#undef data

@@ -10,7 +10,7 @@
 
 //------------------------------------------------------
 // CNPC_Human_Scientist - npc_human_scientist*
-// crash fix when getting scared
+// crash fix on getting scared
 //------------------------------------------------------
 public MRESReturn Hook_ScientistIRelationType(int _this, Handle hReturn, Handle hParams)
 {
@@ -19,9 +19,9 @@ public MRESReturn Hook_ScientistIRelationType(int _this, Handle hReturn, Handle 
 }
 
 //------------------------------------------------------
-// CAI_BaseNPC - npc_human_scientist*, npc_human_security
+// CNPC_PlayerCompanion - npc_human_scientist*, npc_human_security
 // scientists should classify as allies (in MP, base function returns false when player is not passed in)
-// this allows npcs to pass filter in 'player ally only' triggers
+// this allows npcs to pass filter in "player ally only" triggers
 //------------------------------------------------------
 public MRESReturn Hook_IsPlayerAlly(int _this, Handle hReturn, Handle hParams)
 {
@@ -30,14 +30,35 @@ public MRESReturn Hook_IsPlayerAlly(int _this, Handle hReturn, Handle hParams)
 }
 
 //------------------------------------------------------
-// CAI_BaseNPC - Spawn
+// CNPC_PlayerCompanion - npc_human_scientist*, npc_human_security
+// MP crash fix
 //------------------------------------------------------
-public void Hook_BaseNPCSpawnPost(int iEntIndex)
+public MRESReturn Hook_PlayerCompanionRunAI(int _this)
+{
+	CBaseEntity pThis = CBaseEntity(_this);
+	CBasePlayer pPlayer = GetNearestPlayer(pThis, true);
+	if (pPlayer == NULL_CBASEENTITY)
+	{
+		return MRES_Supercede;
+	}
+	SetLocalPlayerCallingEntityEx(pPlayer);
+	return MRES_Ignored;
+}
+
+public MRESReturn Hook_PlayerCompanionRunAIPost(int _this)
+{
+	ClearLocalPlayerCallingEntity();
+	return MRES_Ignored;
+}
+
+//------------------------------------------------------
+// CAI_BaseNPC - npc_lav
+// fixes the client crash seen in bm_c2a5g related to LAV npc
+//------------------------------------------------------
+public void Hook_LAVSpawnPost(int iEntIndex)
 {
 	CBaseEntity pEntity = CBaseEntity(iEntIndex);
-	// reduces occurance of random, elusive, linux only crash
-	// also assists in fixing the client crash in bm_c2a5g related to lav npc
-	pEntity.SetEdictFlags(pEntity.GetEdictFlags() | FL_EDICT_ALWAYS | FL_EDICT_CHANGED);
+	pEntity.SetEdictFlags(pEntity.GetEdictFlags() | FL_EDICT_ALWAYS);
 }
 
 //------------------------------------------------------
@@ -134,11 +155,11 @@ public MRESReturn Hook_GonarchRunAI(int _this)
 {
 	CBaseEntity pThis = CBaseEntity(_this);
 	CBasePlayer pPlayer = GetNearestPlayer(pThis, true);
-	if (!pPlayer.IsClassPlayer())
+	if (pPlayer == NULL_CBASEENTITY)
 	{
 		return MRES_Supercede;
 	}
-	SetLocalPlayerCallingEntity(view_as<int>(pPlayer));
+	SetLocalPlayerCallingEntityEx(pPlayer);
 	return MRES_Ignored;
 }
 
@@ -156,11 +177,11 @@ public MRESReturn Hook_NihilanthRunAI(int _this)
 {
 	CBaseEntity pThis = CBaseEntity(_this);
 	CBasePlayer pPlayer = GetNearestPlayer(pThis, true);
-	if (!pPlayer.IsClassPlayer())
+	if (pPlayer == NULL_CBASEENTITY)
 	{
 		return MRES_Supercede;
 	}
-	SetLocalPlayerCallingEntity(view_as<int>(pPlayer));
+	SetLocalPlayerCallingEntityEx(pPlayer);
 	return MRES_Ignored;
 }
 public MRESReturn Hook_NihilanthRunAIPost(int _this)

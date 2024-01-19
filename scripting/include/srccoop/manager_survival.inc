@@ -150,7 +150,7 @@ methodmap SurvivalManager {
 					Client_ScreenFade(client, 1500, FFADE_IN|FFADE_PURGE, 1, 0, 0, 0, 255);
 					
 					SetHudTextParams(0.016, 0.04, 5.0, 255, 255, 255, 255, 1, 1.0, 1.0, 1.0);
-					if (SurvivalManager.GetRespawnAtCheckpoints() && g_SpawnSystem.CountCheckpoints(true, true))
+					if (SurvivalManager.GetRespawnAtCheckpoints() && CCoopSpawnSystem.CountCheckpoints(true, true))
 					{
 						ShowHudText(client, 1, "%t", "survival respawn hint checkpoint");
 					}
@@ -199,7 +199,7 @@ methodmap SurvivalManager {
 	 */
 	public static void OnLogicAutosave(int iEntIndex, bool bSaveDangerous)
 	{
-		if (!SurvivalManager.GetMode() || !SurvivalManager.GetRespawnAtCheckpoints() || !g_SpawnSystem.m_bRespawnOnLogicAutosave)
+		if (!SurvivalManager.GetMode() || !SurvivalManager.GetRespawnAtCheckpoints() || !g_pSpawnSystemData.m_bRespawnOnLogicAutosave)
 			return;
 
 		if (bSaveDangerous)

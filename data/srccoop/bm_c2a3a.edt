@@ -70,7 +70,7 @@
 		}
 		"train"
 		{
-			"origin" "0 0 100"
+			"origin" "0 0 20"
 			"angles" "0 0 0"
 			"followid" "crashtrain"
 		}

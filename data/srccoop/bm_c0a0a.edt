@@ -35,7 +35,7 @@
 	{
 		"spawn"
 		{
-			"origin"	"0 0 24"
+			"origin"	"0 0 -40"
 			"angles"	"0 90 0"
 			"followid"	"train_model"
 		}

@@ -55,7 +55,7 @@ public any Native_TeleportToCurrentCheckpoint(Handle plugin, int numParams)
 		ThrowNativeError(0, "Passed CBasePlayer is invalid!");
 
 	CCoopSpawnEntry pCheckpoint;
-	if (g_SpawnSystem.GetCurrentCheckpoint(pCheckpoint))
+	if (CCoopSpawnSystem.GetCurrentCheckpoint(pCheckpoint))
 	{
 		return pCheckpoint.TeleportPlayer(pPlayer, true);
 	}

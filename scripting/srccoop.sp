@@ -252,7 +252,7 @@ public void OnPluginStart()
 	RegServerCmd("sc_dump", Command_DumpMapEntities, "Command for dumping map entities to a file");
 	
 	g_pLevelLump.Initialize();
-	g_SpawnSystem.Initialize();
+	CCoopSpawnSystem.Initialize();
 	CoopManager.Initialize();
 	ItemInstancingManager.Initialize();
 	g_pPostponedSpawns = CreateArray();
@@ -519,8 +519,6 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 		#endif
 
 		#if defined SRCCOOP_BLACKMESA
-		SDKHook(iEntIndex, SDKHook_SpawnPost, Hook_BaseNPCSpawnPost);
-		
 		if (strncmp(szClassname, "npc_human_scientist", 19) == 0)
 		{
 			#if defined ENTPATCH_RELATION_TYPE
@@ -530,16 +528,26 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 			#if defined ENTPATCH_PLAYER_ALLY
 			DHookEntity(hkIsPlayerAlly, true, iEntIndex, _, Hook_IsPlayerAlly);
 			#endif
+
+			#if defined ENTPATCH_PLAYER_COMPANION
+			DHookEntity(hkRunAI, false, iEntIndex, _, Hook_PlayerCompanionRunAI);
+			DHookEntity(hkRunAI, true, iEntIndex, _, Hook_PlayerCompanionRunAIPost);
+			#endif
 			return;
 		}
 
-		#if defined ENTPATCH_PLAYER_ALLY
 		if (strcmp(szClassname, "npc_human_security") == 0)
 		{
+			#if defined ENTPATCH_PLAYER_ALLY
 			DHookEntity(hkIsPlayerAlly, true, iEntIndex, _, Hook_IsPlayerAlly);
+			#endif
+
+			#if defined ENTPATCH_PLAYER_COMPANION
+			DHookEntity(hkRunAI, false, iEntIndex, _, Hook_PlayerCompanionRunAI);
+			DHookEntity(hkRunAI, true, iEntIndex, _, Hook_PlayerCompanionRunAIPost);
+			#endif
 			return;
 		}
-		#endif
 		#endif // SRCCOOP_BLACKMESA
 
 		#if defined ENTPATCH_BM_XENTURRET
@@ -603,8 +611,16 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 
 		#if defined ENTPATCH_BM_PUFFBALLFUNGUS
 		if (strcmp(szClassname, "npc_puffballfungus") == 0)
-		{	
+		{
 			SDKHook(iEntIndex, SDKHook_OnTakeDamage, Hook_PuffballFungusDmg);
+			return;
+		}
+		#endif
+		
+		#if defined ENTPATCH_BM_LAV
+		if (strcmp(szClassname, "npc_lav") == 0)
+		{
+			SDKHook(iEntIndex, SDKHook_SpawnPost, Hook_LAVSpawnPost);
 			return;
 		}
 		#endif
@@ -1001,7 +1017,7 @@ public MRESReturn Hook_OnEquipmentTryPickUpPost(int _this, Handle hReturn, Handl
 				CBaseEntity pItem = CBaseEntity(_this);
 				char szClass[MAX_CLASSNAME];
 				pItem.GetClassname(szClass, sizeof(szClass));
-				g_SpawnSystem.AddSpawnItem(szClass);
+				CCoopSpawnSystem.AddSpawnItem(szClass);
 			}
 		}
 	}
@@ -1015,7 +1031,7 @@ public void Hook_PlayerWeaponEquipPost(int client, int weapon)
 		CBaseEntity pItem = CBaseEntity(weapon);
 		char szClass[MAX_CLASSNAME];
 		pItem.GetClassname(szClass, sizeof(szClass));
-		g_SpawnSystem.AddSpawnItem(szClass);
+		CCoopSpawnSystem.AddSpawnItem(szClass);
 	}
 }
 

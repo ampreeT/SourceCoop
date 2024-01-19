@@ -540,7 +540,7 @@ enum struct CGlobalLevelLump
 									CEntityKeyLump pClassKey;
 									if (pThisEntityInfo.GetKey("classname", pClassKey))
 									{
-										g_SpawnSystem.AddSpawnItem(pClassKey.m_szValue, true);
+										CCoopSpawnSystem.AddSpawnItem(pClassKey.m_szValue, true);
 										pThisEntityInfo.Close();
 										this.m_pEntityList.Erase(i);
 										i--;
