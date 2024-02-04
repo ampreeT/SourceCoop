@@ -689,13 +689,13 @@ public MRESReturn Hook_ForcePlayerToDropThisObject(Handle hParams)
 public void Hook_Movement_FindLadder(CBasePlayer pPlayer)
 {
 	// If we don't have a valid player, don't run
-	if (!pPlayer.IsValid())
+	if (!pPlayer.IsValid() || pPlayer.GetLadder().IsValid())
 		return;
 	
 	static float flMaxDist = 64.0;
 	float bestDist = 16384.0; // Or MAX_COORD_INTEGER
 	float bestOrigin[3];
-	int bestLadder = -1;
+	CFuncLadder bestLadder = CFuncLadder(-1);
 	
 	float maxdistSqr = flMaxDist * flMaxDist;
 	float closest[3];
@@ -767,7 +767,7 @@ public void Hook_Movement_FindLadder(CBasePlayer pPlayer)
 		if ( distSqr < bestDist )
 		{
 			bestDist = distSqr;
-			bestLadder = pLadder.GetEntIndex();
+			bestLadder = pLadder;
 			bestOrigin[0] = closest[0];
 			bestOrigin[1] = closest[1];
 			bestOrigin[2] = closest[2];
@@ -775,10 +775,13 @@ public void Hook_Movement_FindLadder(CBasePlayer pPlayer)
 	}
 	CloseHandle(hLadderArray);
 	
-	if (IsValidEntity(bestLadder))
+	if (bestLadder.IsValid())
 	{
+		// Because there is no smoothing/adjustments, jump up to where player feet are
+		if (vecPlayerOrigin[2] > bestOrigin[2])
+			bestOrigin[2] = vecPlayerOrigin[2];
 		pPlayer.Teleport(bestOrigin, NULL_VECTOR, NULL_VECTOR);
-		SetEntPropEnt(pPlayer.GetEntIndex(), Prop_Data, "m_hLadder", bestLadder);
+		pPlayer.SetLadder(bestLadder);
 	}
 	
 	return;

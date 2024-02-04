@@ -1319,6 +1319,10 @@ methodmap CBasePlayer < CBaseCombatCharacter
 	{
 		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_afButtonReleased");
 	}
+	public int GetButtonLast()
+	{
+		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_afButtonLast");
+	}
 	public bool WasPressingButton(const int iButton)
 	{
 		return view_as<bool>(this.GetOldButtons() & iButton);
@@ -1526,6 +1530,27 @@ methodmap CBasePlayer < CBaseCombatCharacter
 	public void Suicide()
 	{
 		ForcePlayerSuicide(this.GetEntIndex());
+	}
+	public CFuncLadder GetLadder()
+	{
+		return CFuncLadder(GetEntPropEnt(this.GetEntIndex(), Prop_Data, "m_hLadder"));
+	}
+	public void SetLadder(CFuncLadder pLadder)
+	{
+		if (this.GetLadder().IsValid())
+		{
+			this.GetLadder().FireOutput("OnPlayerGotOffLadder", this.GetEntIndex());
+		}
+		
+		if (pLadder.IsValid())
+		{
+			SetEntPropEnt(this.GetEntIndex(), Prop_Data, "m_hLadder", pLadder.GetEntIndex());
+		}
+		else
+		{
+			// Allow NULL pass
+			SetEntPropEnt(this.GetEntIndex(), Prop_Data, "m_hLadder", -1);
+		}
 	}
 }
 
