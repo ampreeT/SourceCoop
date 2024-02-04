@@ -761,6 +761,10 @@ methodmap CTraceRay
 		if (this.IsValid())
 			CloseHandle(this.GetHandle());
 	}
+	public float GetFraction()
+	{
+		return TR_GetFraction(this.GetHandle());
+	}
 
 	public CBaseEntity GetEntity()
 	{
@@ -1694,6 +1698,47 @@ methodmap CParticleSystem < CBaseEntity
 	}
 }
 
+methodmap CFuncLadder < CBaseEntity
+{
+	public CFuncLadder(const int iEntIndex = -1)
+	{
+		return view_as<CFuncLadder>(CBaseEntity(iEntIndex));
+	}
+	public bool IsEnabled()
+	{
+		return !view_as<bool>(GetEntProp(this.GetEntIndex(), Prop_Data, "m_bDisabled"));
+	}
+	public void GetTopPosition(float vecBuffer[3])
+	{
+		GetEntPropVector(this.GetEntIndex(), Prop_Data, "m_vecPlayerMountPositionTop", vecBuffer);
+		float vecLocalOrigin[3];
+		this.GetOrigin(vecLocalOrigin);
+		AddVectors(vecBuffer, vecLocalOrigin, vecBuffer);
+		
+		CBaseEntity pParent = this.GetParent();
+		if (pParent.IsValid())
+		{
+			// Technically this should be using m_rgflCoordinateFrame which is a const matrix3x4_t, but if we just add AbsOrigin, it *should* be accurate enough...
+			pParent.GetAbsOrigin(vecLocalOrigin);
+			AddVectors(vecBuffer, vecLocalOrigin, vecBuffer);
+		}
+	}
+	public void GetBottomPosition(float vecBuffer[3])
+	{
+		GetEntPropVector(this.GetEntIndex(), Prop_Data, "m_vecPlayerMountPositionBottom", vecBuffer);
+		float vecLocalOrigin[3];
+		this.GetOrigin(vecLocalOrigin);
+		AddVectors(vecBuffer, vecLocalOrigin, vecBuffer);
+		
+		CBaseEntity pParent = this.GetParent();
+		if (pParent.IsValid())
+		{
+			pParent.GetAbsOrigin(vecLocalOrigin);
+			AddVectors(vecBuffer, vecLocalOrigin, vecBuffer);
+		}
+	}
+}
+
 methodmap CMultiplayRules
 {
 	public static bool IsTeamplay()
@@ -1802,5 +1847,13 @@ methodmap IServerGameDLL
 
 public bool Callback_GetAimTarget(int iEntity, int iMask, any pData)
 {
+	return !view_as<bool>(iEntity == pData);
+}
+
+public bool Callback_IgnorePlayers(int iEntity, int iMask, any pData)
+{
+	CBasePlayer pPlayer = CBasePlayer(iEntity);
+	if (pPlayer.IsValid())
+		return false;
 	return !view_as<bool>(iEntity == pData);
 }
