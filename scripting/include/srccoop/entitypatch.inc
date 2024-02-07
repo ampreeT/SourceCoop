@@ -1098,7 +1098,6 @@ public MRESReturn Hook_TrackTrainBlocked(int _this, Handle hReturn, Handle hPara
 				DHookSetReturn(hReturn, false);
 				return MRES_Supercede;
 			}
-			vecOriginAdjusted[2] += 1.0;
 			pPlayer.Teleport(vecOriginAdjusted);
 		}
 	}
