@@ -479,6 +479,12 @@ void PlayerPatch_ApplyServerRagdoll(CBasePlayer pPlayer)
 	{
 		pRagdoll.Kill();
 	}
+	if (pPlayer.GetTeam() == TEAM_SPECTATOR)
+	{
+		// teamchange induced suicide - no ragdolls
+		g_pNewRagdoll.Kill();
+		return;
+	}
 	pPlayer.SetRagdoll(g_pNewRagdoll);
 	pPlayer.SetObserverMode(OBS_MODE_CHASE);
 	pPlayer.SetObserverTarget(g_pNewRagdoll);
