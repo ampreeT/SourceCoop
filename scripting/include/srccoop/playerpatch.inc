@@ -184,12 +184,11 @@ public Action OnPlayerRunCmd(int iClient, int &iButtons, int &iImpulse, float fV
 		return Plugin_Changed;
 	}
 	
-	// This could technically apply to all games, but the main one this is having issues with is BM
-	#if defined SRCCOOP_BLACKMESA
+	#if defined PLAYERPATCH_FINDLADDER
 	// By using m_afButtonPressed, this is actually ignored by the game code if players mount ladders the normal way as it calls ::SwallowUseKey()
 	if ((GetEntProp(iClient, Prop_Data, "m_afButtonPressed") & IN_USE) && (GetEntProp(iClient, Prop_Data, "m_afButtonLast") & IN_USE) == 0)
 	{
-		Hook_Movement_FindLadder(CBasePlayer(iClient));
+		Movement_FindLadder(CBasePlayer(iClient));
 	}
 	#endif
 	
@@ -686,7 +685,7 @@ public MRESReturn Hook_ForcePlayerToDropThisObject(Handle hParams)
 // CHL2GameMovement::Findladder
 // fix issue of FindLadder trace not passing through additional players making it difficult to use ladders with many players
 //------------------------------------------------------
-public void Hook_Movement_FindLadder(CBasePlayer pPlayer)
+public void Movement_FindLadder(CBasePlayer pPlayer)
 {
 	// If we don't have a valid player, don't run
 	if (!pPlayer.IsValid() || pPlayer.GetLadder().IsValid())
@@ -695,17 +694,17 @@ public void Hook_Movement_FindLadder(CBasePlayer pPlayer)
 	static float flMaxDist = 64.0;
 	float bestDist = 16384.0; // Or MAX_COORD_INTEGER
 	float bestOrigin[3];
-	CFuncLadder bestLadder = CFuncLadder(-1);
+	CFuncLadder bestLadder = NULL_CBASEENTITY;
 	
 	float maxdistSqr = flMaxDist * flMaxDist;
 	float closest[3];
 	
 	// Normally this would be by static member: CFuncLadder::GetLadderCount()
-	Handle hLadderArray = CreateArray(512);
+	ArrayList pLadders = new ArrayList();
 	int iEntity = -1;
 	while ((iEntity = FindEntityByClassname(iEntity, "func_useableladder")) != INVALID_ENT_REFERENCE)
 	{
-		PushArrayCell(hLadderArray, iEntity);
+		pLadders.Push(CFuncLadder(iEntity));
 	}
 	
 	float vecPlayerOrigin[3];
@@ -716,9 +715,10 @@ public void Hook_Movement_FindLadder(CBasePlayer pPlayer)
 	pPlayer.GetMins(vecTmp);
 	sizeZ = (sizeZ - vecTmp[2]) * 0.5;
 	
-	for (int i = 0; i < GetArraySize(hLadderArray); i++)
+	int len = pLadders.Length;
+	for (int i = 0; i < len; i++)
 	{
-		CFuncLadder pLadder = CFuncLadder(GetArrayCell(hLadderArray, i));
+		CFuncLadder pLadder = pLadders.Get(i);
 		
 		if (!pLadder.IsEnabled())
 			continue;
@@ -747,15 +747,15 @@ public void Hook_Movement_FindLadder(CBasePlayer pPlayer)
 			continue;
 		
 		// Finally the traces that need to be overridden to ignore players in the way...
-		CTraceRay pTraceRay = CTraceRay(vecPlayerOrigin, closest, MASK_PLAYERSOLID, RayType_EndPoint, Callback_IgnorePlayers, -1);
-		if (pTraceRay.IsValid() && pTraceRay.GetFraction() != 1.0 && pTraceRay.GetEntity().GetEntIndex() != pLadder.GetEntIndex())
+		CTraceRay pTraceRay = new CTraceRay(vecPlayerOrigin, closest, MASK_PLAYERSOLID, RayType_EndPoint, TraceEntityFilter_IgnorePlayers, -1);
+		if (pTraceRay.GetFraction() != 1.0 && pTraceRay.GetEntity() != pLadder)
 		{
 			pTraceRay.Close();
 			
 			AddVectors(vecTmp, vecPlayerOrigin, vecTmp);
 			vecTmp[2] += sizeZ;
-			pTraceRay = CTraceRay(vecTmp, closest, MASK_PLAYERSOLID, RayType_EndPoint, Callback_IgnorePlayers, -1);
-			if (pTraceRay.IsValid() && pTraceRay.GetFraction() != 1.0 && pTraceRay.GetEntity().GetEntIndex() != pLadder.GetEntIndex())
+			pTraceRay = new CTraceRay(vecTmp, closest, MASK_PLAYERSOLID, RayType_EndPoint, TraceEntityFilter_IgnorePlayers, -1);
+			if (pTraceRay.GetFraction() != 1.0 && pTraceRay.GetEntity() != pLadder)
 			{
 				pTraceRay.Close();
 				continue;
@@ -773,14 +773,14 @@ public void Hook_Movement_FindLadder(CBasePlayer pPlayer)
 			bestOrigin[2] = closest[2];
 		}
 	}
-	CloseHandle(hLadderArray);
+	pLadders.Close();
 	
-	if (bestLadder.IsValid())
+	if (bestLadder != NULL_CBASEENTITY)
 	{
 		// Because there is no smoothing/adjustments, jump up to where player feet are
 		if (vecPlayerOrigin[2] > bestOrigin[2])
 			bestOrigin[2] = vecPlayerOrigin[2];
-		pPlayer.Teleport(bestOrigin, NULL_VECTOR, NULL_VECTOR);
+		pPlayer.Teleport(bestOrigin);
 		pPlayer.SetLadder(bestLadder);
 	}
 	
