@@ -456,6 +456,7 @@ methodmap CoopManager
 		else src = CCL_SM_DATA;
 		
 		KeyValues kv = new KeyValues(szMapName);
+		kv.SetEscapeSequences(true);
 		char szRoot[16];
 		if (!(kv.ImportFromFile(szConfigPath) && kv.GetSectionName(szRoot, sizeof(szRoot)) && strcmp(szRoot, "config", false) == 0))
 			ThrowError("Couldn't import %s into KeyValues", szConfigPath);
