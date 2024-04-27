@@ -554,6 +554,40 @@
 					}
 				}
 			}
+			"CAI_MoveProbe::TestGroundMove"
+			{
+				"signature"	"CAI_MoveProbe::TestGroundMove"
+				"callconv"	"thiscall"
+				"return"	"bool"
+				"this"		"address"
+				"arguments"
+				{
+					"vecActualStart"
+					{
+						"type"	"vectorptr"
+					}
+					"vecDesiredEnd"
+					{
+						"type"	"vectorptr"
+					}
+					"collisionMask"
+					{
+						"type"	"int"
+					}
+					"pctToCheckStandPositions"
+					{
+						"type"	"float"
+					}
+					"flags"
+					{
+						"type"	"int"
+					}
+					"pMoveTrace"
+					{
+						"type"	"objectptr"
+					}
+				}
+			}
 		}
 	}
 	
@@ -657,6 +691,10 @@
 			"CBoneSetup::AccumulatePose" // void CBoneSetup::AccumulatePose(Vector *, Quaternion *, int, float, float, float, CIKContext *)
 			{
 				"linux" 	"@_ZN10CBoneSetup14AccumulatePoseEP6VectorP10QuaternionifffP10CIKContext"
+			}
+			"CAI_MoveProbe::TestGroundMove" // bool CAI_MoveProbe::TestGroundMove( const Vector &vecActualStart, const Vector &vecDesiredEnd, unsigned int collisionMask, float pctToCheckStandPositions, unsigned flags, AIMoveTrace_t *pMoveTrace )
+			{
+				"linux" 	"@_ZNK13CAI_MoveProbe14TestGroundMoveERK6VectorS2_jfjP13AIMoveTrace_t"
 			}
 		}
 

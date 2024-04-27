@@ -142,6 +142,7 @@ DynamicHook hkCreateRagdollEntity;
 
 #if defined SRCCOOP_BLACKMESA
 DynamicDetour hkAccumulatePose;
+DynamicDetour hkTestGroundMove;
 #endif
 
 // ----------------------------

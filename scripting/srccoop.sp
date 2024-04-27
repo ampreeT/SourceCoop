@@ -188,6 +188,7 @@ void LoadGameData()
 	if (g_serverOS == OS_Linux)
 	{
 		LoadDHookDetour(pGameConfig, hkAccumulatePose, "CBoneSetup::AccumulatePose", Hook_AccumulatePose);
+		LoadDHookDetour(pGameConfig, hkTestGroundMove, "CAI_MoveProbe::TestGroundMove", Hook_TestGroundMove);
 	}
 	#endif
 
