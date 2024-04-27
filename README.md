@@ -11,7 +11,7 @@ __If you are a server operator who is looking to host your own cooperative serve
 - Install [Metamod:Source](https://www.sourcemm.net/downloads.php?branch=stable)
 	- Latest tested build ➤ __1148__
 - Install [SourceMod](https://www.sourcemod.net/downloads.php?branch=stable)
-	- Latest tested build ➤ __6936__
+	- Latest tested build ➤ __6960__
 - Install the latest release of SourceCoop from the [releases page](https://github.com/ampreeT/SourceCoop/releases).
 
 A step-by-step guide is also available on [Steam](https://steamcommunity.com/sharedfiles/filedetails/?id=2200247356).
