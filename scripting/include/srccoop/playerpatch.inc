@@ -696,7 +696,7 @@ public void Movement_FindLadder(CBasePlayer pPlayer)
 	float bestOrigin[3];
 	CFuncLadder bestLadder = NULL_CBASEENTITY;
 	
-	float maxdistSqr = flMaxDist * flMaxDist;
+	//float maxdistSqr = flMaxDist * flMaxDist;
 	float closest[3];
 	
 	// Normally this would be by static member: CFuncLadder::GetLadderCount()
@@ -709,6 +709,7 @@ public void Movement_FindLadder(CBasePlayer pPlayer)
 	
 	float vecPlayerOrigin[3];
 	float vecTmp[3];
+	float distSqr;
 	pPlayer.GetAbsOrigin(vecPlayerOrigin);
 	pPlayer.GetMaxs(vecTmp);
 	float sizeZ = vecTmp[2];
@@ -727,23 +728,29 @@ public void Movement_FindLadder(CBasePlayer pPlayer)
 		pLadder.GetTopPosition(topPosition);
 		pLadder.GetBottomPosition(bottomPosition);
 		
-		float vDir[3];
-		//float t = CalcClosestPointToLineT( vecPlayerOrigin, topPosition, bottomPosition, vDir );
-		SubtractVectors(bottomPosition, topPosition, vDir);
-		float t = GetVectorDotProduct(vDir, vDir);
-		if (t < 0.0001)
-			t = 0.0;
-		else if (t > 1.0)
-			t = 1.0;
+		if ((vecPlayerOrigin[2] < bottomPosition[2]) || (vecPlayerOrigin[2] > topPosition[2]))
+			continue;
 		
-		// From vClosest.MulAdd( vLineA, vDir, t );
-		closest[0] = (topPosition[0] + vDir[0]) * t;
-		closest[1] = (topPosition[1] + vDir[1]) * t;
-		closest[2] = (topPosition[2] + vDir[2]) * t;
+		// Have to do both for slanted ladders, also now just checking for bottom and top instead of anywhere along ladder line,
+		// this could potentially be changed by setting bottomPosition[2] = vecPlayerOrigin[2] and test distance though.
+		float distTop = GetVectorDistance(vecPlayerOrigin, topPosition, false);
+		float distBot = GetVectorDistance(vecPlayerOrigin, bottomPosition, false);
+		if (distTop > distBot)
+		{
+			distSqr = distBot;
+			closest[0] = bottomPosition[0];
+			closest[1] = bottomPosition[1];
+			closest[2] = bottomPosition[2];
+		}
+		else
+		{
+			distSqr = distTop;
+			closest[0] = topPosition[0];
+			closest[1] = topPosition[1];
+			closest[2] = topPosition[2];
+		}
 		
-		SubtractVectors(vDir, vecPlayerOrigin, vecTmp);
-		float distSqr = GetVectorLength(vecTmp, false);
-		if (distSqr > maxdistSqr)
+		if (distSqr > flMaxDist)
 			continue;
 		
 		// Finally the traces that need to be overridden to ignore players in the way...
