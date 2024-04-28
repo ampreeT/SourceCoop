@@ -10,6 +10,7 @@
 	"death cam setting updated"
 	{
 		"en"			"Death camera setting updated."
+		"ru"			"Обновлены настройки камеры смерти"
 	}
 
 	/* Menu */
@@ -17,21 +18,25 @@
 	"death cam"
 	{
 		"en"			"Death cam"
+		"ru"			"Камера смерти"
 	}
 
 	"default"
 	{
 		"en"			"Default"
+		"ru"			"По-умолчанию"
 	}
 
 	"third-person"
 	{
 		"en"			"Third-person"
+		"ru"			"От третьего лица"
 	}
 
 	"first-person"
 	{
 		"en"			"First-person"
+		"ru"			"От первого лица"
 	}
 
 }

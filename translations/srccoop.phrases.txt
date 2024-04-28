@@ -11,162 +11,192 @@
 	{
 		"#format"		"{1:s}" // version
 		"en"			"This server runs {ter}SourceCoop v{1}{pri}\nPress {sec}={pri} or type {sec}/{ter}coopmenu{pri} for extra options."
+		"ru"			"Сервер использует {ter}SourceCoop v{1}{pri}\nНажмите {sec}={pri} или введите {sec}/{ter}coopmenu{pri} для дополнительных функций."
 	}
 
 	"map start"
 	{
 		"#format"		"{1:s}" // map name
 		"en"			"Co-op map {1} has begun"
+		"ru"			"Начался кооператив на уровне {1}"
 	}
 
 	"changing map"
 	{
 		"en"			"Changing map"
+		"ru"			"Смена уровня"
 	}
 
 	"player"
 	{
 		"en"			"player"
+		"ru"			"игрок"
 	}
 
 	"players"
 	{
 		"en"			"players"
+		"ru"			"игроков"
 	}
 
 	"feature enabled"
 	{
 		"#format"		"{1:s}" // feature
 		"en"			"Enabled feature {1}"
+		"ru"			"Включена опция {1}"
 	}
 
 	"feature disabled"
 	{
 		"#format"		"{1:s}" // feature
 		"en"			"Disabled feature {1}"
+		"ru"			"Выключена опция {1}"
 	}
 
 	"feature unknown"
 	{
 		"#format"		"{1:s}" // feature
 		"en"			"Unknown feature: {1}"
+		"en"			"Неизвестная опция: {1}"
 	}
 
 	"menu unavailable"
 	{
 		"en"			"Coop menu is currently unavailable."
+		"ru"			"Кооперативное меню сейчас недоступно."
 	}
 
 	"menu title"
 	{
 		"en"			"SourceCoop Menu"
+		"ru"			"SourceCoop Меню"
 	}
 
 	"menu category player"
 	{
 		"en"			"Player settings"
+		"ru"			"Настройки игрока"
 	}
 
 	"menu category sounds"
 	{
 		"en"			"Sound settings"
+		"ru"			"Настройки звука"
 	}
 
 	"menu category votes"
 	{
 		"en"			"Votes"
+		"ru"			"Голосование"
 	}
 
 	"menu category other"
 	{
 		"en"			"Other"
+		"ru"			"Прочее"
 	}
 
 	"checkpoint reached"
 	{
 		"en"			"Checkpoint reached"
+		"ru"			"Контрольная точка достигнута"
 	}
 
 	"survival respawn hint checkpoint"
 	{
 		"en"			"You will respawn at the next survival checkpoint"
+		"ru"			"Вы возродитесь на следующей контрольной точке"
 	}
 
 	"survival respawn hint no checkpoint"
 	{
 		"en"			"You will respawn once everyone is dead"
+		"ru"			"Вы возродитесь, как только все погибнут"
 	}
 
 	"survival restart last checkpoint"
 	{
 		"en"			"Try again! Starting at last checkpoint..."
+		"ru"			"Попробуйте еще раз! Запуск последней контрольной точки..."
 	}
 
 	"survival game over"
 	{
 		"en"			"ASSIGNMENT: TERMINATED\nSUBJECT: FREEMAN\nREASON: FAILURE TO PRESERVE MISSION-CRITICAL PERSONNEL"
+		"ru"			"ЗАДАНИЕ: ПРЕРВАНО\nСУБЪЕКТ: ФРИМЕН\nПРИЧИНА: ГИБЕЛЬ ЛЮДЕЙ,\nНЕОБХОДИМЫХ ДЛЯ ВЫПОЛНЕНИЯ ЗАДАНИЯ"
 	}
 
 	"equipment saved"
 	{
 		"en"			"Saved equipment successfully."
+		"ru"			"Снаряжение успешно сохранено."
 	}
 
 	"equipment export fail"
 	{
 		"#format"		"{1:s}" // filepath
 		"en"			"Issue occurred when saving equipment to file: {1}"
+		"ru"			"Возникла ошибка при сохранении снаряжения в файл: {1}"
 	}
 
 	"equipment export no players"
 	{
 		"en"			"No valid players found. Save cancelled."
+		"ru"			"Не найдено ни одного действующего игрока. Сохранение отменено."
 	}
 
 	"equipment import file not found"
 	{
 		"#format"		"{1:s}" // filepath
 		"en"			"Could not find specified save file: {1}"
+		"ru"			"Невозможно найти указанный файл сохранения: {1}"
 	}
 
 	"equipment import fail"
 	{
 		"#format"		"{1:s}" // filepath
 		"en"			"The save file is in incorrect format: {1}"
+		"ru"			"Файл сохранения имеет неверный формат: {1}"
 	}
 
 	"equipment loaded"
 	{
 		"#format"		"{1:N}" // player
 		"en"			"Loaded player state for: {1}"
+		"ru"			"Загружено состояние игрока: {1}"
 	}
 
 	"equipment not loaded"
 	{
 		"#format"		"{1:N},{2:s}" // player, error message
 		"en"			"Failed to load data for player: {1}. {2}"
+		"ru"			"Не удалось загрузить данные игрока: {1}. {2}"
 	}
 
 	"equipment load unknown steamid"
 	{
 		"en"			"SteamID is unknown."
+		"ru"			"SteamID неизвестен."
 	}
 
 	"equipment load player not found"
 	{
 		"#format"		"{1:s}" // steamid
 		"en"			"Save data not found for SteamID: {1}"
+		"ru"			"Не найдены сохраненные данные для SteamID: {1}"
 	}
 
 	"equipment load missing section"
 	{
 		"#format"		"{1:s}" // section
 		"en"			"Missing section \"{1}\" in save file!"
+		"ru"			"Отсутствует секция \"{1}\" в файле сохранения!"
 	}
 
 	"equipment cleared"
 	{
 		"en"			"Cleared player state successfully."
+		"ru"			"Состояние игрока успешно очищено."
 	}
 
 }

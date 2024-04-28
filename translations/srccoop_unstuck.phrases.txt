@@ -10,27 +10,32 @@
 	"unavailable"
 	{
 		"en"			"Unstuck is currently unavailable."
+		"ru"			"Перемещение сейчас невозможно."
 	}
 
 	"cooldown"
 	{
 		"#format"		"{1:1.0f}"
 		"en"			"You cannot unstuck for another {ter}{1}{pri} seconds!"
+		"ru"			"Вы не можете переместиться в течение {ter}{1}{pri} секунд!"
 	}
 
 	"falling"
 	{
 		"en"			"Can't unstuck while falling."
+		"ru"			"Нельзя переместиться во время падения."
 	}
 
 	"success"
 	{
 		"en"			"Moved to the active checkpoint."
+		"ru"			"Перемещен на активную контрольную точку."
 	}
 
 	"failure"
 	{
 		"en"			"Unable to find a place to put you."
+		"ru"			"Невозможно найти место для перемещения."
 	}
 
 }
