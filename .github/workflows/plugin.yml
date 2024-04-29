@@ -27,5 +27,5 @@ jobs:
       - name: Upload build archive for test runners
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ runner.os }}
+          name: SourceCoop_nightly
           path: /tmp/package
