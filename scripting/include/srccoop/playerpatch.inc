@@ -738,16 +738,12 @@ public void Movement_FindLadder(CBasePlayer pPlayer)
 		if (distTop > distBot)
 		{
 			distSqr = distBot;
-			closest[0] = bottomPosition[0];
-			closest[1] = bottomPosition[1];
-			closest[2] = bottomPosition[2];
+			closest = bottomPosition;
 		}
 		else
 		{
 			distSqr = distTop;
-			closest[0] = topPosition[0];
-			closest[1] = topPosition[1];
-			closest[2] = topPosition[2];
+			closest = topPosition;
 		}
 		
 		if (distSqr > flMaxDist)
@@ -771,13 +767,11 @@ public void Movement_FindLadder(CBasePlayer pPlayer)
 		pTraceRay.Close();
 		
 		// See if this is the best one so far
-		if ( distSqr < bestDist )
+		if (distSqr < bestDist)
 		{
 			bestDist = distSqr;
 			bestLadder = pLadder;
-			bestOrigin[0] = closest[0];
-			bestOrigin[1] = closest[1];
-			bestOrigin[2] = closest[2];
+			bestOrigin = closest;
 		}
 	}
 	pLadders.Close();
@@ -790,8 +784,6 @@ public void Movement_FindLadder(CBasePlayer pPlayer)
 		pPlayer.Teleport(bestOrigin);
 		pPlayer.SetLadder(bestLadder);
 	}
-	
-	return;
 }
 
 //------------------------------------------------------
