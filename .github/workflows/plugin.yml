@@ -24,6 +24,7 @@ jobs:
           cp -R addons/sourcemod/gamedata /tmp/package/common/addons/sourcemod/
           cp -R addons/sourcemod/scripting /tmp/package/common/addons/sourcemod/
           cp -R addons/sourcemod/translations /tmp/package/common/addons/sourcemod/
+          cp -R gamecontent /tmp/package/common/gamecontent/
       - name: Upload build archive for test runners
         uses: actions/upload-artifact@v4
         with:
