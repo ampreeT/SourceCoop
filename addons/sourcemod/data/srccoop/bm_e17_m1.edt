@@ -1,0 +1,62 @@
+// Script for workshop item 934371395 - Emergency 17
+
+#base "base/coop_base_sp_conversion.edt"
+
+"config"
+{
+	"campaign" "Workshop maps"
+	"chapter" "Emergency 17"
+	
+	"features"
+	{
+		"KEEP_EQUIPMENT" "1"
+	}
+	"equipment"
+	{
+	}
+	"entity"
+	{
+		//music fix
+		//actually there are two ambient_generics responsible for music
+		//on the map, but only one has output for playing, so I fix only it
+		"modify"
+		{
+			"targetname" "music1"
+			"set"
+			{
+				"message" "music.bms.mscl_amb2"
+			}
+		}
+	}
+	"checkpoint"
+	{
+		"spawn"
+		{
+			"origin"	"-128 -364 44"
+			"angles"	"0 19.5 0"
+		}
+		"after lift"
+		{
+			"origin"	"-192 2720 229"
+			"angles"	"0 270 0"
+			"triggerid"	"58101"
+			"output"	"OnPressed"
+			"portal"	"-192 2720 -187"
+		}
+		"before fight"
+		{
+			"origin"	"1247 2056 237"
+			"angles"	"0 -90 0"
+			"triggerid"	"72310"
+			"output"	"OnPressed"
+		}
+		"after fight"
+		{
+			"origin"	"176 224 310"
+			"angles"	"0 180 0"
+			"triggerid"	"42727"
+			"output"	"OnFullyClosed"
+			"bringall"	"1"
+		}
+	}
+}

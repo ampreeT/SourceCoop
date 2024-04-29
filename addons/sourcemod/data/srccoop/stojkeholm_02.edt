@@ -1,0 +1,103 @@
+// Script for workshop item 2320533262 - Stojkeholm
+
+#base "base/coop_base_sp_conversion.edt"
+
+"config"
+{
+	"campaign" "Workshop maps"
+	"chapter" "Stojkeholm"
+	
+	"features"
+	{
+		"KEEP_EQUIPMENT" "1"
+	}
+	"equipment"
+	{
+	
+		"item" "item_suit"
+		"item" "item_weapon_crowbar"
+		"item" "item_weapon_glock"
+		"item" "item_weapon_mp5"
+		"item" "item_weapon_shotgun"
+		"item" "item_battery"
+		"item" "item_ammo_shotgun"
+		"item" "item_ammo_mp5"
+		"item" "item_weapon_frag"
+		"item" "item_weapon_frag"
+	}
+	"entity"
+	{
+		// block off next map
+		"add"
+		{
+			"classname" "func_brush"
+			"rendermode" "10"
+			"functions"
+			{
+				"set_model"
+				{
+					"origin" "6812 -7040 -304"
+					"size" "8 256 224"
+				}
+			}
+		}
+		//block off previous map and open elevator doors
+		"modify"
+		{
+			"targetname" "lcb_to_ucb_elevator"
+			"outputs"
+			{
+				"remove" {}
+			}
+		}
+		"modify"
+		{
+			"classname" "logic_auto"
+			"hammerid" "4871873"
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnMapSpawn"
+					"target" "lcb_to_ucb_elevator_top_arrival"
+					"input" "Trigger"
+				}
+				"add"
+				{
+					"output" "OnMapSpawn"
+					"target" "lcb_to_ucb_elevator_button"
+					"input" "Lock"
+				}
+			}
+		}
+	}
+	"checkpoint"
+	{
+		"spawn"
+		{
+			"origin"	"6232 0 -156"
+			"angles"	"0 90 0"
+		}
+		"before battle"
+		{
+			"origin"	"4970 -399 -91"
+			"angles"	"0 270 0"
+			"triggerid"	"4871881"
+			"output"	"OnTrigger"
+		}
+		"before tunnels"
+		{
+			"origin"	"4335 -5124 -635"
+			"angles"	"0 -90 0"
+			"triggerid"	"4872655"
+			"output"	"OnTrigger"
+		}
+		"middle of tunnels"
+		{
+			"origin"	"5236 -5364 -635"
+			"angles"	"0 90 0"
+			"triggerid"	"5304462"
+			"output"	"OnTrigger"
+		}
+	}
+}

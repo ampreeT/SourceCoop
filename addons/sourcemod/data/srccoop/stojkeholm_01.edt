@@ -1,0 +1,25 @@
+// Script for workshop item 2320533262 - Stojkeholm
+
+#base "base/coop_base_sp_conversion.edt"
+
+"config"
+{
+	"campaign" "Workshop maps"
+	"chapter" "Stojkeholm"
+	
+	"features"
+	{
+		"KEEP_EQUIPMENT" "1"
+	}
+	"equipment"
+	{
+	}
+	"entity"
+	{
+	}
+	"checkpoint"
+	{
+		"use_map_autosave" "1"
+		"use_map_spawnpoint" "1"
+	}
+}
