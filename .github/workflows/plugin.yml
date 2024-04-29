@@ -12,13 +12,13 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Compile plugin
-        uses: SheplyRam/compile-sourcemod-plugin@v1
+        uses: rumblefrog/setup-sp@master
         with:
-          sourcemod: '1.11'
-          input: 'scripting/srccoop.sp'
-          output: 'plugins/srccoop.smx'
-          include: 'scripting/include'
-          comp64: 'false'
+          version: '1.11.6960'
+
+      - run: |
+          ls
+          spcomp scripting/srccoop.sp -i scripting/include -o output/srccoop.smx
           
       # - name: Build sourcemod plugin
       #   uses: maxime1907/action-sourceknight@v1
