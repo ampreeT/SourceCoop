@@ -11,7 +11,7 @@ project:
         dest: /addons
   root: /
   output: /
-  workdir: /scripting
+  workdir: scripting
   targets:
     - srccoop
     - srccoop_addon_effects_fix
