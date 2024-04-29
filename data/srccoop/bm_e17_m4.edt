@@ -1,0 +1,108 @@
+// Script for workshop item 934371395 - Emergency 17
+
+#base "base/coop_base_sp_conversion.edt"
+
+"config"
+{
+	"campaign" "Workshop maps"
+	"chapter" "Emergency 17"
+	
+	"features"
+	{
+		"KEEP_EQUIPMENT" "1"
+	}
+	"equipment"
+	{
+		"item" "item_suit"
+		"item" "item_battery"
+		"item" "item_weapon_crowbar"
+		"item" "item_weapon_357"
+		"item" "item_weapon_mp5"
+		"item" "item_weapon_shotgun"
+		"item" "item_weapon_tau"
+		"item" "item_ammo_357"
+		"item" "item_ammo_mp5"
+		"item" "item_grenade_mp5"
+		"item" "item_ammo_shotgun"
+		"item" "item_ammo_shotgun"
+		"item" "item_ammo_energy"
+		"item" "item_weapon_frag"
+	}
+	"entity"
+	{
+		// block off previous map
+		"modify"
+		{
+			"classname" "trigger_changelevel"
+			"map" "bm_e17_m3"
+			"set"
+			{
+				"classname" "func_brush"
+				"rendermode" "10"
+			}
+		}
+		//music fix
+		"modify"
+		{
+			"targetname" "battlemusic"
+			"set"
+			{
+				"message" "music.qe.lobbybattle"
+			}
+		}
+		"modify"
+		{
+			"targetname" "trainmusic"
+			"set"
+			{
+				"message" "music.bp.tentacle_immolation"
+			}
+		}
+		//end game
+		"add"
+		{
+			"classname" "game_end"
+			"set"
+			{
+				"targetname" "game_end"
+			}
+		}
+		"modify"
+		{
+			"targetname" "traintrack22"
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnPass"
+					"target" "game_end"
+					"input" "EndGame"
+				}
+			}
+		}
+	}
+	"checkpoint"
+	{
+		"spawn"
+		{
+			"origin"	"-6374 5840 268"
+			"angles"	"0 0 0"
+		}
+		"first fight"
+		{
+			"origin"	"-5628 5840 165"
+			"angles"	"0 0 0"
+			"triggerid"	"18508"
+			"output"	"OnTrigger"
+			"bringall"	"1"
+		}
+		"train"
+		{
+			"followid"	"finaltrain"
+			"angles"	"0 0 0"
+			"triggerid"	"148771"
+			"output"	"OnPressed"
+			"bringall"	"1"
+		}
+	}
+}

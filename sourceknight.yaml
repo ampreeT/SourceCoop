@@ -7,8 +7,8 @@ project:
       version: 1.11.0-git6960
       location: https://sm.alliedmods.net/smdrop/1.11/sourcemod-1.11.0-git6960-linux.tar.gz
       unpack:
-      - source: /addons
-        dest: /addons
+      - source: /addons/sourcemod
+        dest: /
   root: /
   output: /addons/sourcemod/plugins
   targets:
