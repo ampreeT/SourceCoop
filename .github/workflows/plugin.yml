@@ -19,8 +19,10 @@ jobs:
         run: |
           mkdir -p /tmp/package
           cp -R .sourceknight/package/* /tmp/package
-          cp -R addons/sourcemod/scripting /tmp/package/common/addons/sourcemod/
           cp -R addons/sourcemod/configs /tmp/package/common/addons/sourcemod/
+          cp -R addons/sourcemod/data /tmp/package/common/addons/sourcemod/
+          cp -R addons/sourcemod/gamedata /tmp/package/common/addons/sourcemod/
+          cp -R addons/sourcemod/scripting /tmp/package/common/addons/sourcemod/
           cp -R addons/sourcemod/translations /tmp/package/common/addons/sourcemod/
           cp -R gamecontent /tmp/package/common/gamecontent/
       - name: Upload build archive for test runners
