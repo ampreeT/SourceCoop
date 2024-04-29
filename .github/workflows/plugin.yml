@@ -10,15 +10,25 @@ jobs:
       fail-fast: false
     steps:
       - uses: actions/checkout@v4
-      - name: Build sourcemod plugin
-        uses: maxime1907/action-sourceknight@v1
+
+      - name: Compile plugin
+        uses: SheplyRam/compile-sourcemod-plugin@v1
         with:
-          cmd: build
+          sourcemod: '1.11'
+          input: 'scripting/srccoop.sp'
+          output: 'plugins/srccoop.smx'
+          include: 'scripting/include'
+          comp64: 'false'
+          
+      # - name: Build sourcemod plugin
+      #   uses: maxime1907/action-sourceknight@v1
+      #   with:
+      #     cmd: build
 
       - name: Create package
         run: |
           mkdir -p /tmp/package
-          cp -R .sourceknight/package/* /tmp/package
+          cp -R plugins /tmp/package /tmp/package/common/addons/sourcemod/
           cp -R addons/sourcemod/configs /tmp/package/common/addons/sourcemod/
           cp -R addons/sourcemod/data /tmp/package/common/addons/sourcemod/
           cp -R addons/sourcemod/gamedata /tmp/package/common/addons/sourcemod/
