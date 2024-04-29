@@ -20,11 +20,16 @@ jobs:
           mkdir plugins
           ls
           spcomp scripting/srccoop.sp -i scripting/include -o plugins/srccoop.smx
-          
-      # - name: Build sourcemod plugin
-      #   uses: maxime1907/action-sourceknight@v1
-      #   with:
-      #     cmd: build
+          spcomp scripting/srccoop_addon_effects_fix.sp -i scripting/include -o plugins/srccoop_addon_effects_fix.smx
+          spcomp scripting/srccoop_addon_fpd.sp -i scripting/include -o plugins/srccoop_addon_fpd.smx
+          spcomp scripting/srccoop_addon_killsounds.sp -i scripting/include -o plugins/srccoop_addon_killsounds.smx
+          spcomp scripting/srccoop_addon_landing_screen.sp -i scripting/include -o plugins/srccoop_addon_landing_screen.smx
+          spcomp scripting/srccoop_addon_revive.sp -i scripting/include -o plugins/srccoop_addon_revive.smx
+          spcomp scripting/srccoop_addon_scoring.sp -i scripting/include -o plugins/srccoop_addon_scoring.smx
+          spcomp scripting/srccoop_addon_thirdperson.sp -i scripting/include -o plugins/srccoop_addon_thirdperson.smx
+          spcomp scripting/srccoop_addon_unstuck.sp -i scripting/include -o plugins/srccoop_addon_unstuck.smx
+          spcomp scripting/srccoop_addon_voting.sp -i scripting/include -o plugins/srccoop_addon_voting.smx
+          spcomp scripting/srccoop_addon_workshop_manager.sp -i scripting/include -o plugins/srccoop_addon_workshop_manager.smx
 
       - name: Create package
         run: |
