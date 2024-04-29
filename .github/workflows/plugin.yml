@@ -17,6 +17,7 @@ jobs:
           version: '1.11.6960'
 
       - run: |
+          mkdir output
           ls
           spcomp scripting/srccoop.sp -i scripting/include -o output/srccoop.smx
           
