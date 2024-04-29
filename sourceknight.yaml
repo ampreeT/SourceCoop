@@ -10,7 +10,7 @@ project:
       - source: /addons
         dest: /addons
   root: /
-  #output: .
+  output: /
   workdir: /scripting
   targets:
     - srccoop
