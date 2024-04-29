@@ -17,9 +17,9 @@ jobs:
           version: '1.11.6960'
 
       - run: |
-          mkdir output
+          mkdir plugins
           ls
-          spcomp scripting/srccoop.sp -i scripting/include -o output/srccoop.smx
+          spcomp scripting/srccoop.sp -i scripting/include -o plugins/srccoop.smx
           
       # - name: Build sourcemod plugin
       #   uses: maxime1907/action-sourceknight@v1
@@ -29,15 +29,14 @@ jobs:
       - name: Create package
         run: |
           mkdir -p /tmp/package
-          cp -R plugins /tmp/package /tmp/package/common/addons/sourcemod/
-          cp -R addons/sourcemod/configs /tmp/package/common/addons/sourcemod/
-          cp -R addons/sourcemod/data /tmp/package/common/addons/sourcemod/
-          cp -R addons/sourcemod/gamedata /tmp/package/common/addons/sourcemod/
-          cp -R addons/sourcemod/scripting /tmp/package/common/addons/sourcemod/
-          cp -R addons/sourcemod/translations /tmp/package/common/addons/sourcemod/
-          cp -R gamecontent /tmp/package/common/gamecontent/
+          cp -R plugins /tmp/package/
+          cp -R configs /tmp/package/
+          cp -R data /tmp/package/
+          cp -R gamedata /tmp/package/
+          cp -R scripting /tmp/package/
+          cp -R translations /tmp/package/
       - name: Upload build archive for test runners
         uses: actions/upload-artifact@v4
         with:
           name: SourceCoop_nightly
-          path: /tmp/package/common
+          path: /tmp/package/
