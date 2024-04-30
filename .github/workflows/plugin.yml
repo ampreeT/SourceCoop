@@ -26,8 +26,8 @@ jobs:
           for file in scripting/*.sp
           do
             plugin="$(basename "${file%.*}")"
-            echo -e "\nCompiling $plugin"
-            spcomp -v2 -i include -o ../plugins/"$plugin" "$file" NO_DEBUG=1
+            echo -e "Compiling $plugin\n"
+            spcomp -v2 -i scripting/include -o plugins/"$plugin" "$file" NO_DEBUG=1
           done
 
       - name: Create package
