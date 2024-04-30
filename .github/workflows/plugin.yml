@@ -50,4 +50,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: SourceCoop-${{ steps.setup-sp.outputs.plugin-version }}-build${{ github.run_number }}
-          path: /tmp/package/
+          path: /tmp/srccoop/
