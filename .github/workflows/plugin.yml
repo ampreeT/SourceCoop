@@ -33,13 +33,18 @@ jobs:
 
       - name: Create package
         run: |
-          mkdir -p /tmp/package
-          cp -R plugins /tmp/package/
-          cp -R configs /tmp/package/
-          cp -R data /tmp/package/
-          cp -R gamedata /tmp/package/
-          cp -R scripting /tmp/package/
-          cp -R translations /tmp/package/
+          OUT="/tmp/srccoop"
+          SM="${out}/addons/sourcemod"
+          mkdir -p "$SM"
+          cp -R plugins "$SM"
+          cp -R configs "$SM"
+          cp -R data "$SM"
+          cp -R gamedata "$SM"
+          cp -R scripting "$SM"
+          cp -R translations "$SM"
+          cp -R gamecontent/common/. "$OUT"
+          # prune any development files
+          find "$OUT" -type f -delete -name ".gitignore" -o -name ".gitkeep"
       
       - name: Upload package
         uses: actions/upload-artifact@v4
