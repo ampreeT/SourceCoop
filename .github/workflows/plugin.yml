@@ -1,0 +1,47 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    name: "Build"
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup sourcemod compiler
+        uses: rumblefrog/setup-sp@master
+        with:
+          version: '1.11.6960'
+
+      - name: Compile plugin
+        run: |
+          mkdir plugins
+          spcomp scripting/srccoop.sp -i scripting/include -o plugins/srccoop.smx
+          spcomp scripting/srccoop_addon_effects_fix.sp -i scripting/include -o plugins/srccoop_addon_effects_fix.smx
+          spcomp scripting/srccoop_addon_fpd.sp -i scripting/include -o plugins/srccoop_addon_fpd.smx
+          spcomp scripting/srccoop_addon_killsounds.sp -i scripting/include -o plugins/srccoop_addon_killsounds.smx
+          spcomp scripting/srccoop_addon_landing_screen.sp -i scripting/include -o plugins/srccoop_addon_landing_screen.smx
+          spcomp scripting/srccoop_addon_revive.sp -i scripting/include -o plugins/srccoop_addon_revive.smx
+          spcomp scripting/srccoop_addon_scoring.sp -i scripting/include -o plugins/srccoop_addon_scoring.smx
+          spcomp scripting/srccoop_addon_thirdperson.sp -i scripting/include -o plugins/srccoop_addon_thirdperson.smx
+          spcomp scripting/srccoop_addon_unstuck.sp -i scripting/include -o plugins/srccoop_addon_unstuck.smx
+          spcomp scripting/srccoop_addon_voting.sp -i scripting/include -o plugins/srccoop_addon_voting.smx
+          spcomp scripting/srccoop_addon_workshop_manager.sp -i scripting/include -o plugins/srccoop_addon_workshop_manager.smx
+
+      - name: Create package
+        run: |
+          mkdir -p /tmp/package
+          cp -R plugins /tmp/package/
+          cp -R configs /tmp/package/
+          cp -R data /tmp/package/
+          cp -R gamedata /tmp/package/
+          cp -R scripting /tmp/package/
+          cp -R translations /tmp/package/
+      - name: Upload build archive for test runners
+        uses: actions/upload-artifact@v4
+        with:
+          name: SourceCoop_nightly
+          path: /tmp/package/
