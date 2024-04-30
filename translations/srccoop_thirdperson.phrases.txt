@@ -10,16 +10,19 @@
 	"thirdperson blocked"
 	{
 		"en"			"Thirdperson mode is currently disabled."
+		"ru"			"Режим от третьего лица отключен."
 	}
 
 	"thirdperson enter"
 	{
 		"en"			"You are now in thirdperson mode."
+		"ru"			"Вы в режиме от третьего лица."
 	}
 
 	"thirdperson exit"
 	{
 		"en"			"You are no longer in thirdperson mode."
+		"ru"			"Вы теперь не от третьего лица."
 	}
 
 	/* Menu */
@@ -27,6 +30,7 @@
 	"toggle thirdperson"
 	{
 		"en"			"Toggle thirdperson"
+		"ru"			"Переключить режим третьего лица."
 	}
 
 }

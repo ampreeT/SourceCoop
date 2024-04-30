@@ -10,11 +10,13 @@
 	"killsounds disabled"
 	{
 		"en"			"Kill confirm sounds disabled."
+		"ru"			"Звуки подтверждения убийства выключены."
 	}
 
 	"killsounds enabled"
 	{
 		"en"			"Kill confirm sounds enabled."
+		"ru"			"Звуки подтверждения убийства включены."
 	}
 
 	/* Menu */
@@ -22,11 +24,13 @@
 	"disable killsounds"
 	{
 		"en"			"Disable killsounds"
+		"ru"			"Выключить звуки убийств"
 	}
 
 	"enable killsounds"
 	{
 		"en"			"Enable killsounds"
+		"ru"			"Включить звуки убийств"
 	}
 
 }
