@@ -26,8 +26,9 @@ jobs:
           for file in scripting/*.sp
           do
             plugin="$(basename "${file%.*}")"
-            echo -e "Compiling $plugin\n"
+            echo -e "\nCompiling $plugin\n"
             spcomp -v2 -i scripting/include -o plugins/"$plugin" "$file" NO_DEBUG=1
+            spcomp -v2 -i scripting/include -o plugins/disabled/srccoop_debug/"$plugin" "$file"
           done
 
       - name: Create package
@@ -43,5 +44,5 @@ jobs:
       - name: Upload package
         uses: actions/upload-artifact@v4
         with:
-          name: SourceCoop-${{ steps.setup-sp.outputs.plugin-version }}-${{ github.run_number }}
+          name: SourceCoop-${{ steps.setup-sp.outputs.plugin-version }}-build${{ github.run_number }}
           path: /tmp/package/
