@@ -43,8 +43,6 @@ jobs:
           cp -R scripting $SM
           cp -R translations $SM
           cp -R gamecontent/common/. $OUT
-          : # prune any development files
-          find $OUT -type f -delete -name ".gitignore" -o -name ".gitkeep"
       
       - name: Upload package
         uses: actions/upload-artifact@v4
