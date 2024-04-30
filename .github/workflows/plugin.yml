@@ -34,7 +34,7 @@ jobs:
       - name: Create package
         run: |
           OUT="/tmp/srccoop"
-          SM="${out}/addons/sourcemod"
+          SM="${OUT}/addons/sourcemod"
           mkdir -p "$SM"
           cp -R plugins "$SM"
           cp -R configs "$SM"
