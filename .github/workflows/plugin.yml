@@ -9,27 +9,25 @@ jobs:
     strategy:
       fail-fast: false
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repo
+        uses: actions/checkout@v4
 
       - name: Setup sourcemod compiler
+        id: setup-sp
         uses: rumblefrog/setup-sp@master
         with:
           version: '1.11.6960'
+          version-file: ./scripting/include/srccoop/public.inc
+          define-name: SRCCOOP_VERSION
 
-      - name: Compile plugin
+      - name: Compile plugins
         run: |
           mkdir plugins
-          spcomp scripting/srccoop.sp -i scripting/include -o plugins/srccoop.smx
-          spcomp scripting/srccoop_addon_effects_fix.sp -i scripting/include -o plugins/srccoop_addon_effects_fix.smx
-          spcomp scripting/srccoop_addon_fpd.sp -i scripting/include -o plugins/srccoop_addon_fpd.smx
-          spcomp scripting/srccoop_addon_killsounds.sp -i scripting/include -o plugins/srccoop_addon_killsounds.smx
-          spcomp scripting/srccoop_addon_landing_screen.sp -i scripting/include -o plugins/srccoop_addon_landing_screen.smx
-          spcomp scripting/srccoop_addon_revive.sp -i scripting/include -o plugins/srccoop_addon_revive.smx
-          spcomp scripting/srccoop_addon_scoring.sp -i scripting/include -o plugins/srccoop_addon_scoring.smx
-          spcomp scripting/srccoop_addon_thirdperson.sp -i scripting/include -o plugins/srccoop_addon_thirdperson.smx
-          spcomp scripting/srccoop_addon_unstuck.sp -i scripting/include -o plugins/srccoop_addon_unstuck.smx
-          spcomp scripting/srccoop_addon_voting.sp -i scripting/include -o plugins/srccoop_addon_voting.smx
-          spcomp scripting/srccoop_addon_workshop_manager.sp -i scripting/include -o plugins/srccoop_addon_workshop_manager.smx
+          for file in scripting/*.sp
+          do
+            echo -e "\nCompiling $file..."
+            spcomp -v2 -i scripting/include -o plugins/$file scripting/$file NO_DEBUG=1
+          done
 
       - name: Create package
         run: |
@@ -40,8 +38,9 @@ jobs:
           cp -R gamedata /tmp/package/
           cp -R scripting /tmp/package/
           cp -R translations /tmp/package/
-      - name: Upload build archive for test runners
+      
+      - name: Upload package
         uses: actions/upload-artifact@v4
         with:
-          name: SourceCoop_nightly
+          name: SourceCoop-${{ steps.setup-sp.outputs.plugin-version }}-${{ github.run_number }}
           path: /tmp/package/
