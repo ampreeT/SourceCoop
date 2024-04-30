@@ -25,8 +25,9 @@ jobs:
           mkdir plugins
           for file in scripting/*.sp
           do
-            echo -e "\nCompiling $file..."
-            spcomp -v2 -i scripting/include -o plugins/$file scripting/$file NO_DEBUG=1
+            plugin="$(basename "${s%.*}")"
+            echo -e "\nCompiling $plugin"
+            spcomp -v2 -i include -o ../plugins/"$plugin" "$file" NO_DEBUG=1
           done
 
       - name: Create package
