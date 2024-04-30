@@ -22,7 +22,7 @@ jobs:
 
       - name: Compile plugins
         run: |
-          mkdir plugins
+          mkdir -p plugins/disabled/srccoop_debug
           for file in scripting/*.sp
           do
             plugin="$(basename "${file%.*}")"
