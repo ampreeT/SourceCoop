@@ -32,8 +32,6 @@ jobs:
           done
 
       - name: Create package
-        env:
-          OUT: out
         run: |
           OUT="/tmp/srccoop"
           SM="${OUT}/addons/sourcemod"
