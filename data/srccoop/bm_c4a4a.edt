@@ -12,6 +12,11 @@
 	{
 		"outputs_fixup_player_in_parameter" "0"
 	}
+	"console"
+	{
+		// fixes *some* server configurations crashing during Nihilanth precache on level start
+		"mod_forcetouchdata" "0"
+	}
 	"equipment"
 	{
 		"lookup"
