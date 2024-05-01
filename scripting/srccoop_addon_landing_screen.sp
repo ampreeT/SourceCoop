@@ -25,7 +25,10 @@ public void OnPluginStart()
 {
 	pCvarLogoMaterial = CreateConVar("sourcecoop_logo_material", "sourcecoop/landing_screen");
 
+	// games that have a transparent team select can close overlay after picking a team 
+	#if defined SRCCOOP_BLACKMESA
 	HookEvent("player_team", Event_PlayerChangeTeam, EventHookMode_Post);
+	#endif
 }
 
 public void OnMapStart()
