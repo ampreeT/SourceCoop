@@ -8,6 +8,11 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
+      matrix:
+        game:
+          - { dir: bms, args: "SRCCOOP_BLACKMESA=1" }
+          - { dir: hl2mp, args: "SRCCOOP_HL2DM=1" }
+              
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -27,8 +32,8 @@ jobs:
           do
             plugin="$(basename "${file%.*}")"
             echo -e "\nCompiling $plugin\n"
-            spcomp -v2 -i scripting/include -o plugins/"$plugin" "$file" NO_DEBUG=1
-            spcomp -v2 -i scripting/include -o plugins/disabled/srccoop_debug/"$plugin" "$file"
+            spcomp -v2 -i scripting/include -o plugins/"$plugin" "$file" NO_DEBUG=1 ${{ matrix.game.args }}
+            spcomp -v2 -i scripting/include -o plugins/disabled/srccoop_debug/"$plugin" "$file" ${{ matrix.game.args }}
           done
 
       - name: Create package
@@ -43,12 +48,17 @@ jobs:
           cp -R scripting $SM
           cp -R translations $SM
           cp -R gamecontent/common/. $OUT
+          if [ -d "gamecontent/${{ matrix.game.dir }}" ]
+          then
+            cp -R gamecontent/${{ matrix.game.dir }}/. $OUT
+          fi
           : # prune any development files
-          find $OUT -type f -name ".gitignore" -o -name ".gitkeep" -delete
+          find $OUT -type f -name ".gitignore" -delete
+          : # print package tree
           tree -a $OUT
       
       - name: Upload package
         uses: actions/upload-artifact@v4
         with:
-          name: SourceCoop-${{ steps.setup-sp.outputs.plugin-version }}-build${{ github.run_number }}
-          path: /tmp/srccoop/**
+          name: SourceCoop-${{ steps.setup-sp.outputs.plugin-version }}-${{ matrix.game.dir }}-build${{ github.run_number }}
+          path: /tmp/srccoop/
