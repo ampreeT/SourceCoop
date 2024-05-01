@@ -45,7 +45,7 @@ jobs:
           cp -R gamecontent/common/. $OUT
           : # prune any development files
           find $OUT -type f -name ".gitignore" -o -name ".gitkeep" -delete
-          tree -a
+          tree -a $OUT
       
       - name: Upload package
         uses: actions/upload-artifact@v4
