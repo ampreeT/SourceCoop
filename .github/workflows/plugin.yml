@@ -1,6 +1,6 @@
 name: CI
 
-on: [push, pull_request]
+on: [push, pull_request, workflow_dispatch]
 
 jobs:
   build:
@@ -8,40 +8,57 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
+      matrix:
+        game:
+          - { dir: bms, args: "SRCCOOP_BLACKMESA=1" }
+          - { dir: hl2mp, args: "SRCCOOP_HL2DM=1" }
+              
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repo
+        uses: actions/checkout@v4
 
       - name: Setup sourcemod compiler
+        id: setup-sp
         uses: rumblefrog/setup-sp@master
         with:
           version: '1.11.6960'
+          version-file: ./scripting/include/srccoop/public.inc
+          define-name: SRCCOOP_VERSION
 
-      - name: Compile plugin
+      - name: Compile plugins
         run: |
-          mkdir plugins
-          spcomp scripting/srccoop.sp -i scripting/include -o plugins/srccoop.smx
-          spcomp scripting/srccoop_addon_effects_fix.sp -i scripting/include -o plugins/srccoop_addon_effects_fix.smx
-          spcomp scripting/srccoop_addon_fpd.sp -i scripting/include -o plugins/srccoop_addon_fpd.smx
-          spcomp scripting/srccoop_addon_killsounds.sp -i scripting/include -o plugins/srccoop_addon_killsounds.smx
-          spcomp scripting/srccoop_addon_landing_screen.sp -i scripting/include -o plugins/srccoop_addon_landing_screen.smx
-          spcomp scripting/srccoop_addon_revive.sp -i scripting/include -o plugins/srccoop_addon_revive.smx
-          spcomp scripting/srccoop_addon_scoring.sp -i scripting/include -o plugins/srccoop_addon_scoring.smx
-          spcomp scripting/srccoop_addon_thirdperson.sp -i scripting/include -o plugins/srccoop_addon_thirdperson.smx
-          spcomp scripting/srccoop_addon_unstuck.sp -i scripting/include -o plugins/srccoop_addon_unstuck.smx
-          spcomp scripting/srccoop_addon_voting.sp -i scripting/include -o plugins/srccoop_addon_voting.smx
-          spcomp scripting/srccoop_addon_workshop_manager.sp -i scripting/include -o plugins/srccoop_addon_workshop_manager.smx
+          mkdir -p plugins/disabled/srccoop_debug
+          for file in scripting/*.sp
+          do
+            plugin="$(basename "${file%.*}")"
+            echo -e "\nCompiling $plugin\n"
+            spcomp -v2 -i scripting/include -o plugins/"$plugin" "$file" NO_DEBUG=1 ${{ matrix.game.args }}
+            spcomp -v2 -i scripting/include -o plugins/disabled/srccoop_debug/"$plugin" "$file" ${{ matrix.game.args }}
+          done
 
       - name: Create package
         run: |
-          mkdir -p /tmp/package
-          cp -R plugins /tmp/package/
-          cp -R configs /tmp/package/
-          cp -R data /tmp/package/
-          cp -R gamedata /tmp/package/
-          cp -R scripting /tmp/package/
-          cp -R translations /tmp/package/
-      - name: Upload build archive for test runners
+          OUT="/tmp/srccoop"
+          SM="${OUT}/addons/sourcemod"
+          mkdir -p $SM
+          cp -R plugins $SM
+          cp -R configs $SM
+          cp -R data $SM
+          cp -R gamedata $SM
+          cp -R scripting $SM
+          cp -R translations $SM
+          cp -R gamecontent/common/. $OUT
+          if [ -d "gamecontent/${{ matrix.game.dir }}" ]
+          then
+            cp -R gamecontent/${{ matrix.game.dir }}/. $OUT
+          fi
+          : # prune any development files
+          find $OUT -type f -name ".gitignore" -delete
+          : # print package tree
+          tree -a $OUT
+      
+      - name: Upload package
         uses: actions/upload-artifact@v4
         with:
-          name: SourceCoop_nightly
-          path: /tmp/package/
+          name: SourceCoop-${{ steps.setup-sp.outputs.plugin-version }}-${{ matrix.game.dir }}-build${{ github.run_number }}
+          path: /tmp/srccoop/
