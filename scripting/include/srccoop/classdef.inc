@@ -741,33 +741,6 @@ enum struct FireOutputData
 	float m_flDelay;
 }
 
-methodmap CTraceRay
-{
-	public CTraceRay(const float vecPosition[3], const float vecRayType[3], const int iFlags, const RayType rayType, const TraceEntityFilter traceFilter, const any pData)
-	{
-		return view_as<CTraceRay>(TR_TraceRayFilterEx(vecPosition, vecRayType, iFlags, rayType, traceFilter, pData));
-	}
-
-	public Handle GetHandle()
-	{
-		return view_as<Handle>(this);
-	}
-	public bool IsValid()
-	{
-		return view_as<bool>(this.GetHandle() != null);
-	}
-	public bool Close()
-	{
-		if (this.IsValid())
-			CloseHandle(this.GetHandle());
-	}
-
-	public CBaseEntity GetEntity()
-	{
-		return CBaseEntity(TR_GetEntityIndex(this.GetHandle()));
-	}
-}
-
 methodmap CBaseAnimating < CBaseEntity
 {
 	public CBaseAnimating(const int iEntIndex = -1)
@@ -1315,6 +1288,10 @@ methodmap CBasePlayer < CBaseCombatCharacter
 	{
 		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_afButtonReleased");
 	}
+	public int GetLastButtons()
+	{
+		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_afButtonLast");
+	}
 	public bool WasPressingButton(const int iButton)
 	{
 		return view_as<bool>(this.GetOldButtons() & iButton);
@@ -1370,15 +1347,10 @@ methodmap CBasePlayer < CBaseCombatCharacter
 		this.GetEyePosition(vecEyePos);
 		this.GetEyeAngles(vecEyeAngles);
 		
-		CTraceRay pTraceRay = CTraceRay(vecEyePos, vecEyeAngles, MASK_SHOT, RayType_Infinite, Callback_GetAimTarget, this);
-		if (pTraceRay.IsValid())
-		{
-			CBaseEntity pEntity = pTraceRay.GetEntity();
-			pTraceRay.Close();
-			return pEntity;
-		}
-		
-		return NULL_CBASEENTITY;
+		CTraceRay pTraceRay = new CTraceRay(vecEyePos, vecEyeAngles, MASK_SHOT, RayType_Infinite, TraceEntityFilter_IgnoreData, this.entindex);
+		CBaseEntity pEntity = pTraceRay.GetEntity();
+		pTraceRay.Close();
+		return pEntity;
 	}
 	public void SetMaxSpeed(const float flMaxSpeed)
 	{
@@ -1522,6 +1494,18 @@ methodmap CBasePlayer < CBaseCombatCharacter
 	public void Suicide()
 	{
 		ForcePlayerSuicide(this.GetEntIndex());
+	}
+	public CFuncLadder GetLadder()
+	{
+		return CFuncLadder(GetEntPropEnt(this.GetEntIndex(), Prop_Data, "m_hLadder"));
+	}
+	public void SetLadder(CFuncLadder pLadder)
+	{
+		if (this.GetLadder().IsValid())
+		{
+			this.GetLadder().FireOutput("OnPlayerGotOffLadder", this.GetEntIndex());
+		}
+		SetEntPropEnt(this.GetEntIndex(), Prop_Data, "m_hLadder", pLadder.entindex);
 	}
 }
 
@@ -1694,6 +1678,47 @@ methodmap CParticleSystem < CBaseEntity
 	}
 }
 
+methodmap CFuncLadder < CBaseEntity
+{
+	public CFuncLadder(const int iEntIndex = -1)
+	{
+		return view_as<CFuncLadder>(CBaseEntity(iEntIndex));
+	}
+	public bool IsEnabled()
+	{
+		return !GetEntProp(this.GetEntIndex(), Prop_Data, "m_bDisabled");
+	}
+	public void GetTopPosition(float vecBuffer[3])
+	{
+		GetEntPropVector(this.GetEntIndex(), Prop_Data, "m_vecPlayerMountPositionTop", vecBuffer);
+		float vecLocalOrigin[3];
+		this.GetOrigin(vecLocalOrigin);
+		AddVectors(vecBuffer, vecLocalOrigin, vecBuffer);
+		
+		CBaseEntity pParent = this.GetParent();
+		if (pParent.IsValid())
+		{
+			// Technically this should be using m_rgflCoordinateFrame which is a const matrix3x4_t, but if we just add AbsOrigin, it *should* be accurate enough...
+			pParent.GetAbsOrigin(vecLocalOrigin);
+			AddVectors(vecBuffer, vecLocalOrigin, vecBuffer);
+		}
+	}
+	public void GetBottomPosition(float vecBuffer[3])
+	{
+		GetEntPropVector(this.GetEntIndex(), Prop_Data, "m_vecPlayerMountPositionBottom", vecBuffer);
+		float vecLocalOrigin[3];
+		this.GetOrigin(vecLocalOrigin);
+		AddVectors(vecBuffer, vecLocalOrigin, vecBuffer);
+		
+		CBaseEntity pParent = this.GetParent();
+		if (pParent.IsValid())
+		{
+			pParent.GetAbsOrigin(vecLocalOrigin);
+			AddVectors(vecBuffer, vecLocalOrigin, vecBuffer);
+		}
+	}
+}
+
 methodmap CMultiplayRules
 {
 	public static bool IsTeamplay()
@@ -1800,7 +1825,31 @@ methodmap IServerGameDLL
 	}
 }
 
-public bool Callback_GetAimTarget(int iEntity, int iMask, any pData)
+methodmap CTraceRay < Handle
 {
-	return !view_as<bool>(iEntity == pData);
+	public CTraceRay(const float vecPosition[3], const float vecRayType[3], const int iFlags, const RayType rayType, const TraceEntityFilter traceFilter, const any pData)
+	{
+		return view_as<CTraceRay>(TR_TraceRayFilterEx(vecPosition, vecRayType, iFlags, rayType, traceFilter, pData));
+	}
+	public float GetFraction()
+	{
+		return TR_GetFraction(this);
+	}
+	public CBaseEntity GetEntity()
+	{
+		return CBaseEntity(TR_GetEntityIndex(this));
+	}
+}
+
+public bool TraceEntityFilter_IgnoreData(int iEntity, int iMask, any pData)
+{
+	return (iEntity != pData);
+}
+
+public bool TraceEntityFilter_IgnorePlayers(int iEntity, int iMask, any pData)
+{
+	CBasePlayer pPlayer = CBasePlayer(iEntity);
+	if (pPlayer.IsValid())
+		return false;
+	return (iEntity != pData);
 }

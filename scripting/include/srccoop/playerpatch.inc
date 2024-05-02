@@ -184,6 +184,14 @@ public Action OnPlayerRunCmd(int iClient, int &iButtons, int &iImpulse, float fV
 		return Plugin_Changed;
 	}
 	
+	#if defined PLAYERPATCH_FINDLADDER
+	// By using m_afButtonPressed, this is actually ignored by the game code if players mount ladders the normal way as it calls ::SwallowUseKey()
+	if ((GetEntProp(iClient, Prop_Data, "m_afButtonPressed") & IN_USE) && (GetEntProp(iClient, Prop_Data, "m_afButtonLast") & IN_USE) == 0)
+	{
+		Movement_FindLadder(CBasePlayer(iClient));
+	}
+	#endif
+	
 	return Plugin_Continue;
 }
 
@@ -361,7 +369,7 @@ public MRESReturn Hook_PlayerSpawnPost(int iClient, Handle hReturn, Handle hPara
 
 			QueryClientConVar(iClient, "r_bloomtintexponent_nextgen", QueryConVar_Bloom, 2.2);
 			QueryClientConVar(iClient, "r_bloomtintr_nextgen", QueryConVar_Bloom, 0.25);
-			QueryClientConVar(iClient, "r_bloomtintb_nextgen", QueryConVar_Bloom, 0.25);
+			QueryClientConVar(iClient, "r_bloomtintg_nextgen", QueryConVar_Bloom, 0.25);
 			QueryClientConVar(iClient, "r_bloomtintb_nextgen", QueryConVar_Bloom, 0.25);
 			QueryClientConVar(iClient, "gb_flashlight_intensity", QueryConVar_Bloom, 0.8);
 
@@ -677,6 +685,111 @@ public MRESReturn Hook_ForcePlayerToDropThisObject(Handle hParams)
 		}
 	}
 	return MRES_Supercede;
+}
+
+//------------------------------------------------------
+// CHL2GameMovement::Findladder
+// fix issue of FindLadder trace not passing through additional players making it difficult to use ladders with many players
+//------------------------------------------------------
+public void Movement_FindLadder(CBasePlayer pPlayer)
+{
+	// If we don't have a valid player, don't run
+	if (!pPlayer.IsValid() || pPlayer.GetLadder().IsValid())
+		return;
+	
+	static float flMaxDist = 64.0;
+	float bestDist = 16384.0; // Or MAX_COORD_INTEGER
+	float bestOrigin[3];
+	CFuncLadder bestLadder = NULL_CBASEENTITY;
+	
+	//float maxdistSqr = flMaxDist * flMaxDist;
+	float closest[3];
+	
+	// Normally this would be by static member: CFuncLadder::GetLadderCount()
+	ArrayList pLadders = new ArrayList();
+	int iEntity = -1;
+	while ((iEntity = FindEntityByClassname(iEntity, "func_useableladder")) != INVALID_ENT_REFERENCE)
+	{
+		pLadders.Push(CFuncLadder(iEntity));
+	}
+	
+	float vecPlayerOrigin[3];
+	float vecTmp[3];
+	float distSqr;
+	pPlayer.GetAbsOrigin(vecPlayerOrigin);
+	pPlayer.GetMaxs(vecTmp);
+	float sizeZ = vecTmp[2];
+	pPlayer.GetMins(vecTmp);
+	sizeZ = (sizeZ - vecTmp[2]) * 0.5;
+	
+	int len = pLadders.Length;
+	for (int i = 0; i < len; i++)
+	{
+		CFuncLadder pLadder = pLadders.Get(i);
+		
+		if (!pLadder.IsEnabled())
+			continue;
+		
+		float topPosition[3], bottomPosition[3];
+		pLadder.GetTopPosition(topPosition);
+		pLadder.GetBottomPosition(bottomPosition);
+		
+		if ((vecPlayerOrigin[2] < bottomPosition[2]) || (vecPlayerOrigin[2] > topPosition[2]))
+			continue;
+		
+		// Have to do both for slanted ladders, also now just checking for bottom and top instead of anywhere along ladder line,
+		// this could potentially be changed by setting bottomPosition[2] = vecPlayerOrigin[2] and test distance though.
+		float distTop = GetVectorDistance(vecPlayerOrigin, topPosition, false);
+		float distBot = GetVectorDistance(vecPlayerOrigin, bottomPosition, false);
+		if (distTop > distBot)
+		{
+			distSqr = distBot;
+			closest = bottomPosition;
+		}
+		else
+		{
+			distSqr = distTop;
+			closest = topPosition;
+		}
+		
+		if (distSqr > flMaxDist)
+			continue;
+		
+		// Finally the traces that need to be overridden to ignore players in the way...
+		CTraceRay pTraceRay = new CTraceRay(vecPlayerOrigin, closest, MASK_PLAYERSOLID, RayType_EndPoint, TraceEntityFilter_IgnorePlayers, -1);
+		if (pTraceRay.GetFraction() != 1.0 && pTraceRay.GetEntity() != pLadder)
+		{
+			pTraceRay.Close();
+			
+			AddVectors(vecTmp, vecPlayerOrigin, vecTmp);
+			vecTmp[2] += sizeZ;
+			pTraceRay = new CTraceRay(vecTmp, closest, MASK_PLAYERSOLID, RayType_EndPoint, TraceEntityFilter_IgnorePlayers, -1);
+			if (pTraceRay.GetFraction() != 1.0 && pTraceRay.GetEntity() != pLadder)
+			{
+				pTraceRay.Close();
+				continue;
+			}
+		}
+		pTraceRay.Close();
+		
+		// See if this is the best one so far
+		if (distSqr < bestDist)
+		{
+			bestDist = distSqr;
+			bestLadder = pLadder;
+			bestOrigin = closest;
+		}
+	}
+	pLadders.Close();
+	
+	if (bestLadder != NULL_CBASEENTITY)
+	{
+		// Because there is no smoothing/adjustments, jump up to where player feet are
+		if (vecPlayerOrigin[2] > bestOrigin[2])
+			bestOrigin[2] = vecPlayerOrigin[2];
+		pPlayer.Teleport(bestOrigin);
+		pPlayer.SetLadder(bestLadder);
+	}
 }
 
 //------------------------------------------------------
