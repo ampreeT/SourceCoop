@@ -129,4 +129,10 @@ methodmap CookieCompat < Cookie
 		}
 		return value;
 	}
+	public void SetInt(int client, int value) {
+		char sValue[11];
+		IntToString(value, sValue, sizeof(sValue));
+		
+		this.Set(client, sValue);
+	}
 }
