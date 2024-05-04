@@ -1,0 +1,32 @@
+"Phrases"
+{
+	/* 
+	  SourceCoop supports built-in color placeholders.
+	  {pri} - primary color - for general text, default
+	  {sec} - secondary color - used for the SRCCOOP tag
+	  {ter} - tertiary color - for highlights
+	*/
+
+	"earbleed disabled"
+	{
+		"en"			"Explosion ringing sound effect disabled."
+	}
+
+	"earbleed enabled"
+	{
+		"en"			"Explosion ringing sound effect enabled."
+	}
+
+	/* Menu */
+	
+	"disable earbleed"
+	{
+		"en"			"Disable earbleed"
+	}
+
+	"enable earbleed"
+	{
+		"en"			"Enable earbleed"
+	}
+
+}

@@ -12,16 +12,6 @@ public Plugin myinfo =
 	url = SRCCOOP_URL
 };
 
-public Address GetServerInterface(const char[] szInterface)
-{
-	return view_as<Address>(SDKCall(g_pCreateServerInterface, szInterface, 0));
-}
-
-public Address GetEngineInterface(const char[] szInterface)
-{
-	return view_as<Address>(SDKCall(g_pCreateEngineInterface, szInterface, 0));
-}
-
 void LoadGameData()
 {
 	GameData pGameConfig = LoadGameConfigFile(SRCCOOP_GAMEDATA_NAME);
@@ -30,38 +20,7 @@ void LoadGameData()
 	
 	g_serverOS = view_as<OperatingSystem>(pGameConfig.GetOffset("_OS_Detector_"));
 
-	char szCreateEngineInterface[] = "CreateEngineInterface";
-	StartPrepSDKCall(SDKCall_Static);
-	if (!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Signature, szCreateEngineInterface))
-		SetFailState("Could not obtain game signature %s", szCreateEngineInterface);
-	PrepSDKCall_AddParameter(SDKType_String, SDKPass_Pointer);
-	PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Pointer, VDECODE_FLAG_ALLOWNULL);
-	PrepSDKCall_SetReturnInfo(SDKType_PlainOldData, SDKPass_Plain);
-	if (!(g_pCreateEngineInterface = EndPrepSDKCall()))
-		SetFailState("Could not prep SDK call %s", szCreateEngineInterface);
-	
-	char szCreateServerInterface[] = "CreateServerInterface";
-	StartPrepSDKCall(SDKCall_Static);
-	if (!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Signature, szCreateServerInterface))
-		SetFailState("Could not obtain game signature %s", szCreateServerInterface);
-	PrepSDKCall_AddParameter(SDKType_String, SDKPass_Pointer);
-	PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Pointer, VDECODE_FLAG_ALLOWNULL);
-	PrepSDKCall_SetReturnInfo(SDKType_PlainOldData, SDKPass_Plain);
-	if (!(g_pCreateServerInterface = EndPrepSDKCall()))
-		SetFailState("Could not prep SDK call %s", szCreateServerInterface);
-	
-	/*
-	char szInterfaceEngine[64];
-	if (!GameConfGetKeyValue(pGameConfig, "IVEngineServer", szInterfaceEngine, sizeof(szInterfaceEngine)))
-		SetFailState("Could not get interface verison for %s", "IVEngineServer");
-	if (!(g_VEngineServer = GetEngineInterface(szInterfaceEngine)))
-		SetFailState("Could not get interface for %s", "g_ServerGameDLL");
-	*/
-	
-	char szInterfaceGame[64];
-	if (!GameConfGetKeyValue(pGameConfig, "IServerGameDLL", szInterfaceGame, sizeof(szInterfaceGame)))
-		SetFailState("Could not get interface verison for %s", "IServerGameDLL");
-	if (!(g_ServerGameDLL = IServerGameDLL(GetServerInterface(szInterfaceGame))))
+	if (!(g_ServerGameDLL = IServerGameDLL(GetInterface(pGameConfig, "server", "IServerGameDLL"))))
 		SetFailState("Could not get interface for %s", "g_ServerGameDLL");
 	
 	#if defined PLAYERPATCH_SERVERSIDE_RAGDOLLS

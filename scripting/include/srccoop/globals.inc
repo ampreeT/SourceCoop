@@ -30,9 +30,6 @@ ConVar mp_forcerespawn;
 // ----------------------------
 // SDK Calls
 // ----------------------------
-Handle g_pCreateEngineInterface;
-Handle g_pCreateServerInterface;
-
 #if defined PLAYERPATCH_SERVERSIDE_RAGDOLLS
 Handle g_pCreateServerRagdoll;
 #endif
@@ -148,7 +145,6 @@ DynamicDetour hkTestGroundMove;
 // ----------------------------
 // Adresses, Interfaces
 // ----------------------------
-//Address g_VEngineServer;
 IServerGameDLL g_ServerGameDLL;
 
 // ----------------------------

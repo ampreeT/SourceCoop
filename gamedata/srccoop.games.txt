@@ -14,6 +14,11 @@
 				"windows"	"ServerGameDLL010"
 				"linux"		"ServerGameDLL010"
 			}
+			"IEngineSoundServer"
+			{
+				"windows"	"IEngineSoundServer003"
+				"linux"		"IEngineSoundServer003"
+			}
 		}
 		"Offsets"
 		{
@@ -22,16 +27,21 @@
 				"windows"	"0"
 				"linux"		"1"
 			}
+			"CEngineSoundServer::SetPlayerDSP" // void CEngineSoundServer::SetPlayerDSP ( IRecipientFilter& filter, int dspType, bool fastReset )
+			{
+				"windows"	"10"
+				"linux"		"10"
+			}
 		}
 		"Signatures"
 		{
-			"CreateEngineInterface"
+			"CreateInterface:engine"
 			{
 				"library"		"engine"
 				"windows"		"@CreateInterface"
 				"linux"			"@CreateInterface"
 			}
-			"CreateServerInterface"
+			"CreateInterface:server"
 			{
 				"library"		"server"
 				"windows"		"@CreateInterface"
@@ -380,6 +390,28 @@
 						"type"	"bool"
 					}
 					"background"
+					{
+						"type"	"bool"
+					}
+				}
+			}
+			"CEngineSoundServer::SetPlayerDSP"
+			{
+				"offset"	"CEngineSoundServer::SetPlayerDSP"
+				"hooktype"	"raw"
+				"return"	"void"
+				"this"		"ignore"
+				"arguments"
+				{
+					"filter"
+					{
+						"type"	"objectptr"
+					}
+					"dspType"
+					{
+						"type"	"int"
+					}
+					"fastReset"
 					{
 						"type"	"bool"
 					}

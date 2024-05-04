@@ -12,7 +12,7 @@
 stock void GetGamedataString(GameData pGameConfig, const char[] szKey, char[] szVal, int len)
 {
 	if (!pGameConfig.GetKeyValue(szKey, szVal, len))
-		SetFailState("Missing config key: \"%s\"", szKey);
+		SetFailState("Missing gamedata key: \"%s\"", szKey);
 }
 
 stock float GetGamedataFloat(GameData pGameConfig, const char[] szKey)
@@ -21,7 +21,7 @@ stock float GetGamedataFloat(GameData pGameConfig, const char[] szKey)
 	GetGamedataString(pGameConfig, szKey, szVal, sizeof(szVal));
 
 	if (!StringToFloatEx(szVal, flVal))
-		SetFailState("Config value for key: \"%s\" should be a float.", szKey);
+		SetFailState("Value for key: \"%s\" should be a float.", szKey);
 
 	return flVal;
 }
@@ -32,7 +32,7 @@ stock int GetGamedataInt(GameData pGameConfig, const char[] szKey)
 	GetGamedataString(pGameConfig, szKey, szVal, sizeof(szVal));
 
 	if (!StringToIntEx(szVal, iVal))
-		SetFailState("Config value for key: \"%s\" should be an int.", szKey);
+		SetFailState("Value for key: \"%s\" should be an int.", szKey);
 
 	return iVal;
 }
@@ -43,12 +43,44 @@ stock void GetGamedataColor(GameData pGameConfig, const char[] szKey, int color[
 	GetGamedataString(pGameConfig, szKey, szVal, sizeof(szVal));
 	
 	if (3 > ExplodeString(szVal, delimiter, szColor, sizeof(szColor), sizeof(szColor[])))
-		SetFailState("Config value for key: \"%s\" is not a valid color.", szKey);
+		SetFailState("Value for key: \"%s\" is not a valid color.", szKey);
 	
 	color[0] = StringToInt(szColor[0]);
 	color[1] = StringToInt(szColor[1]);
 	color[2] = StringToInt(szColor[2]);
 	color[3] = StringToInt(szColor[3]);
+}
+
+stock Address GetInterface(GameData pGameConfig, const char[] szLibrary, const char[] szInterface, bool bExtractIfaceVersion = true)
+{
+	char szBuffer[64];
+	FormatEx(szBuffer, sizeof(szBuffer), "CreateInterface:%s", szLibrary);
+
+	StartPrepSDKCall(SDKCall_Static);
+	if (!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Signature, szBuffer))
+		SetFailState("Could not obtain game signature %s", szBuffer);
+
+	PrepSDKCall_AddParameter(SDKType_String, SDKPass_Pointer);
+	PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Pointer, VDECODE_FLAG_ALLOWNULL);
+	PrepSDKCall_SetReturnInfo(SDKType_PlainOldData, SDKPass_Plain);
+	Handle pCreateIfaceCall = EndPrepSDKCall();
+	if (!pCreateIfaceCall)
+		SetFailState("Could not prep SDK call %s", szBuffer);
+
+	Address pIfaceAddr;
+	if (bExtractIfaceVersion)
+	{
+		GetGamedataString(pGameConfig, szInterface, szBuffer, sizeof(szBuffer));
+		pIfaceAddr = SDKCall(pCreateIfaceCall, szBuffer, 0);
+	}
+	else
+	{
+		pIfaceAddr = SDKCall(pCreateIfaceCall, szInterface, 0);
+	}
+	
+	pCreateIfaceCall.Close();
+
+	return pIfaceAddr;
 }
 
 //------------------------------------------------------
@@ -73,6 +105,36 @@ stock void LoadDHookVirtual(const Handle pGameConfig, DynamicHook& pHandle, cons
 		SetFailState("Couldn't create hook %s", szFuncName);
 }
 #endif
+
+//------------------------------------------------------
+// Memory utils
+//------------------------------------------------------
+stock any Deref(any addr, NumberType type = NumberType_Int32)
+{
+	return LoadFromAddress(view_as<Address>(addr), type);
+}
+
+// Address arithmetics operators (why is this not included)!
+
+stock Address operator+(Address oper1, int oper2)
+{
+	return oper1 + view_as<Address>(oper2);
+}
+
+stock Address operator+(int oper1, Address oper2)
+{
+	return view_as<Address>(oper1) + oper2;
+}
+
+stock Address operator-(Address oper1, int oper2)
+{
+	return oper1 - view_as<Address>(oper2);
+}
+
+stock Address operator-(int oper1, Address oper2)
+{
+	return view_as<Address>(oper1) - oper2;
+}
 
 //------------------------------------------------------
 // Cookie utils

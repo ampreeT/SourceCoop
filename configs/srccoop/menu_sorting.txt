@@ -9,6 +9,7 @@
 	"SoundSettings"
 	{
 		"item"		"ToggleKillsounds"
+		"item"		"ToggleEarBleed"
 	}
 
 	"Voting"
