@@ -41,8 +41,12 @@ methodmap ItemInstancingManager
 	
 	public static bool HasPickedUpItem(CBasePlayer pPlayer, CBaseEntity pItem)
 	{
+		int client = pPlayer.GetEntIndex();
+		if (!g_pPickedUpItems[client]) // filter sourceTV
+			return false;
+		
 		char key[32]; bool _val; IntToString(view_as<int>(pItem), key, sizeof(key));
-		return g_pPickedUpItems[pPlayer.GetEntIndex()].GetValue(key, _val);
+		return g_pPickedUpItems[client].GetValue(key, _val);
 	}
 	
 	public static void ClearPickedUpItem(CBaseEntity pItem)
