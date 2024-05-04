@@ -18,7 +18,7 @@ public Plugin myinfo =
 
 #define MENUITEM_TOGGLE_EARBLEED "ToggleEarBleed"
 
-Cookie pEnabledCookie;
+CookieCompat pEnabledCookie;
 ConVar pConvarDefault;
 
 void LoadGameData()
@@ -43,7 +43,7 @@ public void OnPluginStart()
 	InitSourceCoopAddon();
 	LoadGameData();
 
-	pEnabledCookie = new Cookie("sourcecoop_earbleed_enabled", "Earbleed toggle", CookieAccess_Protected);
+	pEnabledCookie = view_as<CookieCompat>(new Cookie("sourcecoop_earbleed_enabled", "Earbleed toggle", CookieAccess_Protected));
 	pConvarDefault = CreateConVar("sourcecoop_earbleed_default", "0", "Sets the default setting of the earbleed player preference.", _, true, 0.0, true, 1.0);
 }
 
@@ -112,4 +112,21 @@ public MRESReturn Hook_SetPlayerDSP(DHookParam hParams)
 bool ShouldRing(int client)
 {
 	return view_as<bool>(AreClientCookiesCached(client)? pEnabledCookie.GetInt(client, pConvarDefault.IntValue) : pConvarDefault.IntValue);
+}
+
+// SM 1.11 Compat - undo when 1.12 stable
+methodmap CookieCompat < Cookie
+{
+	public int GetInt(int client, int defaultValue = 0)
+	{
+		char buffer[11];
+		this.Get(client, buffer, sizeof(buffer));
+
+		int value;
+		if (!StringToIntEx(buffer, value))
+		{
+			value = defaultValue;
+		}
+		return value;
+	}
 }
