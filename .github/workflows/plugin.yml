@@ -48,6 +48,7 @@ jobs:
           cp -R gamedata $SM
           cp -R scripting $SM
           cp -R translations $SM
+          cp -R data $SM
           cp -R edt/common/. $EDT_DEST
           if [ -d "edt/${{ matrix.game.dir }}" ]
           then
