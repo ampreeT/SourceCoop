@@ -121,3 +121,11 @@ native bool SC_TeleportToCurrentCheckpoint(CBasePlayer pPlayer);
  * Checks if a SourceCoop feature is enabled.
  */
 native bool SC_IsCoopFeatureEnabled(SourceCoopFeature iFeatureBits);
+
+/**
+ * Workaround for weapon prediction errors after the player has returned from third-person.
+ * Uses equipment pack & restore mechanism.
+ * @error     Invalid or dead CBasePlayer
+ * @return    false if player's equipment has already been stored and is waiting for restore
+ */
+native bool SC_FixWeaponPrediction(CBasePlayer pPlayer);

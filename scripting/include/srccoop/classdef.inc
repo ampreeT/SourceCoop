@@ -22,6 +22,7 @@ Handle g_pUpdateEnemyMemory;
 Handle g_pGetSequenceLinearMotion;
 Handle g_pShouldPlayerAvoid;
 Handle g_pRemoveAllItems;
+Handle g_pCreateViewModel;
 Handle g_pIsNPC;
 Handle g_pSendWeaponAnim;
 Handle g_pWeaponSwitch;
@@ -58,6 +59,16 @@ stock void InitClassdef(GameData pGameConfig)
 	{
 		PrepSDKCall_AddParameter(SDKType_Bool, SDKPass_Plain);
 		if (!(g_pRemoveAllItems = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szRemoveAllItems);
+	}
+	
+	char szCreateViewModel[] = "CBasePlayer::CreateViewModel";
+	StartPrepSDKCall(SDKCall_Player);
+	if (!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Virtual, szCreateViewModel))
+		LogMessage("Could not obtain gamedata offset %s", szCreateViewModel);
+	else
+	{
+		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
+		if (!(g_pCreateViewModel = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szCreateViewModel);
 	}
 	
 	char szGlobalEntity_GetIndex[] = "GlobalEntity_GetIndex";
@@ -1373,9 +1384,13 @@ methodmap CBasePlayer < CBaseCombatCharacter
 	{
 		return CPredictedViewModel(GetEntPropEnt(this.GetEntIndex(), Prop_Send, "m_hViewModel", iIndex));
 	}
-	public void SetViewModel(CBaseEntity pEntity)
+	public void SetViewModel(CBaseEntity pEntity, int iIndex = 0)
 	{
-		SetEntPropEnt(this.GetEntIndex(), Prop_Send, "m_hViewModel", pEntity.GetEntIndex());
+		SetEntPropEnt(this.GetEntIndex(), Prop_Send, "m_hViewModel", pEntity.GetEntIndex(), iIndex);
+	}
+	public void CreateViewModel(int index = 0)
+	{
+		SDKCall(g_pCreateViewModel, this.entindex, index);
 	}
 	public CBaseEntity GetRagdoll()
 	{

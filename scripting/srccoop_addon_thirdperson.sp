@@ -125,6 +125,12 @@ void SetThirdperson(int client, bool enable)
 	else
 	{
 		ClientCommand(client, "firstperson");
+
+		if (IsPlayerAlive(client))
+		{
+			SC_FixWeaponPrediction(CBasePlayer(client));
+		}
+
 		bIsInThirdperson[client] = false;
 	}
 }

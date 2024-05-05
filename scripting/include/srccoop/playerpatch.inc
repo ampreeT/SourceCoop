@@ -830,6 +830,20 @@ void RestorePackedItems(CBasePlayer pPlayer)
 	if (!g_pPackedEquipment[client].IsInitialized())
 		return;
 
+	#if defined SRCCOOP_BLACKMESA
+	// Prevent a small chance of viewmodel becoming invisible on client AFTER switching weapons
+	for (int i = 0; i < MAX_VIEWMODELS; i++)
+	{
+		CPredictedViewModel vm = pPlayer.GetViewModel(i);
+		if (vm != NULL_CBASEENTITY)
+		{
+			vm.Kill();
+			pPlayer.SetViewModel(NULL_CBASEENTITY, i);
+			pPlayer.CreateViewModel(i);
+		}
+	}
+	#endif
+
 	g_pPackedEquipment[client].Equip(pPlayer);
 	g_pPackedEquipment[client].Close();
 }
@@ -850,6 +864,29 @@ void ClearPackedItems(CBasePlayer pPlayer)
 		}
 	}
 	g_pPackedEquipment[client].Close();
+}
+
+//------------------------------------------------------
+// Weapon prediction fix implemented
+// using the pack & restore mechanism
+//------------------------------------------------------
+
+bool FixWeaponPrediction(CBasePlayer pPlayer)
+{
+	if (HasPackedItems(pPlayer))
+		return false;
+	
+	PackPlayerItems(pPlayer);
+	CreateTimer(0.1, Timer_FixWeaponPrediction, pPlayer, TIMER_FLAG_NO_MAPCHANGE);
+	return true;
+}
+
+Action Timer_FixWeaponPrediction(Handle timer, CBasePlayer pPlayer)
+{
+	if (pPlayer.IsValid() && pPlayer.IsAlive())
+		RestorePackedItems(pPlayer);
+
+	return Plugin_Handled;
 }
 
 //------------------------------------------------------

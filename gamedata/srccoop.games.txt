@@ -919,6 +919,11 @@
 				"windows"	"160"
 				"linux"		"161"
 			}
+			"CBasePlayer::CreateViewModel" // CBasePlayer::CreateViewModel(int)
+			{
+				"windows"	"343"
+				"linux"		"344"
+			}
 		}
 	}
 

@@ -14,6 +14,7 @@ void RegNatives()
 	CreateNative("SC_GetSurvivalMode", Native_GetSurvivalMode);
 	CreateNative("SC_TeleportToCurrentCheckpoint", Native_TeleportToCurrentCheckpoint);
 	CreateNative("SC_IsCoopFeatureEnabled", Native_IsCoopFeatureEnabled);
+	CreateNative("SC_FixWeaponPrediction", Native_FixWeaponPrediction);
 }
 
 public any Native_GetCoopTopMenu(Handle plugin, int numParams)
@@ -65,4 +66,15 @@ public any Native_TeleportToCurrentCheckpoint(Handle plugin, int numParams)
 public any Native_IsCoopFeatureEnabled(Handle plugin, int numParams)
 {
 	return CoopManager.IsFeatureEnabled(GetNativeCell(1));
+}
+
+public any Native_FixWeaponPrediction(Handle plugin, int numParams)
+{
+	CBasePlayer pPlayer = GetNativeCell(1);
+	if (!pPlayer.IsValid())
+		ThrowNativeError(0, "Passed CBasePlayer is invalid!");
+	if (!pPlayer.IsAlive())
+		ThrowNativeError(0, "Passed CBasePlayer is dead!");
+	
+	return FixWeaponPrediction(pPlayer);
 }

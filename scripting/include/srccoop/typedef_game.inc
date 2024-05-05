@@ -11,6 +11,7 @@
 //------------------------------------------------------
 #define MAX_WEAPONS 48
 #define MAX_AMMO_TYPES 32
+#define MAX_VIEWMODELS 2
 #define MAX_MAPNAME 32
 #define MAX_CLASSNAME 48
 
