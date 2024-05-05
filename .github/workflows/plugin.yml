@@ -40,7 +40,7 @@ jobs:
         run: |
           OUT="/tmp/srccoop"
           SM="${OUT}/addons/sourcemod"
-          EDT_DEST="${SM}/data"
+          EDT_DEST="${SM}/data/srccoop"
           mkdir -p $SM
           mkdir -p $EDT_DEST
           cp -R plugins $SM
