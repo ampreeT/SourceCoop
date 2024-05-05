@@ -1,0 +1,88 @@
+// Script for workshop item 934371395 - Emergency 17
+
+#base "base/coop_base_sp_conversion.edt"
+
+"config"
+{
+	"campaign" "Workshop maps"
+	"chapter" "Emergency 17"
+	
+	"features"
+	{
+		"KEEP_EQUIPMENT" "1"
+	}
+	"equipment"
+	{
+		"item" "item_suit"
+		"item" "item_battery"
+		"item" "item_weapon_crowbar"
+		"item" "item_weapon_357"
+		"item" "item_weapon_mp5"
+		"item" "item_weapon_shotgun"
+		"item" "item_ammo_357"
+		"item" "item_ammo_mp5"
+		"item" "item_grenade_mp5"
+		"item" "item_ammo_shotgun"
+		"item" "item_ammo_shotgun"
+		"item" "item_weapon_frag"
+	}
+	"entity"
+	{
+		// block off previous map
+		"modify"
+		{
+			"classname" "trigger_changelevel"
+			"map" "bm_e17_m1"
+			"set"
+			{
+				"classname" "func_brush"
+				"rendermode" "10"
+			}
+		}
+		// block off next map
+		"add"
+		{
+			"classname" "func_brush"
+			"rendermode" "10"
+			"functions"
+			{
+				"set_model"
+				{
+					"origin" "-3400 -4064 -512"
+					"size" "16 64 64"
+				}
+			}
+		}
+		//music fix
+		"modify"
+		{
+			"targetname" "combatsong1"
+			"set"
+			{
+				"message" "music.rp.rp1"
+			}
+		}
+	}
+	"checkpoint"
+	{
+		"spawn"
+		{
+			"origin"	"-328 -622 149"
+			"angles"	"0 -90 0"
+		}
+		"first fight"
+		{
+			"origin"	"-928 -1488 37"
+			"angles"	"0 180 0"
+			"triggerid"	"12331"
+			"output"	"OnTrigger"
+		}
+		"second fight"
+		{
+			"origin"	"-2927 -2867 -251"
+			"angles"	"0 -90 0"
+			"triggerid"	"34392"
+			"output"	"OnTrigger"
+		}
+	}
+}

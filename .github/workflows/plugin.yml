@@ -40,13 +40,19 @@ jobs:
         run: |
           OUT="/tmp/srccoop"
           SM="${OUT}/addons/sourcemod"
+          EDT_DEST="${SM}/data"
           mkdir -p $SM
+          mkdir -p $EDT_DEST
           cp -R plugins $SM
           cp -R configs $SM
-          cp -R data $SM
           cp -R gamedata $SM
           cp -R scripting $SM
           cp -R translations $SM
+          cp -R edt/common/. $EDT_DEST
+          if [ -d "edt/${{ matrix.game.dir }}" ]
+          then
+            cp -R edt/${{ matrix.game.dir }}/. $EDT_DEST
+          fi
           cp -R gamecontent/common/. $OUT
           if [ -d "gamecontent/${{ matrix.game.dir }}" ]
           then
