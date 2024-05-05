@@ -2,7 +2,16 @@
 
 # SourceCoop
 
-SourceCoop is a cooperative plugin for [Black Mesa](https://store.steampowered.com/app/362890/Black_Mesa/ "Black Mesa") that __allows multiple players to play together on official and custom campaigns__. The plugin fixes various crashes, adjusts maps for cooperative play, re-enables single-player functionality, and __only needs to be installed on the server__.
+SourceCoop is a cooperative mod for multi-player Source engine games, that
+- Enables players to play together on single-player campaigns or maps
+- Complements existing cooperative campaigns or maps
+- Fixes various crashes
+- Re-enables single-player functionality
+- Includes map configs adjusting for cooperative play
+- Comes with optional addons, enhancing your experience
+- Can be used by server owners as the ultimate map config tool
+- Is built on [SourceMod](https://www.sourcemm.net)
+- __Only needs to be installed on the server__.
 
 ## Installation Guide
 __If you are someone who is looking to play on a server__, you are already completely set up and ready to play! Cooperative servers can be found on the server browser just like any other server.
@@ -14,7 +23,7 @@ __If you are a server operator who is looking to host your own cooperative serve
 	- Latest tested build ➤ __6960__
 - Install the latest release of SourceCoop from the [releases page](https://github.com/ampreeT/SourceCoop/releases).
 
-A step-by-step guide is also available on [Steam](https://steamcommunity.com/sharedfiles/filedetails/?id=2200247356).
+A step-by-step guide for Black Mesa is also available on [Steam](https://steamcommunity.com/sharedfiles/filedetails/?id=2200247356).
 
 ## Additional information
 - [Features & Configuration](https://github.com/ampreeT/SourceCoop/wiki/Features-&-Configuration)
@@ -26,10 +35,9 @@ A step-by-step guide is also available on [Steam](https://steamcommunity.com/sha
 
 ## Contributing
 __If you are looking to help with the development of the project__, we are always looking for more help! Heres some ways you can help:
-- Debugging and tracking down crashes
+- Debugging and tracking down issues
 - Adding features
 - Adding configs for new campaigns or levels
-- Spreading the word
 
 If you are interested in helping us, contact us on [Discord](https://discord.gg/Fh77rxQaEB) or create a pull request.
 
