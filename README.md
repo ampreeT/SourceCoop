@@ -2,7 +2,7 @@
 
 # SourceCoop
 
-SourceCoop is a cooperative mod for multi-player Source engine games, that
+SourceCoop is a cooperative mod for multi-player Source Engine games, that
 - Enables players to play together on single-player campaigns or maps
 - Complements existing cooperative campaigns or maps
 - Fixes various crashes
@@ -10,7 +10,7 @@ SourceCoop is a cooperative mod for multi-player Source engine games, that
 - Includes map configs adjusting for cooperative play
 - Comes with optional addons, enhancing your experience
 - Can be used by server owners as the ultimate map config tool
-- Is built on [SourceMod](https://www.sourcemm.net)
+- Is built on [SourceMod](https://www.sourcemod.net)
 - __Only needs to be installed on the server__.
 
 ## Installation Guide
