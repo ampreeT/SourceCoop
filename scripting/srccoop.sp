@@ -23,6 +23,8 @@ void LoadGameData()
 	if (!(g_ServerGameDLL = IServerGameDLL(GetInterface(pGameConfig, "server", "IServerGameDLL"))))
 		SetFailState("Could not get interface for %s", "g_ServerGameDLL");
 	
+	// Calls
+
 	#if defined PLAYERPATCH_SERVERSIDE_RAGDOLLS
 	char szCreateServerRagdoll[] = "CreateServerRagdoll";
 	StartPrepSDKCall(SDKCall_Static);
@@ -37,6 +39,8 @@ void LoadGameData()
 	if (!(g_pCreateServerRagdoll = EndPrepSDKCall()))
 		SetFailState("Could not prep SDK call %s", szCreateServerRagdoll);
 	#endif
+
+	// Virtual Hooks
 
 	LoadDHookVirtual(pGameConfig, hkLevelInit, "CServerGameDLL::LevelInit");
 	if (hkLevelInit.HookRaw(Hook_Pre, view_as<Address>(g_ServerGameDLL), Hook_OnLevelInit) == INVALID_HOOK_ID)
@@ -117,7 +121,7 @@ void LoadGameData()
 	LoadDHookVirtual(pGameConfig, hkStartObserverMode, "CBasePlayer::StartObserverMode");
 	#endif
 
-	// Detours
+	// Detour Hooks
 	
 	#if defined PLAYERPATCH_SETSUITUPDATE
 	LoadDHookDetour(pGameConfig, hkSetSuitUpdate, "CBasePlayer::SetSuitUpdate", Hook_SetSuitUpdate, Hook_SetSuitUpdatePost);
@@ -149,6 +153,12 @@ void LoadGameData()
 		LoadDHookDetour(pGameConfig, hkAccumulatePose, "CBoneSetup::AccumulatePose", Hook_AccumulatePose);
 		LoadDHookDetour(pGameConfig, hkTestGroundMove, "CAI_MoveProbe::TestGroundMove", Hook_TestGroundMove);
 	}
+	#endif
+
+	// Memory Patches
+
+	#if defined ENTPATCH_AI_SCRIPT_CONDITIONS
+	LoadMemPatch(pGameConfig, "CAI_ScriptConditions::EvaluationThink::GetSinglePlayer");
 	#endif
 
 	// Init SDKCalls for classdef
@@ -671,6 +681,7 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 		if (strcmp(szClassname, "ai_script_conditions") == 0)
 		{
 			DHookEntity(hkThink, false, iEntIndex, _, Hook_AIConditionsThink);
+			DHookEntity(hkThink, true, iEntIndex, _, Hook_AIConditionsThinkPost);
 			return;
 		}
 		#endif

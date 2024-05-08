@@ -87,7 +87,7 @@ stock Address GetInterface(GameData pGameConfig, const char[] szLibrary, const c
 // DHooks utils
 //------------------------------------------------------
 #if defined _dhooks_included
-stock void LoadDHookDetour(const Handle pGameConfig, DynamicDetour& pHandle, const char[] szFuncName, DHookCallback pCallbackPre = INVALID_FUNCTION, DHookCallback pCallbackPost = INVALID_FUNCTION)
+stock void LoadDHookDetour(GameData pGameConfig, DynamicDetour& pHandle, const char[] szFuncName, DHookCallback pCallbackPre = INVALID_FUNCTION, DHookCallback pCallbackPost = INVALID_FUNCTION)
 {
 	pHandle = DynamicDetour.FromConf(pGameConfig, szFuncName);
 	if (pHandle == null)
@@ -98,7 +98,7 @@ stock void LoadDHookDetour(const Handle pGameConfig, DynamicDetour& pHandle, con
 		SetFailState("Couldn't enable post detour hook %s", szFuncName);
 }
 
-stock void LoadDHookVirtual(const Handle pGameConfig, DynamicHook& pHandle, const char[] szFuncName)
+stock void LoadDHookVirtual(GameData pGameConfig, DynamicHook& pHandle, const char[] szFuncName)
 {
 	pHandle = DynamicHook.FromConf(pGameConfig, szFuncName);
 	if (pHandle == null)
@@ -109,6 +109,24 @@ stock void LoadDHookVirtual(const Handle pGameConfig, DynamicHook& pHandle, cons
 //------------------------------------------------------
 // Memory utils
 //------------------------------------------------------
+#if defined __sourcescramble_ext_included
+stock MemoryPatch LoadMemPatch(GameData pGameConfig, const char[] szName, bool bEnable = true, bool bRequired = true)
+{
+	MemoryPatch patch = MemoryPatch.CreateFromConf(pGameConfig, szName);
+	if (!patch.Validate())
+	{
+		if (bRequired)
+			SetFailState("Failed to verify mempatch \"%s\"", szName);
+		LogMessage("Failed to verify mempatch \"%s\"", szName);
+	}
+	else if (bEnable)
+	{
+		patch.Enable();
+	}
+	return patch;
+}
+#endif
+
 stock any Deref(any addr, NumberType type = NumberType_Int32)
 {
 	return LoadFromAddress(view_as<Address>(addr), type);
@@ -134,6 +152,104 @@ stock Address operator-(Address oper1, int oper2)
 stock Address operator-(int oper1, Address oper2)
 {
 	return view_as<Address>(oper1) - oper2;
+}
+
+// The following are attributed to github.com/nosoop/stocksoup
+
+/**
+ * Loads a null-terminated string from the given address.
+ * 
+ * The function will return an empty string if the address corresponds to a nullptr.  This
+ * functionality is present as a workaround for when an SDKCall that expects a char pointer
+ * receives a nullptr and attempts to dereference it (see alliedmodders/sourcemod/issues/874).
+ * 
+ * If it is necessary to differentiate between an empty string and a null pointer, check if addr
+ * is null before calling the function, or pass a reference to bIsNullPointer.
+ * 
+ * @return Number of bytes written.  0 is returned on an empty string or a null pointer.
+ */
+stock int LoadStringFromAddress(Address addr, char[] buffer, int maxlen, bool &bIsNullPointer = false)
+{
+	if (!addr)
+	{
+		bIsNullPointer = true;
+		return 0;
+	}
+	
+	int c;
+	char ch;
+	do
+	{
+		ch = view_as<int>(Deref(addr + c, NumberType_Int8));
+		buffer[c] = ch;
+	} while (ch && ++c < maxlen - 1);
+	return c;
+}
+
+/**
+ * Retrieves an entity index from a raw entity handle address.
+ * 
+ * Note that SourceMod's entity conversion routine is an implementation detail that may change.
+ * 
+ * @param addr			Address to a memory location.
+ * @return				Entity index, or -1 if not valid.
+ */
+stock int LoadEntityHandleFromAddress(Address addr)
+{
+	return EntRefToEntIndex(Deref(addr) | (1 << 31));
+}
+
+/**
+ * Stores an entity into a raw entity handle address.  Stores zero if the entity is not valid.
+ * 
+ * Note that SourceMod's entity conversion routine is an implementation detail that may change.
+ * 
+ * @param addr			Address to a memory location.
+ * @param entity		Entity index.
+ */
+stock void StoreEntityHandleToAddress(Address addr, int entity)
+{
+	StoreToAddress(addr, IsValidEntity(entity)? EntIndexToEntRef(entity) & ~(1 << 31) : 0, NumberType_Int32);
+}
+
+/**
+ * Returns an entity index from its address by attempting to read the
+ * CBaseEntity::m_RefEHandle member.  This assumes the address of a CBaseEntity is
+ * passed in.
+ * 
+ * @param pEntity		Address of an entity.
+ * @return				Entity index, or -1 if not valid.
+ */
+stock int GetEntityFromAddress(Address pEntity)
+{
+	static int offs_RefEHandle;
+	if (offs_RefEHandle)
+		return LoadEntityHandleFromAddress(pEntity + offs_RefEHandle);
+	
+	// if we don't have it already, attempt to lookup offset based on SDK information
+	// CWorld is derived from CBaseEntity so it should have both offsets
+	int offs_angRotation = FindDataMapInfo(0, "m_angRotation"),
+			offs_vecViewOffset = FindDataMapInfo(0, "m_vecViewOffset");
+	
+	if (offs_angRotation == -1)
+	{
+		ThrowError("Could not find offset for ((CBaseEntity) CWorld)::m_angRotation");
+	}
+	else if (offs_vecViewOffset == -1)
+	{
+		ThrowError("Could not find offset for ((CBaseEntity) CWorld)::m_vecViewOffset");
+	}
+	else if ((offs_angRotation + 0x0C) != (offs_vecViewOffset - 0x04))
+	{
+		char game[32];
+		GetGameFolderName(game, sizeof(game));
+		ThrowError("Could not confirm offset of CBaseEntity::m_RefEHandle "
+				... "(incorrect assumption for game '%s'?)", game);
+	}
+	
+	// offset seems right, cache it for the next call
+	offs_RefEHandle = offs_angRotation + 0x0C;
+	return GetEntityFromAddress(pEntity);
 }
 
 //------------------------------------------------------
@@ -471,27 +587,88 @@ stock int FindEntityByOwner(int startEnt, CBaseEntity pOwnerEntity, const char[]
 //------------------------------------------------------
 // Player utils
 //------------------------------------------------------
-stock CBasePlayer GetNearestPlayer(CBaseEntity pOriginEntity, bool bOnlyAlive = true)
+
+/**
+ * Return nearest alive player if exists, otherwise return nearest player that passes requirements.
+ */
+stock CBasePlayer GetNearestPlayerPreferAlive(CBaseEntity pOriginEntity, bool bNoSpectators = false)
+{
+	return GetNearestPlayer(pOriginEntity, false, bNoSpectators, true);
+}
+
+stock CBasePlayer GetNearestPlayerPreferAliveEx(float vecPos[3], bool bNoSpectators = false)
+{
+	return GetNearestPlayerEx(vecPos, false, bNoSpectators, true);
+}
+
+/**
+ * Return nearest alive player.
+ */
+stock CBasePlayer GetNearestPlayerAlive(CBaseEntity pOriginEntity)
+{
+	return GetNearestPlayer(pOriginEntity, true, true, false);
+}
+
+stock CBasePlayer GetNearestPlayerAliveEx(float vecPos[3])
+{
+	return GetNearestPlayerEx(vecPos, true, true, false);
+}
+
+/**
+ * Return nearest player that passes requirements.
+ */
+stock CBasePlayer GetNearestPlayer(CBaseEntity pOriginEntity, bool bAliveOnly = true, bool bNoSpectators = true, bool bPreferAlive = false)
 {
 	float vecEntityPosition[3];
 	pOriginEntity.GetAbsOrigin(vecEntityPosition);
+	return GetNearestPlayerEx(vecEntityPosition, bAliveOnly, bNoSpectators, bPreferAlive);
+}
 
-	CBasePlayer pBestPlayer = CBasePlayer();
+stock CBasePlayer GetNearestPlayerEx(float vecPos[3], bool bAliveOnly = true, bool bNoSpectators = true, bool bPreferAlive = false)
+{
+	CBasePlayer pBestPlayer = NULL_CBASEENTITY;
 	float flBestDistance = FLT_MAX;
-	for (int i = 1; i < (MaxClients + 1); i++)
+	bool bFoundAlive;
+	
+	for (int i = 1; i <= MaxClients; i++)
 	{
-		CBasePlayer pPlayer = CBasePlayer(i);
-		if (pPlayer.IsValid() && !IsFakeClient(i) && (!bOnlyAlive || pPlayer.IsAlive()))
-		{
-			float vecPlayerPosition[3];
-			pPlayer.GetAbsOrigin(vecPlayerPosition);
+		if (!IsClientInGame(i) || IsFakeClient(i))
+			continue;
 
-			float flDistance = GetVectorDistance(vecEntityPosition, vecPlayerPosition, true);
-			if (flDistance < flBestDistance)
+		bool bAlive = IsPlayerAlive(i);
+		if (bAliveOnly)
+		{
+			if (!bAlive)
+				continue;
+		}
+		else if (bNoSpectators && GetClientTeam(i) == TEAM_SPECTATOR)
+		{
+			continue;
+		}
+		
+		if (bPreferAlive)
+		{
+			if (bFoundAlive)
 			{
-				pBestPlayer = pPlayer;
-				flBestDistance = flDistance;
+				if (!bAlive)
+					continue;
 			}
+			else if (bAlive)
+			{
+				bFoundAlive = true;
+				flBestDistance = FLT_MAX;
+			}
+		}
+		
+		CBasePlayer pPlayer = CBasePlayer(i);
+		float vecPlayerPosition[3];
+		pPlayer.GetAbsOrigin(vecPlayerPosition);
+
+		float flDistance = GetVectorDistance(vecPos, vecPlayerPosition, true);
+		if (flDistance < flBestDistance)
+		{
+			pBestPlayer = pPlayer;
+			flBestDistance = flDistance;
 		}
 	}
 	return pBestPlayer;

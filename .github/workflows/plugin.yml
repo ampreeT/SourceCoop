@@ -43,6 +43,7 @@ jobs:
           EDT_DEST="${SM}/data/srccoop"
           mkdir -p $SM
           mkdir -p $EDT_DEST
+          cp -R extensions $SM
           cp -R plugins $SM
           cp -R configs $SM
           cp -R gamedata $SM

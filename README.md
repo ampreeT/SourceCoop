@@ -43,28 +43,30 @@ __If you are looking to help with the development of the project__, we are alway
 
 If you are interested in helping us, contact us on [Discord](https://discord.gg/Fh77rxQaEB) or create a pull request.
 
-### Credits
-- __ampreeT__ | programming, reverse engineering, map editing
+## Credits
+- __ampreeT__ :: programming, reverse engineering, map editing
 	- [Steam](https://steamcommunity.com/id/ampreeT) | [GitHub](https://github.com/ampreeT)
-- __kasull__ | programming, reverse engineering, trailer production
+- __kasull__ :: programming, reverse engineering, trailer production
 	- [Steam](https://steamcommunity.com/id/kasull/) | [GitHub](https://github.com/kasullian)
-- __Alienmario__ | programming, reverse engineering, map editing
+- __Alienmario__ :: programming, reverse engineering, map editing
 	- [Steam](https://steamcommunity.com/id/4oM0/) | [GitHub](https://github.com/Alienmario)
-- __Rock__ | miscellaneous plugin features, map editing
-	- [Steam](https://steamcommunity.com/id/Rock48/) | [GitHub](https://github.com/Rock48)
-- __Krozis Kane__ | map editing
-	- [Steam](https://steamcommunity.com/id/Krozis_Kane/) | [GitHub](https://github.com/KrozisKane)
-- __Balimbanana__ | programming, reverse engineering
+- __Balimbanana__ :: programming, reverse engineering
 	- [Steam](https://steamcommunity.com/id/Balimbanana/) | [GitHub](https://github.com/Balimbanana)
-- __raicovx__ | programming
-	- [GitHub](https://github.com/raicovx)
-- __Jimmy-Baby__ | programming
-	- [GitHub](https://github.com/Jimmy-Baby)
-#### Playtesters
-- [Lear](https://steamcommunity.com/id/SKGNick)
-- [bddu](https://steamcommunity.com/id/bddu/)
-- [Foo-Fighter](https://steamcommunity.com/id/GumpForest/)
-- [Diego003](https://steamcommunity.com/id/Diego63212/)
-- [Googolplex23](https://steamcommunity.com/id/pandlfisher/)
-- [WindedCone](https://steamcommunity.com/id/AceOak57/)
-- [Antonio115](https://steamcommunity.com/profiles/76561198880559068/)
+- __Rock__ :: programming, map editing
+	- [Steam](https://steamcommunity.com/id/Rock48/) | [GitHub](https://github.com/Rock48)
+- __Krozis Kane__ :: map editing
+	- [Steam](https://steamcommunity.com/id/Krozis_Kane/) | [GitHub](https://github.com/KrozisKane)
+- __ReservedRegister__ :: reverse engineering
+	- [GitHub](https://github.com/ReservedRegister)
+
+[__raicovx__](https://github.com/raicovx) :: Equipment persistence
+| [__Jimmy-Baby__](https://github.com/Jimmy-Baby) :: Damage effects addon
+| [__Removiekeen__](https://steamcommunity.com/profiles/76561198804614641/) :: logo design
+| [__yarik2720__](https://github.com/yarik2720) :: CI, Russian translation
+
+#### Third-party libraries
+[SourceMod](https://github.com/alliedmodders/sourcemod)
+| [SourceScramble](https://github.com/nosoop/SMExt-SourceScramble)
+| [stocksoup](https://github.com/nosoop/stocksoup)
+| [sm-logdebug](https://github.com/Alienmario/sm-logdebug)
+| [smlib](https://github.com/bcserv/smlib/tree/transitional_syntax)

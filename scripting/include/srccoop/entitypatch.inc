@@ -43,8 +43,8 @@ public MRESReturn Hook_UTIL_GetLocalPlayer(Handle hReturn)
 		}
 		else
 		{
-			pPlayer = GetNearestPlayer(g_pLocalPlayerEntity, false);
-			if (!pPlayer.IsValid())
+			pPlayer = GetNearestPlayerPreferAlive(g_pLocalPlayerEntity);
+			if (pPlayer == NULL_CBASEENTITY)
 			{
 				return MRES_Ignored;
 			}
@@ -781,7 +781,8 @@ public MRESReturn Hook_CanSelectSchedule(Handle hReturn)
 
 //------------------------------------------------------
 // ai_script_conditions
-// completely broken in mp
+// Sets the nearest player to this entity's actor(s)/target into context for UTIL_GetLocalPlayer override to use.
+// Works in tandem with AI_GetSinglePlayer() mempatch.
 //------------------------------------------------------
 public MRESReturn Hook_AIConditionsThink(int _this)
 {
@@ -789,12 +790,55 @@ public MRESReturn Hook_AIConditionsThink(int _this)
 	CAI_ScriptConditions pThis = CAI_ScriptConditions(_this);
 	if (!pThis.IsDisabled())
 	{
-		// Just fire the output and disable. To even begin fixing this, one would need to read the CUtlVector< CAI_ScriptConditionsElement > m_ElementList.
-		pThis.FireOutput("OnConditionsSatisfied");
-		pThis.SetDisabled(true);
-		pThis.SetNextThink(-1.0);
+		int count;
+		int len = GetEntPropArraySize(_this, Prop_Data, "m_ElementList");
+		float vecMidpoint[3], vecOrigin[3];
+		for (int i = 0; i < len; i++)
+		{
+			Address conditionsElement = view_as<Address>(GetEntData(_this, FindDataMapInfo(_this, "m_ElementList") + i * 4));
+			if (!conditionsElement)
+				continue;
+			// 0 - EHANDLE			m_hActor
+			// 4 - CSimTimer		m_Timer
+			// 8 - CSimTimer		m_Timeout
+			CBaseEntity pActor = CBaseEntity(LoadEntityHandleFromAddress(conditionsElement));
+			if (!pActor.IsValid())
+				continue;
+			
+			count++;
+			pActor.GetAbsOrigin(vecOrigin);
+			AddVectors(vecMidpoint, vecOrigin, vecMidpoint);
+		}
+
+		if (count)
+		{
+			ScaleVector(vecMidpoint, 1.0 / count);
+		}
+		else
+		{
+			// secondary valid usage is to specify target only
+			CBaseEntity pTarget = pThis.GetTargetEnt();
+			if (pTarget.IsValid())
+			{
+				pTarget.GetAbsOrigin(vecMidpoint);
+			}
+		}
+
+		CBasePlayer pPlayer = GetNearestPlayerPreferAliveEx(vecMidpoint);
+		if (pPlayer == NULL_CBASEENTITY)
+		{
+			return MRES_Supercede;
+		}
+
+		SetLocalPlayerCallingEntityEx(pPlayer);
 	}
-	return MRES_Supercede;
+	return MRES_Ignored;
+}
+
+public MRESReturn Hook_AIConditionsThinkPost(int _this)
+{
+	ClearLocalPlayerCallingEntity();
+	return MRES_Ignored;
 }
 
 //------------------------------------------------------

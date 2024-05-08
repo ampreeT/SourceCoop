@@ -863,6 +863,14 @@ methodmap CAI_ScriptConditions < CBaseEntity
 	{
 		SetEntProp(this.GetEntIndex(), Prop_Data, "m_fDisabled", disabled);
 	}
+	public CBaseEntity GetTargetEnt()
+	{
+		return CBaseEntity(GetEntPropEnt(this.entindex, Prop_Data, "m_hTarget"));
+	}
+	public void SetTargetEnt(CBaseEntity pTarget)
+	{
+		SetEntPropEnt(this.entindex, Prop_Data, "m_hTarget", pTarget.entindex);
+	}
 }
 
 methodmap CBaseCombatWeapon < CBaseAnimating

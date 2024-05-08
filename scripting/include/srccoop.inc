@@ -132,6 +132,7 @@
 #include <regex>
 #include <dhooks>
 #include <topmenus>
+#include <sourcescramble>
 
 #pragma newdecls required
 #pragma semicolon 1
