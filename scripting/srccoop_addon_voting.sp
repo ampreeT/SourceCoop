@@ -53,16 +53,21 @@ public void OnPluginStart()
 	cvAllowVoteRestartMap = CreateConVar("sourcecoop_voting_restartmap", "1", "Allow restart map voting?", _, true, 0.0, true, 1.0);
 	cvAllowVoteChangeMap = CreateConVar("sourcecoop_voting_changemap", "1", "Allow change map voting?", _, true, 0.0, true, 1.0);
 	cvAllowVoteSurvival = CreateConVar("sourcecoop_voting_survival", "2", "Allow survival mode voting? Use one of values from sourcecoop_survival_mode to select the mode to vote for.", _, true, 0.0);
-	if (!(cvSurivalMode = FindConVar("sourcecoop_survival_mode")))
-	{
-		ThrowError("sourcecoop_survival_mode does not exist!");
-	}
+
 	for (int i = 1; i <= MaxClients; i++)
 	{
 		if (IsClientInGame(i))
 		{
 			OnClientPutInServer(i);
 		}
+	}
+}
+
+public void OnAllPluginsLoaded()
+{
+	if (!(cvSurivalMode = FindConVar("sourcecoop_survival_mode")))
+	{
+		ThrowError("sourcecoop_survival_mode does not exist!");
 	}
 }
 
