@@ -17,7 +17,7 @@
 	}
 	"entity"
 	{
-		// suckyvents fix
+		// first suckyvents fix
 		"modify"
 		{
 			"targetname" "base_barrel_triggers"
@@ -31,16 +31,39 @@
 				}
 			}
 		}
+		// trigger_playermovement force crouch (puts player in bugged state after landing in mp)
 		"delete"
 		{
 			"hammerid" "278608"
-
 		}
 		// make flower doors always open
 		"delete"
 		{
 			"hammerid" "285083"
-
+		}
+		// First Xontroller throwing barrel at player in glass tube:
+		// keep respawning the barrel in case first try doesn't hit (player not in position)
+		"modify"
+		{
+			"classname" "trigger_once"
+			"outputs"
+			{
+				"remove"
+				{
+					"target" "relay_barrel2"
+					"input" "Disable"
+				}
+			}
+		}
+		// decrease suckyvent radius to prevent issues like getting stuck / dying
+		"modify"
+		{
+			"targetname" "base_mar1"
+			"set"
+			{
+				"innerdestinationradius" "10"
+				"outerdestinationradius" "10"
+			}
 		}
 	}
 	"checkpoint"
