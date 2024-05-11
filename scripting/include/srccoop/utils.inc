@@ -469,6 +469,17 @@ stock void UpperCaseString(const char[] szInput, char[] szOutput, int iSize)
 	szOutput[x] = '\0';
 }
 
+stock bool StrEndsWith(const char[] str, const char[] suffix, bool caseSensitive = true)
+{
+	return StrEndsWithEx(str, strlen(str), suffix, caseSensitive);
+}
+
+stock bool StrEndsWithEx(const char[] str, int realLen, const char[] suffix, bool caseSensitive = true)
+{
+	int suffixLen = strlen(suffix);
+	return (realLen >= suffixLen && StrEqual(str[realLen - suffixLen], suffix, caseSensitive));
+}
+
 stock bool IsAddSynonym(const char[] str)
 {
 	return (strcmp(str, "add", false) == 0 || strcmp(str, "create", false) == 0);
@@ -931,17 +942,17 @@ stock bool FileCopy(const char[] source, const char[] destination, bool use_valv
 
 	if (file_destination == null)
 	{
-		delete file_source;
+		file_source.Close();
 		return false;
 	}
 
 	int buffer[32];
 	int cache;
 
-	while (!IsEndOfFile(file_source))
+	while (!file_source.EndOfFile())
 	{
-		cache = ReadFile(file_source, buffer, sizeof(buffer), 1);
-		WriteFile(file_destination, buffer, cache, 1);
+		cache = file_source.Read(buffer, sizeof(buffer), 1);
+		file_destination.Write(buffer, cache, 1);
 	}
 
 	delete file_source;

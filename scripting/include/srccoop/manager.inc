@@ -12,6 +12,7 @@
 
 enum struct CoopManagerData
 {	
+	KeyValues kv;
 	ChangeLevelManager m_pChangeLevelMgr;
 	int m_iEnabledFeatures;
 	bool m_bIsCoopMap;
@@ -45,6 +46,7 @@ methodmap CoopManager
 
 	public static bool OnLevelInit(char szMapEntities[ENTITYSTRING_LENGTH])
 	{
+		delete data.kv;
 		data.m_pDelayedOutputs.Clear();
 		data.m_pStartTimer = null;
 		data.m_pChangeLevelTimer = null;
@@ -61,9 +63,9 @@ methodmap CoopManager
 		g_pLevelLump.Clear();
 		SurvivalManager.Clear(true);
 		
-		KeyValues kv = CoopManager.LoadMapConfig(g_szMapName, data.m_mapConfigLoc);
+		data.kv = CoopManager.LoadMapConfig(g_szMapName, data.m_mapConfigLoc);
 	
-		if ((data.m_bIsCoopMap = kv != null))
+		if ((data.m_bIsCoopMap = data.kv != null))
 		{
 			if (CoopManager.IsNewMapSeries())
 			{
@@ -72,9 +74,8 @@ methodmap CoopManager
 				EquipmentManager.ClearAll();
 			}
 			g_pLevelLump.ParseMapEntities(szMapEntities);
-			g_pLevelLump.ParseConfigFile(kv);
+			g_pLevelLump.ParseConfigFile(data.kv);
 			g_pLevelLump.ToString(szMapEntities);
-			delete kv;
 			return true;
 		}
 		return false;
@@ -82,31 +83,28 @@ methodmap CoopManager
 
 	public static void OnMapStart()
 	{
-		if (data.m_bIsCoopMap)
-		{
-			PrecacheSound(Conf.SND_TICK);
-			PrecacheSound(Conf.SND_3);
-			PrecacheSound(Conf.SND_2);
-			PrecacheSound(Conf.SND_1);
-			PrecacheSound(Conf.SND_CHANGELEVEL);
-			PrecacheSound(Conf.SND_CHANGELEVEL_TICK);
+		if (!data.kv)
+			return;
+	
+		PrecacheSound(Conf.SND_TICK);
+		PrecacheSound(Conf.SND_3);
+		PrecacheSound(Conf.SND_2);
+		PrecacheSound(Conf.SND_1);
+		PrecacheSound(Conf.SND_CHANGELEVEL);
+		PrecacheSound(Conf.SND_CHANGELEVEL_TICK);
 
-			#if defined SRCCOOP_BLACKMESA
-			CBM_MP_GameRules.SetStateEndTime(STATE_WARMUP, GetGameTime() + 60 * 60 * 24 * 7);
-			#endif
+		#if defined SRCCOOP_BLACKMESA
+		CBM_MP_GameRules.SetStateEndTime(STATE_WARMUP, GetGameTime() + 60 * 60 * 24 * 7);
+		#endif
 
-			KeyValues kv = CoopManager.LoadMapConfig(g_szMapName, data.m_mapConfigLoc);
-			if (kv != null)
-			{
-				CCoopSpawnSystem.ParseConfigFile(kv);
-				
-				Call_StartForward(g_CoopMapConfigLoadedFwd);
-				Call_PushCell(kv);
-				Call_PushCell(data.m_mapConfigLoc);
-				Call_Finish();
-				delete kv;
-			}
-		}
+		data.kv.Rewind();
+		CCoopSpawnSystem.ParseConfigFile(data.kv);
+		
+		Call_StartForward(g_CoopMapConfigLoadedFwd);
+		Call_PushCell(data.kv);
+		Call_PushCell(data.m_mapConfigLoc);
+		Call_Finish();
+		delete data.kv;
 	}
 
 	public static void OnClientPutInServer(CBasePlayer pPlayer)
@@ -439,28 +437,72 @@ methodmap CoopManager
 	{
 		return data.m_bIsCoopMap;
 	}
-	
+
 	public static KeyValues LoadMapConfig(const char[] szMapName, CoopConfigLocation &src)
 	{
 		char szConfigPath[PLATFORM_MAX_PATH];
+		if (!CoopManager.FindMapConfig(szMapName, szConfigPath, src, true))
+			return null;
+		
+		KeyValues kv = new KeyValues(szMapName);
+		kv.SetEscapeSequences(true);
+		char szRoot[16];
+		if (!(kv.ImportFromFile(szConfigPath) && kv.GetSectionName(szRoot, sizeof(szRoot)) && strcmp(szRoot, "config", false) == 0))
+			ThrowError("Couldn't import \"%s\" into KeyValues", szConfigPath);
+		
+		return kv;
+	}
+
+	public static bool FindMapConfig(const char[] szMapName, char szConfigPath[PLATFORM_MAX_PATH], CoopConfigLocation &src, bool bCreateDefault)
+	{
 		BuildPath(Path_SM, szConfigPath, sizeof(szConfigPath), "data/srccoop/%s.edt", szMapName);
 		if (!FileExists(szConfigPath))
 		{
 			Format(szConfigPath, sizeof(szConfigPath), "maps/%s.edt", szMapName);
 			if (!FileExists(szConfigPath, true))
 			{
-				return null;
+				if (!bCreateDefault || !CoopManager.CreateDefaultConfig(szMapName, szConfigPath))
+				{
+					return false;
+				}
+				else src = CCL_MAPS;
 			}
 			else src = CCL_MAPS;
 		}
 		else src = CCL_SM_DATA;
-		
-		KeyValues kv = new KeyValues(szMapName);
-		kv.SetEscapeSequences(true);
-		char szRoot[16];
-		if (!(kv.ImportFromFile(szConfigPath) && kv.GetSectionName(szRoot, sizeof(szRoot)) && strcmp(szRoot, "config", false) == 0))
-			ThrowError("Couldn't import %s into KeyValues", szConfigPath);
-		return kv;
+		return true;
+	}
+
+	public static bool CreateDefaultConfig(const char[] szMapName, char szConfigPath[PLATFORM_MAX_PATH])
+	{
+		g_pConvarDefaultMapConfig.GetString(szConfigPath, sizeof(szConfigPath));
+		if (szConfigPath[0] != EOS)
+		{
+			if (FileExists(szConfigPath))
+			{
+				char szDest[PLATFORM_MAX_PATH];
+
+				g_pConvarDefaultMapConfigDest.GetString(szDest, sizeof(szDest));
+				Format(szDest, sizeof(szDest), "%s/%s.edt", szDest, szMapName);
+
+				if (FileCopy(szConfigPath, szDest))
+				{
+					LogMessage("Created default map config \"%s\"", szDest);
+					szConfigPath = szDest;
+					return true;
+				}
+				else
+				{
+					LogError("Failed to create default map config \"%s\" !", szDest);
+				}
+			}
+			else
+			{
+				g_pConvarDefaultMapConfig.GetName(szConfigPath, sizeof(szConfigPath));
+				LogError("Default config file is missing. Please fix \"%s\" !", szConfigPath);
+			}
+		}
+		return false;
 	}
 	
 }

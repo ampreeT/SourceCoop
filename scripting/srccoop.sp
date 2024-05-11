@@ -211,6 +211,8 @@ public void OnPluginStart()
 	g_pConvarHomeMap = CreateConVar("sourcecoop_homemap", "", "The map to return to after finishing a campaign/map.");
 	g_pConvarEndWaitDisplayMode = CreateConVar("sourcecoop_end_wait_display_mode", "1", "Sets which method to show countdown. 0 is panel, 1 is hud text.", _, true, 0.0, true, 1.0);
 	g_pConvarValidateSteamIds = CreateConVar("sourcecoop_validate_steamids", "0", "Validate players steam id's? Increases security at the cost of some functionality breakage when Steam goes down.\n At the time of writing this includes survival mode and equipment persistence.", _, true, 0.0, true, 1.0);
+	g_pConvarDefaultMapConfig = CreateConVar("sourcecoop_default_config", "", "Default edt file, relative to game folder. This file is copied when starting a map with missing config as \"<sourcecoop_default_config_dest>/<mapname>.edt\". Useful for rapid development, or to enforce sourcecoop on all maps on the server.");
+	g_pConvarDefaultMapConfigDest = CreateConVar("sourcecoop_default_config_dest", "maps", "Destination folder for \"sourcecoop_default_config\", relative to game folder. Should be a one of edt scan paths!");
 
 	mp_friendlyfire = FindConVar("mp_friendlyfire");
 	mp_flashlight = FindConVar("mp_flashlight");
@@ -220,6 +222,7 @@ public void OnPluginStart()
 	RegAdminCmd("sc_ft", Command_SetFeature, ADMFLAG_ROOT, "Command for toggling plugin features on/off");
 	RegServerCmd("sourcecoop_dump", Command_DumpMapEntities, "Command for dumping map entities to a file");
 	RegServerCmd("sc_dump", Command_DumpMapEntities, "Command for dumping map entities to a file");
+	RegServerCmd("sc_mkconfigs", Command_MakeConfigs, "Creates default edt configs for all maps in the maps directory which are missing one");
 	
 	g_pLevelLump.Initialize();
 	CCoopSpawnSystem.Initialize();
