@@ -387,7 +387,47 @@ stock bool StrEqualsRegex(const char[] pattern, const char[] str, bool caseSensi
 	}
 	return strcmp(pattern, str, caseSensitive) == 0;
 }
-#endif
+
+/**
+ * Simple * wildcard pattern matching. Best for comparing map names, file names (think gitignore), etc.
+ */
+stock bool StrEqualsWildcard(const char[] pattern, const char[] str, bool caseSensitive = false)
+{
+	int regexLen = strlen(pattern) * 2 + 3;
+	char[] regex = new char[regexLen];
+
+	EscapeRegex(pattern, regex, regexLen, "*");
+	ReplaceString(regex, regexLen, "*", ".*");
+	Format(regex, regexLen, "^%s$", regex);
+
+	int substrings = SimpleRegexMatch(str, regex, caseSensitive? 0 : PCRE_CASELESS);
+	return (substrings > 0);
+}
+
+/**
+ * Quotes / escapes all special regex characters in a string.
+ * @param allowedChars Characters that should not be escaped.
+ * @return characters written
+ */
+stock int EscapeRegex(const char[] str, char[] dest, int destLen, const char[] allowedChars = "")
+{
+	static const char specialChars[] = ".\\+*?[^]$(){}=!<>|:-#";
+	int i, j;
+	while (str[i] != EOS && (j + 1) < destLen)
+	{
+		if (FindCharInString(specialChars, str[i]) != -1 && FindCharInString(allowedChars, str[i]) == -1)
+		{
+			if (j + 2 >= destLen)
+				break;
+			dest[j++] = '\\';
+		}
+		dest[j++] = str[i++];
+	}
+	dest[j] = EOS;
+	return j;
+}
+
+#endif // defined _regex_included
 
 stock void FormatTimeLength(int seconds, char[] out, int size)
 {

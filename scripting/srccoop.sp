@@ -222,7 +222,8 @@ public void OnPluginStart()
 	RegAdminCmd("sc_ft", Command_SetFeature, ADMFLAG_ROOT, "Command for toggling plugin features on/off");
 	RegServerCmd("sourcecoop_dump", Command_DumpMapEntities, "Command for dumping map entities to a file");
 	RegServerCmd("sc_dump", Command_DumpMapEntities, "Command for dumping map entities to a file");
-	RegServerCmd("sc_mkconfigs", Command_MakeConfigs, "Creates default edt configs for all maps in the maps directory which are missing one");
+	RegServerCmd("sc_mkconfigs", Command_MakeConfigs, "Creates default SourceCoop configs for maps found in the maps directory, which are missing one.\n - Format: sc_mkconfigs <MAPFILTER> [CONFIRM]\n  MAPFILTER: filters the map names to include; use * for all; supports wildcards with * such as coop_*\n  CONFIRM: [0 = dry run, 1 = live run]");
+	RegServerCmd("sc_importconfigs", Command_ImportConfigs, "Imports other formats of map configs into SourceCoop configs.\n - Format: sc_importconfigs <TYPE> <MAPFILTER> <CREATE> [CONFIRM]\n  TYPE: The type of config to import, values: [stripper = Stripper:source]\n  MAPFILTER: filters the map names to import; use * for all; supports wildcards with * such as coop_*\n  CREATE: [1 = attempts to create default SourceCoop config for the map if it's missing, 0 = prints a warning and skips if missing]\n  CONFIRM: [0 = dry run, 1 = live run]");
 	
 	g_pLevelLump.Initialize();
 	CCoopSpawnSystem.Initialize();
