@@ -89,7 +89,6 @@ public Action Command_DumpMapEntities(int iArgs)
 public Action Command_MakeConfigs(int iArgs)
 {
 	char szBuffer[PLATFORM_MAX_PATH];
-	ServerExecute();
 
 	g_pConvarDefaultMapConfig.GetString(szBuffer, 2);
 	if (szBuffer[0] == EOS)

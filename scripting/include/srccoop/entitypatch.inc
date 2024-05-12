@@ -780,7 +780,7 @@ public MRESReturn Hook_CanSelectSchedule(Handle hReturn)
 }
 
 //------------------------------------------------------
-// ai_script_conditions
+// CAI_ScriptConditions - ai_script_conditions
 // Sets the nearest player to this entity's actor(s)/target into context for UTIL_GetLocalPlayer override to use.
 // Works in tandem with AI_GetSinglePlayer() mempatch.
 //------------------------------------------------------
@@ -791,16 +791,21 @@ public MRESReturn Hook_AIConditionsThink(int _this)
 	if (!pThis.IsDisabled())
 	{
 		int count;
-		int len = GetEntPropArraySize(_this, Prop_Data, "m_ElementList");
 		float vecMidpoint[3], vecOrigin[3];
+
+		CUtlVector pElementsList = CUtlVector(GetEntityAddress(_this) + FindDataMapInfo(_this, "m_ElementList"));
+		int len = pElementsList.m_Size();
+
 		for (int i = 0; i < len; i++)
 		{
-			Address conditionsElement = view_as<Address>(GetEntData(_this, FindDataMapInfo(_this, "m_ElementList") + i * 4));
-			if (!conditionsElement)
-				continue;
 			// 0 - EHANDLE			m_hActor
 			// 4 - CSimTimer		m_Timer
-			// 8 - CSimTimer		m_Timeout
+			// 12 - CSimTimer		m_Timeout
+			// == 20
+			Address conditionsElement = pElementsList.GetAt(i, 20);
+			if (!conditionsElement)
+				continue;
+			
 			CBaseEntity pActor = CBaseEntity(LoadEntityHandleFromAddress(conditionsElement));
 			if (!pActor.IsValid())
 				continue;

@@ -9,7 +9,7 @@
 
 public Plugin myinfo =
 {
-	name = "SourceCoop earbleed toggle",
+	name = "SourceCoop Earbleed toggle",
 	author = "Alienmario",
 	description = "Adds a toggle for the ringing sound effect from explosions",
 	version = SRCCOOP_VERSION,
@@ -96,7 +96,7 @@ public MRESReturn Hook_SetPlayerDSP(DHookParam hParams)
 		int len = pRecipients.m_Size();
 		for (int i = 0; i < len; i++)
 		{
-			int client = pRecipients.GetAt(i).data;
+			int client = pRecipients.GetAtPtr(i);
 			if ((0 < client <= MaxClients) && IsClientInGame(client)
 				&& !IsFakeClient(client) && ShouldRing(client))
 			{

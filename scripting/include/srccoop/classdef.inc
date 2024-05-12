@@ -1877,31 +1877,6 @@ public bool TraceEntityFilter_IgnorePlayers(int iEntity, int iMask, any pData)
 	return (iEntity != pData);
 }
 
-methodmap DataFragments
-{
-	public DataFragments(any data)
-	{
-		return view_as<DataFragments>(data);
-	}
-
-	property any data
-	{
-		public get()
-		{
-			return view_as<any>(this);
-		}
-	}
-
-	public void GetString(char[] buffer, int length)
-	{
-		for (int i = 0; i < length; i++)
-		{
-			buffer[i] = Deref(this.data + 4 + i, NumberType_Int8);
-			if (buffer[i] == '\0') break;
-		}
-	}
-}
-
 stock CUtlVector operator+(CUtlVector oper1, int oper2)
 {
 	return oper1 + view_as<CUtlVector>(oper2);
@@ -1941,12 +1916,18 @@ methodmap CUtlVector
 		return Deref(this + 16);
 	}
 
-	public DataFragments GetAt(int i, int elSize = 4)
+	public any GetAt(int i, int elSize = 4)
 	{
-		return Deref(this.m_pElements() + i * elSize);
+		return this.m_pElements() + i * elSize;
 	}
 
-	public void SetAt(int i, DataFragments data, int elSize = 4)
+	public any GetAtPtr(int i)
+	{
+		return Deref(this.m_pElements() + i * 4);
+	}
+
+	/** ToDo: Is this optimal? */
+	public void SetAt(int i, any data, int elSize = 4)
 	{
 		StoreToAddress(this.m_pElements() + i * elSize, data, NumberType_Int32);
 	}

@@ -187,6 +187,7 @@ stock int LoadStringFromAddress(Address addr, char[] buffer, int maxlen, bool &b
 }
 
 /**
+ * DEPRECATE with SM 1.12 => LoadEntityFromHandleAddress
  * Retrieves an entity index from a raw entity handle address.
  * 
  * Note that SourceMod's entity conversion routine is an implementation detail that may change.
@@ -200,6 +201,7 @@ stock int LoadEntityHandleFromAddress(Address addr)
 }
 
 /**
+ * DEPRECATE with SM 1.12 => StoreEntityToHandleAddress
  * Stores an entity into a raw entity handle address.  Stores zero if the entity is not valid.
  * 
  * Note that SourceMod's entity conversion routine is an implementation detail that may change.
