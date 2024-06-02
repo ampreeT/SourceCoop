@@ -173,8 +173,7 @@ public Action Command_MakeConfigs(int iArgs)
 		g_pConvarDefaultMapConfigDest.GetString(szDest, sizeof(szDest));
 		GetCmdArg(0, szBuffer, sizeof(szBuffer));
 
-		PrintToServer("");
-		MsgSrv("You are about to create %d new map configs.\n Template: %s\n Destination dir: %s\nExecute \"%s %s 1\" to continue...\n",
+		MsgSrv("\nYou are about to create %d new map configs.\n Template: %s\n Destination dir: %s\nExecute >>> %s %s 1 <<< to continue...\n",
 				count, szTemplate, szDest,
 				szBuffer, szMapFilter);
 	}
@@ -209,10 +208,10 @@ public Action Command_ImportConfigs(int iArgs)
 		return Plugin_Handled;
 	}
 
-	int count, createdCount, errors;
+	ImportSource src;
 	if (StrEqual(szType, "stripper", false))
 	{
-		Command_ImportConfigs_Stripper(szMapFilter, bCreateConfigs, bDryRun, count, createdCount, errors);
+		src = IMPORT_STRIPPER;
 	}
 	else
 	{
@@ -220,7 +219,10 @@ public Action Command_ImportConfigs(int iArgs)
 		return Plugin_Handled;
 	}
 
-	if (count < 0)
+	MsgSrv("Import started%s", bDryRun? " [dry run]": "");
+
+	int count, createCount, errors;
+	if (!ImportConfigs(src, szMapFilter, bCreateConfigs, bDryRun, count, createCount, errors))
 	{
 		return Plugin_Handled;
 	}
@@ -229,86 +231,18 @@ public Action Command_ImportConfigs(int iArgs)
 	{
 		char szCmd[32]; GetCmdArg(0, szCmd, sizeof(szCmd));
 
-		PrintToServer("");
-		MsgSrv("You are about to import %d %s configs (of which %d will be created).\nExecute \"%s %s %s %d 1\" to continue...\n",
-				count, szType, createdCount,
-				szCmd, szType, szMapFilter, bCreateConfigs);
+		PrintToServer(
+			"\nYou are about to import %d %s configs (of which %d will be created).%s"
+			... "\nExecute the following command to continue:\n>>> %s %s %s %d 1 <<<\n",
+			count, szType, createCount,
+			errors? "\nIt is recommended to fix errors above before proceeding with the live run." : "",
+			szCmd, szType, szMapFilter, bCreateConfigs);
 	}
 	else
 	{
-		MsgSrv("Import finished.\n  Total imported: %d\n  New configs: %d\n  Errors: %d", count, createdCount, errors);
+		PrintToServer("\n - Import finished -\n Total imported: %d\n New configs: %d\n Errors: %d\n",
+			count, createCount, errors);
 	}
 
 	return Plugin_Handled;
-}
-
-void Command_ImportConfigs_Stripper(const char[] szMapFilter, bool bCreate, bool bDryRun, int &count, int &createdCount, int &errors)
-{
-	static const char szStripperMapsDir[] = "addons/stripper/maps";
-	DirectoryListing dir = OpenDirectory(szStripperMapsDir, false);
-	if (!dir)
-	{
-		MsgSrv("Unable to enumerate \"%s\" folder.", szStripperMapsDir);
-		count = -1;
-		return;
-	}
-
-	FileType ft;
-	CoopConfigLocation ccl;
-	char szBuffer[PLATFORM_MAX_PATH];
-	char szSrcCoopConfig[PLATFORM_MAX_PATH];
-	char szError[128];
-
-	while (dir.GetNext(szBuffer, sizeof(szBuffer), ft))
-	{
-		int len = strlen(szBuffer); 
-		if (ft == FileType_File && StrEndsWithEx(szBuffer, len, ".cfg", false))
-		{
-			szBuffer[len - 4] = EOS;
-			if (!StrEqualsWildcard(szMapFilter, szBuffer, false))
-				continue;
-
-			bool bCreatedDefault;
-			if (!CoopManager.FindMapConfig(szBuffer, szSrcCoopConfig, ccl, false))
-			{
-				if (!bCreate)
-				{
-					MsgSrv("Found stripper config for \"%s\", but no SourceCoop config. Run with <CREATE> set to 1 to remedy this.", szBuffer);
-					continue;
-				}
-				if (!bDryRun && !CoopManager.CreateDefaultConfig(szBuffer, szSrcCoopConfig))
-				{
-					MsgSrv("Aborted processing.");
-					dir.Close();
-					count = -1;
-					return;
-				}
-				bCreatedDefault = true;
-			}
-
-			Format(szBuffer, sizeof(szBuffer), "%s/%s.cfg", szStripperMapsDir, szBuffer);
-			if (bDryRun || ImportStripperConfig(szBuffer, szSrcCoopConfig, szError, sizeof(szError)))
-			{
-				count++;
-				if (bCreatedDefault)
-					createdCount++;
-			}
-			else
-			{
-				errors++;
-				MsgSrv("Error in importing stripper config from \"%s\" to \"%s\":\n%s", szBuffer, szSrcCoopConfig, szError);
-				if (bCreatedDefault)
-				{
-					MsgSrv("Cleaning up.");
-					DeleteFile(szSrcCoopConfig);
-				}
-			}
-		}
-	}
-	dir.Close();
-}
-
-bool ImportStripperConfig(const char[] szStripperConfig, const char[] szSrcCoopConfig, char[] szError, int maxErrorLen)
-{
-	return true;
 }

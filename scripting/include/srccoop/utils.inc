@@ -6,6 +6,8 @@
 #pragma newdecls required
 #pragma semicolon 1
 
+#include <srccoop/util/stringbuilder>
+
 //------------------------------------------------------
 // Gamedata utils
 //------------------------------------------------------
@@ -370,6 +372,11 @@ stock void PurgeMsgColors(char[] msg, int maxLen)
 }
 
 #if defined _regex_included
+
+/**
+ * Matches a regex pattern against a string if pattern is enclosed by forward slashes "/".
+ * Otherwise acts as a regular equals check.
+ */
 stock bool StrEqualsRegex(const char[] pattern, const char[] str, bool caseSensitive = false)
 {
 	int patternLength = strlen(pattern);
@@ -389,7 +396,11 @@ stock bool StrEqualsRegex(const char[] pattern, const char[] str, bool caseSensi
 }
 
 /**
- * Simple * wildcard pattern matching. Best for comparing map names, file names (think gitignore), etc.
+ * Simple * wildcard pattern matching. Best for comparing map names (think maps command), file paths (think gitignore), etc.
+ * 
+ * Example pattern: *pine*
+ * Matched strings: pine, pineapple, spines ...
+ * 
  */
 stock bool StrEqualsWildcard(const char[] pattern, const char[] str, bool caseSensitive = false)
 {
@@ -407,7 +418,7 @@ stock bool StrEqualsWildcard(const char[] pattern, const char[] str, bool caseSe
 /**
  * Quotes / escapes all special regex characters in a string.
  * @param allowedChars Characters that should not be escaped.
- * @return characters written
+ * @return Characters written
  */
 stock int EscapeRegex(const char[] str, char[] dest, int destLen, const char[] allowedChars = "")
 {

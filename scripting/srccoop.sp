@@ -212,7 +212,7 @@ public void OnPluginStart()
 	g_pConvarEndWaitDisplayMode = CreateConVar("sourcecoop_end_wait_display_mode", "1", "Sets which method to show countdown. 0 is panel, 1 is hud text.", _, true, 0.0, true, 1.0);
 	g_pConvarValidateSteamIds = CreateConVar("sourcecoop_validate_steamids", "0", "Validate players steam id's? Increases security at the cost of some functionality breakage when Steam goes down.\n At the time of writing this includes survival mode and equipment persistence.", _, true, 0.0, true, 1.0);
 	g_pConvarDefaultMapConfig = CreateConVar("sourcecoop_default_config", "", "Default edt file, relative to game folder. This file is copied when starting a map with missing config as \"<sourcecoop_default_config_dest>/<mapname>.edt\". Useful for rapid development, or to enforce sourcecoop on all maps on the server.");
-	g_pConvarDefaultMapConfigDest = CreateConVar("sourcecoop_default_config_dest", "maps", "Destination folder for \"sourcecoop_default_config\", relative to game folder. Should be a one of edt scan paths!");
+	g_pConvarDefaultMapConfigDest = CreateConVar("sourcecoop_default_config_dest", "maps", "Destination folder for \"sourcecoop_default_config\", relative to game folder. Must be a one of edt scan paths!");
 
 	mp_friendlyfire = FindConVar("mp_friendlyfire");
 	mp_flashlight = FindConVar("mp_flashlight");
@@ -222,8 +222,8 @@ public void OnPluginStart()
 	RegAdminCmd("sc_ft", Command_SetFeature, ADMFLAG_ROOT, "Command for toggling plugin features on/off");
 	RegServerCmd("sourcecoop_dump", Command_DumpMapEntities, "Command for dumping map entities to a file");
 	RegServerCmd("sc_dump", Command_DumpMapEntities, "Command for dumping map entities to a file");
-	RegServerCmd("sc_mkconfigs", Command_MakeConfigs, "Creates default SourceCoop configs for maps found in the maps directory, which are missing one.\n - Format: sc_mkconfigs <MAPFILTER> [CONFIRM]\n  MAPFILTER: filters the map names to include; use * for all; supports wildcards with * such as coop_*\n  CONFIRM: [0 = dry run, 1 = live run]");
-	RegServerCmd("sc_importconfigs", Command_ImportConfigs, "Imports other formats of map configs into SourceCoop configs.\n - Format: sc_importconfigs <TYPE> <MAPFILTER> <CREATE> [CONFIRM]\n  TYPE: The type of config to import, values: [stripper = Stripper:source]\n  MAPFILTER: filters the map names to import; use * for all; supports wildcards with * such as coop_*\n  CREATE: [1 = attempts to create default SourceCoop config for the map if it's missing, 0 = prints a warning and skips if missing]\n  CONFIRM: [0 = dry run, 1 = live run]");
+	RegServerCmd("sc_mkconfigs", Command_MakeConfigs, "Creates default SourceCoop configs for maps found in the maps directory, which are missing one.\n - Format: sc_mkconfigs <MAPFILTER> [CONFIRM]\n  MAPFILTER:\n    - filters the map names to include; use * for all; supports wildcards with * such as coop_*\n  CONFIRM:\n    - [0 = dry run, 1 = live run]");
+	RegServerCmd("sc_importconfigs", Command_ImportConfigs, "Imports other formats of map configs into SourceCoop configs.\n - Format: sc_importconfigs <TYPE> <MAPFILTER> <CREATE> [CONFIRM]\n  TYPE:\n    - The type of config to import\n    - [stripper = Stripper:source]\n  MAPFILTER:\n    - filters the map names to import; use * for all; supports wildcards with * such as coop_*\n  CREATE:\n    - [1 = attempts to create default SourceCoop config for the map if it's missing, 0 = prints a warning and skips if missing]\n  CONFIRM:\n    - [0 = dry run, 1 = live run]");
 	
 	g_pLevelLump.Initialize();
 	CCoopSpawnSystem.Initialize();

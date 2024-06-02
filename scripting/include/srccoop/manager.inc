@@ -461,11 +461,14 @@ methodmap CoopManager
 			Format(szConfigPath, sizeof(szConfigPath), "maps/%s.edt", szMapName);
 			if (!FileExists(szConfigPath, true))
 			{
-				if (!bCreateDefault || !CoopManager.CreateDefaultConfig(szMapName, szConfigPath))
+				if (!bCreateDefault
+					// attempt to create default
+					|| !CoopManager.CreateDefaultConfig(szMapName, szConfigPath)
+					// re-run verifying default location and populating src
+					|| !CoopManager.FindMapConfig(szMapName, szConfigPath, src, false)) 
 				{
 					return false;
 				}
-				else src = CCL_MAPS;
 			}
 			else src = CCL_MAPS;
 		}
@@ -503,6 +506,11 @@ methodmap CoopManager
 			}
 		}
 		return false;
+	}
+
+	public static bool ConfigUsesValveFS(CoopConfigLocation ccl)
+	{
+		return (ccl == CCL_MAPS);
 	}
 	
 }
