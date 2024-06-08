@@ -669,12 +669,15 @@ public MRESReturn Hook_AccumulatePose(Address _this, DHookParam hParams)
 //------------------------------------------------------
 public MRESReturn Hook_TestGroundMove(Address _this, DHookReturn hReturn, DHookParam hParams)
 {
-	float flTotalDist = hParams.GetObjectVar(6, 32, ObjectValueType_Float);
-	if (flTotalDist == 1.0 / 0.0) // infinity check
+	if (!hParams.IsNull(6))
 	{
-		LogDebug("Infinity in TestGroundMove prevented");
-		hReturn.Value = false;
-		return MRES_Supercede;
+		float flTotalDist = hParams.GetObjectVar(6, 32, ObjectValueType_Float);
+		if (flTotalDist == 1.0 / 0.0) // infinity check
+		{
+			LogDebug("Infinity in TestGroundMove prevented");
+			hReturn.Value = false;
+			return MRES_Supercede;
+		}
 	}
 	return MRES_Ignored;
 }
