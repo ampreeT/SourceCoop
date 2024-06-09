@@ -6,10 +6,164 @@
 #pragma newdecls required
 #pragma semicolon 1
 
+// --------------------------------------------------------------------------------------------------------------------------------
+// Import sources
+// --------------------------------------------------------------------------------------------------------------------------------
+
 enum ImportSource
 {
 	IMPORT_STRIPPER
 }
+
+// --------------------------------------------------------------------------------------------------------------------------------
+// Import utils
+// --------------------------------------------------------------------------------------------------------------------------------
+
+methodmap ImportUtil
+{
+	public static bool FileFilter(ImportSource src, const char[] szFileName, char szMapName[MAX_MAPNAME])
+	{
+		int len = strlen(szFileName);
+		int extLen;
+
+		if (src == IMPORT_STRIPPER)
+		{
+			if (!StrEndsWithEx(szFileName, len, ".cfg", false))
+				return false;
+			extLen = 4;
+		}
+		else ThrowError("ImportUtil.FileFilter not implemented for this import source.");
+		
+		len = len - extLen + 1;
+		if (len > MAX_MAPNAME)
+		{
+			MsgSrv("Map name in \"%s\" exceeds limit of %d characters and won't be imported.", szFileName, MAX_MAPNAME - 1);
+			return false;
+		}
+		
+		strcopy(szMapName, len, szFileName);
+		return true;
+	}
+
+	public static bool ImportAsNode(const char[] szNode, const char[] szNodeContent, StringBuilder pConfigBuilder, char[] szError, int maxErrorLen)
+	{
+		// This regex enters first child key from given position.
+		// Matching stops after the opening { brace.
+		//
+		// Raw form:
+		// /^(?:\/\/.*|"(?:\\.|[^"])*"|\s|[^}{"])*?{/
+		
+		Regex pEnterChildNode = new Regex("^(?:\\/\\/.*|\"(?:\\\\.|[^\"])*\"|\\s|[^}{\"])*?{");
+
+		// This regex consists of OR'd groups each representing a part of KV syntax. The <braces> group is recursive.
+		// The target node is searched at current depth, as in kv.JumpToKey().
+		// Matching stops after the name of the specified node.
+		//
+		// Raw form:
+		// /^(?:(?<comments>\/\/.*)|(?<braces>{(?:(?&comments)|(?&braces)|(?&quotes)|(?&misc))*})|(?<quotes>"(?:\\.|[^"])*")|(?<misc>\s|[^"{}]))*?(?:(?<=\s)(?<target>entity)(?=[{\s])|"(?&target)")/
+		
+		char szGoToNode[256] = "^(?:(?<comments>\\/\\/.*)|(?<braces>{(?:(?&comments)|(?&braces)|(?&quotes)|(?&misc))*})|(?<quotes>\"(?:\\\\.|[^\"])*\")|(?<misc>\\s|[^\"{}]))*?(?:(?<=\\s)(?<target>%s)(?=[{\\s])|\"(?&target)\")";
+		Format(szGoToNode, sizeof(szGoToNode), szGoToNode, szNode);
+		Regex pGoToNode = new Regex(szGoToNode);
+
+		// Moves to end of current node.
+		// Same as above, but without the target node mathing part at the end.
+		// Matching stops before closing } brace.
+		//
+		// Raw form:
+		// /^(?:(?<comments>\/\/.*)|(?<braces>{(?:(?&comments)|(?&braces)|(?&quotes)|(?&misc))*})|(?<quotes>"(?:\\.|[^"])*")|(?<misc>\s|[^"{}]))*/
+		
+		Regex pGoToEnd = new Regex("^(?:(?<comments>\\/\\/.*)|(?<braces>{(?:(?&comments)|(?&braces)|(?&quotes)|(?&misc))*})|(?<quotes>\"(?:\\\\.|[^\"])*\")|(?<misc>\\s|[^\"{}]))*");
+
+		char[] szConfig = new char[pConfigBuilder.BufferSize];
+		pConfigBuilder.ToString(szConfig).Reset();
+
+		int offset;
+		if (!ImportUtil.RegexAdvance(pEnterChildNode, szConfig, offset))
+		{
+			Format(szError, maxErrorLen, "SourceCoop config root element not found");
+		}
+		else
+		{
+			if (ImportUtil.RegexAdvance(pGoToNode, szConfig, offset))
+			{
+				// found requested node
+
+				if (ImportUtil.RegexAdvance(pEnterChildNode, szConfig, offset))
+				{
+					pConfigBuilder.AppendEx(szConfig, offset);
+					pConfigBuilder.Append("\n");
+					pConfigBuilder.Append(szNodeContent);
+					pConfigBuilder.Append("\t");
+					if (ImportUtil.RegexAdvance(pGoToEnd, szConfig, offset))
+					{
+						pConfigBuilder.Append(szConfig[offset]);
+					}
+					else
+					{
+						Format(szError, maxErrorLen, "Unable to traverse SourceCoop config (#3)");
+					}
+				}
+				else
+				{
+					Format(szError, maxErrorLen, "Unable to traverse SourceCoop config (#1)");
+				}
+			}
+			else
+			{
+				// requested node missing
+				
+				if (ImportUtil.RegexAdvance(pGoToEnd, szConfig, offset))
+				{
+					pConfigBuilder.AppendEx(szConfig, offset);
+					pConfigBuilder.Append("\t\"");
+					pConfigBuilder.Append(szNode);
+					pConfigBuilder.Append("\"\n\t{\n");
+					pConfigBuilder.Append(szNodeContent);
+					pConfigBuilder.Append("\t}\n");
+					pConfigBuilder.Append(szConfig[offset]);
+				}
+				else
+				{
+					Format(szError, maxErrorLen, "Unable to traverse SourceCoop config (#2)");
+				}
+			}
+		}
+		
+		pEnterChildNode.Close();
+		pGoToNode.Close();
+		pGoToEnd.Close();
+		return (szError[0] == EOS);
+	}
+
+	public static bool RegexAdvance(Regex regex, const char[] szStr, int &offset = 0)
+	{
+		int ret = regex.Match(szStr[offset]);
+		if (ret != -1 && regex.MatchCount())
+		{
+			offset += regex.MatchOffset();
+			return true;
+		}
+		return false;
+	}
+
+	public static void AppendLine(StringBuilder sb, const char[] szText, int indent)
+	{
+		ImportUtil.Indent(sb, indent);
+		sb.Append(szText);
+		sb.Append("\n");
+	}
+
+	public static void Indent(StringBuilder sb, int indent)
+	{
+		for (int i = 0; i < indent; i++)
+			sb.Append("\t");
+	}
+}
+
+// --------------------------------------------------------------------------------------------------------------------------------
+// Import boilerplate
+// --------------------------------------------------------------------------------------------------------------------------------
 
 bool ImportConfigs(ImportSource src, const char[] szMapFilter, bool bCreate, bool bDryRun, int &count, int &createCount, int &errors)
 {
@@ -20,11 +174,11 @@ bool ImportConfigs(ImportSource src, const char[] szMapFilter, bool bCreate, boo
 	ThrowError("ImportConfigs not implemented for this import source."); return false;
 }
 
-bool ImportConfig(ImportSource src, const char[] szPath, File pSrcCoopConfig, char[] szError, int maxErrorLen)
+bool ImportConfig(ImportSource src, const char[] szPath, StringBuilder pConfigBuilder, char[] szError, int maxErrorLen)
 {
 	if (src == IMPORT_STRIPPER)
 	{
-		return ImportStripperConfig(szPath, pSrcCoopConfig, szError, maxErrorLen);
+		return ImportStripperConfig(szPath, pConfigBuilder, szError, maxErrorLen);
 	}
 	ThrowError("ImportConfig not implemented for this import source."); return false;
 }
@@ -61,11 +215,13 @@ bool ImportConfigsDir(ImportSource src, const char[] szDir, const char[] szMapFi
 		{
 			if (!bCreate)
 			{
-				MsgSrv("Found config for \"%s\", but no SourceCoop config. Run with <CREATE> set to 1 to remedy this.", szMapName);
+				MsgSrv("Found config for \"%s\", but no SourceCoop config. Run with <CREATE> set to 1 to auto-create missing configs.", szMapName);
 				continue;
 			}
 			if (bDryRun)
 			{
+				MsgSrv("- Create: %s", szSrcCoopConfig);
+				count++; createCount++;
 				continue;
 			}
 			if (!CoopManager.FindMapConfig(szMapName, szSrcCoopConfig, ccl, true))
@@ -77,17 +233,38 @@ bool ImportConfigsDir(ImportSource src, const char[] szDir, const char[] szMapFi
 			bCreated = true;
 		}
 
-		File pSrcCoopConfig = OpenFile(szSrcCoopConfig, "r+", CoopManager.ConfigUsesValveFS(ccl));
+		File pSrcCoopConfig = OpenFileEx(szSrcCoopConfig, "r+", CoopManager.ConfigUsesValveFS(ccl));
 		if (!pSrcCoopConfig)
 		{
 			errors++;
 			MsgSrv("Unable to read SourceCoop config \"%s\" (ValveFS=%d)", szSrcCoopConfig, CoopManager.ConfigUsesValveFS(ccl));
 			continue;
 		}
-		
+
+		szError = "";
 		Format(szFileName, sizeof(szFileName), "%s/%s", szDir, szFileName);
-		if (bDryRun || ImportConfig(src, szFileName, pSrcCoopConfig, szError, sizeof(szError)))
+		StringBuilder pConfigBuilder = new StringBuilder();
+
+		if (!pConfigBuilder.AppendFile(pSrcCoopConfig))
 		{
+			Format(szError, sizeof(szError), "Unable to read from SourceCoop config");
+		}
+		else
+		{
+			if (ImportConfig(src, szFileName, pConfigBuilder, szError, sizeof(szError)))
+			{
+				if (!bDryRun)
+				{
+					if (!pSrcCoopConfig.Seek(0, SEEK_SET) || !pConfigBuilder.ToFile(pSrcCoopConfig))
+					{
+						Format(szError, sizeof(szError), "Unable to write to SourceCoop config");
+					}
+				}
+			}
+		}
+
+		if (szError[0] == EOS)
+		{ 
 			count++;
 			if (bCreated)
 			{
@@ -111,6 +288,7 @@ bool ImportConfigsDir(ImportSource src, const char[] szDir, const char[] szMapFi
 				DeleteFile(szSrcCoopConfig, CoopManager.ConfigUsesValveFS(ccl));
 			}
 		}
+		pConfigBuilder.Close();
 	}
 	dir.Close();
 	return true;
@@ -134,7 +312,7 @@ bool ImportConfigsDir(ImportSource src, const char[] szDir, const char[] szMapFi
 #define STRIPPER_ELEMENTS_ROOT             (STRIPPER_TOK_FILTER|STRIPPER_TOK_ADD|STRIPPER_TOK_MODIFY)
 #define STRIPPER_ELEMENTS_MODIFY           (STRIPPER_TOK_MATCH|STRIPPER_TOK_REPLACE|STRIPPER_TOK_DELETE|STRIPPER_TOK_INSERT)
 
-bool ImportStripperConfig(const char[] szStripperConfig, File pSrcCoopConfig, char[] szError, int maxErrorLen)
+bool ImportStripperConfig(const char[] szStripperConfig, StringBuilder pConfigBuilder, char[] szError, int maxErrorLen)
 {
 	File pStripperCfg = OpenFile(szStripperConfig, "rt");
 	if (!pStripperCfg)
@@ -281,7 +459,7 @@ bool ImportStripperConfig(const char[] szStripperConfig, File pSrcCoopConfig, ch
 	{
 		char[] szOut = new char[pOutBuilder.BufferSize];
 		pOutBuilder.ToString(szOut);
-		bError = !ImportUtil.ImportAsNode("entity_import_stripper", true, szOut, pSrcCoopConfig, szError, maxErrorLen);
+		bError = !ImportUtil.ImportAsNode("entity_import_stripper", szOut, pConfigBuilder, szError, maxErrorLen);
 	}
 
 	pStripperCfg.Close();
@@ -290,79 +468,4 @@ bool ImportStripperConfig(const char[] szStripperConfig, File pSrcCoopConfig, ch
 	pKvDataRegex.Close();
 
 	return !bError;
-}
-
-// --------------------------------------------------------------------------------------------------------------------------------
-// Import utils
-// --------------------------------------------------------------------------------------------------------------------------------
-
-methodmap ImportUtil
-{
-	public static bool FileFilter(ImportSource src, const char[] szFileName, char szMapName[MAX_MAPNAME])
-	{
-		int len = strlen(szFileName);
-		int extLen;
-
-		if (src == IMPORT_STRIPPER)
-		{
-			if (!StrEndsWithEx(szFileName, len, ".cfg", false))
-				return false;
-			extLen = 4;
-		}
-		else ThrowError("ImportUtil.FileFilter not implemented for this import source.");
-		
-		len = len - extLen + 1;
-		if (len > MAX_MAPNAME)
-		{
-			MsgSrv("Map name in \"%s\" exceeds limit of %d characters and won't be imported.", szFileName, MAX_MAPNAME - 1);
-			return false;
-		}
-		
-		strcopy(szMapName, len, szFileName);
-		return true;
-	}
-
-	public static bool ImportAsNode(const char[] szNode, bool bReplaceNode, const char[] szNodeContent, File pSrcCoopConfig, char[] szError, int maxErrorLen)
-	{
-		StringBuilder sb = new StringBuilder();
-		if (!sb.AppendFile(pSrcCoopConfig))
-		{
-			sb.Close();
-			Format(szError, maxErrorLen, "Unable to read from SourceCoop config");
-			return false;
-		}
-		
-		int iConfigLen = sb.BufferSize;
-		char[] szConfig = new char[iConfigLen];
-		sb.ToString(szConfig);
-
-		PrintToServer(szConfig);
-
-		// This regex enters the next (or first) child from given position. Matching stops at opening { brace.
-		// /^(?:\/\/.*|"(?:\\.|[^"])*"|\s|[^}{"])*?{/
-		Regex pEnterChildNode = new Regex("^(?:\\/\\/.*|\"(?:\\\\.|[^\"])*\"|\\s|[^}{\"])*?{");
-
-		// This regex consists of OR'd groups each representing a part of KV syntax. The <braces> group is able to recurse itself.
-		// The target node is searched only at current depth, as in kv.JumpToKey(). Matching stops at the start of the specified node (positive lookeahead).
-		// /^(?:(?<comments>\/\/.*)|(?="?nodename"?)|(?<braces>{(?:(?&comments)|(?&braces)|(?&quotes)|(?&misc))*})|(?<quotes>"(?:\\.|[^"])*")|(?<misc>\s|[^"{}]))*/
-		char szGoToNode[256] = "^(?:(?<comments>\\/\\/.*)|(?=\"?%s\"?)|(?<braces>{(?:(?&comments)|(?&braces)|(?&quotes)|(?&misc))*})|(?<quotes>\"(?:\\\\.|[^\"])*\")|(?<misc>\\s|[^\"{}]))*";
-		Format(szGoToNode, sizeof(szGoToNode), szGoToNode, szNode);
-		Regex pGoToNode = new Regex(szGoToNode);
-
-		sb.Close();
-		return true;
-	}
-
-	public static void AppendLine(StringBuilder sb, const char[] szText, int indent)
-	{
-		ImportUtil.Indent(sb, indent);
-		sb.Append(szText);
-		sb.Append("\n");
-	}
-
-	public static void Indent(StringBuilder sb, int indent)
-	{
-		for (int i = 0; i < indent; i++)
-			sb.Append("\t");
-	}
 }

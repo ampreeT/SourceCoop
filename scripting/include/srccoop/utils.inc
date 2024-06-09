@@ -1013,3 +1013,38 @@ stock bool FileCopy(const char[] source, const char[] destination, bool use_valv
 
 	return true;
 }
+
+/**
+ * This is a workaround for opening existing files, potentially located in the custom folder, with the Valve filesystem, for both reading and writing.
+ * Normally, opening an existing file with Valve FS using any writable modes ("r+", "a", ..) will only look for files in root game folder.
+ * This function currently accounts for the custom folder only, other additional Valve search paths are ignored.
+ * 
+ * https://github.com/alliedmodders/sourcemod/issues/2175
+ */
+stock File OpenFileEx(const char[] file, const char[] mode, bool use_valve_fs=false, const char[] valve_path_id="GAME")
+{
+	if (use_valve_fs && !StrEqual(mode, "r", false) && !StrEqual(mode, "rb", false) && !StrEqual(mode, "rt", false))
+	{
+		DirectoryListing dir = OpenDirectory("custom");
+		if (dir)
+		{
+			char buffer[PLATFORM_MAX_PATH];
+			FileType ft;
+			
+			while (dir.GetNext(buffer, sizeof(buffer), ft))
+			{
+				if (ft == FileType_Directory && !StrEqual(buffer, ".") && !StrEqual(buffer, ".."))
+				{
+					Format(buffer, sizeof(buffer), "custom/%s/%s", buffer, file);
+					if (FileExists(buffer))
+					{
+						return OpenFile(buffer, mode);
+					}
+				}
+			}
+
+			dir.Close();
+		}
+	}
+	return OpenFile(file, mode, use_valve_fs, valve_path_id);
+}

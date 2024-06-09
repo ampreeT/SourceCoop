@@ -50,12 +50,20 @@ methodmap StringBuilder < DataPack
 		return this;
 	}
 
+	public bool ToFile(File pFile, bool term = false)
+	{
+		char[] szOut = new char[this.BufferSize];
+		this.ToString(szOut);
+		return pFile.WriteString(szOut, term);
+	}
+
 	public StringBuilder Append(const char[] str)
 	{
 		DataPackPos save = this.Position;
 
-		view_as<DataPack>(this).Reset(false);
 		int len = strlen(str);
+
+		view_as<DataPack>(this).Reset(false);
 		int total = this.ReadCell() + len;
 		view_as<DataPack>(this).Reset(false);
 		this.WriteCell(total, false);
@@ -64,6 +72,42 @@ methodmap StringBuilder < DataPack
 
 		this.WriteCell(len, true);
 		this.WriteString(str, true);
+		return this;
+	}
+
+	/**
+	 * Alternative String append variant.
+	 * Because of optimization of the limit, the string needs to be temporarily written to,
+	 * so const is not possible here.
+	 */
+	public StringBuilder AppendEx(char[] str, int limit = cellmax)
+	{
+		DataPackPos save = this.Position;
+
+		int len = strlen(str);
+		char bkpchr = EOS;
+		
+		if (limit < len)
+		{
+			bkpchr = str[limit];
+			str[limit] = EOS;
+			len = limit;
+		}
+
+		view_as<DataPack>(this).Reset(false);
+		int total = this.ReadCell() + len;
+		view_as<DataPack>(this).Reset(false);
+		this.WriteCell(total, false);
+
+		this.Position = save;
+
+		this.WriteCell(len, true);
+		this.WriteString(str, true);
+
+		if (bkpchr != EOS)
+		{
+			str[limit] = bkpchr;
+		}
 
 		return this;
 	}
