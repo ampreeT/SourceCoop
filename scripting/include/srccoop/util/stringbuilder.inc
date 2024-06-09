@@ -128,7 +128,7 @@ methodmap StringBuilder < DataPack
 	{
 		char[] szBuffer = new char[sb.BufferSize];
 		sb.ToString(szBuffer);
-		this.Append(szBuffer);
+		return this.Append(szBuffer);
 	}
 
 	/**
