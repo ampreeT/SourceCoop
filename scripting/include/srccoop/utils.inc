@@ -1038,6 +1038,7 @@ stock File OpenFileEx(const char[] file, const char[] mode, bool use_valve_fs=fa
 					Format(buffer, sizeof(buffer), "custom/%s/%s", buffer, file);
 					if (FileExists(buffer))
 					{
+						dir.Close();
 						return OpenFile(buffer, mode);
 					}
 				}
