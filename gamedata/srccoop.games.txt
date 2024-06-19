@@ -21,6 +21,12 @@
 				"windows"	"IEngineSoundServer003"
 				"linux"		"IEngineSoundServer003"
 			}
+
+			"CSoundSize"
+			{
+				"windows"	"52"
+				"linux"		"52"
+			}
 		}
 		"Offsets"
 		{
@@ -550,6 +556,20 @@
 				"return"	"void"
 				"this"		"entity"
 			}
+			"CAI_BaseNPC::UpdateSleepState"
+			{
+				"signature"	"CAI_BaseNPC::UpdateSleepState"
+				"callconv"	"thiscall"
+				"return"	"void"
+				"this"		"entity"
+				"arguments"
+				{
+					"bInPVS"
+					{
+						"type"	"bool"
+					}
+				}
+			}
 			"CBoneSetup::AccumulatePose"
 			{
 				"signature"	"CBoneSetup::AccumulatePose"
@@ -717,6 +737,11 @@
 				"windows"	"\x55\x8B\xEC\x83\xEC\x5C\x53\x57\x8B\xF9"
 				"linux" 	"@_ZN11CAI_BaseNPC19SetPlayerAvoidStateEv"
 			}
+			"CAI_BaseNPC::UpdateSleepState"	// void CAI_BaseNPC::UpdateSleepState( bool bInPVS )
+			{
+				"windows"	"\x55\x8B\xEC\x56\x8B\xF1\x83\xBE\x8C\x09\x00\x00\x00\x2A\x2A\x2A\x2A\x2A\x2A\xA1\xD0\x91"	// str: "CAI_BaseNPC::UpdateSleepState called with NULL pLocalPlayer\n"
+				"linux"		"@_ZN11CAI_BaseNPC16UpdateSleepStateEb"
+			}
 			"CreateServerRagdoll" // CBaseEntity CreateServerRagdoll(CBaseAnimating *, int, const CTakeDamageInfo *, int, bool)
 			{
 				"windows"	"\x53\x8B\xDC\x83\xEC\x08\x83\xE4\xF0\x83\xC4\x04\x55\x8B\x6B\x04\x89\x6C\x24\x04\x8B\xEC\xB8\x78\x30\x00\x00"
@@ -878,6 +903,21 @@
 				"windows"	"468"
 				"linux"		"469"
 			}
+			"CAI_BaseNPC::QueryHearSound"	// bool CAI_BaseNPC::QueryHearSound(CSound*)
+			{
+				"windows"	"420"
+				"linux"		"421"
+			}
+			"CAI_BaseNPC::GetSoundInterests"	// int CAI_BaseNPC::GetSoundInterests( void )
+			{
+				"windows"	"426"
+				"linux"		"427"
+			}
+			"CAI_BaseNPC::HearingSensitivity"	// float CAI_BaseNPC::HearingSensitivity()
+			{
+				"windows"	"430"
+				"linux"		"431"
+			}
 			"CAI_BaseNPC::UpdateEnemyMemory" // CAI_BaseNPC::UpdateEnemyMemory(CBaseEntity*, Vector const&, CBaseEntity*)
 			{
 				"windows"	"529"
@@ -1017,6 +1057,11 @@
 			{
 				"windows"	"\x55\x8B\xEC\x83\xEC\x5C\x53\x57"
 				"linux" 	"@_ZN11CAI_BaseNPC19SetPlayerAvoidStateEv"
+			}
+			"CAI_BaseNPC::UpdateSleepState"	// void CAI_BaseNPC::UpdateSleepState( bool bInPVS )
+			{
+				"windows"	"\x55\x8B\xEC\x56\x8B\xF1\x83\xBE\x3C\x09\x00\x00\x00\x2A\x2A\x2A\x2A\x2A\x2A\xA1\x50"	// str: "CAI_BaseNPC::UpdateSleepState called with NULL pLocalPlayer\n"
+				"linux"		"@_ZN11CAI_BaseNPC16UpdateSleepStateEb"
 			}
 			"GlobalEntity_GetIndex" // int GlobalEntity_GetIndex( const char *pGlobalname );
 			{
@@ -1191,6 +1236,21 @@
 			{
 				"windows"	"31"
 				"linux"		"30"
+			}
+			"CAI_BaseNPC::QueryHearSound"	// bool CAI_BaseNPC::QueryHearSound(CSound*)
+			{
+				"windows"	"387"
+				"linux"		"388"
+			}
+			"CAI_BaseNPC::GetSoundInterests"	// int CAI_BaseNPC::GetSoundInterests( void )
+			{
+				"windows"	"393"
+				"linux"		"394"
+			}
+			"CAI_BaseNPC::HearingSensitivity"	// float CAI_BaseNPC::HearingSensitivity()
+			{
+				"windows"	"397"
+				"linux"		"398"
 			}
 			"CAI_BaseNPC::UpdateEnemyMemory" // CAI_BaseNPC::UpdateEnemyMemory(CBaseEntity*, Vector const&, CBaseEntity*)
 			{

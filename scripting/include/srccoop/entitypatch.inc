@@ -29,6 +29,36 @@ void ClearLocalPlayerCallingEntity()
 	g_pLocalPlayerEntity = NULL_CBASEENTITY;
 }
 
+public bool HasAnyPlayerWalkedIntoWakeRadius(CAI_BaseNPC pBaseNPC)
+{
+	float flWakeRadius = pBaseNPC.GetWakeRadius();
+	bool bHasBigEnoughRadius = flWakeRadius > 0.1;
+	if (!bHasBigEnoughRadius)
+	{
+		return false;
+	}
+
+	float vec3EntityPosition[3];
+	pBaseNPC.GetAbsOrigin(vec3EntityPosition);
+
+	for (int i = 1; i <= MaxClients; ++i)
+	{
+		CBasePlayer pPlayer = CBasePlayer(i);
+		if (pPlayer.IsValid() && pPlayer.IsAlive() && !(pPlayer.GetFlags() & FL_NOTARGET))
+		{
+			float vec3PlayerPosition[3];
+			pPlayer.GetAbsOrigin(vec3PlayerPosition);
+
+			if (GetVectorDistance(vec3EntityPosition, vec3PlayerPosition) <= flWakeRadius)
+			{
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
 //------------------------------------------------------
 // UTIL_GetLocalPlayer
 //------------------------------------------------------
@@ -908,12 +938,118 @@ public MRESReturn Hook_SetPlayerAvoidState(int _this)
 	return MRES_Supercede;
 }
 
-//------------------------------------------------------
-// CProtoSniper - npc_sniper
-// Crashed in AI_GetSinglePlayer nullptr
-// This function is remade from scratch
-//------------------------------------------------------
-public MRESReturn Hook_ProtoSniperSelectSchedule(int _this, Handle hReturn)	// https://github.com/ValveSoftware/source-sdk-2013/blob/0d8dceea4310fde5706b3ce1c70609d72a38efdf/mp/src/game/server/hl2/proto_sniper.cpp#L1385
+// `UpdateSleepState` ends early due to a null pointer check for the local player.
+// The entire function is reconstructed to remove the check and to support multiple players.
+// 
+// Class: `CAI_BaseNPC`
+//
+// ## Citations
+//
+// - [Source SDK 2013](https://github.com/ValveSoftware/source-sdk-2013/blob/0d8dceea4310fde5706b3ce1c70609d72a38efdf/mp/src/game/server/ai_basenpc.cpp#L3353)
+//
+public MRESReturn Hook_BaseNpcUpdateSleepState(int _this, Handle hParams)
+{
+	// TODO: does bInPVS work for any and all players?
+	CAI_BaseNPC pBaseNPC = CAI_BaseNPC(_this);
+	bool bInPVS = DHookGetParam(hParams, 1);
+	
+	int iSleepState = pBaseNPC.GetSleepState();
+	if (iSleepState > view_as<int>(AISS_AWAKE))
+	{
+		// wake up if any player has walked into radius
+		if (HasAnyPlayerWalkedIntoWakeRadius(pBaseNPC))
+		{
+			pBaseNPC.Wake();
+		}
+		else if (iSleepState == view_as<int>(AISS_WAITING_FOR_PVS))
+		{
+			if (bInPVS)
+			{
+				pBaseNPC.Wake();
+			}
+		}
+		else if (iSleepState == view_as<int>(AISS_WAITING_FOR_THREAT))
+		{
+			if (pBaseNPC.HasCondition(view_as<int>(COND_LIGHT_DAMAGE)) || pBaseNPC.HasCondition(view_as<int>(COND_HEAVY_DAMAGE)))
+			{
+				pBaseNPC.Wake();
+			}
+			else
+			{
+				if (bInPVS)
+				{
+					for (int i = 1; i <= MaxClients; ++i)
+					{
+						// TODO:
+						// Should this check for if the player is alive?
+						CBasePlayer pPlayer = CBasePlayer(i);
+						if (pPlayer.IsValid() && pPlayer.IsAlive() && !(pPlayer.GetFlags() & FL_NOTARGET) && pPlayer.FVisibleEntity(pBaseNPC))
+						{
+							pBaseNPC.Wake();
+							break;
+						}
+					}
+				}
+				
+				if ((pBaseNPC.GetSoundInterests() & SOUND_DANGER) && !(pBaseNPC.HasSpawnFlag(SF_NPC_WAIT_TILL_SEEN)))
+				{
+					CSoundEnt pSoundEnt = CSoundEnt(FindEntityByClassname(-1, "soundent"));
+					if (pSoundEnt.IsValid())
+					{
+						CSound pSound;
+						pSoundEnt.ActiveList(pSound);
+						for (; pSound.IsValid(); pSound.Next())
+						{
+							if ((pSound.GetType() & SOUND_DANGER) && pBaseNPC.CanHearSound(pSound) && pBaseNPC.IsSoundVisible(pSound))
+							{
+								pBaseNPC.Wake();
+								break;
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	else
+	{
+		// NPC is awake
+		// Don't let an NPC sleep if they're running a script!
+		if (!pBaseNPC.IsInAScript() && pBaseNPC.GetState() != view_as<int>(NPC_STATE_SCRIPT))
+		{
+			if (pBaseNPC.HasSleepFlags(AI_SLEEP_FLAG_AUTO_PVS))
+			{
+				if (!pBaseNPC.HasCondition(view_as<int>(COND_IN_PVS)))
+				{
+					pBaseNPC.SetSleepState(view_as<int>(AISS_WAITING_FOR_PVS));
+					pBaseNPC.Sleep();
+				}
+			}
+
+			if (pBaseNPC.HasSleepFlags(AI_SLEEP_FLAG_AUTO_PVS_AFTER_PVS))
+			{
+				if (pBaseNPC.HasCondition(view_as<int>(COND_IN_PVS)))
+				{
+					// OK, we're in the player's PVS. Now switch to regular old AUTO_PVS sleep rules.
+					pBaseNPC.AddSleepFlags(view_as<int>(AI_SLEEP_FLAG_AUTO_PVS));
+					pBaseNPC.RemoveSleepFlags(view_as<int>(AI_SLEEP_FLAG_AUTO_PVS_AFTER_PVS));
+				}
+			}
+		}
+	}
+
+	return MRES_Supercede;
+}
+
+// `SelectSchedule` crashes because a null local player pointer was accessed.
+// The entire function is reconstructed to remove the check.
+// 
+// Class: `CProtoSniper` - npc_sniper
+//
+// ## Citations
+// - [Source SDK 2013](https://github.com/ValveSoftware/source-sdk-2013/blob/0d8dceea4310fde5706b3ce1c70609d72a38efdf/mp/src/game/server/hl2/proto_sniper.cpp#L1385)
+//
+public MRESReturn Hook_ProtoSniperSelectSchedule(int _this, Handle hReturn)
 {
 	CProtoSniper pSniper = CProtoSniper(_this);
 	
