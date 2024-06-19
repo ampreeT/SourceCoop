@@ -980,8 +980,6 @@ public MRESReturn Hook_BaseNpcUpdateSleepState(int _this, Handle hParams)
 				{
 					for (int i = 1; i <= MaxClients; ++i)
 					{
-						// TODO:
-						// Should this check for if the player is alive?
 						CBasePlayer pPlayer = CBasePlayer(i);
 						if (pPlayer.IsValid() && pPlayer.IsAlive() && !(pPlayer.GetFlags() & FL_NOTARGET) && pPlayer.FVisibleEntity(pBaseNPC))
 						{

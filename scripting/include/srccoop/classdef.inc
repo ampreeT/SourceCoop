@@ -2462,14 +2462,13 @@ Address GetSoundPoolPropAddress(CSoundEnt pSoundEnt, const int iSoundIndex, cons
 		ThrowError("Unable to retrieve offset %s", "m_SoundPool");
 
 	// obtain the offset within `CSound`
-	int iOffset = FindDataMapInfo(pSoundEnt.GetEntIndex(), szProperty);
-	if (iOffset == -1)
+	int iOffsetFromStartProperty = FindDataMapInfo(pSoundEnt.GetEntIndex(), szProperty);
+	if (iOffsetFromStartProperty == -1)
 		ThrowError("Unable to retrieve offset %s", szProperty);
-	else
-		iOffset -= iOffsetPoolStart;
 	
-	if (iOffset <= 0)
-		ThrowError("Internal Error: Unable to retrive offset %s", szProperty);
+	int iOffset = iOffsetFromStartProperty - iOffsetPoolStart;
+	if (iOffset < 0)
+		ThrowError("Internal Error: Computed offset %s is negative (%i); %s offset: %i, SoundPool offset: %i", szProperty, iOffset, szProperty, iOffsetFromStartProperty, iOffsetPoolStart);
 	
 	// this + offsetof(m_SoundPool[iSoundIndex]) + offsetof(property)
 	return pSoundEnt.GetAddress() + iOffsetPoolStart + iSoundIndex * g_iCSoundSize + iOffset;
