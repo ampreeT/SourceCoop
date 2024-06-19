@@ -9,7 +9,7 @@
 | [Features & Configuration](https://github.com/ampreeT/SourceCoop/wiki/Features-&-Configuration) - [Server Running Tips](https://github.com/ampreeT/SourceCoop/wiki/Server-running-tips) - [Public Servers](https://github.com/ampreeT/SourceCoop/wiki/Public-Servers) |
 |  [Developing](https://github.com/ampreeT/SourceCoop/wiki/Developing) - [EDT Map Script Format](https://github.com/ampreeT/SourceCoop/wiki/EDT---Map-script-format) - [Authoring Maps](https://github.com/ampreeT/SourceCoop/wiki/Authoring-maps-for-SourceCoop) |
 
-SourceCoop is a cooperative mod for Source Engine games enabling singleplayer campaigns to be played together. It currently supports [Black Mesa](https://store.steampowered.com/app/362890/Black_Mesa/) and [Half-Life 2: Deathmatch](https://store.steampowered.com/app/362890/Black_Mesa/).
+SourceCoop is a cooperative mod for Source Engine games enabling singleplayer campaigns to be played together. It currently supports [Black Mesa](https://store.steampowered.com/app/362890/Black_Mesa/) and [Half-Life 2: Deathmatch](https://store.steampowered.com/app/320/HalfLife_2_Deathmatch/).
 
 - Supports campaigns.
 - Restores singleplayer functionality.
