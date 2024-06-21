@@ -8,6 +8,8 @@
 #pragma newdecls required
 #pragma semicolon 1
 
+ConVar ai_los_mode;
+
 Handle g_pGlobalEntityGetIndex;
 Handle g_pGlobalEntityGetState;
 Handle g_pGlobalEntityGetName;
@@ -35,6 +37,8 @@ int g_iCSoundSize = -1;
 
 stock void InitClassdef(GameData pGameConfig)
 {
+	ai_los_mode = FindConVar("ai_los_mode");
+
 	g_iCSoundSize = GetGamedataInt(pGameConfig, "CSoundSize");
 	if (g_iCSoundSize <= 0)
 		SetFailState("Could not obtain CSound struct size");
@@ -296,23 +300,6 @@ methodmap CBaseEntity
 	{
 		return CBaseEntity(CreateEntityByName(szClassname));
 	}
-	//public static CBaseEntity FromAddress(const Address pAddress)
-	//{
-	//	// Credits: stocksoup: memory.inc -> int GetEntityFromAddress(Address pEntity)
-	//	// CWorld is derived from CBaseEntity so it should have both offsets
-	//	int iOffsetAngleRotation = FindDataMapInfo(0, "m_angRotation");
-	//	if (iOffsetAngleRotation == -1)
-	//		ThrowError("Unable to retrieve offset %s", "m_angRotation");
-	//	int iOffsetViewOffset = FindDataMapInfo(0, "m_vecViewOffset");
-	//	if (iOffsetViewOffset == -1)
-	//		ThrowError("Unable to retrieve offset %s", "m_vecViewOffset");
-	//	
-	//	if ((iOffsetAngleRotation + 0x0C) != (iOffsetViewOffset - 0x04))
-	//		ThrowError("Unable to confirm offset %s", "m_RefEHandle");
-	//	
-	//	Address pEHandle = pAddress + iOffsetAngleRotation + 0x0C;
-	//	return CBaseEntity(LoadFromAddress(pEHandle, NumberType_Int32) | (1 << 31));
-	//}
 
 	property int entindex
 	{
@@ -448,15 +435,19 @@ methodmap CBaseEntity
 		}
 		else
 		{
+			float vec3Origin[3];
+			this.GetAbsOrigin(vec3Origin);
+
 			float vec3Offset[3];
 			GetEntPropVector(this.GetEntIndex(), Prop_Data, "m_vecViewOffset", vec3Offset);
-			
-			this.GetAbsOrigin(vecBuffer);
-			vecBuffer[0] += vec3Offset[0];
-			vecBuffer[1] += vec3Offset[1];
-			vecBuffer[2] += vec3Offset[2];
+
+			AddVectors(vec3Origin, vec3Offset, vecBuffer);
 		}
 	}
+	// # Citations
+	//
+	// - [Source SDK 2013](https://github.com/ValveSoftware/source-sdk-2013/blob/0d8dceea4310fde5706b3ce1c70609d72a38efdf/mp/src/game/shared/baseentity_shared.cpp#L148)
+	//
 	public void GetEarPosition(float vecBuffer[3])
 	{
 		this.GetEyePosition(vecBuffer);
@@ -831,7 +822,7 @@ methodmap CBaseEntity
 		pEntity.GetEyePosition(vec3TargetOrigin);
 
 		CTraceRay pTraceRay;
-		if (FindConVar("ai_los_mode").BoolValue)	// TODO: Cache this ConVar.
+		if (ai_los_mode.BoolValue)
 		{
 			pTraceRay = new CTraceRay(vec3LookerOrigin, vec3TargetOrigin, iTraceMask, RayType_EndPoint, TraceEntityFilter_FVisibleAiLosEnabled, this.GetEntIndex());
 		}
@@ -887,7 +878,7 @@ methodmap CBaseEntity
 		this.GetEyePosition(vec3LookerOrigin);
 
 		CTraceRay pTraceRay;
-		if (FindConVar("ai_los_mode").BoolValue)	// TODO: Cache this ConVar.
+		if (ai_los_mode.BoolValue)
 		{
 			pTraceRay = new CTraceRay(vec3LookerOrigin, vec3TargetOrigin, iTraceMask, RayType_EndPoint, TraceEntityFilter_FVisibleAiLosEnabled, this.GetEntIndex());
 		}
@@ -1059,19 +1050,19 @@ methodmap CSoundEnt < CPointEntity
 	// Gets the index of the first sound in the active sound list.
 	public void ActiveList(CSound pSound)
 	{
-		pSound.m_pSoundEnt = view_as<int>(this);
+		pSound.m_pSoundEnt = this;
 		pSound.m_iSoundIndex = GetEntProp(this.GetEntIndex(), Prop_Data, "m_iActiveSound");
 	}
 }
 
 enum struct CSound
 {
-	int m_pSoundEnt;
+	CSoundEnt m_pSoundEnt;
 	int m_iSoundIndex;
 
 	CSoundEnt GetSoundEnt()
 	{
-		return view_as<CSoundEnt>(this.m_pSoundEnt);
+		return this.m_pSoundEnt;
 	}
 	int GetSoundIndex()
 	{
@@ -1526,7 +1517,9 @@ methodmap CAI_BaseNPC < CBaseCombatCharacter
 	}
 	public void Sleep()
 	{
-		this.AcceptInputStr("Sleep");
+		// TODO:
+		// Reconstruct function from scratch.
+		// https://github.com/ValveSoftware/source-sdk-2013/blob/0d8dceea4310fde5706b3ce1c70609d72a38efdf/mp/src/game/server/ai_basenpc.cpp#L4440
 	}
 	public CBaseEntity GetEnemy()
 	{
@@ -1554,7 +1547,7 @@ methodmap CAI_BaseNPC < CBaseCombatCharacter
 	}
 	public bool HasCondition(const int iCondition)
 	{
-		bool bOutOfBounds = view_as<bool>((iCondition > 255) || (iCondition < 0));
+		bool bOutOfBounds = (iCondition > 255) || (iCondition < 0);
 		if (bOutOfBounds)
 			ThrowError("Received out of bounds index %d; range is 0-255", iCondition);
 		
@@ -2190,62 +2183,54 @@ methodmap CPlayerResource < CBaseEntity
 	public int GetTeam(CBasePlayer pPlayer)
 	{
 		int iEntIndex = pPlayer.GetEntIndex();
-		bool bOutOfBounds = view_as<bool>((iEntIndex > MaxClients) || (iEntIndex < 0));
+		bool bOutOfBounds = (iEntIndex > MaxClients) || (iEntIndex < 0);
 		if (bOutOfBounds)
 			ThrowError("Received out of bounds index %d; range is 0-%i", MaxClients);
 		
-		int iConnectedOffset = GetEntSendPropOffs(this.GetEntIndex(), "m_bConnected");
-		if (iConnectedOffset == -1)
+		int iMemberOffset = GetEntSendPropOffs(this.GetEntIndex(), "m_bConnected");
+		if (iMemberOffset == -1)
 			ThrowError("Unable to retrieve offset %s", "m_iTeam");
 		
-		Address pAddress = this.GetAddress();
-		Address pOffset = view_as<Address>(view_as<int>(pAddress) + iConnectedOffset + iEntIndex * 4);
-		return LoadFromAddress(pOffset, NumberType_Int32);
+		return Deref(this.GetAddress() + iMemberOffset + (iEntIndex * 4), NumberType_Int32);
 	}
 	public void SetTeam(CBasePlayer pPlayer, const int iTeamNum)
 	{
 		int iEntIndex = pPlayer.GetEntIndex();
-		bool bOutOfBounds = view_as<bool>((iEntIndex > MaxClients) || (iEntIndex < 0));
+		bool bOutOfBounds = (iEntIndex > MaxClients) || (iEntIndex < 0);
 		if (bOutOfBounds)
 			ThrowError("Received out of bounds index %d; range is 0-%i", MaxClients);
 		
-		int iConnectedOffset = GetEntSendPropOffs(this.GetEntIndex(), "m_iTeam");
-		if (iConnectedOffset == -1)
+		int iMemberOffset = GetEntSendPropOffs(this.GetEntIndex(), "m_iTeam");
+		if (iMemberOffset == -1)
 			ThrowError("Unable to retrieve offset %s", "m_iTeam");
 		
-		Address pAddress = this.GetAddress();
-		Address pOffset = view_as<Address>(view_as<int>(pAddress) + iConnectedOffset + iEntIndex * 4);
-		StoreToAddress(pOffset, iTeamNum, NumberType_Int32);
+		StoreToAddress(this.GetAddress() + iMemberOffset + (iEntIndex * 4), iTeamNum, NumberType_Int32);
 	}
 	public bool IsConnected(CBasePlayer pPlayer)
 	{
 		int iEntIndex = pPlayer.GetEntIndex();
-		bool bOutOfBounds = view_as<bool>((iEntIndex > MaxClients) || (iEntIndex < 0));
+		bool bOutOfBounds = (iEntIndex > MaxClients) || (iEntIndex < 0);
 		if (bOutOfBounds)
 			ThrowError("Received out of bounds index %d; range is 0-%i", MaxClients);
 		
-		int iConnectedOffset = GetEntSendPropOffs(this.GetEntIndex(), "m_bConnected");
-		if (iConnectedOffset == -1)
+		int iMemberOffset = GetEntSendPropOffs(this.GetEntIndex(), "m_bConnected");
+		if (iMemberOffset == -1)
 			ThrowError("Unable to retrieve offset %s", "m_bConnected");
 		
-		Address pAddress = this.GetAddress();
-		Address pOffset = view_as<Address>(view_as<int>(pAddress) + iConnectedOffset + iEntIndex * 4);
-		return view_as<bool>(LoadFromAddress(pOffset, NumberType_Int32));
+		return view_as<bool>(Deref(this.GetAddress() + iMemberOffset + (iEntIndex * 4), NumberType_Int32));
 	}
 	public void SetConnected(CBasePlayer pPlayer, const bool bConnected)
 	{
 		int iEntIndex = pPlayer.GetEntIndex();
-		bool bOutOfBounds = view_as<bool>((iEntIndex > MaxClients) || (iEntIndex < 0));
+		bool bOutOfBounds = (iEntIndex > MaxClients) || (iEntIndex < 0);
 		if (bOutOfBounds)
 			ThrowError("Received out of bounds index %d; range is 0-%i", MaxClients);
 		
-		int iConnectedOffset = GetEntSendPropOffs(this.GetEntIndex(), "m_bConnected");
-		if (iConnectedOffset == -1)
+		int iMemberOffset = GetEntSendPropOffs(this.GetEntIndex(), "m_bConnected");
+		if (iMemberOffset == -1)
 			ThrowError("Unable to retrieve offset %s", "m_bConnected");
 		
-		Address pAddress = this.GetAddress();
-		Address pOffset = view_as<Address>(view_as<int>(pAddress) + iConnectedOffset + iEntIndex * 4);
-		StoreToAddress(pOffset, view_as<int>(bConnected), NumberType_Int32);
+		StoreToAddress(this.GetAddress() + iMemberOffset + (iEntIndex * 4), view_as<int>(bConnected), NumberType_Int32);
 	}
 }
 

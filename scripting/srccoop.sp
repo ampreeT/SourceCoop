@@ -477,6 +477,7 @@ public void Event_PlayerDisconnect(Event hEvent, const char[] szName, bool bDont
 
 public void OnMapEnd()
 {
+	DnManager.Clear();
 	g_pLevelLump.RevertConvars();
 	g_bMapStarted = false;
 }

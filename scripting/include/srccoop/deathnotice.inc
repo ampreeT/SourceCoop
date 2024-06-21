@@ -6,6 +6,36 @@
 #pragma newdecls required
 #pragma semicolon 1
 
+int g_pDamageFlagList[] =
+{
+	DMG_PLASMA,
+	DMG_SLOWBURN,
+	DMG_RADIATION,
+	DMG_POISON,
+	DMG_NERVEGAS,
+	DMG_ENERGYBEAM,
+	DMG_SONIC,
+	DMG_SHOCK,
+	DMG_BLAST,
+	DMG_BURN,
+	DMG_CRUSH,
+};
+
+char g_pDamageStringList[sizeof(g_pDamageFlagList)][] =
+{
+	"Plasma",
+	"Fire",
+	"Radiation",
+	"Poison",
+	"Nerve Gas",
+	"Laser Beam",
+	"Sonic Shockwave",
+	"Electric Shock",
+	"Explosion",
+	"Fire",
+	"Physics Prop"
+};
+
 enum struct DnTimerData
 {
 	// Weapon display name.
@@ -70,18 +100,39 @@ methodmap DnManager
 
 		HookConVarChange(g_sDnData.m_piNoticeLevel, DeathNotice_OnConVarChangeScKillfeed);
 	}
+	// Clears all data and kicks the bots.
+	//
+	public static void Clear()
+	{
+		DnTimerData sTimerData;
+		g_sDnData.m_sList.Clear();
+		g_sDnData.m_sTimerData = sTimerData;
+		
+		if (g_sDnData.m_pBot1.IsValid())
+		{
+			g_sDnData.m_pBot1.Kick();
+		}
+
+		if (g_sDnData.m_pBot2.IsValid())
+		{
+			g_sDnData.m_pBot2.Kick();
+		}
+	}
 	// Obtains a bot.
 	//
 	public static CBasePlayer GetBot1()
 	{
 		if (g_sDnData.m_piNoticeLevel.IntValue == 2)
 		{
-			if (!g_sDnData.m_pBot1.IsValid())
+			if (GetRealClientCount(true, false, false) > 0)
 			{
-				g_sDnData.m_pBot1 = CBasePlayer(CreateFakeClient("ScBot01"));
-				g_sDnData.m_pBot1.SetTeam(TEAM_SPECTATOR);
+				if (!g_sDnData.m_pBot1.IsValid())
+				{
+					g_sDnData.m_pBot1 = CBasePlayer(CreateFakeClient("ScBot01"));
+					g_sDnData.m_pBot1.SetTeam(TEAM_SPECTATOR);
+				}
+				return g_sDnData.m_pBot1;
 			}
-			return g_sDnData.m_pBot1;
 		}
 		return NULL_CBASEENTITY;
 	}
@@ -91,12 +142,15 @@ methodmap DnManager
 	{
 		if (g_sDnData.m_piNoticeLevel.IntValue == 2)
 		{
-			if (!g_sDnData.m_pBot2.IsValid())
+			if (GetRealClientCount(true, false, false) > 0)
 			{
-				g_sDnData.m_pBot2 = CBasePlayer(CreateFakeClient("ScBot02"));
-				g_sDnData.m_pBot2.SetTeam(TEAM_SPECTATOR);
+				if (!g_sDnData.m_pBot2.IsValid())
+				{
+					g_sDnData.m_pBot2 = CBasePlayer(CreateFakeClient("ScBot02"));
+					g_sDnData.m_pBot2.SetTeam(TEAM_SPECTATOR);
+				}
+				return g_sDnData.m_pBot2;
 			}
-			return g_sDnData.m_pBot2;
 		}
 		return NULL_CBASEENTITY;
 	}
@@ -164,54 +218,15 @@ methodmap DnManager
 	//
 	public static void GetDisplayNameFromDamageForEvent(const int iDamageFlags, const char[] szClassname, char[] szBuffer, const int iMaxLength)
 	{
-		if (iDamageFlags & DMG_PLASMA)
+		for (int i = 0; i < sizeof(g_pDamageFlagList); ++i)
 		{
-			strcopy(szBuffer, iMaxLength, "Plasma");
+			if (iDamageFlags & g_pDamageFlagList[i])
+			{
+				strcopy(szBuffer, iMaxLength, g_pDamageStringList[i]);
+				break;
+			}
 		}
-		else if (iDamageFlags & DMG_SLOWBURN)
-		{
-			strcopy(szBuffer, iMaxLength, "Fire");
-		}
-		else if (iDamageFlags & DMG_RADIATION)
-		{
-			strcopy(szBuffer, iMaxLength, "Radiation");
-		}
-		else if (iDamageFlags & DMG_POISON)
-		{
-			strcopy(szBuffer, iMaxLength, "Poison");
-		}
-		else if (iDamageFlags & DMG_NERVEGAS)
-		{
-			strcopy(szBuffer, iMaxLength, "Nerve Gas");
-		}
-		else if (iDamageFlags & DMG_ENERGYBEAM)
-		{
-			strcopy(szBuffer, iMaxLength, "Laser Beam");
-		}
-		else if (iDamageFlags & DMG_SONIC)
-		{
-			strcopy(szBuffer, iMaxLength, "Sonic Shockwave");
-		}
-		else if (iDamageFlags & DMG_SHOCK)
-		{
-			strcopy(szBuffer, iMaxLength, "Electric Shock");
-		}
-		else if (iDamageFlags & DMG_BLAST)
-		{
-			strcopy(szBuffer, iMaxLength, "Explosion");
-		}
-		else if (iDamageFlags & DMG_BURN)
-		{
-			strcopy(szBuffer, iMaxLength, "Fire");
-		}
-		else if (iDamageFlags & DMG_CRUSH)
-		{
-			strcopy(szBuffer, iMaxLength, "Physics Prop");
-		}
-		else
-		{
-			strcopy(szBuffer, iMaxLength, szClassname);
-		}
+		strcopy(szBuffer, iMaxLength, szClassname);
 	}
 	// Formats the NPC string for a display event.
 	//
@@ -255,11 +270,11 @@ methodmap DnManager
 			char szClassname[MAX_CLASSNAME];
 			pInflictor.GetClassname(szClassname, sizeof(szClassname));
 
-			for (int i = 0; i < sizeof(g_pDnWeaponDisplayList); ++i)
+			for (int i = 0; i < sizeof(g_pDnWeaponIconList); ++i)
 			{
-				if (strcmp(szClassname, g_pDnWeaponDisplayList[i][0], false) == 0)
+				if (strcmp(szClassname, g_pDnWeaponIconList[i][0], false) == 0)
 				{
-					strcopy(szBuffer, iMaxLength, g_pDnWeaponDisplayList[i][1]);
+					strcopy(szBuffer, iMaxLength, g_pDnWeaponIconList[i][1]);
 					return;
 				}
 			}
@@ -313,7 +328,6 @@ methodmap DnManager
 		}
 		return true;
 	}
-	
 	// Entity killed Entity or Player
 	//
 	public static bool WriteEntryEntityKills(DnEntry sEntry, CBaseEntity pAttacker, CBaseEntity pVictim)
@@ -408,7 +422,7 @@ methodmap DnManager
 			// Pushes a entry a new queue if a queue does not exist.
 			// If a queue does exist, pushes a entry to the queue. 
 			g_sDnData.m_sList.PushArray(sEntry, sizeof(sEntry));
-			if (g_sDnData.m_hTimer == INVALID_HANDLE)
+			if (!g_sDnData.m_hTimer)
 			{
 				g_sDnData.m_hTimer = CreateTimer(flDelay, DeathNotice_Timer, _, TIMER_REPEAT);
 			}
@@ -417,17 +431,23 @@ methodmap DnManager
 		{
 			if (sEntry.m_bSuicide)
 			{
-				PrintToChatAll(SRCCOOP_CHAT_TAG..."%s suicided!", sEntry.m_szTarget2Name);
+				// TODO:
+				// Translations.
+				MsgAllNoSrv("%s suicided!", sEntry.m_szTarget2Name);
 			}
 			else
 			{
 				if (strlen(sEntry.m_szWeapon) != 0)
 				{
-					PrintToChatAll(SRCCOOP_CHAT_TAG..."%s killed %s with %s!", sEntry.m_szTarget1Name, sEntry.m_szTarget2Name, sEntry.m_szWeapon);
+					// TODO:
+					// Translations.
+					MsgAllNoSrv("%s killed %s with %s!", sEntry.m_szTarget1Name, sEntry.m_szTarget2Name, sEntry.m_szWeapon);
 				}
 				else
 				{
-					PrintToChatAll(SRCCOOP_CHAT_TAG..."%s killed %s!", sEntry.m_szTarget1Name, sEntry.m_szTarget2Name);
+					// TODO:
+					// Translations.
+					MsgAllNoSrv("%s killed %s!", sEntry.m_szTarget1Name, sEntry.m_szTarget2Name);
 				}
 			}
 		}
@@ -460,17 +480,7 @@ public void DeathNotice_OnConVarChangeScKillfeed(ConVar piConVar, char[] szOldVa
 {
 	if (piConVar.IntValue != 2)
 	{
-		g_sDnData.m_sList.Clear();
-
-		if (g_sDnData.m_pBot1.IsValid())
-		{
-			g_sDnData.m_pBot1.Kick();
-		}
-
-		if (g_sDnData.m_pBot2.IsValid())
-		{
-			g_sDnData.m_pBot2.Kick();
-		}
+		DnManager.Clear();
 	}
 }
 

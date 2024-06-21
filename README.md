@@ -13,9 +13,9 @@ SourceCoop is a cooperative mod for Source Engine games enabling singleplayer ca
 
 - Supports campaigns.
 - Restores singleplayer functionality.
-- Handles world, player and equipment persistence between maps.
+- Handles player and equipment persistence between maps.
 - Easy to use optional addons.
-- Easy to convert maps from singleplayer into cooperative.
+- Easy for mappers to convert new and existing maps from singleplayer into cooperative.
 
 ## Installation Guide
 
@@ -51,15 +51,10 @@ __If you are looking to help with the development of the project__, we are alway
 
 __If you are interested in helping us__, contact us on [Discord](https://discord.gg/Fh77rxQaEB) or create a pull request.
 
-## Dependencies
 
-- [SourceMod](https://github.com/alliedmodders/sourcemod)
-- [SourceScramble](https://github.com/nosoop/SMExt-SourceScramble)
-- [stocksoup](https://github.com/nosoop/stocksoup)
-- [sm-logdebug](https://github.com/Alienmario/sm-logdebug)
-- [smlib](https://github.com/bcserv/smlib/tree/transitional_syntax)
+## Credits
 
-# Credits
+### Contributors
 
 - __ampreeT__ :: [Steam](https://steamcommunity.com/id/ampreeT) | [GitHub](https://github.com/ampreeT) :: programming, reverse engineering, map editing
 - __kasull__ :: [Steam](https://steamcommunity.com/id/kasull/) | [GitHub](https://github.com/kasullian) :: programming, reverse engineering, trailer production
@@ -68,7 +63,15 @@ __If you are interested in helping us__, contact us on [Discord](https://discord
 - __Rock__ :: [Steam](https://steamcommunity.com/id/Rock48/) | [GitHub](https://github.com/Rock48) :: programming, map editing
 - __Krozis Kane__ :: [Steam](https://steamcommunity.com/id/Krozis_Kane/) | [GitHub](https://github.com/KrozisKane) :: map editing
 - __ReservedRegister__ :: [GitHub](https://github.com/ReservedRegister) :: reverse engineering
-- __raicovx__ :: [Github](https://github.com/raicovx) :: Equipment Persistence
-- __Jimmy-Baby__ :: [Github](https://github.com/Jimmy-Baby) :: Damage Effects Addon
-- __Removiekeen__ :: [Steam](https://steamcommunity.com/profiles/76561198804614641/) :: Logo Design
-- __yarik2720__ :: [Github](https://github.com/yarik2720) :: CI, Russian Translation
+- __raicovx__ :: [Github](https://github.com/raicovx) :: equipment persistence
+- __Jimmy-Baby__ :: [Github](https://github.com/Jimmy-Baby) :: damage effects addon
+- __Removiekeen__ :: [Steam](https://steamcommunity.com/profiles/76561198804614641/) :: logo design
+- __yarik2720__ :: [Github](https://github.com/yarik2720) :: russian translation, ci/cd
+
+### External Libraries
+
+- [SourceMod](https://github.com/alliedmodders/sourcemod)
+- [SourceScramble](https://github.com/nosoop/SMExt-SourceScramble)
+- [stocksoup](https://github.com/nosoop/stocksoup)
+- [sm-logdebug](https://github.com/Alienmario/sm-logdebug)
+- [smlib](https://github.com/bcserv/smlib/tree/transitional_syntax)
