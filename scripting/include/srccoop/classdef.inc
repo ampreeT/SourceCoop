@@ -296,6 +296,10 @@ methodmap CBaseEntity
 	{
 		return view_as<CBaseEntity>(iEntIndex > -1 ? EntIndexToEntRef(iEntIndex) : iEntIndex);
 	}
+	public static CBaseEntity FromAddress(const Address pAddress)
+	{
+		return CBaseEntity(GetEntityFromAddress(pAddress));
+	}
 	public static CBaseEntity Create(const char[] szClassname)
 	{
 		return CBaseEntity(CreateEntityByName(szClassname));
