@@ -8,6 +8,8 @@
 #pragma newdecls required
 #pragma semicolon 1
 
+ConVar ai_los_mode;
+
 Handle g_pGlobalEntityGetIndex;
 Handle g_pGlobalEntityGetState;
 Handle g_pGlobalEntityGetName;
@@ -18,6 +20,9 @@ Handle g_pGlobalEntitySetCounter;
 Handle g_pGlobalEntityAdd;
 Handle g_pGameShutdown;
 Handle g_pSetCollisionBounds;
+Handle g_pQueryHearSound;
+Handle g_pGetSoundInterests;
+Handle g_pHearingSensitivity;
 Handle g_pUpdateEnemyMemory;
 Handle g_pGetSequenceLinearMotion;
 Handle g_pShouldPlayerAvoid;
@@ -28,8 +33,16 @@ Handle g_pSendWeaponAnim;
 Handle g_pWeaponSwitch;
 Handle g_pWorldSpaceCenter;
 
+int g_iCSoundSize = -1;
+
 stock void InitClassdef(GameData pGameConfig)
 {
+	ai_los_mode = FindConVar("ai_los_mode");
+
+	g_iCSoundSize = GetGamedataInt(pGameConfig, "CSoundSize");
+	if (g_iCSoundSize <= 0)
+		SetFailState("Could not obtain CSound struct size");
+
 	char szSetCollisionBounds[] = "CBaseEntity::SetCollisionBounds";
 	StartPrepSDKCall(SDKCall_Entity);
 	if (!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Signature, szSetCollisionBounds))
@@ -172,6 +185,37 @@ stock void InitClassdef(GameData pGameConfig)
 		if (!(g_pGameShutdown = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szGameShutdown);
 	}
 
+	char szQueryHearSound[] = "CAI_BaseNPC::QueryHearSound";
+	StartPrepSDKCall(SDKCall_Entity);
+	if (!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Virtual, szQueryHearSound))
+		LogMessage("Could not obtain gamedata offset %s", szQueryHearSound);
+	else
+	{
+		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
+		PrepSDKCall_SetReturnInfo(SDKType_Bool, SDKPass_Plain);
+		if (!(g_pQueryHearSound = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szQueryHearSound);
+	}
+
+	char szGetSoundInterests[] = "CAI_BaseNPC::GetSoundInterests";
+	StartPrepSDKCall(SDKCall_Entity);
+	if (!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Virtual, szGetSoundInterests))
+		LogMessage("Could not obtain gamedata offset %s", szGetSoundInterests);
+	else
+	{
+		PrepSDKCall_SetReturnInfo(SDKType_PlainOldData, SDKPass_Plain);
+		if (!(g_pGetSoundInterests = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szGetSoundInterests);
+	}
+
+	char szHearingSensitivity[] = "CAI_BaseNPC::HearingSensitivity";
+	StartPrepSDKCall(SDKCall_Entity);
+	if (!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Virtual, szHearingSensitivity))
+		LogMessage("Could not obtain gamedata offset %s", szHearingSensitivity);
+	else
+	{
+		PrepSDKCall_SetReturnInfo(SDKType_Float, SDKPass_Plain);
+		if (!(g_pHearingSensitivity = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szHearingSensitivity);
+	}
+
 	char szUpdateEnemyMemory[] = "CAI_BaseNPC::UpdateEnemyMemory";
 	StartPrepSDKCall(SDKCall_Entity);
 	if (!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Virtual, szUpdateEnemyMemory))
@@ -251,6 +295,10 @@ methodmap CBaseEntity
 	public CBaseEntity(const int iEntIndex = NULL_CBASEENTITY)
 	{
 		return view_as<CBaseEntity>(iEntIndex > -1 ? EntIndexToEntRef(iEntIndex) : iEntIndex);
+	}
+	public static CBaseEntity FromAddress(const Address pAddress)
+	{
+		return CBaseEntity(GetEntityFromAddress(pAddress));
 	}
 	public static CBaseEntity Create(const char[] szClassname)
 	{
@@ -382,6 +430,31 @@ methodmap CBaseEntity
 	public void SetSpawnFlags(const int iSpawnFlags)
 	{
 		SetEntProp(this.GetEntIndex(), Prop_Data, "m_spawnflags", iSpawnFlags);
+	}
+	public void GetEyePosition(float vecBuffer[3])
+	{
+		if (this.IsClassPlayer())
+		{
+			GetClientEyePosition(this.GetEntIndex(), vecBuffer);
+		}
+		else
+		{
+			float vec3Origin[3];
+			this.GetAbsOrigin(vec3Origin);
+
+			float vec3Offset[3];
+			GetEntPropVector(this.GetEntIndex(), Prop_Data, "m_vecViewOffset", vec3Offset);
+
+			AddVectors(vec3Origin, vec3Offset, vecBuffer);
+		}
+	}
+	// # Citations
+	//
+	// - [Source SDK 2013](https://github.com/ValveSoftware/source-sdk-2013/blob/0d8dceea4310fde5706b3ce1c70609d72a38efdf/mp/src/game/shared/baseentity_shared.cpp#L148)
+	//
+	public void GetEarPosition(float vecBuffer[3])
+	{
+		this.GetEyePosition(vecBuffer);
 	}
 	public int GetFlags()
 	{
@@ -742,6 +815,108 @@ methodmap CBaseEntity
 	{
 		SetEntProp(this.GetEntIndex(), Prop_Data, "m_iMaxHealth", iMaxHealth);
 	}
+	public bool FVisibleEntity(CBaseEntity pEntity, int iTraceMask = MASK_BLOCKLOS, CBaseEntity& pBlocker = NULL_CBASEENTITY)
+	{
+		if (pEntity.GetFlags() & FL_NOTARGET)
+			return false;
+
+		float vec3LookerOrigin[3];
+		this.GetEyePosition(vec3LookerOrigin);
+		float vec3TargetOrigin[3];
+		pEntity.GetEyePosition(vec3TargetOrigin);
+
+		CTraceRay pTraceRay;
+		if (ai_los_mode.BoolValue)
+		{
+			pTraceRay = new CTraceRay(vec3LookerOrigin, vec3TargetOrigin, iTraceMask, RayType_EndPoint, TraceEntityFilter_FVisibleAiLosEnabled, this.GetEntIndex());
+		}
+		else
+		{
+			// If we're doing an LOS search, include NPCs.
+			if (iTraceMask == MASK_BLOCKLOS)
+			{
+				iTraceMask = MASK_BLOCKLOS_AND_NPCS;
+			}
+
+			// Player sees through nodraw
+			if (this.IsClassPlayer())
+			{
+				iTraceMask &= ~CONTENTS_BLOCKLOS;
+			}
+
+			pTraceRay = new CTraceRay(vec3LookerOrigin, vec3TargetOrigin, iTraceMask, RayType_EndPoint, TraceEntityFilter_FVisible, this.GetEntIndex());
+		}
+
+		if (pTraceRay.GetFraction() != 1.0 || pTraceRay.StartedSolid())
+		{
+			CBaseEntity pTracedEntity = pTraceRay.GetEntity();
+
+			// If we hit the entity we're looking for, it's visible
+			if (pEntity == pTracedEntity)
+			{
+				pTraceRay.Close();
+				return true;
+			}
+
+			if (pEntity.IsClassPlayer())
+			{
+				CBasePlayer pPlayer = view_as<CBasePlayer>(pEntity);
+				if (pPlayer.GetVehicle() == pTracedEntity)
+				{
+					// Got line of sight on the vehicle the player is driving!
+					pTraceRay.Close();
+					return true;
+				}
+			}
+
+			// Line of sight is not established
+			pBlocker = pTracedEntity;
+		}
+
+		pTraceRay.Close();
+		return false;
+	}
+	public bool FVisiblePosition(const float vec3TargetOrigin[3], int iTraceMask = MASK_BLOCKLOS, CBaseEntity& pBlocker = NULL_CBASEENTITY)
+	{
+		float vec3LookerOrigin[3];
+		this.GetEyePosition(vec3LookerOrigin);
+
+		CTraceRay pTraceRay;
+		if (ai_los_mode.BoolValue)
+		{
+			pTraceRay = new CTraceRay(vec3LookerOrigin, vec3TargetOrigin, iTraceMask, RayType_EndPoint, TraceEntityFilter_FVisibleAiLosEnabled, this.GetEntIndex());
+		}
+		else
+		{
+			// If we're doing an LOS search, include NPCs.
+			if (iTraceMask == MASK_BLOCKLOS)
+			{
+				iTraceMask = MASK_BLOCKLOS_AND_NPCS;
+			}
+
+			// Player sees through nodraw
+			if (this.IsClassPlayer())
+			{
+				iTraceMask &= ~CONTENTS_BLOCKLOS;
+			}
+
+			pTraceRay = new CTraceRay(vec3LookerOrigin, vec3TargetOrigin, iTraceMask, RayType_EndPoint, TraceEntityFilter_FVisible, this.GetEntIndex());
+		}
+
+		if (pTraceRay.GetFraction() != 1.0)
+		{
+			// Line of sight is not established
+			pBlocker = pTraceRay.GetEntity();
+			pTraceRay.Close();
+			return false;
+		}
+		else
+		{
+			// line of sight is valid.
+			pTraceRay.Close();
+			return true;
+		}
+	}
 }
 
 enum struct FireOutputData
@@ -840,11 +1015,181 @@ methodmap CChangelevel < CBaseTrigger
 	}
 }
 
+methodmap CTriggerHurt < CBaseTrigger
+{
+	public CTriggerHurt(const int iEntIndex = -1)
+	{
+		return view_as<CTriggerHurt>(CBaseEntity(iEntIndex));
+	}
+
+	public int GetDamageType()
+	{
+		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_bitsDamageInflict");
+	}
+}
+
 methodmap CSceneEntity < CBaseEntity
 {
 	public CSceneEntity(const int iEntIndex = -1)
 	{
 		return view_as<CSceneEntity>(CBaseEntity(iEntIndex));
+	}
+}
+
+methodmap CPointEntity < CBaseEntity
+{
+	public CPointEntity(const int iEntIndex = -1)
+	{
+		return view_as<CPointEntity>(CBaseEntity(iEntIndex));
+	}
+}
+
+methodmap CSoundEnt < CPointEntity
+{
+	public CSoundEnt(const int iEntIndex = -1)
+	{
+		return view_as<CSoundEnt>(CBaseEntity(iEntIndex));
+	}
+
+	// Gets the index of the first sound in the active sound list.
+	public void ActiveList(CSound pSound)
+	{
+		pSound.m_pSoundEnt = this;
+		pSound.m_iSoundIndex = GetEntProp(this.GetEntIndex(), Prop_Data, "m_iActiveSound");
+	}
+}
+
+enum struct CSound
+{
+	CSoundEnt m_pSoundEnt;
+	int m_iSoundIndex;
+
+	CSoundEnt GetSoundEnt()
+	{
+		return this.m_pSoundEnt;
+	}
+	int GetSoundIndex()
+	{
+		return this.m_iSoundIndex;
+	}
+	bool IsValid()
+	{
+		return this.GetSoundEnt().IsValid() && this.m_iSoundIndex >= 0 && this.m_iSoundIndex < MAX_WORLD_SOUNDS_MP;
+	}
+	Address GetAddress()
+	{
+		if (!this.IsValid())
+			ThrowError("Attempted to use invalid CSound index %i.", this.GetSoundIndex());
+		
+		CSoundEnt pSoundEnt = this.GetSoundEnt();
+		int iOffsetPoolStart = FindDataMapInfo(pSoundEnt.GetEntIndex(), "m_SoundPool");
+		if (iOffsetPoolStart == -1)
+			ThrowError("Unable to retrieve offset %s", "m_SoundPool");
+
+		return pSoundEnt.GetAddress() + iOffsetPoolStart + this.GetSoundIndex() * g_iCSoundSize;
+	}
+	int GetType()
+	{
+		if (!this.IsValid())
+			ThrowError("Attempted to use invalid CSound index %i.", this.GetSoundIndex());
+		
+		return LoadFromAddress(GetSoundPoolPropAddress(this.GetSoundEnt(), this.GetSoundIndex(), "m_iType"), NumberType_Int32);
+	}
+	int GetVolume()
+	{
+		if (!this.IsValid())
+			ThrowError("Attempted to use invalid CSound index %i.", this.GetSoundIndex());
+		
+		return LoadFromAddress(GetSoundPoolPropAddress(this.GetSoundEnt(), this.GetSoundIndex(), "m_iVolume"), NumberType_Int32);
+	}
+	CBaseEntity GetOwner()
+	{
+		if (!this.IsValid())
+			ThrowError("Attempted to use invalid CSound index %i.", this.GetSoundIndex());
+		
+		return CBaseEntity(LoadFromAddress(GetSoundPoolPropAddress(this.GetSoundEnt(), this.GetSoundIndex(), "m_hOwner"), NumberType_Int32)  | (1 << 31));
+	}
+	void Next()
+	{
+		if (!this.IsValid())
+			ThrowError("Attempted to use invalid CSound index %i.", this.GetSoundIndex());
+
+		this.m_iSoundIndex = LoadFromAddress(GetSoundPoolPropAddress(this.GetSoundEnt(), this.GetSoundIndex(), "m_iNext"), NumberType_Int16);
+	}
+	void GetOrigin(float vecBuffer[3])
+	{
+		if (!this.IsValid())
+			ThrowError("Attempted to use invalid CSound index %i.", this.GetSoundIndex());
+
+		Address pAddress = GetSoundPoolPropAddress(this.GetSoundEnt(), this.GetSoundIndex(), "m_vecOrigin");
+		vecBuffer[0] = LoadFromAddress(pAddress + 0x0, NumberType_Int32);
+		vecBuffer[1] = LoadFromAddress(pAddress + 0x4, NumberType_Int32);
+		vecBuffer[2] = LoadFromAddress(pAddress + 0x8, NumberType_Int32);
+	}
+	void GetSoundReactOrigin(float vecBuffer[3])
+	{
+		int iType = this.GetType();
+		if (iType == SOUND_BULLET_IMPACT || iType == SOUND_PHYSICS_DANGER)
+		{
+			CBaseEntity pOwner = this.GetOwner();
+			if (pOwner.IsValid())
+			{
+				pOwner.GetAbsOrigin(vecBuffer);
+			}
+			else
+			{
+				this.GetOrigin(vecBuffer);
+			}
+			return;
+		}
+
+		if (iType & SOUND_CONTEXT_REACT_TO_SOURCE)
+		{
+			CBaseEntity pOwner = this.GetOwner();
+			if (pOwner.IsValid())
+			{
+				pOwner.GetAbsOrigin(vecBuffer);
+				return;
+			}
+		}
+
+		if ((iType & SOUND_DANGER) && (iType & SOUND_CONTEXT_FROM_SNIPER))
+		{
+			CBaseEntity pOwner = this.GetOwner();
+			if (pOwner.IsValid())
+			{
+				pOwner.GetAbsOrigin(vecBuffer);
+				return;
+			}
+		}
+
+		this.GetOrigin(vecBuffer);
+	}
+}
+
+methodmap CPointHurt < CPointEntity
+{
+	public CPointHurt(const int iEntIndex = -1)
+	{
+		return view_as<CPointHurt>(CBaseEntity(iEntIndex));
+	}
+	
+	public int GetDamageType()
+	{
+		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_bitsDamageType");
+	}
+}
+
+methodmap CLogicAchievement < CBaseEntity
+{
+	public CLogicAchievement(const int iEntIndex = -1)
+	{
+		return view_as<CLogicAchievement>(CBaseEntity(iEntIndex));
+	}
+
+	public bool GetAchievementEventID(char[] szBuffer, const int iMaxLength)
+	{
+		return view_as<bool>(GetEntPropString(this.GetEntIndex(), Prop_Data, "m_iszAchievementEventID", szBuffer, iMaxLength));
 	}
 }
 
@@ -987,6 +1332,14 @@ methodmap CPredictedViewModel < CBaseAnimating
 	}
 }
 
+methodmap CPropVehicleDriveable < CBaseAnimating
+{
+	public CPropVehicleDriveable(const int iEntIndex = -1)
+	{
+		return view_as<CPropVehicleDriveable>(CBaseEntity(iEntIndex));
+	}
+}
+
 methodmap CBaseCombatCharacter < CBaseAnimating
 {
 	public CBaseCombatCharacter(const int iEntIndex = -1)
@@ -1086,9 +1439,91 @@ methodmap CAI_BaseNPC < CBaseCombatCharacter
 		return view_as<CAI_BaseNPC>(CBaseEntity(iEntIndex));
 	}
 	
+	public int GetState()
+	{
+		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_NPCState");
+	}
+	public bool IsInAScript()
+	{
+		return view_as<bool>(GetEntProp(this.GetEntIndex(), Prop_Data, "m_bInAScript"));
+	}
+	public bool IsSoundVisible(CSound pSound)
+	{
+		float vec3SoundReactOrigin[3];
+		pSound.GetSoundReactOrigin(vec3SoundReactOrigin);
+		CBaseEntity pBlocker = CBaseEntity();
+
+		return this.FVisiblePosition(vec3SoundReactOrigin, _, pBlocker) || (pBlocker.IsValid() && pBlocker == pSound.GetOwner());
+	}
+	public float GetHearingSensitivity()
+	{
+		return SDKCall(g_pHearingSensitivity, this);
+	}
+	public bool QueryHearSound(CSound pSound)
+	{
+		return SDKCall(g_pQueryHearSound, this, pSound.GetAddress());
+	}
+	public bool CanHearSound(CSound pSound)
+	{
+		if (this == pSound.GetOwner())
+			return false;
+		
+		if (this.GetState() == view_as<int>(NPC_STATE_SCRIPT) && (pSound.GetType() & SOUND_DANGER))
+			return false;
+		
+		if (this.IsInAScript())
+			return false;
+		
+		float vec3SoundOrigin[3];
+		pSound.GetOrigin(vec3SoundOrigin);
+		float vec3EarOrigin[3];
+		this.GetEarPosition(vec3EarOrigin);
+		float flDistance = GetVectorDistance(vec3SoundOrigin, vec3EarOrigin);
+		float flHearDistance = this.GetHearingSensitivity() * pSound.GetVolume();
+
+		return (flDistance <= flHearDistance) && this.QueryHearSound(pSound);
+	}
+	public float GetWakeRadius()
+	{
+		return GetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flWakeRadius");
+	}
+	public int GetSleepFlags()
+	{
+		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_SleepFlags");
+	}
+	public int SetSleepFlags(const int iSleepFlags)
+	{
+		SetEntProp(this.GetEntIndex(), Prop_Data, "m_SleepFlags", iSleepFlags);
+	}
+	public bool HasSleepFlags(const int iSleepFlags)
+	{
+		return (this.GetSleepFlags() & iSleepFlags) == iSleepFlags;
+	}
+	public void AddSleepFlags(const int iSleepFlags)
+	{
+		this.SetSleepFlags(this.GetSleepFlags() | iSleepFlags);
+	}
+	public void RemoveSleepFlags(const int iSleepFlags)
+	{
+		this.SetSleepFlags(this.GetSleepFlags() & ~iSleepFlags);
+	}
+	public int GetSleepState()
+	{
+		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_SleepState");
+	}
 	public void SetSleepState(const int iSleepState)
 	{
 		SetEntProp(this.GetEntIndex(), Prop_Data, "m_SleepState", iSleepState);
+	}
+	public void Wake()
+	{
+		this.AcceptInputStr("Wake");
+	}
+	public void Sleep()
+	{
+		// TODO:
+		// Reconstruct function from scratch.
+		// https://github.com/ValveSoftware/source-sdk-2013/blob/0d8dceea4310fde5706b3ce1c70609d72a38efdf/mp/src/game/server/ai_basenpc.cpp#L4440
 	}
 	public CBaseEntity GetEnemy()
 	{
@@ -1097,6 +1532,10 @@ methodmap CAI_BaseNPC < CBaseCombatCharacter
 	public void SetEnemy(CBaseEntity pEntity)
 	{
 		SetEntPropEnt(this.GetEntIndex(), Prop_Data, "m_hEnemy", pEntity.GetEntIndex());
+	}
+	public int GetSoundInterests()
+	{
+		return SDKCall(g_pGetSoundInterests, this);
 	}
 	public bool UpdateEnemyMemory(CBaseEntity pEnemy, const float vecPosition[3], CBaseEntity pInformer)
 	{
@@ -1112,7 +1551,7 @@ methodmap CAI_BaseNPC < CBaseCombatCharacter
 	}
 	public bool HasCondition(const int iCondition)
 	{
-		bool bOutOfBounds = view_as<bool>((iCondition > 255) || (iCondition < 0));
+		bool bOutOfBounds = (iCondition > 255) || (iCondition < 0);
 		if (bOutOfBounds)
 			ThrowError("Received out of bounds index %d; range is 0-255", iCondition);
 		
@@ -1213,6 +1652,18 @@ methodmap CBasePlayer < CBaseCombatCharacter
 	{
 		return GetClientName(this.GetEntIndex(), szBuffer, iMaxLength);
 	}
+	public void SetName(const char[] szPlayerName)
+	{
+		SetClientName(this.GetEntIndex(), szPlayerName);
+	}
+	public int GetUserId()
+	{
+		return GetClientUserId(this.GetEntIndex());
+	}
+	public CPropVehicleDriveable GetVehicle()
+	{
+		return CPropVehicleDriveable(GetEntProp(this.GetEntIndex(), Prop_Send, "m_hVehicle"));
+	}
 	public int GetArmor()
 	{
 		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_ArmorValue", 1);
@@ -1244,6 +1695,10 @@ methodmap CBasePlayer < CBaseCombatCharacter
 	public void SetSprintEnabled(const bool bSprintEnabled)
 	{
 		SetEntProp(this.GetEntIndex(), Prop_Send, "m_bSprintEnabled", bSprintEnabled);
+	}
+	public void Kick()
+	{
+		KickClient(this.GetEntIndex());
 	}
 	public CBaseAnimating GiveItem(const char[] szItemName)
 	{
@@ -1352,10 +1807,6 @@ methodmap CBasePlayer < CBaseCombatCharacter
 		this.SetViewOffset(vecViewOffset);
 		this.SetCollisionBounds(view_as<float>(VEC_HULL_MIN), view_as<float>(VEC_HULL_MAX));
 	}
-	public void GetEyePosition(float vecBuffer[3])
-	{
-		GetClientEyePosition(this.GetEntIndex(), vecBuffer);
-	}
 	public void GetEyeAngles(float vecBuffer[3])
 	{
 		GetClientEyeAngles(this.GetEntIndex(), vecBuffer);
@@ -1443,6 +1894,10 @@ methodmap CBasePlayer < CBaseCombatCharacter
 	public int GetTeam()
 	{
 		return GetClientTeam(this.GetEntIndex());
+	}
+	public void SetTeam(int iTeamIndex)
+	{
+		ChangeClientTeam(this.GetEntIndex(), iTeamIndex);
 	}
 	public CBaseEntity GetUseEntity()
 	{
@@ -1701,6 +2156,88 @@ methodmap CParticleSystem < CBaseEntity
 	}
 }
 
+methodmap CTeam < CBaseEntity
+{
+	public CTeam(const int iEntIndex = -1)
+	{
+		return view_as<CTeam>(CBaseEntity(iEntIndex));
+	}
+
+	public int GetTeam()
+	{
+		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_iTeamNum");
+	}
+	public int GetScore()
+	{
+		return GetEntProp(this.GetEntIndex(), Prop_Send, "m_iScore");
+	}
+	public void SetScore(const int iScore)
+	{
+		SetEntProp(this.GetEntIndex(), Prop_Send, "m_iScore", iScore);
+	}
+}
+
+methodmap CPlayerResource < CBaseEntity
+{
+	public CPlayerResource(const int iEntIndex = -1)
+	{
+		return view_as<CPlayerResource>(CBaseEntity(iEntIndex));
+	}
+
+	public int GetTeam(CBasePlayer pPlayer)
+	{
+		int iEntIndex = pPlayer.GetEntIndex();
+		bool bOutOfBounds = (iEntIndex > MaxClients) || (iEntIndex < 0);
+		if (bOutOfBounds)
+			ThrowError("Received out of bounds index %d; range is 0-%i", MaxClients);
+		
+		int iMemberOffset = GetEntSendPropOffs(this.GetEntIndex(), "m_bConnected");
+		if (iMemberOffset == -1)
+			ThrowError("Unable to retrieve offset %s", "m_iTeam");
+		
+		return Deref(this.GetAddress() + iMemberOffset + (iEntIndex * 4), NumberType_Int32);
+	}
+	public void SetTeam(CBasePlayer pPlayer, const int iTeamNum)
+	{
+		int iEntIndex = pPlayer.GetEntIndex();
+		bool bOutOfBounds = (iEntIndex > MaxClients) || (iEntIndex < 0);
+		if (bOutOfBounds)
+			ThrowError("Received out of bounds index %d; range is 0-%i", MaxClients);
+		
+		int iMemberOffset = GetEntSendPropOffs(this.GetEntIndex(), "m_iTeam");
+		if (iMemberOffset == -1)
+			ThrowError("Unable to retrieve offset %s", "m_iTeam");
+		
+		StoreToAddress(this.GetAddress() + iMemberOffset + (iEntIndex * 4), iTeamNum, NumberType_Int32);
+	}
+	public bool IsConnected(CBasePlayer pPlayer)
+	{
+		int iEntIndex = pPlayer.GetEntIndex();
+		bool bOutOfBounds = (iEntIndex > MaxClients) || (iEntIndex < 0);
+		if (bOutOfBounds)
+			ThrowError("Received out of bounds index %d; range is 0-%i", MaxClients);
+		
+		int iMemberOffset = GetEntSendPropOffs(this.GetEntIndex(), "m_bConnected");
+		if (iMemberOffset == -1)
+			ThrowError("Unable to retrieve offset %s", "m_bConnected");
+		
+		return view_as<bool>(Deref(this.GetAddress() + iMemberOffset + (iEntIndex * 4), NumberType_Int32));
+	}
+	public void SetConnected(CBasePlayer pPlayer, const bool bConnected)
+	{
+		int iEntIndex = pPlayer.GetEntIndex();
+		bool bOutOfBounds = (iEntIndex > MaxClients) || (iEntIndex < 0);
+		if (bOutOfBounds)
+			ThrowError("Received out of bounds index %d; range is 0-%i", MaxClients);
+		
+		int iMemberOffset = GetEntSendPropOffs(this.GetEntIndex(), "m_bConnected");
+		if (iMemberOffset == -1)
+			ThrowError("Unable to retrieve offset %s", "m_bConnected");
+		
+		StoreToAddress(this.GetAddress() + iMemberOffset + (iEntIndex * 4), view_as<int>(bConnected), NumberType_Int32);
+	}
+}
+
 methodmap CFuncLadder < CBaseEntity
 {
 	public CFuncLadder(const int iEntIndex = -1)
@@ -1850,9 +2387,14 @@ methodmap IServerGameDLL
 
 methodmap CTraceRay < Handle
 {
-	public CTraceRay(const float vecPosition[3], const float vecRayType[3], const int iFlags, const RayType rayType, const TraceEntityFilter traceFilter, const any pData)
+	public CTraceRay(const float vecPosition[3], const float vecRayType[3], const int iTraceMask, const RayType eRayType, const TraceEntityFilter fnFilter, const any pData)
 	{
-		return view_as<CTraceRay>(TR_TraceRayFilterEx(vecPosition, vecRayType, iFlags, rayType, traceFilter, pData));
+		return view_as<CTraceRay>(TR_TraceRayFilterEx(vecPosition, vecRayType, iTraceMask, eRayType, fnFilter, pData));
+	}
+
+	public bool StartedSolid()
+	{
+		return TR_StartSolid(this);
 	}
 	public float GetFraction()
 	{
@@ -1864,17 +2406,57 @@ methodmap CTraceRay < Handle
 	}
 }
 
-public bool TraceEntityFilter_IgnoreData(int iEntity, int iMask, any pData)
+public bool TraceEntityFilter_FVisibleAiLosEnabled(int iEntIndex, int iMask, int iThisEntIndex)
 {
-	return (iEntity != pData);
+	// The current check prevents the ray from hitting the caller.
+	// TODO:
+	// Review how to extend the filter to the original implementation.
+	return iEntIndex != iThisEntIndex;
+	//return CBaseEntity(iEntity).GetCollisionGroup() != COLLISION_GROUP_NONE;
 }
 
-public bool TraceEntityFilter_IgnorePlayers(int iEntity, int iMask, any pData)
+public bool TraceEntityFilter_FVisible(int iEntIndex, int iMask, int iThisEntIndex)
 {
-	CBasePlayer pPlayer = CBasePlayer(iEntity);
+	// The current check prevents the ray from hitting the caller.
+	// TODO:
+	// Review how to extend the filter to the original implementation.
+	return iEntIndex != iThisEntIndex;
+	//return CBaseEntity(iEntity).GetCollisionGroup() != COLLISION_GROUP_NONE;
+}
+
+public bool TraceEntityFilter_IgnoreData(int iEntIndex, int iMask, any pData)
+{
+	return (iEntIndex != pData);
+}
+
+public bool TraceEntityFilter_IgnorePlayers(int iEntIndex, int iMask, any pData)
+{
+	CBasePlayer pPlayer = CBasePlayer(iEntIndex);
 	if (pPlayer.IsValid())
 		return false;
-	return (iEntity != pData);
+	return (iEntIndex != pData);
+}
+
+// This function grabs the member offset within a CSound element from the base of the sound entity.
+//
+Address GetSoundPoolPropAddress(CSoundEnt pSoundEnt, const int iSoundIndex, const char[] szProperty)
+{
+	// Obtain the start offset `CSoundEnt::m_SoundPool`
+	int iOffsetPoolStart = FindDataMapInfo(pSoundEnt.GetEntIndex(), "m_SoundPool");
+	if (iOffsetPoolStart == -1)
+		ThrowError("Unable to retrieve offset %s", "m_SoundPool");
+
+	// obtain the offset within `CSound`
+	int iOffsetFromStartProperty = FindDataMapInfo(pSoundEnt.GetEntIndex(), szProperty);
+	if (iOffsetFromStartProperty == -1)
+		ThrowError("Unable to retrieve offset %s", szProperty);
+	
+	int iOffset = iOffsetFromStartProperty - iOffsetPoolStart;
+	if (iOffset < 0)
+		ThrowError("Internal Error: Computed offset %s is negative (%i); %s offset: %i, SoundPool offset: %i", szProperty, iOffset, szProperty, iOffsetFromStartProperty, iOffsetPoolStart);
+	
+	// this + offsetof(m_SoundPool[iSoundIndex]) + offsetof(property)
+	return pSoundEnt.GetAddress() + iOffsetPoolStart + iSoundIndex * g_iCSoundSize + iOffset;
 }
 
 stock CUtlVector operator+(CUtlVector oper1, int oper2)

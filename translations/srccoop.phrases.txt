@@ -199,4 +199,21 @@
 		"ru"			"Состояние игрока успешно очищено."
 	}
 
+	"entity suicided"
+	{
+		"#format"		"{1:s}" // attacker
+		"en"			"{1} suicided!"
+	}
+	
+	"entity killed entity with weapon"
+	{
+		"#format"		"{1:s},{2:s},{3:s}" // attacker, victim, weapon
+		"en"			"{1} killed {2} with {3}!"
+	}
+
+	"entity killed entity"
+	{
+		"#format"		"{1:s},{2:s}" // attacker, victim
+		"en"			"{1} killed {2}!"
+	}
 }

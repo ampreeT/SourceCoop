@@ -135,6 +135,10 @@ DynamicDetour hkPickup_ForcePlayerToDropThisObject;
 DynamicDetour hkSetPlayerAvoidState;
 #endif
 
+#if defined ENTPATCH_NPC_SLEEP
+DynamicDetour hkBaseNpcUpdateSleepState;
+#endif
+
 #if defined SRCCOOP_HL2DM && defined PLAYERPATCH_SERVERSIDE_RAGDOLLS
 DynamicHook hkCreateRagdollEntity;
 #endif

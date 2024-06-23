@@ -139,6 +139,10 @@ void LoadGameData()
 	LoadDHookDetour(pGameConfig, hkSetPlayerAvoidState, "CAI_BaseNPC::SetPlayerAvoidState", Hook_SetPlayerAvoidState);
 	#endif
 
+	#if defined ENTPATCH_NPC_SLEEP
+	LoadDHookDetour(pGameConfig, hkBaseNpcUpdateSleepState, "CAI_BaseNPC::UpdateSleepState", Hook_BaseNpcUpdateSleepState);
+	#endif
+
 	#if defined GAMEPATCH_UTIL_GETLOCALPLAYER
 	LoadDHookDetour(pGameConfig, hkUTIL_GetLocalPlayer, "UTIL_GetLocalPlayer", Hook_UTIL_GetLocalPlayer);
 	#endif
@@ -232,12 +236,17 @@ public void OnPluginStart()
 	g_pFeatureMap = new FeatureMap();
 	g_pSpawnOptions.Reset();
 	EquipmentManager.Initialize();
+	DnManager.Initialize();
 	InitializeMenus();
 	
 	g_CoopMapStartFwd = new GlobalForward("SC_OnCoopMapStart", ET_Ignore);
 	g_CoopMapConfigLoadedFwd = new GlobalForward("SC_OnCoopMapConfigLoaded", ET_Ignore, Param_Cell, Param_Cell);
 	g_OnPlayerRagdollCreatedFwd = new GlobalForward("SC_OnPlayerRagdollCreated", ET_Ignore, Param_Cell, Param_Cell);
 	g_OnCoopMapEndFwd = new GlobalForward("SC_OnCoopMapEnd", ET_Event, Param_String, Param_String, Param_Cell);
+	
+	HookUserMessage(GetUserMessageId("TextMsg"), UserMessage_TextMsg, true);
+	HookEvent("player_death", Event_PlayerDeath, EventHookMode_Pre);
+	HookEvent("entity_killed", Event_EntityKilled, EventHookMode_Pre);
 	
 	HookEvent("player_disconnect", Event_PlayerDisconnect);
 	AddNormalSoundHook(PlayerSoundListener);
@@ -246,6 +255,7 @@ public void OnPluginStart()
 	#if defined SRCCOOP_BLACKMESA
 
 	HookEvent("broadcast_teamsound", Event_BroadcastTeamsound, EventHookMode_Pre);
+	HookEvent("broadcast_killstreak", Event_BroadcastKillstreak, EventHookMode_Pre);
 	AddTempEntHook("BlackMesa Shot", BlackMesaFireBulletsTEHook);
 	UserMsg iIntroCredits = GetUserMessageId("IntroCredits");
 	if (iIntroCredits != INVALID_MESSAGE_ID)
@@ -440,6 +450,22 @@ public void OnClientDisconnect_Post(int client)
 	g_iAddButtons[client] = 0;
 }
 
+public Action UserMessage_TextMsg(UserMsg pMsg, BfRead bf, const int[] pPlayers, int iPlayerCount, bool bReliable, bool bInitialize)
+{
+	return DnManager.TextMsg(bf);
+}
+
+public Action Event_PlayerDeath(Event hEvent, const char[] szName, bool bDontBroadcast)
+{
+	return DnManager.PlayerDeath(hEvent);
+}
+
+public Action Event_EntityKilled(Event hEvent, const char[] szName, bool bDontBroadcast)
+{
+	DnManager.EntityKilled(hEvent);
+	return Plugin_Continue;
+}
+
 public void Event_PlayerDisconnect(Event hEvent, const char[] szName, bool bDontBroadcast)
 {
 	int iClient = GetClientOfUserId(GetEventInt(hEvent, "userid"));
@@ -451,6 +477,7 @@ public void Event_PlayerDisconnect(Event hEvent, const char[] szName, bool bDont
 
 public void OnMapEnd()
 {
+	DnManager.Clear();
 	g_pLevelLump.RevertConvars();
 	g_bMapStarted = false;
 }
@@ -813,7 +840,7 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 			return;
 		}
 		#endif
-		
+
 		// if some explosions turn out to be damaging all players except one, this is the fix
 		// if (strcmp(szClassname, "env_explosion") == 0)
 		// {
@@ -972,8 +999,17 @@ public Action Event_BroadcastTeamsound(Event hEvent, const char[] szName, bool b
 	if (CoopManager.IsCoopModeEnabled())
 	{
 		// block multiplayer announcer
-		hEvent.BroadcastDisabled = true;
-		return Plugin_Changed;
+		return Plugin_Stop;
+	}
+	return Plugin_Continue;
+}
+
+public Action Event_BroadcastKillstreak(Event hEvent, const char[] szName, bool bDontBroadcast)
+{
+	if (CoopManager.IsCoopModeEnabled())
+	{
+		// block multiplayer announcer
+		return Plugin_Stop;
 	}
 	return Plugin_Continue;
 }
