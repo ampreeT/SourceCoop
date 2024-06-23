@@ -433,7 +433,7 @@ methodmap DnManager
 			{
 				// TODO:
 				// Translations.
-				MsgAllNoSrv("%s suicided!", sEntry.m_szTarget2Name);
+				MsgAllNoSrv("%t", "entity suicided", sEntry.m_szTarget1Name);
 			}
 			else
 			{
@@ -441,13 +441,13 @@ methodmap DnManager
 				{
 					// TODO:
 					// Translations.
-					MsgAllNoSrv("%s killed %s with %s!", sEntry.m_szTarget1Name, sEntry.m_szTarget2Name, sEntry.m_szWeapon);
+					MsgAllNoSrv("%t", "entity killed entity with weapon", sEntry.m_szTarget1Name, sEntry.m_szTarget2Name, sEntry.m_szWeapon);
 				}
 				else
 				{
 					// TODO:
 					// Translations.
-					MsgAllNoSrv("%s killed %s!", sEntry.m_szTarget1Name, sEntry.m_szTarget2Name);
+					MsgAllNoSrv("%t", "entity killed entity", sEntry.m_szTarget1Name, sEntry.m_szTarget2Name);
 				}
 			}
 		}
