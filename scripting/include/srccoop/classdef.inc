@@ -2392,21 +2392,17 @@ methodmap CTraceRay < Handle
 		return view_as<CTraceRay>(TR_TraceRayFilterEx(vecPosition, vecRayType, iTraceMask, eRayType, fnFilter, pData));
 	}
 
-	public Handle GetHandle()
-	{
-		return view_as<Handle>(this);
-	}
 	public bool StartedSolid()
 	{
-		return TR_StartSolid(this.GetHandle());
+		return TR_StartSolid(this);
 	}
 	public float GetFraction()
 	{
-		return TR_GetFraction(this.GetHandle());
+		return TR_GetFraction(this);
 	}
 	public CBaseEntity GetEntity()
 	{
-		return CBaseEntity(TR_GetEntityIndex(this.GetHandle()));
+		return CBaseEntity(TR_GetEntityIndex(this));
 	}
 }
 
