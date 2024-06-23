@@ -90,6 +90,7 @@ char g_pDnDisplayList[][2][] =
 	{ "prop_xen_int_barrel", "Physics Prop" },
 	{ "prop_barrel_cactus", "Cactus" },
 	{ "prop_barrel_cactus_semilarge", "Cactus" },
+	{ "func_minefield", "Landmine" },
 
 	// Weapon Projectiles.
 	{ "grenade_bolt", "Crossbow Bolt" },
@@ -150,11 +151,12 @@ char g_pDnWeaponIconList[][2][] =
 // func_door
 // func_tow
 // func_tow_mp
-// func_minefield
 
 // grenade_nuke
+
 // grenade_spit
 // grenade_tank_shell
 // grenade_tow
+
 
 // proto_sniper
