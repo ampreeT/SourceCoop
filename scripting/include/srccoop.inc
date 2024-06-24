@@ -42,6 +42,7 @@
 	#define ENTPATCH_GOALENTITY_RESOLVENAMES
 	#define ENTPATCH_GOAL_LEAD
 	#define ENTPATCH_SETPLAYERAVOIDSTATE
+	#define ENTPATCH_NPC_SLEEP
 	#define ENTPATCH_FUNC_TRACKAUTOCHANGE
 	#define ENTPATCH_FUNC_TRACKTRAIN
 	
@@ -88,6 +89,7 @@
 	#define ENTPATCH_GOALENTITY_RESOLVENAMES
 	#define ENTPATCH_GOAL_LEAD
 	#define ENTPATCH_SETPLAYERAVOIDSTATE
+	#define ENTPATCH_NPC_SLEEP
 	#define ENTPATCH_BM_XENTURRET
 	#define ENTPATCH_BM_ICHTHYOSAUR
 	#define ENTPATCH_BM_GARGANTUA
@@ -160,7 +162,11 @@
 #include <srccoop/entitypatch>
 #if defined SRCCOOP_BLACKMESA
 #include <srccoop/blackmesa/entitypatch>
+#include <srccoop/blackmesa/deathnotice>
+#elseif defined SRCCOOP_HL2DM
+#include <srccoop/hl2dm/deathnotice>
 #endif
+#include <srccoop/deathnotice>
 #include <srccoop/instancing>
 #include <srccoop/playerpatch>
 #include <srccoop/menu>
