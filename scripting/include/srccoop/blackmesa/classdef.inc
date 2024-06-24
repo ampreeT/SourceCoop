@@ -23,8 +23,9 @@ methodmap CBlackMesaPlayer < CBasePlayer
 {
 	public CBlackMesaPlayer(const int iEntIndex = -1)
 	{
-		return view_as<CBlackMesaPlayer>(CBaseEntity(iEntIndex));
+		return view_as<CBlackMesaPlayer>(CBasePlayer(iEntIndex));
 	}
+	
 	public bool HasJumpModule()
 	{
 		return view_as<bool>(GetEntProp(this.GetEntIndex(), Prop_Send, "m_bHasJumpModule"));
@@ -32,6 +33,88 @@ methodmap CBlackMesaPlayer < CBasePlayer
 	public void SetJumpModule(const bool bShouldHaveJumpModule)
 	{
 		SetEntProp(this.GetEntIndex(), Prop_Send, "m_bHasJumpModule", bShouldHaveJumpModule);
+	}
+}
+
+methodmap CEnvBeamTeam < CBaseAnimating
+{
+	public CEnvBeamTeam(const int iEntIndex = -1)
+	{
+		return view_as<CEnvBeamTeam>(CBaseAnimating(iEntIndex));
+	}
+
+	public CBlackMesaPlayer GetOwner()
+	{
+		return CBlackMesaPlayer(GetEntProp(this.GetEntIndex(), Prop_Data, "m_iOwnerEntIdx"));
+	}
+	public CBlackMesaBaseDetonator GetTripmine()
+	{
+		int iEntIndex = -1;
+		while ((iEntIndex = FindEntityByClassname(iEntIndex, "grenade_tripmine")) != -1)
+		{
+			CBlackMesaBaseDetonator pTripmine = CBlackMesaBaseDetonator(iEntIndex);
+			if (this == pTripmine.GetBeam())
+			{
+				return pTripmine;
+			}
+		}
+		return NULL_CBASEENTITY;
+	}
+}
+
+methodmap CSpriteTeam < CSprite
+{
+	public CSpriteTeam(const int iEntIndex = -1)
+	{
+		return view_as<CSpriteTeam>(CSprite(iEntIndex));
+	}
+
+	public CBlackMesaPlayer GetOwner()
+	{
+		return CBlackMesaPlayer(GetEntProp(this.GetEntIndex(), Prop_Data, "m_iOwnerEntIdx"));
+	}
+	public CBlackMesaBaseDetonator GetTripmine()
+	{
+		int iEntIndex = -1;
+		while ((iEntIndex = FindEntityByClassname(iEntIndex, "grenade_tripmine")) != -1)
+		{
+			CBlackMesaBaseDetonator pTripmine = CBlackMesaBaseDetonator(iEntIndex);
+			if (this == pTripmine.GetSprite())
+			{
+				return pTripmine;
+			}
+		}
+		return NULL_CBASEENTITY;
+	}
+}
+
+
+methodmap CBlackMesaBaseDetonator < CBaseAnimating
+{
+	public CBlackMesaBaseDetonator(const int iEntIndex = -1)
+	{
+		return view_as<CBlackMesaBaseDetonator>(CBaseAnimating(iEntIndex));
+	}
+
+	public bool IsPlacedByLevelDesigner()
+	{
+		return view_as<bool>(GetEntProp(this.GetEntIndex(), Prop_Data, "m_bPlacedByLevelDesigner"));
+	}
+	public void SetPlacedByLevelDesigner(const bool bIsPlacedByDesigner)
+	{
+		SetEntProp(this.GetEntIndex(), Prop_Data, "m_bPlacedByLevelDesigner", bIsPlacedByDesigner);
+	}
+	public CEnvBeamTeam GetBeam()
+	{
+		return CEnvBeamTeam(GetEntPropEnt(this.GetEntIndex(), Prop_Data, "m_hBeam"));
+	}
+	public CSpriteTeam GetSprite()
+	{
+		return CSpriteTeam(GetEntPropEnt(this.GetEntIndex(), Prop_Data, "m_hLight"));
+	}
+	public CBlackMesaPlayer GetOwner()
+	{
+		return CBlackMesaPlayer(GetEntPropEnt(this.GetEntIndex(), Prop_Data, "m_hThrower"));
 	}
 }
 

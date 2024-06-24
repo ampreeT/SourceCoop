@@ -772,6 +772,29 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 		}
 		#endif
 
+		#if defined ENTPATCH_BM_TRIPMINE_COLORS
+		if (strcmp(szClassname, "spriteteam") == 0)
+		{
+			//CreateTimer(0.5, Timer_SetTripmineColor, view_as<CSpriteTeam>(pEntity));
+
+			//CSpriteTeam pSprite = CSpriteTeam(iEntIndex);
+			//CBlackMesaBaseDetonator pTripmine = pSprite.GetOwner();
+			//if (pTripmine.IsValid())
+			//{
+			//	// TODO:
+			//	// Should this branch check for if the tripmine was placed by a level designer?
+			//	// All of the maps that I (@ampreeT) have tested do not have the property set.
+			//	// How does the game handle if a player placed a tripmine, but left the game? 
+			//	if (!pTripmine.GetOwner())
+			//	{
+			//		pTripmine.SetRenderColor(0, 255, 0, 255);
+			//		
+			//	}
+			//}
+			return;
+		}
+		#endif
+
 		#if defined ENTPATCH_BM_PROP_CHARGERS
 		if (strcmp(szClassname, "prop_hev_charger") == 0 || strcmp(szClassname, "prop_radiation_charger") == 0)
 		{
