@@ -1036,23 +1036,24 @@ methodmap CTriggerHurt < CBaseTrigger
 	}
 }
 
-methodmap CSceneEntity < CBaseEntity
-{
-	public CSceneEntity(const int iEntIndex = -1)
-	{
-		return view_as<CSceneEntity>(CBaseEntity(iEntIndex));
-	}
-	public static CTriggerHurt Create()
-	{
-		return CTriggerHurt(CreateEntityByName("trigger_hurt"));
-	}
-}
-
 methodmap CPointEntity < CBaseEntity
 {
 	public CPointEntity(const int iEntIndex = -1)
 	{
 		return view_as<CPointEntity>(CBaseEntity(iEntIndex));
+	}
+}
+
+methodmap CSceneEntity < CPointEntity
+{
+	public CSceneEntity(const int iEntIndex = -1)
+	{
+		return view_as<CSceneEntity>(CBaseEntity(iEntIndex));
+	}
+	public static CSceneEntity Create()
+	{
+		// Could also be a "scripted_scene`.
+		return CSceneEntity(CreateEntityByName("logic_choreographed_scene"));
 	}
 }
 
@@ -1223,9 +1224,9 @@ methodmap CAI_ScriptConditions < CBaseEntity
 	{
 		return view_as<CAI_ScriptConditions>(CBaseEntity(iEntIndex));
 	}
-	public static CLogicAchievement Create()
+	public static CAI_ScriptConditions Create()
 	{
-		return CLogicAchievement(CreateEntityByName("ai_script_conditions"));
+		return CAI_ScriptConditions(CreateEntityByName("ai_script_conditions"));
 	}
 
 	public bool IsEnabled()
