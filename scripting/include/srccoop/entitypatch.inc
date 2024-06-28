@@ -248,7 +248,7 @@ public Action ChangelevelEffects(Handle timer, CChangelevel pChangelevel)
 			char szMapName[MAX_MAPNAME];
 			pChangelevel.GetMapName(szMapName, sizeof(szMapName));
 
-			if (!pChangelevel.IsDisabled() && CoopManager.IsMapAllowedNext(szMapName))
+			if (pChangelevel.IsEnabled() && CoopManager.IsMapAllowedNext(szMapName))
 			{
 				float vecMins[3], vecMaxs[3], vecOrigin[3];
 				pChangelevel.GetMins(vecMins);
@@ -818,7 +818,7 @@ public MRESReturn Hook_AIConditionsThink(int _this)
 {
 	LogDebug("Hook_AIConditionsThink");
 	CAI_ScriptConditions pThis = CAI_ScriptConditions(_this);
-	if (!pThis.IsDisabled())
+	if (pThis.IsEnabled())
 	{
 		int count;
 		float vecMidpoint[3], vecOrigin[3];
@@ -991,7 +991,7 @@ public MRESReturn Hook_BaseNpcUpdateSleepState(int _this, Handle hParams)
 				
 				if ((pBaseNPC.GetSoundInterests() & SOUND_DANGER) && !(pBaseNPC.HasSpawnFlag(SF_NPC_WAIT_TILL_SEEN)))
 				{
-					CSoundEnt pSoundEnt = CSoundEnt(FindEntityByClassname(-1, "soundent"));
+					CSoundEnt pSoundEnt = CSoundEnt.Get();
 					if (pSoundEnt.IsValid())
 					{
 						CSound pSound;

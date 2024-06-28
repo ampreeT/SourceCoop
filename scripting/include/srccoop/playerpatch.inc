@@ -75,7 +75,7 @@ public void Hook_PlayerPreThinkPost(int iClient)
 					{
 						if (GetEntPropEnt(pParent.GetEntIndex(), Prop_Data, "m_hPrey") == pPlayer.GetEntIndex())
 						{
-							if (!pWeapon.m_bFiresUnderwater() && pWeapon.GetPrimaryAmmoType() != -1)
+							if (!pWeapon.CanFireUnderwater() && pWeapon.GetPrimaryAmmoType() != -1)
 							{
 								PreventWeaponFiring(pWeapon, 0.2);
 							}

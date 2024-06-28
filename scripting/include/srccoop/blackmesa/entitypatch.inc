@@ -681,3 +681,114 @@ public MRESReturn Hook_TestGroundMove(Address _this, DHookReturn hReturn, DHookP
 	}
 	return MRES_Ignored;
 }
+
+
+// Fixes map-placed tripmines not having the proper color with `mp_teamplay 1`.
+//
+public void Hook_SpriteTeamSpawnPost(int iEntIndex)
+{
+	// If teamplay is off, then the game will set the color properly.
+	if (!CoopManager.IsCoopModeEnabled() || !CBM_MP_GameRules.IsTeamplay())
+		return;
+
+	// Create a timer in the future to give initialization time for `grenade_tripmine`.
+	CreateTimer(0.0, Timer_SetTripmineSpriteColor, CSpriteTeam(iEntIndex));
+}
+
+// Fixes map-placed tripmines not having the proper color with `mp_teamplay 1`.
+//
+public Action Timer_SetTripmineSpriteColor(Handle timer, CSpriteTeam pSpriteTeam)
+{
+	if (!pSpriteTeam.IsValid())
+		return Plugin_Continue;
+
+	CBlackMesaBaseDetonator pTripmine = pSpriteTeam.GetTripmine();
+	if (!pTripmine.IsValid())
+		return Plugin_Continue;
+	
+	CEnvBeamTeam pBeamTeam = pTripmine.GetBeam();
+	if (!pBeamTeam.IsValid())
+		return Plugin_Continue;
+	
+	// Check if a player created this tripmine.
+	// TODO:
+	// This should assign a team color if a player disconnected before the tripmine is active.
+	CBlackMesaPlayer pOwner = pSpriteTeam.GetOwner();
+	if (pTripmine.GetTeam() != TEAM_UNASSIGNED || pOwner.IsValid())
+		return Plugin_Continue;
+	
+	CSprite pSprite = CSprite.Create();
+	if (!pSprite.IsValid())
+		return Plugin_Continue;
+	
+	CEnvBeam pBeam = CEnvBeam.Create();
+	if (!pBeam.IsValid())
+	{
+		pSprite.Kill();
+		return Plugin_Continue;
+	}
+
+	int r, g, b;
+	
+	char szSpriteTexture[MAX_MODELNAME];
+	pSpriteTeam.GetModelName(szSpriteTexture, sizeof(szSpriteTexture));
+	
+	// Take the sprite color and alpha color.
+	// At this point, sprite alpha is set to `0`.
+	pSpriteTeam.GetRenderColor(r, g, b, _);
+	pSprite.SetRenderColor(r, g, b, 224);
+	pSprite.SetRenderMode(pSpriteTeam.GetRenderMode());
+	pSprite.SetRenderFx(pSpriteTeam.GetRenderFx());
+
+	// Sets the sprite texture.
+	pSprite.SetModelName(szSpriteTexture);
+	pSprite.SetSpawnFlags(1);	// TODO: spawnflag constant
+	pSprite.SetScale(pSpriteTeam.GetScale());
+
+	// Attach to the tripmine and spawn.
+	pSprite.SetParent(pTripmine);
+	pSprite.SetParentAttachment("Beam");
+	pSprite.Spawn();
+
+	float vec3TripminePos[3];
+	float vec3SpriteOffset[3];
+	float vec3BeamStartPos[3];
+	float vec3BeamEndPos[3];
+	pTripmine.GetAbsOrigin(vec3TripminePos);
+	pSprite.GetAbsOrigin(vec3SpriteOffset);
+	pBeamTeam.GetAbsOrigin(vec3BeamStartPos);
+	AddVectors(vec3TripminePos, vec3SpriteOffset, vec3BeamEndPos);
+
+	// TODO:
+	// Use alpha directly when real tripmine laser texture is used.
+	// Right now, the alpha that has to be set has to be higher.
+	pBeamTeam.GetRenderColor(r, g, b, _);
+	pBeam.SetRenderColor(r, g, b, 128);
+	pBeam.SetRenderMode(pBeamTeam.GetRenderMode());
+	pBeam.SetRenderFx(pBeamTeam.GetRenderFx());
+
+	// TODO:
+	// Use the real tripmine laser texture.
+	pBeam.SetModel("sprites/purplelaser1.vmt");
+	pBeam.SetTextureName("sprites/purplelaser1.spr");
+	pBeam.SetSpawnFlags(1);		// TODO: spawnflag constant
+	pBeam.SetDuration(0.0);
+	pBeam.SetWidth(8.0);
+	pBeam.SetOrigin(vec3BeamStartPos);
+
+	// Attach the beam so that the game manages the deletion.
+	pBeam.SetParent(pTripmine);
+
+	// Attach the laser from the beam to the sprite and spawn.
+	pBeam.SetBeamType(BEAM_ENTS);
+	pBeam.SetAttachment(0, pBeam);
+	pBeam.SetAttachment(1, pSprite);
+	pBeam.SetAttachmentCount(2);
+	pBeam.Spawn();
+	
+	// Hide the original tripmine's entities.
+	pBeamTeam.SetRenderAlpha(0);
+	pSpriteTeam.SetRenderAlpha(0);
+
+	return Plugin_Continue;
+}

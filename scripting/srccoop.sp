@@ -799,6 +799,15 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 		}
 		#endif
 
+		#if defined ENTPATCH_BM_TRIPMINE_COLORS
+		if (strcmp(szClassname, "spriteteam") == 0)
+		{
+			// This entity spawns after `beamteam`.
+			SDKHook(iEntIndex, SDKHook_SpawnPost, Hook_SpriteTeamSpawnPost);
+			return;
+		}
+		#endif
+
 		#if defined ENTPATCH_BM_PROP_CHARGERS
 		if (strcmp(szClassname, "prop_hev_charger") == 0 || strcmp(szClassname, "prop_radiation_charger") == 0)
 		{
