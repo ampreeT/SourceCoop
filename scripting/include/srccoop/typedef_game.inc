@@ -14,6 +14,7 @@
 #define MAX_VIEWMODELS 2
 #define MAX_MAPNAME 32
 #define MAX_CLASSNAME 48
+#define MAX_MODELNAME 256
 
 #define ACHIEVEMENT_PREFIX "ACHIEVEMENT_EVENT_"
 
@@ -106,6 +107,7 @@
 #define SF_PHYSBOX_NEVER_PICK_UP			0x200000		// Physcannon will never be able to pick this up.
 #define SF_PHYSBOX_NEVER_PUNT				0x400000		// Physcannon will never be able to punt this object.
 #define SF_PHYSBOX_PREVENT_PLAYER_TOUCH_ENABLE 0x800000		// If set, the player will not cause the object to enable its motion when bumped into
+
 
 // Trigger spawnflags
 enum
@@ -227,6 +229,18 @@ enum WaterLevel
 #define		FCAP_MASTER					0x10000000		// Can be used to "master" other entities (like multisource)
 #define		FCAP_WCEDIT_POSITION		0x40000000		// Can change position and update Hammer in edit mode
 #define		FCAP_DONT_SAVE				0x80000000		// Don't save this
+
+// Beam types, encoded as a byte
+enum 
+{
+    BEAM_POINTS = 0,
+    BEAM_ENTPOINT,
+    BEAM_ENTS,
+    BEAM_HOSE,
+    BEAM_SPLINE,
+    BEAM_LASER,
+    NUM_BEAM_TYPES
+};  
 
 enum GLOBALESTATE
 {

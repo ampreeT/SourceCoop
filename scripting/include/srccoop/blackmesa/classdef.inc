@@ -36,11 +36,15 @@ methodmap CBlackMesaPlayer < CBasePlayer
 	}
 }
 
-methodmap CEnvBeamTeam < CBaseAnimating
+methodmap CEnvBeamTeam < CBeam
 {
 	public CEnvBeamTeam(const int iEntIndex = -1)
 	{
-		return view_as<CEnvBeamTeam>(CBaseAnimating(iEntIndex));
+		return view_as<CEnvBeamTeam>(CBeam(iEntIndex));
+	}
+	public static CEnvBeamTeam Create()
+	{
+		return CEnvBeamTeam(CreateEntityByName("beamteam"));
 	}
 
 	public CBlackMesaPlayer GetOwner()
@@ -68,6 +72,10 @@ methodmap CSpriteTeam < CSprite
 	{
 		return view_as<CSpriteTeam>(CSprite(iEntIndex));
 	}
+	public static CSpriteTeam Create()
+	{
+		return CSpriteTeam(CreateEntityByName("spriteteam"));
+	}
 
 	public CBlackMesaPlayer GetOwner()
 	{
@@ -94,6 +102,10 @@ methodmap CBlackMesaBaseDetonator < CBaseAnimating
 	public CBlackMesaBaseDetonator(const int iEntIndex = -1)
 	{
 		return view_as<CBlackMesaBaseDetonator>(CBaseAnimating(iEntIndex));
+	}
+	public static CBlackMesaBaseDetonator Create()
+	{
+		return CBlackMesaBaseDetonator(CreateEntityByName("grenade_tripmine"));
 	}
 
 	public bool IsPlacedByLevelDesigner()
@@ -143,7 +155,7 @@ methodmap CBM_MP_GameRules < CMultiplayRules
 		GameRules_SetProp(szStateProp, CBM_MP_GameRules.GetStateIndex(szNextStateProp), _, STATE_ELEMENT_NEXT_STATE);
 	}
 	
-	public static void SetStateIsInIntermission(char[] szStateProp, bool bInIntermission)
+	public static void SetStateIsInIntermission(const char[] szStateProp, bool bInIntermission)
 	{
 		GameRules_SetProp(szStateProp, bInIntermission, _, STATE_ELEMENT_IS_IN_INTERMISSION);
 	}
