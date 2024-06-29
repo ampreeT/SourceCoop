@@ -777,7 +777,7 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 		
 		// ToDo: support all games
 		#if defined SRCCOOP_BLACKMESA
-		if (strncmp(szClassname, "item_", 5) == 0)
+		if (strncmp(szClassname, "item_", 5) == 0 || strcmp(szClassname, "prop_soda", false) == 0)
 		{
 			if (pEntity.IsPickupItem())
 			{
@@ -924,15 +924,16 @@ public Action Hook_ItemSpawnDelay(int iEntIndex)
 {
 	SDKUnhook(iEntIndex, SDKHook_Spawn, Hook_ItemSpawnDelay);
 	
-	CBaseEntity pEnt = CBaseEntity(iEntIndex);
+	CBaseEntity pEntity = CBaseEntity(iEntIndex);
 	if (g_bMapStarted)
 	{
-		RequestFrame(SpawnPostponedItem, pEnt);
+		RequestFrame(SpawnPostponedItem, pEntity);
 	}
 	else
 	{
-		g_pPostponedSpawns.Push(pEnt);
+		g_pPostponedSpawns.Push(pEntity);
 	}
+
 	return Plugin_Stop;
 }
 
@@ -944,6 +945,7 @@ public void SpawnPostponedItem(CBaseEntity pEntity)
 		g_bIsMultiplayerOverride = false; // IsMultiplayer=false will spawn items with physics
 		pEntity.Spawn();
 		g_bIsMultiplayerOverride = true;
+		pEntity.SetCollisionGroup(COLLISION_GROUP_WEAPON);
 	}
 }
 
