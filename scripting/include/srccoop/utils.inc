@@ -1025,27 +1025,42 @@ stock File OpenFileEx(const char[] file, const char[] mode, bool use_valve_fs=fa
 {
 	if (use_valve_fs && !StrEqual(mode, "r", false) && !StrEqual(mode, "rb", false) && !StrEqual(mode, "rt", false))
 	{
-		DirectoryListing dir = OpenDirectory("custom");
-		if (dir)
+		char szFullPath[PLATFORM_MAX_PATH];
+		if (ResolveValveFile(file, szFullPath, sizeof(szFullPath)))
 		{
-			char buffer[PLATFORM_MAX_PATH];
-			FileType ft;
-			
-			while (dir.GetNext(buffer, sizeof(buffer), ft))
-			{
-				if (ft == FileType_Directory && !StrEqual(buffer, ".") && !StrEqual(buffer, ".."))
-				{
-					Format(buffer, sizeof(buffer), "custom/%s/%s", buffer, file);
-					if (FileExists(buffer))
-					{
-						dir.Close();
-						return OpenFile(buffer, mode);
-					}
-				}
-			}
-
-			dir.Close();
+			return OpenFile(szFullPath, mode);
 		}
 	}
 	return OpenFile(file, mode, use_valve_fs, valve_path_id);
+}
+
+/**
+ * Should only be used as last resort.
+ * See OpenFileEx
+ */
+stock bool ResolveValveFile(const char[] szFile, char[] szFullPath, int maxLen)
+{
+	DirectoryListing dir = OpenDirectory("custom");
+	if (dir)
+	{
+		char buffer[PLATFORM_MAX_PATH];
+		FileType ft;
+		
+		while (dir.GetNext(buffer, sizeof(buffer), ft))
+		{
+			if (ft == FileType_Directory && !StrEqual(buffer, ".") && !StrEqual(buffer, ".."))
+			{
+				Format(buffer, sizeof(buffer), "custom/%s/%s", buffer, szFile);
+				if (FileExists(buffer))
+				{
+					dir.Close();
+					Format(szFullPath, maxLen, buffer);
+					return true;
+				}
+			}
+		}
+
+		dir.Close();
+	}
+	return false;
 }

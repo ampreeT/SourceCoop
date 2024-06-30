@@ -21,7 +21,7 @@ enum ImportSource
 
 methodmap ImportUtil
 {
-	public static bool FileFilter(ImportSource src, const char[] szFileName, char szMapName[MAX_MAPNAME])
+	public static bool FileFilter(ImportSource src, const char[] szFileName, char szMapName[MAX_MAPNAME], int &errors)
 	{
 		int len = strlen(szFileName);
 		int extLen;
@@ -37,6 +37,7 @@ methodmap ImportUtil
 		len = len - extLen + 1;
 		if (len > MAX_MAPNAME)
 		{
+			errors++;
 			MsgSrv("Map name in \"%s\" exceeds limit of %d characters and won't be imported.", szFileName, MAX_MAPNAME - 1);
 			return false;
 		}
@@ -71,9 +72,9 @@ methodmap ImportUtil
 		// Matching stops before closing } brace.
 		//
 		// Raw form:
-		// /^(?:(?<comments>\/\/.*)|(?<braces>{(?:(?&comments)|(?&braces)|(?&quotes)|(?&misc))*})|(?<quotes>"(?:\\.|[^"])*")|(?<misc>\s|[^"{}]))*/
+		// /^(?:(?<comments>\/\/.*)|(?<braces>{(?:(?&comments)|(?&braces)|(?&quotes)|(?&misc))*})|(?<quotes>"(?:\\.|[^"])*")|(?<misc>\s|[^"{}]))*+/
 		
-		Regex pGoToEnd = new Regex("^(?:(?<comments>\\/\\/.*)|(?<braces>{(?:(?&comments)|(?&braces)|(?&quotes)|(?&misc))*})|(?<quotes>\"(?:\\\\.|[^\"])*\")|(?<misc>\\s|[^\"{}]))*");
+		Regex pGoToEnd = new Regex("^(?:(?<comments>\\/\\/.*)|(?<braces>{(?:(?&comments)|(?&braces)|(?&quotes)|(?&misc))*})|(?<quotes>\"(?:\\\\.|[^\"])*\")|(?<misc>\\s|[^\"{}]))*+");
 
 		char[] szConfig = new char[pConfigBuilder.BufferSize];
 		pConfigBuilder.ToString(szConfig).Reset();
@@ -165,15 +166,36 @@ methodmap ImportUtil
 // Import boilerplate
 // --------------------------------------------------------------------------------------------------------------------------------
 
-bool ImportConfigs(ImportSource src, const char[] szMapFilter, bool bCreate, bool bDryRun, int &count, int &createCount, int &errors)
+/**
+ * Batch imports configs from given ImportSource to SourceCoop map configs according to provided parameters.
+ * @param src             Import source
+ * @param szMapFilter     Map-name filter, supports wildcards.
+ * @param bDryRun         Dry run does not modify actual files, merely reports stats and checks for potential issues.
+ * @param bUpdate         Update existing SC configs?
+ * @param bCreate         Create missing SC configs?
+ * @param updated         Updated SC configs counter
+ * @param created         Created SC configs counter
+ * @param errors          Error counter
+ * @return                If halted early false, otherwise true.
+ */
+bool ImportConfigs(ImportSource src, const char[] szMapFilter, bool bDryRun, bool bUpdate, bool bCreate, int &updated, int &created, int &errors)
 {
 	if (src == IMPORT_STRIPPER)
 	{
-		return ImportConfigsDir(src, "addons/stripper/maps", szMapFilter, bCreate, bDryRun, count, createCount, errors);
+		return ImportConfigsDir(src, "addons/stripper/maps", szMapFilter, bDryRun, bUpdate, bCreate, updated, created, errors);
 	}
 	ThrowError("ImportConfigs not implemented for this import source."); return false;
 }
 
+/**
+ * Imports a config from source file into provided StringBuilder.
+ * @param src             Import source
+ * @param szPath          Import source file path
+ * @param pConfigBuilder  String builder pre-loaded with SourceCoop config to update.
+ * @param szError         Error message
+ * @param maxErrorLen     Error message max length
+ * @return                True on success. If false, szError contains detailed message.
+ */
 bool ImportConfig(ImportSource src, const char[] szPath, StringBuilder pConfigBuilder, char[] szError, int maxErrorLen)
 {
 	if (src == IMPORT_STRIPPER)
@@ -183,7 +205,11 @@ bool ImportConfig(ImportSource src, const char[] szPath, StringBuilder pConfigBu
 	ThrowError("ImportConfig not implemented for this import source."); return false;
 }
 
-bool ImportConfigsDir(ImportSource src, const char[] szDir, const char[] szMapFilter, bool bCreate, bool bDryRun, int &count, int &createCount, int &errors)
+/**
+ * Enumerates a directory importing found files. For import sources with per-map config files.
+ * @return If halted early false, otherwise true.
+ */
+bool ImportConfigsDir(ImportSource src, const char[] szDir, const char[] szMapFilter, bool bDryRun, bool bUpdate, bool bCreate, int &updated, int &created, int &errors)
 {
 	DirectoryListing dir = OpenDirectory(szDir, false);
 	if (!dir)
@@ -204,40 +230,50 @@ bool ImportConfigsDir(ImportSource src, const char[] szDir, const char[] szMapFi
 		if (ft != FileType_File)
 			continue;
 
-		if (!ImportUtil.FileFilter(src, szFileName, szMapName))
+		if (!ImportUtil.FileFilter(src, szFileName, szMapName, errors))
 			continue;
 	
 		if (!StrEqualsWildcard(szMapFilter, szMapName, false))
 			continue;
 
 		bool bCreated;
-		if (!CoopManager.FindMapConfig(szMapName, szSrcCoopConfig, ccl, false))
+		if (CoopManager.GetMapConfig(szMapName, szSrcCoopConfig, ccl, false))
+		{
+			if (!bUpdate)
+				continue;
+		}
+		else
 		{
 			if (!bCreate)
 			{
-				MsgSrv("Found config for \"%s\", but no SourceCoop config. Run with <CREATE> set to 1 to auto-create missing configs.", szMapName);
+				MsgSrv("WARN: Found config for \"%s\", but no matching SourceCoop config. Run with <CREATE> set to 1 to auto-create missing configs.", szMapName);
 				continue;
 			}
 			if (bDryRun)
 			{
-				MsgSrv("- Create: %s", szSrcCoopConfig);
-				count++; createCount++;
+				MsgSrv("- Create: %s", szMapName);
+				created++;
 				continue;
 			}
-			if (!CoopManager.FindMapConfig(szMapName, szSrcCoopConfig, ccl, true))
+			if (!CoopManager.GetMapConfig(szMapName, szSrcCoopConfig, ccl, true))
 			{
 				errors++;
-				MsgSrv("Couldn't find SourceCoop config nor create default for \"%s\".", szMapName);
+				MsgSrv("ERROR: Couldn't find SourceCoop config nor create default for \"%s\".", szMapName);
 				continue;
 			}
 			bCreated = true;
 		}
 
-		File pSrcCoopConfig = OpenFileEx(szSrcCoopConfig, "r+", CoopManager.ConfigUsesValveFS(ccl));
+		if (CoopManager.ConfigUsesValveFS(ccl))
+		{
+			ResolveValveFile(szSrcCoopConfig, szSrcCoopConfig, sizeof(szSrcCoopConfig));
+		}
+
+		File pSrcCoopConfig = OpenFile(szSrcCoopConfig, "r+");
 		if (!pSrcCoopConfig)
 		{
 			errors++;
-			MsgSrv("Unable to read SourceCoop config \"%s\" (ValveFS=%d)", szSrcCoopConfig, CoopManager.ConfigUsesValveFS(ccl));
+			MsgSrv("ERROR: Unable to read SourceCoop config \"%s\"", szSrcCoopConfig);
 			continue;
 		}
 
@@ -264,15 +300,15 @@ bool ImportConfigsDir(ImportSource src, const char[] szDir, const char[] szMapFi
 		}
 
 		if (szError[0] == EOS)
-		{ 
-			count++;
+		{
 			if (bCreated)
 			{
-				createCount++;
+				created++;
 				MsgSrv("- Create: %s", szSrcCoopConfig);
 			}
 			else
 			{
+				updated++;
 				MsgSrv("- Update: %s", szSrcCoopConfig);
 			}
 			pSrcCoopConfig.Close();
@@ -281,11 +317,14 @@ bool ImportConfigsDir(ImportSource src, const char[] szDir, const char[] szMapFi
 		{
 			errors++;
 			pSrcCoopConfig.Close();
-			MsgSrv("Error importing map config from \"%s\" to \"%s\": %s", szFileName, szSrcCoopConfig, szError);
+			MsgSrv("ERROR: Importing map config from \"%s\" to \"%s\": %s", szFileName, szSrcCoopConfig, szError);
 			if (bCreated)
 			{
-				MsgSrv("Cleaning up.");
-				DeleteFile(szSrcCoopConfig, CoopManager.ConfigUsesValveFS(ccl));
+				MsgSrv("Undoing config file.");
+				if (!DeleteFile(szSrcCoopConfig))
+				{
+					MsgSrv("Config cleanup failed.");
+				}
 			}
 		}
 		pConfigBuilder.Close();
@@ -328,7 +367,6 @@ bool ImportStripperConfig(const char[] szStripperConfig, StringBuilder pConfigBu
 	int iLevel; // parsing depth
 	int iLine; // line count
 	int iNext = STRIPPER_ELEMENTS_ROOT; // next expected token bits
-	bool bError;
 
 	while (!pStripperCfg.EndOfFile())
 	{
@@ -337,17 +375,23 @@ bool ImportStripperConfig(const char[] szStripperConfig, StringBuilder pConfigBu
 		if (!pLineBuilder.AppendFileLine(pStripperCfg))
 		{
 			Format(szError, maxErrorLen, "Unable to read Stripper config @ line %d", iLine);
-			bError = true; break;
+			break;
 		}
 
 		char[] szLine = new char[pLineBuilder.BufferSize];
 		pLineBuilder.ToString(szLine).Reset();
 		TrimString(szLine);
-
-		if (strncmp(szLine, "//", 2) == 0 || szLine[0] == ';' || szLine[0] == '#' || szLine[0] == '\0')
+		
+		if (szLine[0] == '\0')
 			continue;
 		
 		int iIndent = iLevel + 2; // offset for entity section
+
+		if (strncmp(szLine, "//", 2) == 0 || szLine[0] == ';' || szLine[0] == '#')
+		{
+			ImportUtil.AppendLine(pOutBuilder, szLine, iIndent);
+			continue;
+		}
 
 		if (iNext & STRIPPER_TOK_OBRACE && StrEqual(szLine, "{"))
 		{
@@ -452,14 +496,14 @@ bool ImportStripperConfig(const char[] szStripperConfig, StringBuilder pConfigBu
 			continue;
 		}
 		Format(szError, maxErrorLen, "Invalid Stripper config format @ line %d", iLine);
-		bError = true; break;
+		break;
 	}
 
-	if (!bError)
+	if (szError[0] == EOS)
 	{
-		char[] szOut = new char[pOutBuilder.BufferSize];
-		pOutBuilder.ToString(szOut);
-		bError = !ImportUtil.ImportAsNode("entity_import_stripper", szOut, pConfigBuilder, szError, maxErrorLen);
+		char[] szNodeContent = new char[pOutBuilder.BufferSize];
+		pOutBuilder.ToString(szNodeContent);
+		ImportUtil.ImportAsNode("entity_import_stripper", szNodeContent, pConfigBuilder, szError, maxErrorLen);
 	}
 
 	pStripperCfg.Close();
@@ -467,5 +511,5 @@ bool ImportStripperConfig(const char[] szStripperConfig, StringBuilder pConfigBu
 	pOutBuilder.Close();
 	pKvDataRegex.Close();
 
-	return !bError;
+	return (szError[0] == EOS);
 }

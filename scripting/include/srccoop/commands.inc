@@ -149,7 +149,7 @@ public Action Command_MakeConfigs(int iArgs)
 			if (!StrEqualsWildcard(szMapFilter, szBuffer, false))
 				continue;
 
-			if (!CoopManager.FindMapConfig(szBuffer, szSrcCoopConfig, ccl, false))
+			if (!CoopManager.GetMapConfig(szBuffer, szSrcCoopConfig, ccl, false))
 			{
 				if (!bDryRun)
 				{
@@ -189,7 +189,7 @@ public Action Command_MakeConfigs(int iArgs)
 
 public Action Command_ImportConfigs(int iArgs)
 {
-	if (iArgs < 3)
+	if (iArgs < 4)
 	{
 		char szCmd[32]; GetCmdArg(0, szCmd, sizeof(szCmd));
 		ServerCommand("help %s", szCmd);
@@ -200,8 +200,9 @@ public Action Command_ImportConfigs(int iArgs)
 	char szMapFilter[MAX_MAPNAME * 2];
 	GetCmdArg(1, szType, sizeof(szType));
 	GetCmdArg(2, szMapFilter, sizeof(szMapFilter));
-	bool bCreateConfigs = !!GetCmdArgInt(3);
-	bool bDryRun = !GetCmdArgInt(4);
+	bool bUpdateConfigs = !!GetCmdArgInt(3);
+	bool bCreateConfigs = !!GetCmdArgInt(4);
+	bool bDryRun = !GetCmdArgInt(5);
 
 	if (bCreateConfigs && !VerifyDefaultMapConfigCvars())
 	{
@@ -221,8 +222,8 @@ public Action Command_ImportConfigs(int iArgs)
 
 	MsgSrv("Import started%s", bDryRun? " [dry run]": "");
 
-	int count, createCount, errors;
-	if (!ImportConfigs(src, szMapFilter, bCreateConfigs, bDryRun, count, createCount, errors))
+	int iUpdateCount, iCreateCount, iErrors;
+	if (!ImportConfigs(src, szMapFilter, bDryRun, bUpdateConfigs, bCreateConfigs, iUpdateCount, iCreateCount, iErrors))
 	{
 		return Plugin_Handled;
 	}
@@ -233,15 +234,15 @@ public Action Command_ImportConfigs(int iArgs)
 
 		PrintToServer(
 			"\nYou are about to import %d %s configs (of which %d will be created).%s"
-			... "\nExecute the following command to continue:\n>>> %s %s %s %d 1 <<<\n",
-			count, szType, createCount,
-			errors? "\nIt is recommended to fix errors above before proceeding with the live run." : "",
-			szCmd, szType, szMapFilter, bCreateConfigs);
+			... "\nExecute the following command to continue:\n>>> %s %s %s %d %d 1 <<<\n",
+			(iUpdateCount + iCreateCount), szType, iCreateCount,
+			iErrors? "\nIt is recommended to fix errors above before proceeding with the live run." : "",
+			szCmd, szType, szMapFilter, bUpdateConfigs, bCreateConfigs);
 	}
 	else
 	{
-		PrintToServer("\n - Import finished -\n Total imported: %d\n New configs: %d\n Errors: %d\n",
-			count, createCount, errors);
+		PrintToServer("\n - Import finished -\n Successful imports: %d\n Updated configs: %d\n New configs: %d\n Errors: %d\n",
+			(iUpdateCount + iCreateCount), iUpdateCount, iCreateCount, iErrors);
 	}
 
 	return Plugin_Handled;
