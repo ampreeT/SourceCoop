@@ -86,7 +86,7 @@ public Action Command_DumpMapEntities(int iArgs)
 	return Plugin_Handled;
 }
 
-public Action Command_MakeConfigs(int iArgs)
+bool VerifyDefaultMapConfigCvars()
 {
 	char szBuffer[PLATFORM_MAX_PATH];
 
@@ -95,7 +95,7 @@ public Action Command_MakeConfigs(int iArgs)
 	{
 		g_pConvarDefaultMapConfig.GetName(szBuffer, sizeof(szBuffer));
 		MsgSrv("Set \"%s\" before running this command.", szBuffer);
-		return Plugin_Handled;
+		return false;
 	}
 
 	g_pConvarDefaultMapConfigDest.GetString(szBuffer, 2);
@@ -103,6 +103,23 @@ public Action Command_MakeConfigs(int iArgs)
 	{
 		g_pConvarDefaultMapConfigDest.GetName(szBuffer, sizeof(szBuffer));
 		MsgSrv("Set \"%s\" before running this command.", szBuffer);
+		return false;
+	}
+
+	return true;
+}
+
+public Action Command_MakeConfigs(int iArgs)
+{
+	if (iArgs < 1)
+	{
+		char szCmd[32]; GetCmdArg(0, szCmd, sizeof(szCmd));
+		ServerCommand("help %s", szCmd);
+		return Plugin_Handled;
+	}
+
+	if (!VerifyDefaultMapConfigCvars())
+	{
 		return Plugin_Handled;
 	}
 
@@ -113,11 +130,14 @@ public Action Command_MakeConfigs(int iArgs)
 		return Plugin_Handled;
 	}
 
-	bool bDryRun = !GetCmdArgInt(1);
+	char szBuffer[PLATFORM_MAX_PATH];
+	char szMapFilter[MAX_MAPNAME * 2];
+	GetCmdArg(1, szMapFilter, sizeof(szMapFilter));
+	bool bDryRun = !GetCmdArgInt(2);
 	int count;
 	FileType ft;
 	CoopConfigLocation ccl;
-	char szConfigPath[PLATFORM_MAX_PATH];
+	char szSrcCoopConfig[PLATFORM_MAX_PATH];
 
 	while (dir.GetNext(szBuffer, sizeof(szBuffer), ft))
 	{
@@ -125,11 +145,15 @@ public Action Command_MakeConfigs(int iArgs)
 		if (ft == FileType_File && StrEndsWithEx(szBuffer, len, ".bsp", false))
 		{
 			szBuffer[len - 4] = EOS;
-			if (!CoopManager.FindMapConfig(szBuffer, szConfigPath, ccl, false))
+
+			if (!StrEqualsWildcard(szMapFilter, szBuffer, false))
+				continue;
+
+			if (!CoopManager.GetMapConfig(szBuffer, szSrcCoopConfig, ccl, false))
 			{
 				if (!bDryRun)
 				{
-					if (!CoopManager.CreateDefaultConfig(szBuffer, szConfigPath))
+					if (!CoopManager.CreateDefaultConfig(szBuffer, szSrcCoopConfig))
 					{
 						dir.Close();
 						MsgSrv("Aborted processing.");
@@ -149,13 +173,77 @@ public Action Command_MakeConfigs(int iArgs)
 		g_pConvarDefaultMapConfigDest.GetString(szDest, sizeof(szDest));
 		GetCmdArg(0, szBuffer, sizeof(szBuffer));
 
-		PrintToServer("");
-		MsgSrv("You are about to create %d new map configs.\n Template: %s\n Destination dir: %s\nType %s 1 to continue...\n",
-				count, szTemplate, szDest, szBuffer);
+		MsgSrv("\nYou are about to create %d new map configs.\n Template: %s\n Destination dir: %s\nExecute >>> %s %s 1 <<< to continue...\n",
+				count, szTemplate, szDest,
+				szBuffer, szMapFilter);
 	}
 	else
 	{
-		MsgSrv("Success. Created %d configs.", count);
+		if (count)
+			MsgSrv("Success. Created %d configs.", count);
+		else
+			MsgSrv("No new configs were created!");
 	}
+	return Plugin_Handled;
+}
+
+public Action Command_ImportConfigs(int iArgs)
+{
+	if (iArgs < 4)
+	{
+		char szCmd[32]; GetCmdArg(0, szCmd, sizeof(szCmd));
+		ServerCommand("help %s", szCmd);
+		return Plugin_Handled;
+	}
+
+	char szType[32];
+	char szMapFilter[MAX_MAPNAME * 2];
+	GetCmdArg(1, szType, sizeof(szType));
+	GetCmdArg(2, szMapFilter, sizeof(szMapFilter));
+	bool bUpdateConfigs = !!GetCmdArgInt(3);
+	bool bCreateConfigs = !!GetCmdArgInt(4);
+	bool bDryRun = !GetCmdArgInt(5);
+
+	if (bCreateConfigs && !VerifyDefaultMapConfigCvars())
+	{
+		return Plugin_Handled;
+	}
+
+	ImportSource src;
+	if (StrEqual(szType, "stripper", false))
+	{
+		src = IMPORT_STRIPPER;
+	}
+	else
+	{
+		MsgSrv("Unsupported import type: \"%s\"", szType);
+		return Plugin_Handled;
+	}
+
+	MsgSrv("Import started%s", bDryRun? " [dry run]": "");
+
+	int iUpdateCount, iCreateCount, iErrors;
+	if (!ImportConfigs(src, szMapFilter, bDryRun, bUpdateConfigs, bCreateConfigs, iUpdateCount, iCreateCount, iErrors))
+	{
+		return Plugin_Handled;
+	}
+
+	if (bDryRun)
+	{
+		char szCmd[32]; GetCmdArg(0, szCmd, sizeof(szCmd));
+
+		PrintToServer(
+			"\nYou are about to import %d %s configs (of which %d will be created).%s"
+			... "\nExecute the following command to continue:\n>>> %s %s %s %d %d 1 <<<\n",
+			(iUpdateCount + iCreateCount), szType, iCreateCount,
+			iErrors? "\nIt is recommended to fix errors above before proceeding with the live run." : "",
+			szCmd, szType, szMapFilter, bUpdateConfigs, bCreateConfigs);
+	}
+	else
+	{
+		PrintToServer("\n - Import finished -\n Successful imports: %d\n Updated configs: %d\n New configs: %d\n Errors: %d\n",
+			(iUpdateCount + iCreateCount), iUpdateCount, iCreateCount, iErrors);
+	}
+
 	return Plugin_Handled;
 }

@@ -75,8 +75,8 @@ enum IntroType
 
 enum CoopConfigLocation
 {
-	CCL_SM_DATA = 0,
-	CCL_MAPS
+	CCL_SM_DATA = 0, /* "Path_SM/data/srccoop" | Uses default filesystem */
+	CCL_MAPS /* "maps" | Uses valve filesystem */
 }
 
 enum SurvivalMode

@@ -441,7 +441,7 @@ methodmap CoopManager
 	public static KeyValues LoadMapConfig(const char[] szMapName, CoopConfigLocation &src)
 	{
 		char szConfigPath[PLATFORM_MAX_PATH];
-		if (!CoopManager.FindMapConfig(szMapName, szConfigPath, src, true))
+		if (!CoopManager.GetMapConfig(szMapName, szConfigPath, src, true))
 			return null;
 		
 		KeyValues kv = new KeyValues(szMapName);
@@ -453,7 +453,7 @@ methodmap CoopManager
 		return kv;
 	}
 
-	public static bool FindMapConfig(const char[] szMapName, char szConfigPath[PLATFORM_MAX_PATH], CoopConfigLocation &src, bool bCreateDefault)
+	public static bool GetMapConfig(const char[] szMapName, char szConfigPath[PLATFORM_MAX_PATH], CoopConfigLocation &src, bool bCreateDefault)
 	{
 		BuildPath(Path_SM, szConfigPath, sizeof(szConfigPath), "data/srccoop/%s.edt", szMapName);
 		if (!FileExists(szConfigPath))
@@ -461,11 +461,14 @@ methodmap CoopManager
 			Format(szConfigPath, sizeof(szConfigPath), "maps/%s.edt", szMapName);
 			if (!FileExists(szConfigPath, true))
 			{
-				if (!bCreateDefault || !CoopManager.CreateDefaultConfig(szMapName, szConfigPath))
+				if (!bCreateDefault
+					// attempt to create default
+					|| !CoopManager.CreateDefaultConfig(szMapName, szConfigPath)
+					// re-run verifying default location and populating src
+					|| !CoopManager.GetMapConfig(szMapName, szConfigPath, src, false)) 
 				{
 					return false;
 				}
-				else src = CCL_MAPS;
 			}
 			else src = CCL_MAPS;
 		}
@@ -503,6 +506,11 @@ methodmap CoopManager
 			}
 		}
 		return false;
+	}
+
+	public static bool ConfigUsesValveFS(CoopConfigLocation ccl)
+	{
+		return (ccl == CCL_MAPS);
 	}
 	
 }
