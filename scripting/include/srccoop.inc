@@ -169,6 +169,7 @@
 #include <srccoop/deathnotice>
 #include <srccoop/instancing>
 #include <srccoop/playerpatch>
+#include <srccoop/import>
 #include <srccoop/menu>
 #include <srccoop/commands>
 #include <srccoop/natives>
