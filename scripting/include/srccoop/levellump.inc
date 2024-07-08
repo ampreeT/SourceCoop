@@ -6,18 +6,27 @@
 #pragma newdecls required
 #pragma semicolon 1
 
+// Output data seperator, varies per game
 static char g_szOutputSeparator[2];
-#define BRUSH_FIXUP_MDL "models/error.mdl"
-#define BRUSH_FIXUP_IDENT "$BRUSHFIXUP$"
+
+// Temporary brush entity model placeholders to be identified and fixed up at entity spawn 
+#define BRUSH_FIXUP_MDL "models/error.mdl" // actual model that will be set on fixed up ents
+#define BRUSH_FIXUP_IDENT "$BRUSHFIXUP$" // identifier that the entities with customized brush models will have their "model" property start with
 #define BRUSH_FIXUP_IDENT_LEN 12
 #define BRUSH_FIXUP_SEPARATOR " "
 
+/**
+ * Lump of a single key and value.
+ */
 enum struct CEntityKeyLump
 {
 	char m_szKey[MAX_KEY];
 	char m_szValue[MAX_VALUE];
 }
 
+/**
+ * Output data. This is an exploded variant of CEntityKeyLump's value string, specifically for working with output keys.
+ */
 enum struct CEntityOutputLump
 {
 	char m_szTargetEntity[MAX_VALUE];
@@ -26,10 +35,10 @@ enum struct CEntityOutputLump
 	float m_flDelay;
 	int m_iTimesToFire;
 	
-	bool LoadFromEntityKeyLump(CEntityKeyLump pEntityKeyLump)
+	bool LoadFromEntityKeyLump(const CEntityKeyLump pEntityKeyLump)
 	{
 		char buffers[5][MAX_VALUE];
-		if (ExplodeString(pEntityKeyLump.m_szValue, g_szOutputSeparator, buffers, sizeof(buffers), sizeof(buffers[])) != sizeof(buffers))
+		if (sizeof(buffers) != ExplodeString(pEntityKeyLump.m_szValue, g_szOutputSeparator, buffers, sizeof(buffers), sizeof(buffers[])))
 		{
 			return false;
 		}
@@ -50,10 +59,18 @@ enum struct CEntityOutputLump
 	void SaveToEntityKeyLump(CEntityKeyLump pEntityKeyLump)
 	{
 		FormatEx(pEntityKeyLump.m_szValue, sizeof(pEntityKeyLump.m_szValue), "%s%s%s%s%s%s%.2f%s%d",
-		this.m_szTargetEntity, g_szOutputSeparator, this.m_szInputName, g_szOutputSeparator, this.m_szParameter, g_szOutputSeparator, this.m_flDelay, g_szOutputSeparator, this.m_iTimesToFire);
+			this.m_szTargetEntity, g_szOutputSeparator,
+			this.m_szInputName, g_szOutputSeparator,
+			this.m_szParameter, g_szOutputSeparator,
+			this.m_flDelay, g_szOutputSeparator,
+			this.m_iTimesToFire);
 	}
 	
-	bool Matches(CEntityOutputLump pOther, bool bMatchTarget, bool bMatchInput, bool bMatchParameter, bool bMatchDelay, bool bMatchTTF)
+	/**
+	 * Tests for equality with pOther, allows partial matching.
+	 * Supports regex matching of strings - with /patterns/ inside of this object and raw data in pOther.
+	 */
+	bool Matches(const CEntityOutputLump pOther, bool bMatchTarget, bool bMatchInput, bool bMatchParameter, bool bMatchDelay, bool bMatchTTF)
 	{
 		if (bMatchTarget && !StrEqualsRegex(this.m_szTargetEntity, pOther.m_szTargetEntity, false)
 			|| bMatchInput && !StrEqualsRegex(this.m_szInputName, pOther.m_szInputName, false)
@@ -67,37 +84,112 @@ enum struct CEntityOutputLump
 	}
 }
 
+/**
+ * Holds all key-value lumps (properties) of an entity.
+ */
 methodmap CEntityInfoLump < ArrayList
 {
-	public CEntityInfoLump(ArrayList pHandle)
+	public CEntityInfoLump()
 	{
-		return view_as<CEntityInfoLump>(pHandle);
+		return view_as<CEntityInfoLump>(new ArrayList(sizeof(CEntityKeyLump)));
 	}
-	
-	public bool Matches(CEntityInfoLump rhs)
+
+	/**
+	 * Adds a new property at the end.
+	 */
+	public void AddProperty(const CEntityKeyLump pKeyInfo)
+	{
+		this.PushArray(pKeyInfo);
+	}
+
+	/**
+	 * Removes matching properties. Supports regex in key and value.
+	 * @param pKeyInfo     The property to match by
+	 * @param bMatchValue  Requires values to match beside keys.
+	 */
+	public void RemoveProperty(const CEntityKeyLump pKeyInfo, bool bMatchValue)
+	{
+		for (int i = (this.Length - 1); i >= 0; i--)
+		{
+			CEntityKeyLump pThisKeyInfo;
+			this.GetArray(i, pThisKeyInfo);
+
+			if (StrEqualsRegex(pKeyInfo.m_szKey, pThisKeyInfo.m_szKey, false))
+			{
+				if (!bMatchValue || StrEqualsRegex(pKeyInfo.m_szValue, pThisKeyInfo.m_szValue, false))
+				{
+					this.Erase(i);
+				}
+			}
+		}
+	}
+
+	/**
+	 * Returns last property found for given key.
+	 */
+	public bool GetProperty(const char[] szKey, CEntityKeyLump pKeyInfo)
+	{
+		for (int i = (this.Length - 1); i >= 0; i--)
+		{
+			this.GetArray(i, pKeyInfo);
+			if (strcmp(pKeyInfo.m_szKey, szKey, false) == 0)
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Sets given property key/value.
+	 * Note: If there are duplicate keys, only the last one is updated.
+	 * @param bInsert  If missing, the property is added at the end.
+	 */
+	public void SetProperty(const CEntityKeyLump pKeyInfo, bool bInsert = true)
+	{
+		CEntityKeyLump temp;
+		for (int i = (this.Length - 1); i >= 0; i--)
+		{
+			this.GetArray(i, temp);
+			if (strcmp(temp.m_szKey, pKeyInfo.m_szKey, false) == 0)
+			{
+				this.SetArray(i, pKeyInfo);
+				return;
+			}
+		}
+		if (bInsert)
+		{
+			this.AddProperty(pKeyInfo);
+		}
+	}
+
+	/**
+	 * Tests that all contained properties are equal in value with pOther.
+	 * Supports regex matching of keys/values - with /patterns/ inside of this object and raw data in pOther.
+	 */
+	public bool Matches(const CEntityInfoLump pOther)
 	{
 		for (int i = 0; i < this.Length; i++)
 		{
-			bool bGotEntry = false;
+			bool bFoundMatch = false;
 			
 			CEntityKeyLump pThisKeyInfo;
-			if (this.GetArray(i, pThisKeyInfo, sizeof(pThisKeyInfo)))
+			this.GetArray(i, pThisKeyInfo);
+			
+			for (int j = 0; j < pOther.Length; j++)
 			{
-				for (int j = 0; j < rhs.Length; j++)
+				CEntityKeyLump pOtherKeyInfo;
+				pOther.GetArray(j, pOtherKeyInfo);
+				
+				if (StrEqualsRegex(pThisKeyInfo.m_szKey, pOtherKeyInfo.m_szKey, false)
+				&& StrEqualsRegex(pThisKeyInfo.m_szValue, pOtherKeyInfo.m_szValue, false))
 				{
-					CEntityKeyLump rhsKeyInfo;
-					if (rhs.GetArray(j, rhsKeyInfo, sizeof(rhsKeyInfo)))
-					{
-						if (StrEqualsRegex(pThisKeyInfo.m_szKey, rhsKeyInfo.m_szKey, false) && StrEqualsRegex(pThisKeyInfo.m_szValue, rhsKeyInfo.m_szValue, false))
-						{
-							bGotEntry = true;
-							break;
-						}
-					}
+					bFoundMatch = true;
+					break;
 				}
 			}
 			
-			if (!bGotEntry)
+			if (!bFoundMatch)
 			{
 				return false;
 			}
@@ -105,8 +197,14 @@ methodmap CEntityInfoLump < ArrayList
 		
 		return true;
 	}
-		
-	public bool MatchesAsIOTarget(char[] szTarget, CEntityInfoLump pCallingEntity)
+	
+	/**
+	 * Attempts to predict whether this entity would've gotten targeted in the input/output system,
+	 * given the specified target string.
+	 * @param szTarget 			the target string
+	 * @param pCallingEntity 	entity doing the targeting
+	 */
+	public bool MatchesAsIOTarget(const char[] szTarget, const CEntityInfoLump pCallingEntity)
 	{
 		if (strcmp(szTarget, "!self") == 0)
 		{
@@ -115,7 +213,7 @@ methodmap CEntityInfoLump < ArrayList
 		for (int i = 0; i < this.Length; i++)
 		{
 			CEntityKeyLump pThisKeyInfo;
-			if (this.GetArray(i, pThisKeyInfo, sizeof(pThisKeyInfo)))
+			if (this.GetArray(i, pThisKeyInfo))
 			{
 				if (strcmp(pThisKeyInfo.m_szKey, "classname") == 0 && strcmp(pThisKeyInfo.m_szValue, szTarget) == 0)
 				{
@@ -130,146 +228,148 @@ methodmap CEntityInfoLump < ArrayList
 		return false;
 	}
 	
+	/**
+	 * Attempts to match this entity lump with runtime CBaseEntity instance.
+	 * @return  True if it's likely that both objects refer to the same entity.
+	 */
 	public bool MatchesActualEntity(CBaseEntity pEntity)
 	{
+		CEntityKeyLump pThisKeyInfo;
+
 		for (int i = 0; i < this.Length; i++)
 		{
-			CEntityKeyLump pThisKeyInfo;
-			if (this.GetArray(i, pThisKeyInfo, sizeof(pThisKeyInfo)))
+			this.GetArray(i, pThisKeyInfo);
+
+			// check these 3 properties for now, return false if any dont match
+			if (StrEqual(pThisKeyInfo.m_szKey, "hammerid"))
 			{
-				// check these 3 properties for now, return false if any dont match
-				if (StrEqual(pThisKeyInfo.m_szKey, "hammerid"))
+				if (StringToInt(pThisKeyInfo.m_szValue) != pEntity.GetHammerID())
 				{
-					if (StringToInt(pThisKeyInfo.m_szValue) != pEntity.GetHammerID())
-					{
-						return false;
-					}
+					return false;
 				}
-				if (StrEqual(pThisKeyInfo.m_szKey, "classname"))
+			}
+			if (StrEqual(pThisKeyInfo.m_szKey, "classname"))
+			{
+				if (!pEntity.IsClassname(pThisKeyInfo.m_szValue))
 				{
-					if (!pEntity.IsClassname(pThisKeyInfo.m_szValue))
-					{
-						return false;
-					}
+					return false;
 				}
-				if (StrEqual(pThisKeyInfo.m_szKey, "targetname"))
+			}
+			if (StrEqual(pThisKeyInfo.m_szKey, "targetname"))
+			{
+				char szBuffer[MAX_CLASSNAME];
+				pEntity.GetTargetname(szBuffer, sizeof(szBuffer));
+				if (!StrEqual(pThisKeyInfo.m_szValue, szBuffer))
 				{
-					char szBuffer[MAX_CLASSNAME];
-					pEntity.GetTargetname(szBuffer, sizeof(szBuffer));
-					if (!StrEqual(pThisKeyInfo.m_szValue, szBuffer))
-					{
-						return false;
-					}
+					return false;
 				}
 			}
 		}
 		return true;
 	}
-	
-	public void RemoveOrReplace(CEntityKeyLump pKeyInfo, bool replace)
-	{
-		for (int i = 0; i < this.Length; i++)
-		{
-			CEntityKeyLump pThisKeyInfo;
-			if (this.GetArray(i, pThisKeyInfo, sizeof(pThisKeyInfo)))
-			{
-				if (StrEqualsRegex(pKeyInfo.m_szKey, pThisKeyInfo.m_szKey, false))
-				{
-					this.Erase(i);
-					break;
-				}
-			}
-		}
-		if (replace)
-		{
-			this.PushArray(pKeyInfo, sizeof(pKeyInfo));
-		}
-	}
-	
-	public bool GetKey(const char[] szKey, CEntityKeyLump pKeyInfo)
-	{
-		for (int i = 0; i < this.Length; i++)
-		{
-			this.GetArray(i, pKeyInfo);
-			if (strcmp(pKeyInfo.m_szKey, szKey, false) == 0)
-			{
-				return true;
-			}
-		}
-		return false;
-	}
 }
 
+/**
+ * A list of CEntityInfoLump objects.
+ */
 methodmap CEntityListLump < ArrayList
 {
-	public CEntityListLump(ArrayList pHandle)
+	public CEntityListLump()
 	{
-		return view_as<CEntityListLump>(pHandle);
+		return view_as<CEntityListLump>(new ArrayList(sizeof(CEntityInfoLump)));
+	}
+
+	// cast
+	public CEntityInfoLump Get(int index)
+	{
+		return view_as<ArrayList>(this).Get(index);
 	}
 	
 	public void Clear()
 	{
 		for (int i = 0; i < this.Length; i++)
 		{
-			CEntityInfoLump pEntityInfo = this.Get(i);
-			delete pEntityInfo;
+			delete this.Get(i);
 		}
-		ClearArray(this);
+		view_as<ArrayList>(this).Clear();
 	}
 }
 
+/**
+ * Evaluated entity list paired with an output name.
+ * Used at runtime for the delayed outputs feature.
+ */
 enum struct CEntityOutputHook
 {
 	CEntityListLump m_pEntityList;
 	char m_szOutputName[MAX_VALUE];
+
+	void Close()
+	{
+		delete this.m_pEntityList;
+	}
 }
 
-methodmap COutputHookLump < ArrayList
+/**
+ * Collection of CEntityOutputHook.
+ */
+methodmap COutputHookList < ArrayList
 {
-	public COutputHookLump(ArrayList pHandle)
+	public COutputHookList()
 	{
-		return view_as<COutputHookLump>(pHandle);
+		return view_as<COutputHookList>(new ArrayList(sizeof(CEntityOutputHook)));
 	}
 	
 	public void Clear()
+	{
+		CEntityOutputHook pOutputHook;
+		for (int i = 0; i < this.Length; i++)
+		{
+			this.GetArray(i, pOutputHook);
+			pOutputHook.Close();
+		}
+		view_as<ArrayList>(this).Clear();
+	}
+	
+	/**
+	 * Removes hooks or their entities which are no longer contained in the list (f.e. deleted when parsing).
+	 */
+	public void Validate(const CEntityListLump pValidEntityList)
 	{
 		for (int i = 0; i < this.Length; i++)
 		{
 			CEntityOutputHook pOutputHook;
 			this.GetArray(i, pOutputHook);
-			pOutputHook.m_pEntityList.Close();
-		}
-		ClearArray(this);
-	}
-	
-	// Remove hooks whose entities are not contained in the list (f.e. deleted when parsing)
-	public void Validate(CEntityListLump pValidEntityList)
-	{
-		for (int i = 0; i < this.Length; i++)
-		{
-			CEntityOutputHook pOutputHook; this.GetArray(i, pOutputHook);
+
+			// loop all of output-hook's entities
 			for (int j = 0; j < pOutputHook.m_pEntityList.Length; j++)
 			{
 				CEntityInfoLump pEntityInfo = pOutputHook.m_pEntityList.Get(j);
+				// delete those not found in valid list
 				if (pValidEntityList.FindValue(pEntityInfo) == -1)
 				{
 					pOutputHook.m_pEntityList.Erase(j--);
 				}
 			}
+			
+			// if all of output-hook's entities got deleted, it's no longer valid
 			if (!pOutputHook.m_pEntityList.Length)
 			{
-				pOutputHook.m_pEntityList.Close();
+				pOutputHook.Close();
 				this.Erase(i--);
 			}
 		}
 	}
 }
 
+/**
+ * Collection of allowed map names (or regexes of) for transitions.
+ */
 methodmap CNextMapLump < ArrayList
 {
-	public CNextMapLump(ArrayList pHandle)
+	public CNextMapLump()
 	{
-		return view_as<CNextMapLump>(pHandle);
+		return view_as<CNextMapLump>(new ArrayList(ByteCountToCells(MAX_MAPNAME)));
 	}
 	
 	public bool IsInMapList(const char[] szMapName)
@@ -286,6 +386,9 @@ methodmap CNextMapLump < ArrayList
 	}
 }
 
+/**
+ * Level metadata for modifying a server convar
+ */
 enum struct CServerConsoleCommand
 {
 	ConVar m_pConvar;
@@ -295,6 +398,20 @@ enum struct CServerConsoleCommand
 	bool m_bLate;
 }
 
+/**
+ * Collection of CServerConsoleCommand
+ */
+methodmap CServerConsoleCommandList < ArrayList
+{
+	public CServerConsoleCommandList()
+	{
+		return view_as<CServerConsoleCommandList>(new ArrayList(sizeof(CServerConsoleCommand)));
+	}
+}
+
+/**
+ * Level metadata for modifying a client convar
+ */
 enum struct CClientConsoleCommand
 {
 	char m_szConvar[128];
@@ -303,23 +420,37 @@ enum struct CClientConsoleCommand
 	bool m_bApplyOnSpawn;
 }
 
+/**
+ * Collection of CClientConsoleCommand
+ */
+methodmap CClientConsoleCommandList < ArrayList
+{
+	public CClientConsoleCommandList()
+	{
+		return view_as<CClientConsoleCommandList>(new ArrayList(sizeof(CClientConsoleCommand)));
+	}
+}
+
+/**
+ * Handles parsing, updating and saving the level's entity string alongside processing edt configs.
+ */
 enum struct CGlobalLevelLump
 {
 	CEntityListLump m_pEntityList;
 	CNextMapLump m_pNextMapList;
-	ArrayList m_pServerCvarList;
-	ArrayList m_pClientCvarList;
-	COutputHookLump m_pOutputHookList;
+	CServerConsoleCommandList m_pServerCvarList;
+	CClientConsoleCommandList m_pClientCvarList;
+	COutputHookList m_pOutputHookList;
 	IntroType m_iIntroType;
 	StringMap m_EdtDefinesMap;
 	
 	void Initialize()
 	{
-		this.m_pEntityList = new CEntityListLump(CreateArray(sizeof(CEntityInfoLump)));
-		this.m_pNextMapList = new CNextMapLump(CreateArray(MAX_MAPNAME));
-		this.m_pServerCvarList = CreateArray(sizeof(CServerConsoleCommand));
-		this.m_pClientCvarList = CreateArray(sizeof(CClientConsoleCommand));
-		this.m_pOutputHookList = new COutputHookLump(CreateArray(sizeof(CEntityOutputHook)));
+		this.m_pEntityList = new CEntityListLump();
+		this.m_pNextMapList = new CNextMapLump();
+		this.m_pServerCvarList = new CServerConsoleCommandList();
+		this.m_pClientCvarList = new CClientConsoleCommandList();
+		this.m_pOutputHookList = new COutputHookList();
 		this.m_EdtDefinesMap = new StringMap();
 		
 		g_szOutputSeparator[0] = OUTPUT_SEPARATOR;
@@ -353,7 +484,7 @@ enum struct CGlobalLevelLump
 				if (bParsingValue)
 				{
 					n = SplitByChar(szMapEntities[++i], '"', pEntityInfoKey.m_szValue, sizeof(pEntityInfoKey.m_szValue));
-					pEntityInfo.PushArray(pEntityInfoKey, sizeof(pEntityInfoKey));
+					pEntityInfo.PushArray(pEntityInfoKey);
 				}
 				else
 				{
@@ -375,12 +506,12 @@ enum struct CGlobalLevelLump
 				if (pEntityInfo)
 					ThrowError("Found '{' when expecting '}'");
 				
-				pEntityInfo = new CEntityInfoLump(CreateArray(sizeof(CEntityKeyLump)));
+				pEntityInfo = new CEntityInfoLump();
 			}
 			else if (szMapEntities[i] == '}')
 			{
 				if (!pEntityInfo)
-					ThrowError("Did not have valid CEntityInfoLump when finding '}'");
+					ThrowError("Did not have valid entity info when finding '}'");
 				
 				this.m_pEntityList.Push(pEntityInfo);
 				pEntityInfo = null;
@@ -399,29 +530,30 @@ enum struct CGlobalLevelLump
 		for (int i = 0; i < this.m_pEntityList.Length; i++)
 		{
 			CEntityInfoLump pEntityInfo = this.m_pEntityList.Get(i);
+
 			if (!pEntityInfo) // should be never invalid
 				return -1;
 			if (pEntityInfo.Length <= 0) // never write if it has nothing in it to begin with
 				continue;
 			
-			szBuffer[n] = '{';
-			szBuffer[n + 1] = '\n';
-			n += 2;
+			szBuffer[n++] = '{';
+			szBuffer[n++] = '\n';
 			
 			for (int j = 0; j < pEntityInfo.Length; j++)
 			{
 				CEntityKeyLump pEntityInfoKey;
-				if (pEntityInfo.GetArray(j, pEntityInfoKey, sizeof(pEntityInfoKey)))
+				if (pEntityInfo.GetArray(j, pEntityInfoKey))
 				{
 					static char szKeyValue[2048];
-					int iLength = Format(szKeyValue, sizeof(szKeyValue), "\t\"%s\"\t\"%s\"\n", pEntityInfoKey.m_szKey, pEntityInfoKey.m_szValue);
+					int iLength = FormatEx(szKeyValue, sizeof(szKeyValue), "\t\"%s\"\t\"%s\"\n", pEntityInfoKey.m_szKey, pEntityInfoKey.m_szValue);
 					strcopy(szBuffer[n], iLength + 1, szKeyValue);
 					n += iLength;
 				}
 			}
 			
 			szBuffer[n] = '}';
-			szBuffer[n + 1] = (i == (this.m_pEntityList.Length - 1)) ? '\0' : '\n'; // if this doesn't end with a null terminator, the token will search for '{' and crash the server
+			// if this doesn't end with a null terminator, the token will search for '{' and crash the server
+			szBuffer[n + 1] = (i == (this.m_pEntityList.Length - 1)) ? '\0' : '\n';
 			n += 2;
 		}
 		
@@ -440,13 +572,14 @@ enum struct CGlobalLevelLump
 				char szType[MAX_KEY];
 				if (kv.GetSectionName(szType, sizeof(szType)))
 				{
-					if (kv.GetDataType(NULL_STRING) != KvData_None)
+					if (kv.GetDataType(NULL_STRING) != KvData_None) // simple values
 					{
 						if (strcmp(szType, "nextmap", false) == 0)
 						{
 							char szNextMapName[MAX_MAPNAME];
 							kv.GetString(NULL_STRING, szNextMapName, sizeof(szNextMapName));
 							this.m_pNextMapList.PushString(szNextMapName);
+							LogDebug("Adding nextmap to allowlist: \"%s\"", szNextMapName);
 						}
 						else if (strcmp(szType, "intro_type", false) == 0)
 						{
@@ -464,11 +597,17 @@ enum struct CGlobalLevelLump
 							{
 								this.m_iIntroType = INTRO_FREEZE;
 							}
+							else LogError("Unknown intro_type \"%s\"", szIntroType);
 						}
 					}
-					else
+					else // subsections
 					{
 						LogDebug("Processing \"%s\" block", szType);
+						// We only check for StartsWith on subsection strings.
+						// This is so subsection keys from config file hierarchy can have unique names.
+						// That way, they are not forcefully merged together into 1 subtree.
+						// This is especially important for sections with repetitive keys, where each key
+						// should be processed separately, i.e. entity modifications, or when conditions are used inside.
 						if (StrContains(szType, "define", false) == 0)
 						{
 							this.ParseDefines(kv);
@@ -519,35 +658,28 @@ enum struct CGlobalLevelLump
 					{
 						if (kv.GotoFirstSubKey(false))
 						{
-							CEntityInfoLump pEntityInfo = new CEntityInfoLump(CreateArray(sizeof(CEntityKeyLump)));
-							do
-							{
-								CEntityKeyLump pEntityKeyInfo;
-								if (kv.GetSectionName(pEntityKeyInfo.m_szKey, sizeof(pEntityKeyInfo.m_szKey)) && kv.GetDataType(NULL_STRING) != KvData_None)
-								{
-									kv.GetString(NULL_STRING, pEntityKeyInfo.m_szValue, sizeof(pEntityKeyInfo.m_szValue));
-									pEntityInfo.PushArray(pEntityKeyInfo);
-								}
-							}
-							while (kv.GotoNextKey(false));
+							// Gather properties to lookup entities by
+							CEntityInfoLump pLookupEntity = this.ReadEntityInfo(kv);
 							kv.GoBack();
 							
-							for (int i = 0; i < this.m_pEntityList.Length; i++)
+							// Look for matching entities in the entity list
+							for (int i = (this.m_pEntityList.Length - 1); i >= 0; i--)
 							{
-								CEntityInfoLump pThisEntityInfo = this.m_pEntityList.Get(i);
-								if (pEntityInfo.Matches(pThisEntityInfo))
+								CEntityInfoLump pListEntity = this.m_pEntityList.Get(i);
+								if (pLookupEntity.Matches(pListEntity))
 								{
+									// Add as equipment using their classnames
 									CEntityKeyLump pClassKey;
-									if (pThisEntityInfo.GetKey("classname", pClassKey))
+									if (pListEntity.GetProperty("classname", pClassKey))
 									{
 										CCoopSpawnSystem.AddSpawnItem(pClassKey.m_szValue, true);
-										pThisEntityInfo.Close();
+										// Delete imported entities from map
+										pListEntity.Close();
 										this.m_pEntityList.Erase(i);
-										i--;
 									}
 								}
 							}
-							pEntityInfo.Close();
+							pLookupEntity.Close();
 						}
 					}
 				}
@@ -572,6 +704,7 @@ enum struct CGlobalLevelLump
 					{
 						char szValue[MAX_FORMAT];
 						kv.GetString(NULL_STRING, szValue, sizeof(szValue));
+						UpperCaseString(szKey, szKey, sizeof(szKey));
 						this.m_EdtDefinesMap.SetString(szKey, szValue, true);
 						LogDebug("Setting define: [\"%s\" = \"%s\"]", szKey, szValue);
 					}
@@ -647,6 +780,7 @@ enum struct CGlobalLevelLump
 							if (FindCharInArray(contextFlags, sizeof(contextFlags), 'H', false) != -1)
 							{
 								// [H]ide convar (unavailable to console unless using sm_cvar)
+								LogDebug("Hiding convar: \"%s\"", szKey);
 								cmd.m_iFlagsAdd |= FCVAR_DEVELOPMENTONLY;
 							}
 							cmd.m_pConvar.Flags |= cmd.m_iFlagsAdd;
@@ -707,6 +841,7 @@ enum struct CGlobalLevelLump
 								cmd.m_bApplyOnSpawn = true;
 							}
 						}
+
 						LogDebug("Adding client convar: [\"%s\" = \"%s\"]%s", cmd.m_szConvar, cmd.m_szValue,
 								cmd.m_bApplyOnSpawn? " (Apply on spawn)" : "");
 						cmd.m_pConvar = FindConVar(cmd.m_szConvar);
@@ -716,6 +851,57 @@ enum struct CGlobalLevelLump
 			}
 			while (kv.GotoNextKey(false));
 			kv.GoBack();
+		}
+	}
+	
+	/**
+	 * Reads entity properties at current keyvalues position into a new CEntityInfoLump instance.
+	 */
+	CEntityInfoLump ReadEntityInfo(KeyValues kv)
+	{
+		CEntityInfoLump pEntity = new CEntityInfoLump();
+		CEntityKeyLump pEntityProp;
+		do
+		{
+			if (kv.GetSectionName(pEntityProp.m_szKey, sizeof(pEntityProp.m_szKey))
+				&& kv.GetDataType(NULL_STRING) != KvData_None)
+			{
+				kv.GetString(NULL_STRING, pEntityProp.m_szValue, sizeof(pEntityProp.m_szValue));
+				pEntity.PushArray(pEntityProp);
+			}
+		}
+		while (kv.GotoNextKey(false));
+		return pEntity;
+	}
+	
+	/**
+	 * Returns a new list of evaluated entities matching the properties
+	 * of sub-values found at current keyvalues position.
+	 */
+	CEntityListLump EvaluateEntityList(KeyValues kv)
+	{
+		if (kv.GotoFirstSubKey(false))
+		{
+			CEntityInfoLump pEvaulationEntity = this.ReadEntityInfo(kv);
+			kv.GoBack();
+			
+			CEntityListLump pEvaluatedList = new CEntityListLump();
+			for (int i = 0; i < this.m_pEntityList.Length; i++)
+			{
+				CEntityInfoLump pListEntity = this.m_pEntityList.Get(i);
+				if (pEvaulationEntity.Matches(pListEntity))
+				{
+					pEvaluatedList.Push(pListEntity);
+				}
+			}
+
+			pEvaulationEntity.Close();
+			return pEvaluatedList;
+		}
+		else
+		{
+			// if there are no properties to filter by, return all entities
+			return view_as<CEntityListLump>(this.m_pEntityList.Clone());
 		}
 	}
 	
@@ -742,72 +928,53 @@ enum struct CGlobalLevelLump
 					{
 						if (kv.GotoFirstSubKey(false))
 						{
-							CEntityInfoLump pEntityInfo = new CEntityInfoLump(CreateArray(sizeof(CEntityKeyLump)));
-							do
-							{
-								CEntityKeyLump pEntityKeyInfo;
-								if (kv.GetSectionName(pEntityKeyInfo.m_szKey, sizeof(pEntityKeyInfo.m_szKey)) && kv.GetDataType(NULL_STRING) != KvData_None)
-								{
-									kv.GetString(NULL_STRING, pEntityKeyInfo.m_szValue, sizeof(pEntityKeyInfo.m_szValue));
-									pEntityInfo.PushArray(pEntityKeyInfo);
-								}
-							}
-							while (kv.GotoNextKey(false));
-							kv.GoBack();
+							CEntityInfoLump pEntityInfo = this.ReadEntityInfo(kv);
 							this.m_pEntityList.Push(pEntityInfo);
+							kv.GoBack();
 							
-							// alow to directly use modify actions here
+							// alow direct usage of modify actions here
 							if (kv.GotoFirstSubKey(true))
 							{
-								CEntityListLump pEntityWrapperList = new CEntityListLump(CreateArray(sizeof(CEntityInfoLump)));
-								pEntityWrapperList.Push(pEntityInfo);
+								CEntityListLump pSingletonEntityList = new CEntityListLump();
+								pSingletonEntityList.Push(pEntityInfo);
 								do
 								{
 									char szModifyType[MAX_KEY];
 									if (kv.GetSectionName(szModifyType, sizeof(szModifyType)))
 									{
-										this.ParseModifyAction(kv, szModifyType, pEntityWrapperList);
+										this.ParseModifyAction(kv, szModifyType, pSingletonEntityList);
 									}
 								}
 								while (kv.GotoNextKey(true));
 								kv.GoBack();
-								pEntityWrapperList.Close();
+								pSingletonEntityList.Close();
 							}
 						}
 					}
 					else if (remove)
 					{
-						CEntityInfoLump pEntityInfo = new CEntityInfoLump(CreateArray(sizeof(CEntityKeyLump)));
+						CEntityInfoLump pRemoveFilter;
 						if (kv.GotoFirstSubKey(false))
 						{
-							do
-							{
-								CEntityKeyLump pEntityKeyInfo;
-								if (kv.GetSectionName(pEntityKeyInfo.m_szKey, sizeof(pEntityKeyInfo.m_szKey)) && kv.GetDataType(NULL_STRING) != KvData_None)
-								{
-									kv.GetString(NULL_STRING, pEntityKeyInfo.m_szValue, sizeof(pEntityKeyInfo.m_szValue));
-									pEntityInfo.PushArray(pEntityKeyInfo);
-								}
-							}
-							while (kv.GotoNextKey(false));
+							pRemoveFilter = this.ReadEntityInfo(kv);
 							kv.GoBack();
 						}
+						else pRemoveFilter = new CEntityInfoLump();
 						
 						#if defined DEBUG
 						int iEntCount = this.m_pEntityList.Length;
 						#endif
 
-						for (int i = 0; i < this.m_pEntityList.Length; i++)
+						for (int i = (this.m_pEntityList.Length - 1); i >= 0; i--)
 						{
-							CEntityInfoLump pThisEntityInfo = this.m_pEntityList.Get(i);
-							if (pEntityInfo.Matches(pThisEntityInfo))
+							CEntityInfoLump pListEntity = this.m_pEntityList.Get(i);
+							if (pRemoveFilter.Matches(pListEntity))
 							{
-								pThisEntityInfo.Close();
+								pListEntity.Close();
 								this.m_pEntityList.Erase(i);
-								i--;
 							}
 						}
-						pEntityInfo.Close();
+						pRemoveFilter.Close();
 						
 						#if defined DEBUG
 						LogDebug("Deleted %d entities", iEntCount - this.m_pEntityList.Length);
@@ -815,24 +982,21 @@ enum struct CGlobalLevelLump
 					}
 					else if (modify)
 					{
-						if (kv.GotoFirstSubKey(false))
+						CEntityListLump pTempEvaluatedList = this.EvaluateEntityList(kv);
+						if (pTempEvaluatedList.Length && kv.GotoFirstSubKey(true))
 						{
-							CEntityListLump pTempEvaluatedList = this.EvaluateEntityList(kv);
-							if (pTempEvaluatedList.Length && kv.GotoFirstSubKey(true))
+							char szModifyType[MAX_KEY];
+							do
 							{
-								do
+								if (kv.GetSectionName(szModifyType, sizeof(szModifyType)))
 								{
-									char szModifyType[MAX_KEY];
-									if (kv.GetSectionName(szModifyType, sizeof(szModifyType)))
-									{
-										this.ParseModifyAction(kv, szModifyType, pTempEvaluatedList);
-									}
+									this.ParseModifyAction(kv, szModifyType, pTempEvaluatedList);
 								}
-								while (kv.GotoNextKey(true));
-								kv.GoBack();
 							}
-							pTempEvaluatedList.Close();
+							while (kv.GotoNextKey(true));
+							kv.GoBack();
 						}
+						pTempEvaluatedList.Close();
 					}
 				}
 			}
@@ -841,45 +1005,18 @@ enum struct CGlobalLevelLump
 		}
 	}
 	
-	CEntityListLump EvaluateEntityList(KeyValues kv)
+	void ParseModifyAction(KeyValues kv, const char szModifyType[MAX_KEY], CEntityListLump pTempEvaluatedList)
 	{
-		CEntityInfoLump pEvaulationEntity = new CEntityInfoLump(CreateArray(sizeof(CEntityKeyLump)));
-		CEntityListLump pTempEvaluatedList = new CEntityListLump(CreateArray(sizeof(CEntityInfoLump)));
-		
-		do
-		{
-			CEntityKeyLump pEntityKeyInfo;
-			if (kv.GetSectionName(pEntityKeyInfo.m_szKey, sizeof(pEntityKeyInfo.m_szKey)) && kv.GetDataType(NULL_STRING) != KvData_None)
-			{
-				kv.GetString(NULL_STRING, pEntityKeyInfo.m_szValue, sizeof(pEntityKeyInfo.m_szValue));
-				pEvaulationEntity.PushArray(pEntityKeyInfo, sizeof(pEntityKeyInfo));
-			}
-		}
-		while (kv.GotoNextKey(false));
-		kv.GoBack();
-		
-		for (int i = 0; i < this.m_pEntityList.Length; i++)
-		{
-			CEntityInfoLump pThisEntityInfo = this.m_pEntityList.Get(i);
-			if (pEvaulationEntity.Matches(pThisEntityInfo))
-			{
-				pTempEvaluatedList.Push(pThisEntityInfo);
-			}
-		}
-		pEvaulationEntity.Close();
-		return pTempEvaluatedList;
-	}
-	
-	void ParseModifyAction(KeyValues kv, char szModifyType[MAX_KEY], CEntityListLump pTempEvaluatedList)
-	{
-		bool add = IsAddSynonym(szModifyType) || IsReplaceSynonym(szModifyType); // Add and replace do the same thing; pre-existing keys are always removed to prevent duplication
+		bool add = IsAddSynonym(szModifyType);
 		bool remove = IsRemoveSynonym(szModifyType);
+		bool set = strcmp(szModifyType, "set", false) == 0;
+		bool replace = strcmp(szModifyType, "replace", false) == 0;
 		bool functions = strcmp(szModifyType, "functions", false) == 0;
 		bool outputs = strcmp(szModifyType, "outputs", false) == 0;
 		bool flags = strcmp(szModifyType, "flags", false) == 0;
-		if (!add && !remove && !functions && !outputs && !flags)
+		if (!add && !remove && !set && !replace && !functions && !outputs && !flags)
 		{
-			ThrowError("Unknown entity modify action \"%s\", expected one of add | remove | functions | outputs | flags", szModifyType);
+			ThrowError("Unknown entity modify action \"%s\", expected one of add | remove | set | replace | functions | outputs | flags", szModifyType);
 		}
 		
 		if (kv.GotoFirstSubKey(false))
@@ -898,16 +1035,38 @@ enum struct CGlobalLevelLump
 				{
 					this.ParseFlags(kv, pTempEvaluatedList);
 				}
-				else // add, remove
+				else
 				{
-					CEntityKeyLump pKeyInfo;
-					if (kv.GetSectionName(pKeyInfo.m_szKey, sizeof(pKeyInfo.m_szKey)) && kv.GetDataType(NULL_STRING) != KvData_None)
+					CEntityKeyLump pProperty;
+					if (kv.GetDataType(NULL_STRING) == KvData_None || !kv.GetSectionName(pProperty.m_szKey, sizeof(pProperty.m_szKey)))
 					{
-						kv.GetString(NULL_STRING, pKeyInfo.m_szValue, sizeof(pKeyInfo.m_szValue));
+						continue;
+					}
+					kv.GetString(NULL_STRING, pProperty.m_szValue, sizeof(pProperty.m_szValue));
+					
+					if (add)
+					{
 						for (int i = 0; i < pTempEvaluatedList.Length; i++)
 						{
-							CEntityInfoLump pEditedEntityInfo = pTempEvaluatedList.Get(i);
-							pEditedEntityInfo.RemoveOrReplace(pKeyInfo, add);
+							pTempEvaluatedList.Get(i).AddProperty(pProperty);
+						}
+					}
+					else if (remove)
+					{
+						// match values if not empty
+						bool bMatchValue = pProperty.m_szValue[0] != EOS;
+						for (int i = 0; i < pTempEvaluatedList.Length; i++)
+						{
+							pTempEvaluatedList.Get(i).RemoveProperty(pProperty, bMatchValue);
+						}
+					}
+					else // set, replace
+					{
+						for (int i = 0; i < pTempEvaluatedList.Length; i++)
+						{
+							// set = updates or adds property
+							// replace = updates pre-existing only
+							pTempEvaluatedList.Get(i).SetProperty(pProperty, set);
 						}
 					}
 				}
@@ -921,6 +1080,7 @@ enum struct CGlobalLevelLump
 	{
 		char szFunction[MAX_KEY], szValue[MAX_KEY];
 		bool bFound = true;
+
 		if (kv.GetSectionName(szFunction, sizeof(szFunction)))
 		{
 			if (kv.GetDataType(NULL_STRING) != KvData_None)
@@ -941,36 +1101,33 @@ enum struct CGlobalLevelLump
 			{
 				if (StrEqual(szFunction, "copy_model", false))
 				{
-					if (kv.GotoFirstSubKey(false))
+					CEntityListLump pTargetEvaluatedList = this.EvaluateEntityList(kv);
+					if (!pTargetEvaluatedList.Length)
 					{
-						CEntityListLump pTargetEvaluatedList;
-						pTargetEvaluatedList = this.EvaluateEntityList(kv);
-						if (!pTargetEvaluatedList.Length)
-						{
-							ThrowError("Found 0 entities for copy model matching (expects 1+)");
-						}
-						CEntityKeyLump pModelKey, pOriginKey;
-						for (int i = 0; i < pTargetEvaluatedList.Length; i++)
-						{
-							CEntityInfoLump pTargetEnt = pTargetEvaluatedList.Get(i);
-							if (pTargetEnt.GetKey("model", pModelKey))
-							{
-								bool bHasOrigin = pTargetEnt.GetKey("origin", pOriginKey);
-								for (int k = 0; k < pTempEvaluatedList.Length; k++)
-								{
-									CEntityInfoLump pTempEnt = pTempEvaluatedList.Get(k);
-									pTempEnt.RemoveOrReplace(pModelKey, true);
-									if (bHasOrigin)
-									{
-										pTempEnt.RemoveOrReplace(pOriginKey, true);
-									}
-								}
-								break;
-							}
-							else ThrowError("Target entity for copy_model has no model property");
-						}
-						pTargetEvaluatedList.Close();
+						ThrowError("Found 0 entities for copy model matching (expected 1+)");
 					}
+
+					CEntityKeyLump pModelKey, pOriginKey;
+					for (int i = 0; i < pTargetEvaluatedList.Length; i++)
+					{
+						CEntityInfoLump pTargetEnt = pTargetEvaluatedList.Get(i);
+						if (pTargetEnt.GetProperty("model", pModelKey))
+						{
+							bool bHasOrigin = pTargetEnt.GetProperty("origin", pOriginKey);
+							for (int k = 0; k < pTempEvaluatedList.Length; k++)
+							{
+								CEntityInfoLump pEvalEnt = pTempEvaluatedList.Get(k);
+								pEvalEnt.SetProperty(pModelKey, true);
+								if (bHasOrigin)
+								{
+									pEvalEnt.SetProperty(pOriginKey, true);
+								}
+							}
+							break;
+						}
+						else ThrowError("Target entity for copy_model has no model property");
+					}
+					pTargetEvaluatedList.Close();
 				}
 				else if (StrEqual(szFunction, "set_model", false))
 				{
@@ -999,8 +1156,7 @@ enum struct CGlobalLevelLump
 						
 					for (int k = 0; k < pTempEvaluatedList.Length; k++)
 					{
-						CEntityInfoLump pEnt = pTempEvaluatedList.Get(k);
-						pEnt.RemoveOrReplace(pModelKey, true);
+						pTempEvaluatedList.Get(k).SetProperty(pModelKey, true);
 					}
 				}
 				else bFound = false;
@@ -1008,7 +1164,7 @@ enum struct CGlobalLevelLump
 			
 			if (!bFound)
 			{
-				ThrowError("Unknown function %s", szFunction);
+				ThrowError("Unknown function \"%s\"", szFunction);
 			}
 		}
 	}
@@ -1016,13 +1172,15 @@ enum struct CGlobalLevelLump
 	void ParseFlags(KeyValues kv, CEntityListLump pTempEvaluatedList)
 	{
 		char szFlagName[MAX_KEY], szAction[MAX_KEY];
-		if (kv.GetDataType(NULL_STRING) == KvData_None && kv.GetSectionName(szFlagName, sizeof(szFlagName)))
+		if (kv.GetDataType(NULL_STRING) == KvData_None &&
+			kv.GetSectionName(szFlagName, sizeof(szFlagName)))
 		{
 			if (kv.GotoFirstSubKey(false))
 			{
 				do
 				{
-					if (kv.GetDataType(NULL_STRING) == KvData_Int && kv.GetSectionName(szAction, sizeof(szAction)))
+					if (kv.GetDataType(NULL_STRING) == KvData_Int
+						&& kv.GetSectionName(szAction, sizeof(szAction)))
 					{
 						bool add = IsAddSynonym(szAction) || IsEnableSynonym(szAction);
 						bool remove = IsRemoveSynonym(szAction) || IsDisableSynonym(szAction);
@@ -1078,113 +1236,120 @@ enum struct CGlobalLevelLump
 	void ParseOutputs(KeyValues kv, CEntityListLump pTempEvaluatedList)
 	{
 		char szAction[MAX_KEY], szKey[MAX_KEY], szOutputName[MAX_KEY];
-		if (kv.GetSectionName(szAction, sizeof(szAction)))
+		if (!kv.GetSectionName(szAction, sizeof(szAction)))
 		{
-			LogDebug("Performing output \"%s\" action for %d entities", szAction, pTempEvaluatedList.Length);
-			
-			bool bFoundOutput, bFoundTarget, bFoundInput, bFoundParameter, bFoundDelay, bFoundTTF;
-			if (IsAddSynonym(szAction))
-			{
-				for (int i = 0; i < pTempEvaluatedList.Length; i++)
-				{
-					CEntityInfoLump pEditedEntityInfo = pTempEvaluatedList.Get(i);
-					CEntityOutputLump pNewOutputLump; CEntityKeyLump pNewKeyInfo;
-					
-					this.ParseOutputKeys(kv, pNewOutputLump, pNewKeyInfo.m_szKey, sizeof(pNewKeyInfo.m_szKey), bFoundOutput, bFoundTarget, bFoundInput, bFoundParameter, bFoundDelay, bFoundTTF);
-					if (!bFoundOutput) ThrowError("Cannot add output - missing entry for \"output\"");
-					if (!bFoundTarget) ThrowError("Cannot add output - missing entry for \"target\"");
-					if (!bFoundInput) ThrowError("Cannot add output - missing entry for \"input\"");
-					if (!bFoundTTF) pNewOutputLump.m_iTimesToFire = 1;
-					
-					pNewOutputLump.SaveToEntityKeyLump(pNewKeyInfo);
-					pEditedEntityInfo.PushArray(pNewKeyInfo);
-				}
-				return;
-			}
-			
-			bool modify = IsModifySynonym(szAction);
-			bool remove = IsRemoveSynonym(szAction);
-			if (!modify && !remove)
-			{
-				ThrowError("Unknown outputs action \"%s\", expected one of add | remove | modify", szAction);
-			}
-			
-			CEntityOutputLump pMatchOutputLump;
-			this.ParseOutputKeys(kv, pMatchOutputLump, szOutputName, sizeof(szOutputName), bFoundOutput, bFoundTarget, bFoundInput, bFoundParameter, bFoundDelay, bFoundTTF);
-			
-			// evaluate entities matching target if specified
-			CEntityListLump pTargetEvaluatedList;
-			if (kv.GetDataType("target") == KvData_None && kv.JumpToKey("target", false))
-			{
-				if (kv.GotoFirstSubKey(false))
-				{
-					pTargetEvaluatedList = this.EvaluateEntityList(kv);
-					LogDebug("Found %d entities for output target matching", pTargetEvaluatedList.Length);
-				}
-				kv.GoBack();
-			}
-			
+			return;
+		}
+
+		LogDebug("Performing output \"%s\" action for %d entities", szAction, pTempEvaluatedList.Length);
+		
+		bool bFoundOutput, bFoundTarget, bFoundInput, bFoundParameter, bFoundDelay, bFoundTTF;
+		if (IsAddSynonym(szAction))
+		{
 			for (int i = 0; i < pTempEvaluatedList.Length; i++)
 			{
-				CEntityInfoLump pEditedEntityInfo = pTempEvaluatedList.Get(i);
-				for (int j = 0; j < pEditedEntityInfo.Length; j++)
+				CEntityOutputLump pNewOutputLump; CEntityKeyLump pNewKey;
+				
+				this.ParseOutputKeys(kv, pNewOutputLump, pNewKey.m_szKey, sizeof(pNewKey.m_szKey),
+					bFoundOutput, bFoundTarget, bFoundInput, bFoundParameter, bFoundDelay, bFoundTTF);
+
+				if (!bFoundOutput) ThrowError("Cannot add output - missing entry for \"output\"");
+				if (!bFoundTarget) ThrowError("Cannot add output - missing entry for \"target\"");
+				if (!bFoundInput) ThrowError("Cannot add output - missing entry for \"input\"");
+				if (!bFoundTTF) pNewOutputLump.m_iTimesToFire = 1;
+				
+				pNewOutputLump.SaveToEntityKeyLump(pNewKey);
+				pTempEvaluatedList.Get(i).AddProperty(pNewKey);
+			}
+			return;
+		}
+		
+		bool modify = IsModifySynonym(szAction);
+		bool remove = IsRemoveSynonym(szAction);
+		if (!modify && !remove)
+		{
+			ThrowError("Unknown outputs action \"%s\", expected one of add | remove | modify", szAction);
+		}
+		
+		CEntityOutputLump pMatchOutputLump;
+		this.ParseOutputKeys(kv, pMatchOutputLump, szOutputName, sizeof(szOutputName),
+			bFoundOutput, bFoundTarget, bFoundInput, bFoundParameter, bFoundDelay, bFoundTTF);
+		
+		// evaluate entities matching target if specified
+		CEntityListLump pTargetEvaluatedList;
+		if (kv.GetDataType("target") == KvData_None && kv.JumpToKey("target", false))
+		{
+			pTargetEvaluatedList = this.EvaluateEntityList(kv);
+			LogDebug("Found %d entities for output target matching", pTargetEvaluatedList.Length);
+			kv.GoBack();
+		}
+		
+		for (int i = 0; i < pTempEvaluatedList.Length; i++)
+		{
+			CEntityInfoLump pEditedEntity = pTempEvaluatedList.Get(i);
+			for (int j = 0; j < pEditedEntity.Length; j++)
+			{
+				CEntityKeyLump pEditedKeyInfo;
+				pEditedEntity.GetArray(j, pEditedKeyInfo);
+
+				if (bFoundOutput && !StrEqualsRegex(szOutputName, pEditedKeyInfo.m_szKey, false))
 				{
-					CEntityKeyLump pEditedKeyInfo; pEditedEntityInfo.GetArray(j, pEditedKeyInfo, sizeof(pEditedKeyInfo));
-					if (bFoundOutput && !StrEqualsRegex(szOutputName, pEditedKeyInfo.m_szKey, false))
+					continue; // avoid parsing output from value unless necessary
+				}
+				
+				CEntityOutputLump pEditedOutput;
+				if (pEditedOutput.LoadFromEntityKeyLump(pEditedKeyInfo))
+				{
+					if (pMatchOutputLump.Matches(pEditedOutput, bFoundTarget, bFoundInput, bFoundParameter, bFoundDelay, bFoundTTF))
 					{
-						continue; // avoid parsing output from value unless necessary
-					}
-					
-					CEntityOutputLump pEntityOutputLump;
-					if (pEntityOutputLump.LoadFromEntityKeyLump(pEditedKeyInfo))
-					{
-						if (pMatchOutputLump.Matches(pEntityOutputLump, bFoundTarget, bFoundInput, bFoundParameter, bFoundDelay, bFoundTTF))
+						// skip any outputs that dont match the target entity
+						if (pTargetEvaluatedList)
 						{
-							// skip any outputs that dont match the target entity
-							if (pTargetEvaluatedList)
+							bool bFoundOne;
+							for (int k = 0; k < pTargetEvaluatedList.Length; k++)
 							{
-								bool bFoundOne;
-								for (int k = 0; k < pTargetEvaluatedList.Length; k++)
+								CEntityInfoLump pTargetEntityInfo = pTargetEvaluatedList.Get(k);
+								if (pTargetEntityInfo.MatchesAsIOTarget(pEditedOutput.m_szTargetEntity, pEditedEntity))
 								{
-									CEntityInfoLump pTargetEntityInfo = pTargetEvaluatedList.Get(k);
-									if (pTargetEntityInfo.MatchesAsIOTarget(pEntityOutputLump.m_szTargetEntity, pEditedEntityInfo))
-									{
-										bFoundOne = true;
-										break;
-									}
-								}
-								if (!bFoundOne)
-									continue;
-							}
-							if (modify)
-							{
-								if (kv.GotoFirstSubKey(true))
-								{
-									do
-									{
-										if (kv.GetSectionName(szKey, sizeof(szKey)) && IsReplaceSynonym(szKey))
-										{
-											LogDebug("Replacing output %s %s", pEditedKeyInfo.m_szKey, pEditedKeyInfo.m_szValue);
-											this.ParseOutputKeys(kv, pEntityOutputLump, pEditedKeyInfo.m_szKey, sizeof(pEditedKeyInfo.m_szKey));
-											pEntityOutputLump.SaveToEntityKeyLump(pEditedKeyInfo);
-											LogDebug(".....With output %s %s", pEditedKeyInfo.m_szKey, pEditedKeyInfo.m_szValue);
-											pEditedEntityInfo.SetArray(j, pEditedKeyInfo);
-										}
-									}
-									while (kv.GotoNextKey(true));
-									kv.GoBack();
+									bFoundOne = true;
+									break;
 								}
 							}
-							else if (remove)
+							if (!bFoundOne)
 							{
-								pEditedEntityInfo.Erase(j--);
+								continue;
 							}
+						}
+						
+						if (modify)
+						{
+							if (kv.GotoFirstSubKey(true))
+							{
+								do
+								{
+									if (kv.GetSectionName(szKey, sizeof(szKey))
+										&& (StrEqual(szKey, "replace", false) || StrEqual(szKey, "set", false)))
+									{
+										LogDebug("Replacing output %s %s", pEditedKeyInfo.m_szKey, pEditedKeyInfo.m_szValue);
+										this.ParseOutputKeys(kv, pEditedOutput, pEditedKeyInfo.m_szKey, sizeof(pEditedKeyInfo.m_szKey));
+										pEditedOutput.SaveToEntityKeyLump(pEditedKeyInfo);
+										LogDebug(".....With output %s %s", pEditedKeyInfo.m_szKey, pEditedKeyInfo.m_szValue);
+										pEditedEntity.SetArray(j, pEditedKeyInfo);
+									}
+								}
+								while (kv.GotoNextKey(true));
+								kv.GoBack();
+							}
+						}
+						else // remove
+						{
+							pEditedEntity.Erase(j--);
 						}
 					}
 				}
 			}
-			pTargetEvaluatedList.Close();
 		}
+		delete pTargetEvaluatedList;
 	}
 	
 	void ParseOutputKeys(KeyValues kv, CEntityOutputLump pOutputLump, char[] szOutputName, int iOutputNameLength,
@@ -1222,23 +1387,24 @@ enum struct CGlobalLevelLump
 		}
 	}
 
-	ArrayList GetOutputHooksForEntity(CBaseEntity pEntity)
+	COutputHookList GetOutputHooksForEntity(CBaseEntity pEntity)
 	{
-		ArrayList pResolvedOutputHookList = new ArrayList(sizeof(CEntityOutputHook));
+		COutputHookList pResolvedList = new COutputHookList();
+
 		for (int i = 0; i < this.m_pOutputHookList.Length; i++)
 		{
-			CEntityOutputHook pOutputHook; this.m_pOutputHookList.GetArray(i, pOutputHook);
-			CEntityListLump pEntityList = pOutputHook.m_pEntityList;
-			for (int j = 0; j < pEntityList.Length; j++)
+			CEntityOutputHook pOutputHook;
+			this.m_pOutputHookList.GetArray(i, pOutputHook);
+
+			for (int j = 0; j < pOutputHook.m_pEntityList.Length; j++)
 			{
-				CEntityInfoLump pHookedEntityInfo = pEntityList.Get(j);
-				if (pHookedEntityInfo.MatchesActualEntity(pEntity))
+				if (pOutputHook.m_pEntityList.Get(j).MatchesActualEntity(pEntity))
 				{
-					pResolvedOutputHookList.PushArray(pOutputHook);
+					pResolvedList.PushArray(pOutputHook);
 				}
 			}
 		}
-		return pResolvedOutputHookList;
+		return pResolvedList;
 	}
 	
 	void ApplyLateConvars()
@@ -1281,6 +1447,9 @@ enum struct CGlobalLevelLump
 
 CGlobalLevelLump g_pLevelLump;
 
+/**
+ * Entity spawn hook for extracting pre-set model strings and applying resultant dimensions.
+ */
 public Action Hook_FixupBrushModels(int iEntIndex)
 {
 	SDKUnhook(iEntIndex, SDKHook_Spawn, Hook_FixupBrushModels);
@@ -1344,6 +1513,7 @@ void Hook_ForceConvarValue(ConVar convar, const char[] oldValue, const char[] ne
 		convar.GetName(szName, sizeof(szName));
 		ThrowError("Hooked ConVar \"%s\" is missing from m_pServerCvarList!", szName);
 	}
+
 	CServerConsoleCommand cmd;
 	g_pLevelLump.m_pServerCvarList.GetArray(index, cmd);
 	if (!StrEqual(newValue, cmd.m_szValue))

@@ -49,9 +49,11 @@ methodmap FeatureMap < StringMap
 		return view_as<FeatureMap>(pMap);
 	}
 	
-	public bool GetFeature(char[] szFeature, SourceCoopFeature &feature)
+	public bool GetFeature(const char[] szFeature, SourceCoopFeature &feature)
 	{
-		UpperCaseString(szFeature, szFeature, strlen(szFeature) + 1);
-		return this.GetValue(szFeature, feature);
+		int len = strlen(szFeature) + 1;
+		char[] szFeatureUpper = new char[len];
+		UpperCaseString(szFeature, szFeatureUpper, len);
+		return this.GetValue(szFeatureUpper, feature);
 	}
 }
