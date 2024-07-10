@@ -18,7 +18,7 @@
 		{
 			"classname" "trigger_changelevel"
 			"map" "bm_c2a3a"
-			"add"
+			"set"
 			{
 				"classname" "func_brush"
 				"rendermode" "10" // dont render
@@ -32,7 +32,7 @@
 		"modify"
 		{
 			"targetname" "SCI02_Cryo"
-			"add"
+			"set"
 			{
 				"GameEndAlly" "0"
 			}

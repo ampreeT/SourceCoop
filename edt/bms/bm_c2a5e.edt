@@ -38,7 +38,7 @@
 		"modify"
 		{
 			"targetname"	"hivehand_pickup"
-			"add"
+			"set"
 			{
 				"spawnflags"	"2" // motion disabled
 			}
@@ -47,7 +47,7 @@
 		"modify"
 		{
 			"targetname" "GRD02_HiveHand"
-			"add"
+			"set"
 			{
 				"damagefilter" "__srccoop_damage_filter"
 			}

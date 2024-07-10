@@ -15,7 +15,7 @@
 		"modify"
 		{
 			"classname" "/^npc_/"
-			"add"
+			"set"
 			{
 				"damagefilter" "__srccoop_damage_filter"
 			}
@@ -56,7 +56,7 @@
 		{
 			"targetname" "bm_c1a0a_bm_c1a0b"
 			"classname" "trigger_changelevel"
-			"add"
+			"set"
 			{
 				"StartDisabled" "1"
 				"spawnflags" "0"

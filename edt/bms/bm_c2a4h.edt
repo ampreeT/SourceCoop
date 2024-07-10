@@ -39,7 +39,7 @@
 		"modify"
 		{
 			"hammerid"	"631184"
-			"add"
+			"set"
 			{
 				// prevent sci from activating doors
 				"spawnflags" "1"
@@ -71,7 +71,7 @@
 		"modify"
 		{
 			"targetname" "c2a4h_c2a5a_trigger"
-			"add"
+			"set"
 			{
 				"spawnflags" "0" // enable touch
 				"StartDisabled" "1" // initially disabled

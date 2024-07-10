@@ -18,7 +18,7 @@
 		{
 			"classname" "trigger_changelevel"
 			"map" "bm_c2a5c"
-			"add"
+			"set"
 			{
 				"classname" "func_brush"
 				"rendermode" "10" // dont render
@@ -70,7 +70,7 @@
 		"modify"
 		{
 			"targetname" "c2a5d_c2a5e_transition_trigger"
-			"add"
+			"set"
 			{
 				"spawnflags" "0" // enable touch
 				"StartDisabled" "1" // initially disabled

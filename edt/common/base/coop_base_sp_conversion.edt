@@ -49,7 +49,7 @@
 		{
 			"classname" "aiscripted_schedule"
 			"goalent" "!player"
-			"add"
+			"set"
 			{
 				"goalent" "!pvsplayer"
 			}
@@ -58,7 +58,7 @@
 		{
 			"classname"	"ai_goal_lead"
 			"WaitPointName" "!player"
-			"add"
+			"set"
 			{
 				"WaitPointName" ""
 			}
@@ -67,7 +67,7 @@
 		{
 			"classname" "env_mortar_launcher"
 			"target" "!player"
-			"add"
+			"set"
 			{
 				"target" "!pvsplayer" 
 			}
@@ -278,7 +278,7 @@
 				"modify"
 				{
 					"GameEndAlly" "1"
-					"add"
+					"set"
 					{
 						"damagefilter" "__srccoop_damage_filter"
 					}

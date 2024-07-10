@@ -19,7 +19,7 @@
 		{
 			"classname"	"trigger_changelevel"
 			"map"		"bm_c3a2c"
-			"add"
+			"set"
 			{
 				"classname" "func_brush"
 				"rendermode" "10" // dont render
@@ -86,7 +86,7 @@
 		{
 			// turn off green light
 			"targetname"	"LC_blastdoor_template_green_&i9"
-			"add"
+			"set"
 			{
 				"spawnflags"	"0"
 			}
@@ -95,7 +95,7 @@
 		{
 			// turn on red light
 			"targetname"	"LC_blastdoor_template_red_&i9"
-			"add"
+			"set"
 			{
 				"spawnflags"	"1"
 			}
@@ -104,7 +104,7 @@
 		"modify"
 		{
 			"targetname"	"LC_blastdoor_template_button_&i9"
-			"add"
+			"set"
 			{
 				"locked_sound"	"10"	// buzz when locked
 				"spawnflags"	"3073"	// start locked+dontmove

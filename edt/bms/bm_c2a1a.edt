@@ -19,7 +19,7 @@
 		{
 			"classname" "trigger_changelevel"
 			"map" "bm_c1a4e"
-			"add"
+			"set"
 			{
 				"classname" "func_brush"
 				"rendermode" "10"
@@ -29,7 +29,7 @@
 		"modify"
 		{
 			"targetname" "c2a1a_c2a1b_changelevel"
-			"add"
+			"set"
 			{
 				"spawnflags" "0"
 				"StartDisabled" "1"

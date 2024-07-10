@@ -38,7 +38,7 @@
 		"modify"
 		{
 			"targetname"	"trigger_cc_switch01"
-			"add"
+			"set"
 			{
 				"classname"		"func_brush"
 				"rendermode"	"10"

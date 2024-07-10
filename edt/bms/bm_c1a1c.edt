@@ -93,7 +93,7 @@
 		"modify"
 		{
 			"hammerid" "11069892"
-			"add"
+			"set"
 			{
 				"classname" "trigger_push"
 				"speed" "250"
@@ -130,7 +130,7 @@
 		{
 			"classname" "trigger_multiple"
 			"OnTrigger" "/^c1a1c_c1a1d_trigChangeLevel/"
-			"add"
+			"set"
 			{
 				"classname" "func_brush"
 				"rendermode" "10" // dont render

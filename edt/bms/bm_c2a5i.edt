@@ -122,7 +122,7 @@
 		"modify"
 		{
 			"targetname"	"c2a5i_changelevel"
-			"add"
+			"set"
 			{
 				"spawnflags" "0" // enable touch
 				"StartDisabled" "1" // initially disabled

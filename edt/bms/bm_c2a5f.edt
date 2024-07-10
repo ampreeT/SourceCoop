@@ -19,7 +19,7 @@
 		{
 			"classname" "trigger_changelevel"
 			"map" "bm_c2a5e"
-			"add"
+			"set"
 			{
 				"classname" "func_brush"
 				"rendermode" "10" // dont render
@@ -50,7 +50,7 @@
 		"modify"
 		{
 			"targetname"	"GRD02_HiveHand"
-			"add"
+			"set"
 			{
 				"origin" "-2816 -1792 -256"
 				"damagefilter" "__srccoop_damage_filter"

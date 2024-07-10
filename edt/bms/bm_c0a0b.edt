@@ -36,7 +36,7 @@
 		"modify"
 		{
 			"targetname" "tram_track_52"
-			"add"
+			"set"
 			{
 				"speed" "0"
 			}

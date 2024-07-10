@@ -44,7 +44,7 @@
 		"modify"
 		{
 			"targetname" "c1a3b-c1a3c-elevator"
-			"add"
+			"set"
 			{
 				"lip" "-580"
 			}
