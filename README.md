@@ -1,9 +1,8 @@
 <img src="https://steamuserimages-a.akamaihd.net/ugc/2455105898789623149/F6C61075AE3C71306CEFAA0A8F9E7870B710B481/" width="235" alt="SourceCoop" align="right">
 
-<img src="https://github.com/ampreeT/SourceCoop/actions/workflows/plugin.yml/badge.svg">
-<img src="https://img.shields.io/github/v/release/ampreeT/SourceCoop?style=flat&label=Release&labelColor=%232C3137&color=%23EB551B">
-<img src="https://img.shields.io/discord/973591793117564988.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2">
-
+[![](https://github.com/ampreeT/SourceCoop/actions/workflows/plugin.yml/badge.svg)](https://github.com/ampreeT/SourceCoop/actions/workflows/plugin.yml)
+[![](https://img.shields.io/github/v/release/ampreeT/SourceCoop?style=flat&label=Release&labelColor=%232C3137&color=%23EB551B)](https://github.com/ampreeT/SourceCoop/releases/latest)
+[![](https://img.shields.io/discord/973591793117564988.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.gg/Fh77rxQaEB)
 
 SourceCoop is a cooperative mod for Source Engine games that enables single-player campaigns to be played together.
 It currently supports <a href="https://store.steampowered.com/app/362890/Black_Mesa/"><img src="images/icon-bms-small.png" height="16px"> Black Mesa</a> and <a href="https://store.steampowered.com/app/320/HalfLife_2_Deathmatch/"><img src="images/icon-hl2dm-small.png" height="16px"> Half-Life 2: Deathmatch</a>.
