@@ -1355,8 +1355,10 @@ enum struct CGlobalLevelLump
 										pCandidateOutput.SaveToEntityKeyLump(pCandidateProp);
 										LogDebug("................ %s %s", pCandidateProp.m_szKey, pCandidateProp.m_szValue);
 										pCandidateEntity.SetArray(j, pCandidateProp);
-
+										
+										#if defined DEBUG
 										iTouchedOutputs++;
+										#endif
 									}
 								}
 								while (kv.GotoNextKey(true));
