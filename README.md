@@ -1,29 +1,12 @@
-<div align="left">
+<img src="https://steamuserimages-a.akamaihd.net/ugc/2455105898789623149/F6C61075AE3C71306CEFAA0A8F9E7870B710B481/" width="235" alt="SourceCoop" align="right">
 
-<img src="https://steamuserimages-a.akamaihd.net/ugc/2455105898789623149/F6C61075AE3C71306CEFAA0A8F9E7870B710B481/" width="235" alt="SourceCoop">
+<img src="https://github.com/ampreeT/SourceCoop/actions/workflows/plugin.yml/badge.svg">
+<img src="https://img.shields.io/github/v/release/ampreeT/SourceCoop?style=flat&label=Release&labelColor=%232C3137&color=%23EB551B">
+<img src="https://img.shields.io/discord/973591793117564988.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2">
 
----
-
-[![CI](https://github.com/ampreeT/SourceCoop/actions/workflows/plugin.yml/badge.svg)](https://github.com/ampreeT/SourceCoop/actions/workflows/plugin.yml)
-[![GitHub Release](https://img.shields.io/github/v/release/ampreeT/SourceCoop?style=flat&label=Release&labelColor=%232C3137&color=%23EB551B)](https://github.com/ampreeT/SourceCoop/releases/latest)
-[![Discord](https://img.shields.io/discord/973591793117564988.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.gg/Fh77rxQaEB)
-
-| Table of Contents |
-|:--:|
-| [🖥️ Setup Guide](#setup-guide) - [⚙️ Configuration](#configuration) - [🌎 Campaign Support](#campaign-support) - [Contributing](#contributing) - [📸 Credits](#credits) |
-| [Features & Configuration](https://github.com/ampreeT/SourceCoop/wiki/Features-&-Configuration) - [Server Running Tips](https://github.com/ampreeT/SourceCoop/wiki/Server-running-tips) - [Public Servers](https://github.com/ampreeT/SourceCoop/wiki/Public-Servers) |
-| [📝 Developing](https://github.com/ampreeT/SourceCoop/wiki/Developing) - [🗃️ EDT Map Script Format](https://github.com/ampreeT/SourceCoop/wiki/EDT---Map-script-format) - [📘 Authoring Maps](https://github.com/ampreeT/SourceCoop/wiki/Authoring-maps-for-SourceCoop) |
-
-</div>
 
 SourceCoop is a cooperative mod for Source Engine games that enables single-player campaigns to be played together.
-It currently supports <a href="https://store.steampowered.com/app/362890/Black_Mesa/">
-    <img src="https://developer.valvesoftware.com/w/images/thumb/3/31/Bms_icon.png/36px-Bms_icon.png" style="vertical-align: -4; height: 1.15em;">
-    Black Mesa
-</a> and <a href="https://store.steampowered.com/app/320/HalfLife_2_Deathmatch/">
-    <img src="https://developer.valvesoftware.com/w/images/thumb/6/60/Hl2_icon.png/36px-Hl2_icon.png" style="vertical-align: -4; height: 1.15em;">
-    Half-Life 2: Deathmatch
-</a>.
+It currently supports <a href="https://store.steampowered.com/app/362890/Black_Mesa/"><img src="images/icon-bms-small.png" height="16px"> Black Mesa</a> and <a href="https://store.steampowered.com/app/320/HalfLife_2_Deathmatch/"><img src="images/icon-hl2dm-small.png" height="16px"> Half-Life 2: Deathmatch</a>.
 
 - Supports campaigns.
 - Restores single-player functionality.
@@ -31,7 +14,13 @@ It currently supports <a href="https://store.steampowered.com/app/362890/Black_M
 - Easy to use optional addons.
 - Easy for mappers to convert new and existing maps from single-player into cooperative.
 
-## 🖥️ Setup Guide
+| Table of Contents |
+|:--:|
+| [🖥️ Setup Guide](#setup-guide) - [⚙️ Configuration](#configuration) - [🌎 Campaign Support](#campaign-support) - [Contributing](#contributing) - [📸 Credits](#credits) |
+| [Features & Configuration](https://github.com/ampreeT/SourceCoop/wiki/Features-&-Configuration) - [Server Running Tips](https://github.com/ampreeT/SourceCoop/wiki/Server-running-tips) - [Public Servers](https://github.com/ampreeT/SourceCoop/wiki/Public-Servers) |
+| [📝 Developing](https://github.com/ampreeT/SourceCoop/wiki/Developing) - [🗃️ EDT Map Script Format](https://github.com/ampreeT/SourceCoop/wiki/EDT---Map-script-format) - [📘 Authoring Maps](https://github.com/ampreeT/SourceCoop/wiki/Authoring-maps-for-SourceCoop) |
+
+## Setup Guide
 
 __If you are someone who is looking to play on a server__, then you are already set up and ready to play! Cooperative servers can be found in the server browser just like any other server.
 
@@ -43,45 +32,20 @@ __If you are a server operator who is looking to host your own cooperative serve
 
 ### 🔨 Manual Installation
 
-- Install a Source Engine Dedicated Server using <a href="https://developer.valvesoftware.com/wiki/SteamCMD">
-    <img src="https://static-00.iconduck.com/assets.00/steam-icon-256x256-r6dygp6h.png" style="vertical-align: -4; height: 1.15em;">
-    SteamCMD
-</a>.
-    - <a href="https://steamdb.info/app/346680/"><img src="https://developer.valvesoftware.com/w/images/thumb/3/31/Bms_icon.png/36px-Bms_icon.png" style="vertical-align: -4; height: 1.15em;">
-        Black Mesa Dedicated Server 
-    </a> (AppID ➤ __346680__)
-
-    ##### SteamCMD Terminal (Black Mesa)
-
+- Install a Source Engine Dedicated Server using <a href="https://developer.valvesoftware.com/wiki/SteamCMD"><img src="images/icon-steam-small.png" height="16px"> SteamCMD</a>.
+    - <a href="https://steamdb.info/app/346680/"><img src="images/icon-bms-small.png" height="16px"> Black Mesa Dedicated Server</a> (AppID ➤ __346680__)
+    - <a href="https://steamdb.info/app/232370/"><img src="images/icon-hl2dm-small.png" height="16px"> Half-Life 2: Deathmatch Dedicated Server</a> (AppID ➤ __232370__)
+    ##### SteamCMD Terminal
     ```powershell
     login "anonymous"
-    app_update 346680
+    app_update <APPID>
     quit
     ```
-
-    - <a href="https://steamdb.info/app/346680/"><img src="https://developer.valvesoftware.com/w/images/thumb/6/60/Hl2_icon.png/36px-Hl2_icon.png" style="vertical-align: -4; height: 1.15em;">
-        Half-Life 2: Deathmatch Dedicated Server 
-    </a> (AppID ➤ __232370__)
-
-    ##### SteamCMD Terminal (Half-Life 2: Deathmatch)
-    
-    ```powershell
-    login "anonymous"
-    app_update 232370
-    quit
-    ```
-
 - Install [Metamod:Source](https://www.sourcemm.net/downloads.php?branch=stable) (latest tested build ➤ __1155__) onto the server.
-- Install <a href="https://www.sourcemod.net/downloads.php?branch=stable">
-    <img src="https://dreae.gallerycdn.vsassets.io/extensions/dreae/sourcepawn-vscode/0.1.4/1515276846898/Microsoft.VisualStudio.Services.Icons.Default" style="vertical-align: -4; height: 1.15em;">
-    SourceMod
-</a> (latest tested build ➤ __6968__) onto the server.
+- Install [SourceMod](https://www.sourcemod.net/downloads.php?branch=stable) (latest tested build ➤ __6968__) onto the server.
 - Install [the latest SourceCoop release](https://github.com/ampreeT/SourceCoop/releases) onto the server.
 
-A visual step-by-step guide for Black Mesa is also available on <a href="https://steamcommunity.com/sharedfiles/filedetails/?id=2200247356">
-    <img src="https://static-00.iconduck.com/assets.00/steam-icon-256x256-r6dygp6h.png" style="vertical-align: -4; height: 1.15em;">
-    Steam
-</a>.
+A visual step-by-step guide for Black Mesa is also available on <a href="https://steamcommunity.com/sharedfiles/filedetails/?id=2200247356"><img src="https://static-00.iconduck.com/assets.00/steam-icon-256x256-r6dygp6h.png" height="16px"> Steam</a>.
 
 ### 📜 Script Installation 
 
@@ -92,26 +56,21 @@ The script installation will automatically go through the process of installing 
     - [🐧 Linux Bash]()
 
 - Run the following commands in a terminal to execute the script:
-
-> #### 📂 Directories
->
-> On script execution, the following directories will be created  within the terminal's current directory:
->
-> - Black Mesa Dedicated Server
-> - SteamCMD
-
-##### Windows PowerShell (Admin Access)
-
-```
-Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process
-./srccoop-bms-windows-install.ps1
-```
-
-##### Linux Bash (Sudo Access)
-
-```
-sudo ./srccoop-bms-linux-install.ps1
-```
+    > #### 📂 New Directories
+    >
+    > On script execution, the following directories will be created within the terminal's current directory:
+    >
+    > - Black Mesa Dedicated Server
+    > - SteamCMD
+    ##### Windows PowerShell (Admin Access)
+    ```
+    Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process
+    ./srccoop-bms-windows-install.ps1
+    ```
+    ##### Linux Bash (Sudo Access)
+    ```
+    sudo ./srccoop-bms-linux-install.ps1
+    ```
 
 ### 🛜 Port Forwarding
 
@@ -168,9 +127,9 @@ sudo ./srccoop-bms-linux-install.ps1
 
 ConVar: `sc_ft <FEATURE> <0 or 1>`
 
-> #### ⚠️ Potential Gameplay Impact
+> #### ⚠️ Gameplay Impact
 >
-> It is recommended to leave these features at the default values as these are configured per map within EDT configurations. Modifying feature values could negatively impact the gameplay experience.
+> It is recommended to leave these features at the default values as these are configured per map within EDT configurations. __Modifying feature values could negatively impact the gameplay experience__.
 
 | Feature                     | Description                                                                                                                    |
 |-----------------------------|--------------------------------------------------------------------------------------------------------------------------------|
@@ -191,11 +150,7 @@ ConVar: `sc_ft <FEATURE> <0 or 1>`
 
 ## 🌎 Campaign Support
 
-<h3>
-<img src="https://developer.valvesoftware.com/w/images/thumb/3/31/Bms_icon.png/36px-Bms_icon.png" style="vertical-align: -4; height: 1.15em;">
-Black Mesa -
-<a href="https://steamcommunity.com/sharedfiles/filedetails/?id=2375865650">Steam Workshop Collection</a>
-</h3>
+<h3><img src="images/icon-bms-small.png" height="20px"> Black Mesa - <a href="https://steamcommunity.com/sharedfiles/filedetails/?id=2375865650">Steam Workshop Collection</a></h3>
 
 - [Main Campaign](https://store.steampowered.com/app/362890/Black_Mesa/)
 - [Stojkeholm](https://steamcommunity.com/sharedfiles/filedetails/?id=2320533262)

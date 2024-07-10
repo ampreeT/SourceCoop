@@ -29,7 +29,7 @@ Expand-Archive -LiteralPath ".tmp.zip" -DestinationPath "./Black Mesa Dedicated 
 Remove-Item -Path ".tmp.zip" -Force
 
 # OPTIONAL: Remove textures to save ~9 GB.
-# Materials are needed on the server but textures are not needed.
+# On the server, materials are needed but textures are not.
 # If the server ever needs to be updated, these files will be redownloaded again.
 Remove-Item -Path "./Black Mesa Dedicated Server/bms/bms_textures*" -Force
 Remove-Item -Path "./Black Mesa Dedicated Server/hl2/hl2_textures*" -Force
