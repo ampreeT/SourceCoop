@@ -658,6 +658,10 @@ enum struct CGlobalLevelLump
 					{
 						if (kv.GotoFirstSubKey(false))
 						{
+							#if defined DEBUG
+							int iImportCount;
+							#endif
+
 							// Gather properties to lookup entities by
 							CEntityInfoLump pLookupEntity = this.ReadEntityInfo(kv);
 							kv.GoBack();
@@ -669,17 +673,25 @@ enum struct CGlobalLevelLump
 								if (pLookupEntity.Matches(pListEntity))
 								{
 									// Add as equipment using their classnames
-									CEntityKeyLump pClassKey;
-									if (pListEntity.GetProperty("classname", pClassKey))
+									CEntityKeyLump pClassProp;
+									if (pListEntity.GetProperty("classname", pClassProp))
 									{
-										CCoopSpawnSystem.AddSpawnItem(pClassKey.m_szValue, true);
+										CCoopSpawnSystem.AddSpawnItem(pClassProp.m_szValue, true);
 										// Delete imported entities from map
 										pListEntity.Close();
 										this.m_pEntityList.Erase(i);
+
+										#if defined DEBUG
+										iImportCount++;
+										#endif
 									}
 								}
 							}
 							pLookupEntity.Close();
+							
+							#if defined DEBUG
+							LogDebug("Equipment lookup imported %d entities", iImportCount);
+							#endif
 						}
 					}
 				}
@@ -734,10 +746,12 @@ enum struct CGlobalLevelLump
 							if (kv.GetNum(NULL_STRING))
 							{
 								CoopManager.EnableFeature(feature);
+								LogDebug("Setting feature: [\"%s\" = On]", szKey);
 							}
 							else
 							{
 								CoopManager.DisableFeature(feature);
+								LogDebug("Setting feature: [\"%s\" = Off]", szKey);
 							}
 						}
 					}
@@ -1246,21 +1260,23 @@ enum struct CGlobalLevelLump
 		bool bFoundOutput, bFoundTarget, bFoundInput, bFoundParameter, bFoundDelay, bFoundTTF;
 		if (IsAddSynonym(szAction))
 		{
+			CEntityOutputLump pOutputLump; CEntityKeyLump pOutputProp;
+			
+			this.ParseOutputKeys(kv, pOutputLump, pOutputProp.m_szKey, sizeof(pOutputProp.m_szKey),
+				bFoundOutput, bFoundTarget, bFoundInput, bFoundParameter, bFoundDelay, bFoundTTF);
+
+			if (!bFoundOutput) ThrowError("Cannot add output - missing entry for \"output\"");
+			if (!bFoundTarget) ThrowError("Cannot add output - missing entry for \"target\"");
+			if (!bFoundInput) ThrowError("Cannot add output - missing entry for \"input\"");
+			if (!bFoundTTF) pOutputLump.m_iTimesToFire = 1;
+			
+			pOutputLump.SaveToEntityKeyLump(pOutputProp);
+			
 			for (int i = 0; i < pTempEvaluatedList.Length; i++)
 			{
-				CEntityOutputLump pNewOutputLump; CEntityKeyLump pNewKey;
-				
-				this.ParseOutputKeys(kv, pNewOutputLump, pNewKey.m_szKey, sizeof(pNewKey.m_szKey),
-					bFoundOutput, bFoundTarget, bFoundInput, bFoundParameter, bFoundDelay, bFoundTTF);
-
-				if (!bFoundOutput) ThrowError("Cannot add output - missing entry for \"output\"");
-				if (!bFoundTarget) ThrowError("Cannot add output - missing entry for \"target\"");
-				if (!bFoundInput) ThrowError("Cannot add output - missing entry for \"input\"");
-				if (!bFoundTTF) pNewOutputLump.m_iTimesToFire = 1;
-				
-				pNewOutputLump.SaveToEntityKeyLump(pNewKey);
-				pTempEvaluatedList.Get(i).AddProperty(pNewKey);
+				pTempEvaluatedList.Get(i).AddProperty(pOutputProp);
 			}
+			LogDebug("Adding output %s %s", pOutputProp.m_szKey, pOutputProp.m_szValue);
 			return;
 		}
 		
@@ -1283,24 +1299,28 @@ enum struct CGlobalLevelLump
 			LogDebug("Found %d entities for output target matching", pTargetEvaluatedList.Length);
 			kv.GoBack();
 		}
+
+		#if defined DEBUG
+		int iTouchedOutputs;
+		#endif
 		
 		for (int i = 0; i < pTempEvaluatedList.Length; i++)
 		{
-			CEntityInfoLump pEditedEntity = pTempEvaluatedList.Get(i);
-			for (int j = 0; j < pEditedEntity.Length; j++)
+			CEntityInfoLump pCandidateEntity = pTempEvaluatedList.Get(i);
+			for (int j = 0; j < pCandidateEntity.Length; j++)
 			{
-				CEntityKeyLump pEditedKeyInfo;
-				pEditedEntity.GetArray(j, pEditedKeyInfo);
+				CEntityKeyLump pCandidateProp;
+				pCandidateEntity.GetArray(j, pCandidateProp);
 
-				if (bFoundOutput && !StrEqualsRegex(szOutputName, pEditedKeyInfo.m_szKey, false))
+				if (bFoundOutput && !StrEqualsRegex(szOutputName, pCandidateProp.m_szKey, false))
 				{
 					continue; // avoid parsing output from value unless necessary
 				}
 				
-				CEntityOutputLump pEditedOutput;
-				if (pEditedOutput.LoadFromEntityKeyLump(pEditedKeyInfo))
+				CEntityOutputLump pCandidateOutput;
+				if (pCandidateOutput.LoadFromEntityKeyLump(pCandidateProp))
 				{
-					if (pMatchOutputLump.Matches(pEditedOutput, bFoundTarget, bFoundInput, bFoundParameter, bFoundDelay, bFoundTTF))
+					if (pMatchOutputLump.Matches(pCandidateOutput, bFoundTarget, bFoundInput, bFoundParameter, bFoundDelay, bFoundTTF))
 					{
 						// skip any outputs that dont match the target entity
 						if (pTargetEvaluatedList)
@@ -1309,7 +1329,7 @@ enum struct CGlobalLevelLump
 							for (int k = 0; k < pTargetEvaluatedList.Length; k++)
 							{
 								CEntityInfoLump pTargetEntityInfo = pTargetEvaluatedList.Get(k);
-								if (pTargetEntityInfo.MatchesAsIOTarget(pEditedOutput.m_szTargetEntity, pEditedEntity))
+								if (pTargetEntityInfo.MatchesAsIOTarget(pCandidateOutput.m_szTargetEntity, pCandidateEntity))
 								{
 									bFoundOne = true;
 									break;
@@ -1330,11 +1350,13 @@ enum struct CGlobalLevelLump
 									if (kv.GetSectionName(szKey, sizeof(szKey))
 										&& (StrEqual(szKey, "replace", false) || StrEqual(szKey, "set", false)))
 									{
-										LogDebug("Replacing output %s %s", pEditedKeyInfo.m_szKey, pEditedKeyInfo.m_szValue);
-										this.ParseOutputKeys(kv, pEditedOutput, pEditedKeyInfo.m_szKey, sizeof(pEditedKeyInfo.m_szKey));
-										pEditedOutput.SaveToEntityKeyLump(pEditedKeyInfo);
-										LogDebug(".....With output %s %s", pEditedKeyInfo.m_szKey, pEditedKeyInfo.m_szValue);
-										pEditedEntity.SetArray(j, pEditedKeyInfo);
+										LogDebug("Replacing output %s %s", pCandidateProp.m_szKey, pCandidateProp.m_szValue);
+										this.ParseOutputKeys(kv, pCandidateOutput, pCandidateProp.m_szKey, sizeof(pCandidateProp.m_szKey));
+										pCandidateOutput.SaveToEntityKeyLump(pCandidateProp);
+										LogDebug("................ %s %s", pCandidateProp.m_szKey, pCandidateProp.m_szValue);
+										pCandidateEntity.SetArray(j, pCandidateProp);
+
+										iTouchedOutputs++;
 									}
 								}
 								while (kv.GotoNextKey(true));
@@ -1343,12 +1365,21 @@ enum struct CGlobalLevelLump
 						}
 						else // remove
 						{
-							pEditedEntity.Erase(j--);
+							pCandidateEntity.Erase(j--);
+
+							#if defined DEBUG
+							iTouchedOutputs++;
+							#endif
 						}
 					}
 				}
 			}
 		}
+		
+		#if defined DEBUG
+		LogDebug("%s %d outputs", remove? "Removed" : "Updated", iTouchedOutputs);
+		#endif
+
 		delete pTargetEvaluatedList;
 	}
 	
