@@ -116,7 +116,7 @@ bool ParseConditions(KeyValues kv, bool anyPass = false)
 	return false;
 }
 
-bool TestCondition(char szCondition[MAX_KEY], char szValue[MAX_VALUE])
+bool TestCondition(const char szCondition[MAX_KEY], const char szValue[MAX_VALUE])
 {
 	if (StrEqual(szCondition, "globalstate", false))
 	{

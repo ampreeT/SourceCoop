@@ -206,25 +206,25 @@ methodmap CEntityInfoLump < ArrayList
 	 */
 	public bool MatchesAsIOTarget(const char[] szTarget, const CEntityInfoLump pCallingEntity)
 	{
-		if (strcmp(szTarget, "!self") == 0)
+		if (strcmp(szTarget, "!self", false) == 0)
 		{
 			return this.Matches(pCallingEntity);
 		}
+
+		CEntityKeyLump pProperty;
 		for (int i = 0; i < this.Length; i++)
 		{
-			CEntityKeyLump pThisKeyInfo;
-			if (this.GetArray(i, pThisKeyInfo))
+			this.GetArray(i, pProperty);
+			if (strcmp(pProperty.m_szKey, "classname", false) == 0 && strcmp(pProperty.m_szValue, szTarget, false) == 0)
 			{
-				if (strcmp(pThisKeyInfo.m_szKey, "classname") == 0 && strcmp(pThisKeyInfo.m_szValue, szTarget) == 0)
-				{
-					return true;
-				}
-				if (strcmp(pThisKeyInfo.m_szKey, "targetname") == 0 && strcmp(pThisKeyInfo.m_szValue, szTarget) == 0)
-				{
-					return true;
-				}
+				return true;
+			}
+			if (strcmp(pProperty.m_szKey, "targetname", false) == 0 && strcmp(pProperty.m_szValue, szTarget, false) == 0)
+			{
+				return true;
 			}
 		}
+
 		return false;
 	}
 	
@@ -234,32 +234,32 @@ methodmap CEntityInfoLump < ArrayList
 	 */
 	public bool MatchesActualEntity(CBaseEntity pEntity)
 	{
-		CEntityKeyLump pThisKeyInfo;
+		CEntityKeyLump pProperty;
 
 		for (int i = 0; i < this.Length; i++)
 		{
-			this.GetArray(i, pThisKeyInfo);
+			this.GetArray(i, pProperty);
 
 			// check these 3 properties for now, return false if any dont match
-			if (StrEqual(pThisKeyInfo.m_szKey, "hammerid"))
+			if (StrEqual(pProperty.m_szKey, "hammerid", false))
 			{
-				if (StringToInt(pThisKeyInfo.m_szValue) != pEntity.GetHammerID())
+				if (StringToInt(pProperty.m_szValue) != pEntity.GetHammerID())
 				{
 					return false;
 				}
 			}
-			if (StrEqual(pThisKeyInfo.m_szKey, "classname"))
+			else if (StrEqual(pProperty.m_szKey, "classname", false))
 			{
-				if (!pEntity.IsClassname(pThisKeyInfo.m_szValue))
+				if (!pEntity.IsClassname(pProperty.m_szValue))
 				{
 					return false;
 				}
 			}
-			if (StrEqual(pThisKeyInfo.m_szKey, "targetname"))
+			else if (StrEqual(pProperty.m_szKey, "targetname", false))
 			{
-				char szBuffer[MAX_CLASSNAME];
-				pEntity.GetTargetname(szBuffer, sizeof(szBuffer));
-				if (!StrEqual(pThisKeyInfo.m_szValue, szBuffer))
+				char szTargetname[MAX_VALUE];
+				pEntity.GetTargetname(szTargetname, sizeof(szTargetname));
+				if (!StrEqual(pProperty.m_szValue, szTargetname, false))
 				{
 					return false;
 				}
@@ -1186,6 +1186,7 @@ enum struct CGlobalLevelLump
 	void ParseFlags(KeyValues kv, CEntityListLump pTempEvaluatedList)
 	{
 		char szFlagName[MAX_KEY], szAction[MAX_KEY];
+		
 		if (kv.GetDataType(NULL_STRING) == KvData_None &&
 			kv.GetSectionName(szFlagName, sizeof(szFlagName)))
 		{
@@ -1355,7 +1356,7 @@ enum struct CGlobalLevelLump
 										pCandidateOutput.SaveToEntityKeyLump(pCandidateProp);
 										LogDebug("................ %s %s", pCandidateProp.m_szKey, pCandidateProp.m_szValue);
 										pCandidateEntity.SetArray(j, pCandidateProp);
-										
+
 										#if defined DEBUG
 										iTouchedOutputs++;
 										#endif
