@@ -34,6 +34,10 @@ methodmap CBlackMesaPlayer < CBasePlayer
 	{
 		SetEntProp(this.GetEntIndex(), Prop_Send, "m_bHasJumpModule", bShouldHaveJumpModule);
 	}
+	public void PerformForcedWeaponDeploy(const char[] szWeaponClassname)
+	{
+		this.AcceptInputStr("PerformForcedWeaponDeploy", szWeaponClassname);
+	}
 }
 
 methodmap CEnvBeamTeam < CBeam
