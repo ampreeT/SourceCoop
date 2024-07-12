@@ -173,7 +173,8 @@ public Action Command_MakeConfigs(int iArgs)
 		g_pConvarDefaultMapConfigDest.GetString(szDest, sizeof(szDest));
 		GetCmdArg(0, szBuffer, sizeof(szBuffer));
 
-		MsgSrv("\nYou are about to create %d new map configs.\n Template: %s\n Destination dir: %s\nExecute >>> %s %s 1 <<< to continue...\n",
+		PrintToServer("\nYou are about to create %d new map configs.\n Template: %s\n Destination dir: %s"
+				   ..."\nExecute the following command to continue:\n>>> %s %s 1 <<<\n",
 				count, szTemplate, szDest,
 				szBuffer, szMapFilter);
 	}
