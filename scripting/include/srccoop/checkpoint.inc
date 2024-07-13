@@ -371,27 +371,26 @@ enum struct CCoopEquipment
 		for (int i = 0; i < size; i++)
 		{
 			CCoopWeaponEntry pWeaponEntry;
-			if (this.m_pWeaponList.GetArray(i, pWeaponEntry, sizeof(pWeaponEntry)))
+			this.m_pWeaponList.GetArray(i, pWeaponEntry);
+			
+			if (strncmp(pWeaponEntry.m_szClassname, "weapon_", 7, false) == 0)
 			{
-				if (StrContains(pWeaponEntry.m_szClassname, "weapon_", false) == 0)
+				CBaseCombatWeapon pWeapon = pPlayer.GiveWeapon(pWeaponEntry.m_szClassname);
+				if (pWeapon.IsValid())
 				{
-					CBaseCombatWeapon pWeapon = pPlayer.GiveWeapon(pWeaponEntry.m_szClassname);
-					if (pWeapon.IsValid())
+					if (pWeapon.GetPrimaryAmmoType() != -1)
 					{
-						if (pWeapon.GetPrimaryAmmoType() != -1)
-						{
-							pWeapon.SetPrimaryAmmo(pWeaponEntry.m_iPrimaryAmmo);
-						}
-						if (pWeapon.GetSecondaryAmmoType() != -1)
-						{
-							pWeapon.SetSecondaryAmmo(pWeaponEntry.m_iSecondaryAmmo);
-						}
+						pWeapon.SetPrimaryAmmo(pWeaponEntry.m_iPrimaryAmmo);
+					}
+					if (pWeapon.GetSecondaryAmmoType() != -1)
+					{
+						pWeapon.SetSecondaryAmmo(pWeaponEntry.m_iSecondaryAmmo);
 					}
 				}
-				else
-				{
-					pPlayer.GiveItem(pWeaponEntry.m_szClassname);
-				}
+			}
+			else
+			{
+				pPlayer.GiveItem(pWeaponEntry.m_szClassname);
 			}
 		}
 
