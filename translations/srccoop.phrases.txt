@@ -57,7 +57,7 @@
 	{
 		"#format"		"{1:s}" // feature
 		"en"			"Unknown feature: {1}"
-		"en"			"Неизвестная опция: {1}"
+		"ru"			"Неизвестная опция: {1}"
 	}
 
 	"menu unavailable"
