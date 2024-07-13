@@ -63,25 +63,44 @@ enum struct CCoopPortal
 	}
 }
 
+static int g_iCheckpointSerial;
+
 enum struct CCoopSpawnEntry
 {
-	bool m_bHasPosition;
-	float m_vecPosition[3];
-	bool m_bHasAngles;
-	float m_vecAngles[3];
-	float m_flDelay;
-	CBaseEntity m_pTriggerEnt;
-	CBaseEntity m_pTouchEnt;
-	CBaseEntity m_pFollowEnt;
-	char m_szOutputName[MAX_FORMAT];
-	ArrayList m_pPortalList;
-	bool m_bBringAllPlayers;
-	float m_fBringAllGraceRadius;
-	bool m_bRespawnPlayers;
-	bool m_bSpawnPlayers;
+	int m_iSerial;						// Serial number for identification purposes. While position in the checkpoint list may change, this number always stays the same.
+
+	// -------- Teleport target ----------
+	bool m_bHasPosition;				// m_vecPosition null indicator. Not setting a position allows CPs to adopt player's in pre-activation.
+	float m_vecPosition[3];				// Absolute origin or a relative one to follow entity (if set).
+	bool m_bHasAngles;					// m_vecAngles null indicator. Not setting angles allows CPs to adopt player's in pre-activation.
+	float m_vecAngles[3];				// Absolute angles or relative ones to follow entity (if set).
+	CBaseEntity m_pFollowEnt;			// Follow entity. If set, players will teleport relative to its center.
+	
+	// ----------- Activation ------------
+	bool m_bActivating;					// In the process of activation (before ActivatePost, after ActivatePre). At this point, either position or follow entity is set and delay timer has started.
+	CBasePlayer m_pActivator;			// The player who activated us, if any.
+	float m_flDelay;					// Delay from trigger event until full activation.
+	bool m_bBringAllPlayers;			// Teleports all players upon activation.
+	float m_flBringAllGraceRadius;		// Grace radius from destination, where players are not teleported by bringall.
+	ArrayList m_pPortalList;			// Spawnable portal teleporters.
+	bool m_bRespawnPlayers;				// Whether activation respawns players in survival mode.
+	
+	// ----------- Other options ----------
+	bool m_bSpawnPlayers;				// Whether players spawn at this checkpoint (default). False allows creation of portal-only checkpoints.
+	
+	// ------------- Triggers -------------
+	// Entity output
+	CBaseEntity m_pTriggerEnt;			// Trigger entity.
+	char m_szOutputName[MAX_FORMAT];	// Output name for trigger entity.
+	// Entity touched
+	CBaseEntity m_pTouchEnt;			// Touch trigger entity.
+	// Distance
+	float m_flRadius;					// Min unobstructed distance to player, squared for optimization.
 	
 	void Initialize()
 	{
+		this.m_iSerial = g_iCheckpointSerial++;
+		this.m_pActivator = NULL_CBASEENTITY;
 		this.m_pTriggerEnt = NULL_CBASEENTITY;
 		this.m_pTouchEnt = NULL_CBASEENTITY;
 		this.m_pFollowEnt = NULL_CBASEENTITY;
@@ -108,14 +127,16 @@ enum struct CCoopSpawnEntry
 			vecPosition = this.m_vecPosition;
 			vecAngles = this.m_vecAngles;
 		}
-		if (bIsBringAllTP && this.m_fBringAllGraceRadius > 0)
+
+		if (bIsBringAllTP && this.m_flBringAllGraceRadius > 0)
 		{
 			float vecPlayerPos[3]; pPlayer.GetAbsOrigin(vecPlayerPos);
-			if (GetVectorDistance(vecPosition, vecPlayerPos) <= this.m_fBringAllGraceRadius)
+			if (GetVectorDistance(vecPosition, vecPlayerPos) <= this.m_flBringAllGraceRadius)
 			{
 				return false;
 			}
 		}
+		
 		CanTeleportResult res;
 		if ((res = CanTeleportPlayer(pPlayer, vecPosition)) || bForceTeleport)
 		{
@@ -130,40 +151,81 @@ enum struct CCoopSpawnEntry
 			pPlayer.Teleport(vecPosition, vecAngles, vec3_origin);
 			return true;
 		}
+
 		return false;
 	}
 
-	void CalcFollowEntDestination(float vecPosition[3], float vecAngles[3])
+	void CalcFollowEntDestination(float vecPosition[3], float vecAngles[3] = NULL_VECTOR)
 	{
 		this.m_pFollowEnt.WorldSpaceCenter(vecPosition);
-		this.m_pFollowEnt.GetAbsAngles(vecAngles);
 		AddVectors(vecPosition, this.m_vecPosition, vecPosition);
-		AddVectors(vecAngles, this.m_vecAngles, vecAngles);
-	}
-	
-	bool ActivatePre(CBasePlayer pActivator)
-	{
-		bool bChanged;
-		if (!this.m_pFollowEnt.IsValid())
+		if (!IsNullVector(vecAngles))
 		{
-			if (!this.m_bHasPosition)
+			this.m_pFollowEnt.GetAbsAngles(vecAngles);
+			AddVectors(vecAngles, this.m_vecAngles, vecAngles);
+		}
+	}
+
+	bool CheckRadiusTrigger(CBasePlayer pPlayer)
+	{
+		float vecDest[3], vecPlayer[3];
+
+		pPlayer.GetAbsOrigin(vecPlayer);
+		if (this.m_pFollowEnt.IsValid())
+		{
+			this.CalcFollowEntDestination(vecDest);
+		}
+		else
+		{
+			vecDest = this.m_vecPosition;
+		}
+		
+		if (GetVectorDistance(vecDest, vecPlayer, true) < this.m_flRadius)
+		{
+			if (pPlayer.FVisiblePosition(vecDest, MASK_SOLID_BRUSHONLY))
 			{
-				pActivator.GetAbsOrigin(this.m_vecPosition);
-				this.m_bHasPosition = true;
-				bChanged = true;
-			}
-			if (!this.m_bHasAngles)
-			{
-				pActivator.GetAbsAngles(this.m_vecAngles);
-				this.m_bHasAngles = true;
-				bChanged = true;
+				return true;
 			}
 		}
-		return bChanged;
+		return false;
+	}
+	
+	bool ActivatePre(CBasePlayer pActivator, bool bStartTimer = true)
+	{
+		if (this.m_bActivating)
+			return false;
+		
+		this.m_bActivating = true;
+		
+		if (pActivator.IsValid())
+		{
+			this.m_pActivator = pActivator;
+			if (!this.m_pFollowEnt.IsValid())
+			{
+				if (!this.m_bHasPosition)
+				{
+					pActivator.GetAbsOrigin(this.m_vecPosition);
+					this.m_bHasPosition = true;
+				}
+				if (!this.m_bHasAngles)
+				{
+					pActivator.GetAbsAngles(this.m_vecAngles);
+					this.m_bHasAngles = true;
+				}
+			}
+		}
+		
+		if (bStartTimer)
+		{
+			CreateTimer(this.m_flDelay, Timer_ActivateCheckpoint, this.m_iSerial, TIMER_FLAG_NO_MAPCHANGE);
+		}
+		return true;
 	}
 	
 	void ActivatePost(bool bIntermediate)
 	{
+		this.m_bActivating = false;
+
 		// spawn portals
 		for (int i = 0; i < this.m_pPortalList.Length; i++)
 		{
@@ -211,6 +273,7 @@ enum struct CCoopSpawnEntry
 				}
 			}
 		}
+		
 		SurvivalManager.OnCheckpointActivation(this);
 	}
 }
@@ -402,12 +465,12 @@ enum struct CCoopEquipment
 
 enum struct CCoopSpawnSystemData
 {
-	ArrayList m_pCheckpointList;
-	int m_iCurrentCheckpoint;
-	int m_iSpawnAtCheckpoint;
-	CCoopEquipment m_pDefaultEquipment;
-	bool m_bStrictOrder;
-	bool m_bRespawnOnLogicAutosave;
+	ArrayList m_pCheckpointList;			// holds all of maps's spawn points / checkpoints
+	int m_iCurrentCheckpoint;				// most recently activated checkpoint index, or -1 for none
+	int m_iSpawnAtCheckpoint;				// most recently activated checkpoint index that allows spawning, or -1 for none
+	CCoopEquipment m_pDefaultEquipment;		// holds map's equipment configuration
+	bool m_bOrdered;						// whether checkpoints are specified in order of progression
+	bool m_bRespawnOnLogicAutosave;			// use logic_autosave for survival respawns
 }
 
 CCoopSpawnSystemData g_pSpawnSystemData;
@@ -437,6 +500,11 @@ methodmap CCoopSpawnSystem
 		}
 		data.m_pCheckpointList.Clear();
 	}
+		
+	public static void OnClientPutInServer(int client)
+	{
+		SDKHook(client, SDKHook_VPhysicsUpdatePost, Hook_CheckpointRadius);
+	}
 	
 	public static bool GetCheckpointByIndex(int iIndex, CCoopSpawnEntry pCheckpoint)
 	{
@@ -448,11 +516,11 @@ methodmap CCoopSpawnSystem
 		return false;
 	}
 
-	public static bool GetCheckpointFieldByIndex(int iIndex, int block, any &val)
+	public static bool GetCheckpointFieldByIndex(int iIndex, int iBlock, any &val)
 	{
 		if (0 <= iIndex < data.m_pCheckpointList.Length)
 		{
-			val = data.m_pCheckpointList.Get(iIndex, block);
+			val = data.m_pCheckpointList.Get(iIndex, iBlock);
 			return true;
 		}
 		return false;
@@ -492,7 +560,7 @@ methodmap CCoopSpawnSystem
 		for (int i = iStartIndex; i < data.m_pCheckpointList.Length; i++)
 		{
 			data.m_pCheckpointList.GetArray(i, pEntry);
-			if (pCaller == pEntry.m_pTriggerEnt && StrEqual(szOutput, pEntry.m_szOutputName))
+			if (pCaller == pEntry.m_pTriggerEnt && StrEqual(szOutput, pEntry.m_szOutputName, false))
 			{
 				pCheckpoint = pEntry;
 				return i;
@@ -511,11 +579,16 @@ methodmap CCoopSpawnSystem
 		return CCoopSpawnSystem.FindCheckpointGeneric(pFollowEnt, CCoopSpawnEntry::m_pFollowEnt, iStartIndex);
 	}
 
-	public static int FindCheckpointGeneric(any val, int block, int iStartIndex = 0)
+	public static int FindCheckpointBySerial(int iSerial, int iStartIndex = 0)
+	{
+		return CCoopSpawnSystem.FindCheckpointGeneric(iSerial, CCoopSpawnEntry::m_iSerial, iStartIndex);
+	}
+
+	public static int FindCheckpointGeneric(any val, int iBlock, int iStartIndex = 0)
 	{
 		for (int i = iStartIndex; i < data.m_pCheckpointList.Length; i++)
 		{
-			if (data.m_pCheckpointList.Get(i, block) == val)
+			if (data.m_pCheckpointList.Get(i, iBlock) == val)
 			{
 				return i;
 			}
@@ -523,7 +596,7 @@ methodmap CCoopSpawnSystem
 		return -1;
 	}
 	
-	public static void AddCheckpoint(const CCoopSpawnEntry pCheckpoint)
+	public static int AddCheckpoint(const CCoopSpawnEntry pCheckpoint)
 	{
 		int iIndex = data.m_pCheckpointList.PushArray(pCheckpoint);
 		bool bHasTrigger;
@@ -538,22 +611,27 @@ methodmap CCoopSpawnSystem
 			SDKHook(pCheckpoint.m_pTouchEnt.GetEntIndex(), SDKHook_StartTouchPost, Hook_TouchCheckpoint);
 			bHasTrigger = true;
 		}
+		if (pCheckpoint.m_flRadius > 0.0)
+		{
+			bHasTrigger = true;
+		}
 		
 		if (!bHasTrigger)
 		{
 			CCoopSpawnSystem.ActivateCheckpoint(iIndex);
 		}
+		return iIndex;
 	}
 	
-	public static bool ActivateCheckpoint(int iIndex, CBasePlayer pActivator = NULL_CBASEENTITY)
+	public static bool ActivateCheckpoint(int iIndex)
 	{
 		if (data.m_iCurrentCheckpoint < iIndex < data.m_pCheckpointList.Length)
 		{
 			CCoopSpawnEntry pCheckpoint;
 			
-			if (data.m_bStrictOrder)
+			if (data.m_bOrdered)
 			{
-				for (int i = data.m_iCurrentCheckpoint+1; ; i++)
+				for (int i = data.m_iCurrentCheckpoint + 1; ; i++)
 				{
 					data.m_pCheckpointList.GetArray(i, pCheckpoint);
 					if (pCheckpoint.m_bSpawnPlayers)
@@ -561,19 +639,17 @@ methodmap CCoopSpawnSystem
 						data.m_iSpawnAtCheckpoint = i;
 					}
 					
+					pCheckpoint.ActivatePost(i != iIndex);
+					data.m_pCheckpointList.SetArray(i, pCheckpoint);
+
 					if (i == iIndex)
 					{
-						pCheckpoint.ActivatePost(false);
 						data.m_iCurrentCheckpoint = i;
 						return true;
 					}
-					else
-					{
-						pCheckpoint.ActivatePost(true);
-					}
 				}
 			}
-			else
+			else // un-ordered
 			{
 				data.m_iCurrentCheckpoint++;
 				data.m_pCheckpointList.SwapAt(iIndex, data.m_iCurrentCheckpoint);
@@ -584,6 +660,7 @@ methodmap CCoopSpawnSystem
 				}
 
 				pCheckpoint.ActivatePost(false);
+				data.m_pCheckpointList.SetArray(data.m_iCurrentCheckpoint, pCheckpoint);
 				return true;
 			}
 		}
@@ -616,7 +693,7 @@ methodmap CCoopSpawnSystem
 		}
 	}
 	
-	public static void TeleportPlayer(CBasePlayer pPlayer)
+	public static void TeleportPlayerOnSpawn(CBasePlayer pPlayer)
 	{
 		CCoopSpawnEntry pCheckpoint;
 		if (CCoopSpawnSystem.GetCurrentSpawnCheckpoint(pCheckpoint))
@@ -663,12 +740,12 @@ methodmap CCoopSpawnSystem
 		}
 		if (view_as<bool>(kv.GetNum("use_map_autosave")))
 		{
-			data.m_bStrictOrder = false;
+			data.m_bOrdered = false;
 			CCoopSpawnSystem.AddCheckpointsFromMap();
 		}
 		else
 		{
-			data.m_bStrictOrder = view_as<bool>(kv.GetNum("strict_order", 1));
+			data.m_bOrdered = view_as<bool>(kv.GetNum("strict_order", 1));
 		}
 		data.m_bRespawnOnLogicAutosave = view_as<bool>(kv.GetNum("respawn_on_logic_autosave", 1));
 		
@@ -702,26 +779,33 @@ methodmap CCoopSpawnSystem
 								else if (strcmp(szKey, "delay", false) == 0)
 								{
 									if (!StringToFloatEx(szValue, pEntry.m_flDelay))
-										ThrowError("Delay parameter is not a float type");
+										ThrowError("Delay parameter should be a float");
+								}
+								else if (strcmp(szKey, "radius", false) == 0)
+								{
+									if (!StringToFloatEx(szValue, pEntry.m_flRadius))
+										ThrowError("Radius parameter should be a float");
+									if (pEntry.m_flRadius > 0.0)
+										pEntry.m_flRadius *= pEntry.m_flRadius;
 								}
 								else if (strcmp(szKey, "origin", false) == 0 && ExplodeString(szValue, " ", szVector, 3, MAX_FORMAT, false) == 3)
 								{
 									if (!StringToFloatEx(szVector[0], pEntry.m_vecPosition[0]))
-										ThrowError("Origin x parameter is not a float");
+										ThrowError("Origin x parameter should be a float");
 									if (!StringToFloatEx(szVector[1], pEntry.m_vecPosition[1]))
-										ThrowError("Origin y parameter is not a float");
+										ThrowError("Origin y parameter should be a float");
 									if (!StringToFloatEx(szVector[2], pEntry.m_vecPosition[2]))
-										ThrowError("Origin z parameter is not a float");
+										ThrowError("Origin z parameter should be a float");
 									pEntry.m_bHasPosition = true;
 								}
 								else if (strcmp(szKey, "angles", false) == 0 && ExplodeString(szValue, " ", szVector, 3, MAX_FORMAT, false) == 3)
 								{
 									if (!StringToFloatEx(szVector[0], pEntry.m_vecAngles[0]))
-										ThrowError("Angles x parameter is not a float");
+										ThrowError("Angles x parameter should be a float");
 									if (!StringToFloatEx(szVector[1], pEntry.m_vecAngles[1]))
-										ThrowError("Angles y parameter is not a float");
+										ThrowError("Angles y parameter should be a float");
 									if (!StringToFloatEx(szVector[2], pEntry.m_vecAngles[2]))
-										ThrowError("Angles z parameter is not a float");
+										ThrowError("Angles z parameter should be a float");
 									pEntry.m_bHasAngles = true;
 								}
 								else if (strcmp(szKey, "followid", false) == 0)
@@ -745,11 +829,11 @@ methodmap CCoopSpawnSystem
 									CCoopPortal pPortal;
 									pPortal.Initialize();
 									if (!StringToFloatEx(szVector[0], pPortal.m_vecPosition[0]))
-										ThrowError("Portal x parameter is not a float");
+										ThrowError("Portal x parameter should be a float");
 									if (!StringToFloatEx(szVector[1], pPortal.m_vecPosition[1]))
-										ThrowError("Portal y parameter is not a float");
+										ThrowError("Portal y parameter should be a float");
 									if (!StringToFloatEx(szVector[2], pPortal.m_vecPosition[2]))
-										ThrowError("Portal z parameter is not a float");
+										ThrowError("Portal z parameter should be a float");
 									pEntry.m_pPortalList.PushArray(pPortal);
 								}
 								else if (strcmp(szKey, "bringall", false) == 0)
@@ -758,7 +842,7 @@ methodmap CCoopSpawnSystem
 								}
 								else if (strcmp(szKey, "bringall_radius", false) == 0)
 								{
-									pEntry.m_fBringAllGraceRadius = StringToFloat(szValue);
+									pEntry.m_flBringAllGraceRadius = StringToFloat(szValue);
 								}
 								else if (strcmp(szKey, "spawn", false) == 0)
 								{
@@ -823,6 +907,7 @@ methodmap CCoopSpawnSystem
 		}
 	}
 	
+	// ToDo: all games support
 	public static void ParseEquipment(KeyValues kv)
 	{
 		if (kv.GotoFirstSubKey(false))
@@ -975,44 +1060,35 @@ public void Hook_OutputCheckpoint(const char[] szName, int iCaller, int iActivat
 {
 	CBaseEntity pCaller = CBaseEntity(iCaller);
 	CBaseEntity pActivator = CBaseEntity(iActivator);
-	CCoopSpawnEntry pCheckpoint;
 	int iIndex = data.m_iCurrentCheckpoint + 1;
 	
+	CCoopSpawnEntry pCheckpoint;
 	while ((iIndex = CCoopSpawnSystem.FindCheckpointByOutput(pCaller, szName, pCheckpoint, iIndex)) != -1)
 	{
-		if (pActivator.IsClassPlayer() && pCheckpoint.ActivatePre(view_as<CBasePlayer>(pActivator)))
+		if (pCheckpoint.ActivatePre(view_as<CBasePlayer>(pActivator)))
 		{
 			data.m_pCheckpointList.SetArray(iIndex, pCheckpoint);
 		}
-		
-		DataPack dp; CreateDataTimer(pCheckpoint.m_flDelay, Timer_Checkpoint, dp, TIMER_FLAG_NO_MAPCHANGE);
-		dp.WriteCell(iIndex); dp.WriteCell(pActivator);
-		
 		iIndex++;
 	}
 }
 
 public void Hook_TouchCheckpoint(int iEntity, int iOther)
 {
-	CBasePlayer pActivator = CBasePlayer(iOther);
-	if (pActivator.IsClassPlayer())
+	CBasePlayer pOther = CBasePlayer(iOther);
+	if (pOther.IsClassPlayer())
 	{
 		CBaseEntity pTouched = CBaseEntity(iEntity);
-		CCoopSpawnEntry pCheckpoint;
 		int iIndex = data.m_iCurrentCheckpoint + 1;
 		
+		CCoopSpawnEntry pCheckpoint;
 		while ((iIndex = CCoopSpawnSystem.FindCheckpointByTouchEnt(pTouched, iIndex)) != -1)
 		{
 			data.m_pCheckpointList.GetArray(iIndex, pCheckpoint);
-			
-			if (pCheckpoint.ActivatePre(pActivator))
+			if (pCheckpoint.ActivatePre(pOther))
 			{
 				data.m_pCheckpointList.SetArray(iIndex, pCheckpoint);
 			}
-			
-			DataPack dp; CreateDataTimer(pCheckpoint.m_flDelay, Timer_Checkpoint, dp, TIMER_FLAG_NO_MAPCHANGE);
-			dp.WriteCell(iIndex); dp.WriteCell(pActivator);
-			
 			iIndex++;
 		}
 
@@ -1020,32 +1096,58 @@ public void Hook_TouchCheckpoint(int iEntity, int iOther)
 	}
 }
 
-public Action Timer_Checkpoint(Handle timer, DataPack dp)
+public void Hook_CheckpointRadius(int iEntity)
 {
-	dp.Reset();
-	int iCheckpointIndex = dp.ReadCell();
-	CBasePlayer pActivator = dp.ReadCell();
-	CCoopSpawnSystem.ActivateCheckpoint(iCheckpointIndex, pActivator);
+	int size = data.m_pCheckpointList.Length;
+	for (int i = data.m_iCurrentCheckpoint + 1; i < size; i++)
+	{
+		float flRadius = data.m_pCheckpointList.Get(i, CCoopSpawnEntry::m_flRadius);
+		if (flRadius > 0.0)
+		{
+			CCoopSpawnEntry pCheckpoint;
+			data.m_pCheckpointList.GetArray(i, pCheckpoint);
+			if (pCheckpoint.m_bActivating)
+			{
+				continue;
+			}
+			
+			CBasePlayer pPlayer = CBasePlayer(iEntity);
+			if (pCheckpoint.CheckRadiusTrigger(pPlayer))
+			{
+				if (pCheckpoint.ActivatePre(pPlayer))
+				{
+					data.m_pCheckpointList.SetArray(i, pCheckpoint);
+				}
+			}
+		}
+	}
+}
+
+public Action Timer_ActivateCheckpoint(Handle pTimer, int iSerial)
+{
+	CCoopSpawnSystem.ActivateCheckpoint(CCoopSpawnSystem.FindCheckpointBySerial(iSerial));
 	return Plugin_Handled;
 }
 
 public void Hook_TouchPortal(int iEntity, int iOther)
 {
-	CBasePlayer pPlayer = CBasePlayer(iOther);
-	if (pPlayer.IsClassPlayer())
+	CBasePlayer pOther = CBasePlayer(iOther);
+	if (pOther.IsClassPlayer())
 	{
 		CCoopSpawnEntry pCheckpoint;
-		if (CCoopSpawnSystem.GetCurrentCheckpoint(pCheckpoint) && pCheckpoint.TeleportPlayer(pPlayer))
+		if (CCoopSpawnSystem.GetCurrentCheckpoint(pCheckpoint) && pCheckpoint.TeleportPlayer(pOther))
 		{
 			EmitSoundToClient(iOther, Conf.SND_PORTAL, .level = SNDLEVEL_NONE, .volume = Conf.SND_PORTAL_VOL);
 		}
 	}
 }
 
-MRESReturn Hook_FollowEntityRemoved(int _this)
+/**
+ * Checks for follow entity removal, saves last known position.
+ */
+MRESReturn Hook_FollowEntityRemoved(int iEntity)
 {
-	// check for follow entity removal, save last known position
-	CBaseEntity pEntity = CBaseEntity(_this);
+	CBaseEntity pEntity = CBaseEntity(iEntity);
 	int iIndex;
 	while ((iIndex = CCoopSpawnSystem.FindCheckpointByFollowEnt(pEntity, iIndex)) != -1)
 	{
