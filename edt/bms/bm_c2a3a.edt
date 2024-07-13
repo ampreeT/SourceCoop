@@ -17,7 +17,7 @@
 		"modify"
 		{
 			"targetname" "c2a3a_c2a3b_changelevel"
-			"add"
+			"set"
 			{
 				"StartDisabled" "1"
 				"spawnflags" "0"

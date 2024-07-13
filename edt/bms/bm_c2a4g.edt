@@ -19,7 +19,7 @@
 			"classname" "trigger_changelevel"
 			"map" "bm_c2a4f"
 			"landmark" "bm_c2a4f_bm_c2a4g"
-			"add"
+			"set"
 			{
 				"classname" "func_brush"
 				"rendermode" "10" // dont render

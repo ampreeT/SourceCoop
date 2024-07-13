@@ -760,6 +760,7 @@ methodmap CCoopSpawnSystem
 				if (kv.GetSectionName(szSectionName, sizeof(szSectionName)))
 				{
 					EVAL_CONDITIONS(szSectionName, kv, CCoopSpawnSystem.ParseCheckpoint(kv))
+
 					CCoopSpawnEntry pEntry;
 					pEntry.Initialize();
 					
@@ -861,6 +862,7 @@ methodmap CCoopSpawnSystem
 						while (kv.GotoNextKey(false));
 						kv.GoBack();
 					}
+					LogDebug("Adding checkpoint \"%s\"", szSectionName);
 					CCoopSpawnSystem.AddCheckpoint(pEntry);
 				}
 			}

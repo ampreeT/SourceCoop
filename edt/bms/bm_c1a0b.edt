@@ -19,7 +19,7 @@
 		"modify"
 		{
 			"classname" "/^npc_/"
-			"add"
+			"set"
 			{
 				"damagefilter" "__srccoop_damage_filter"
 			}
@@ -83,7 +83,7 @@
 		"modify"
 		{
 			"targetname" "/^(chamber_airlocktop|chamber_airlockbot)$/"
-			"add"
+			"set"
 			{
 				"dmg" "50"
 			}

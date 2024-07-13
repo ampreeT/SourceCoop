@@ -548,11 +548,6 @@ stock bool IsModifySynonym(const char[] str)
 	return (strcmp(str, "modify", false) == 0 || strcmp(str, "edit", false) == 0);
 }
 
-stock bool IsReplaceSynonym(const char[] str)
-{
-	return (strcmp(str, "replace", false) == 0 || strcmp(str, "set", false) == 0);
-}
-
 stock bool IsEnableSynonym(const char[] str)
 {
 	return (strcmp(str, "enable", false) == 0 || strcmp(str, "turnon", false) == 0 || strcmp(str, "on", false) == 0);

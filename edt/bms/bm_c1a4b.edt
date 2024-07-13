@@ -258,7 +258,7 @@
 		{
 			"classname" "trigger_changelevel"
 			"map" "bm_c1a4c"
-			"add"
+			"set"
 			{
 				"targetname" "changelevel_bm_c1a4c"
 			}
@@ -267,7 +267,7 @@
 		{
 			"classname" "trigger_changelevel"
 			"map" "bm_c1a4d"
-			"add"
+			"set"
 			{
 				"targetname" "changelevel_bm_c1a4d"
 			}

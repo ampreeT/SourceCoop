@@ -33,7 +33,7 @@
 		{
 			"classname" "trigger_changelevel"
 			"map" "bm_c1a4b"
-			"add"
+			"set"
 			{
 				"StartDisabled" "1"
 			}

@@ -56,7 +56,7 @@
 		{
 			"classname" "path_track"
 			"targetname" "p2"
-			"add"
+			"set"
 			{
 				"origin" "1130 -2400 230"
 			}
@@ -80,7 +80,7 @@
 		{
 			"classname" "trigger_changelevel"
 			"map" "bm_c1a3c"
-			"add"
+			"set"
 			{
 				"classname" "func_brush"
 				"rendermode" "10" // dont render
@@ -90,7 +90,7 @@
 		"modify"
 		{
 			"targetname" "/^c1a4a_plank/"
-			"add"
+			"set"
 			{
 				"minhealthdmg" "999999"
 			}

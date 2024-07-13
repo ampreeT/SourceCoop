@@ -38,7 +38,7 @@
 		"modify"
 		{
 			"targetname" "c1a1d_c1a2a_trigger"
-			"add"
+			"set"
 			{
 				"spawnflags" "0"
 				"targetname" ""

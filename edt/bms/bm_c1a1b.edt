@@ -40,7 +40,7 @@
 		{
 			"classname" "trigger_changelevel"
 			"map" "bm_c1a1c"
-			"add"
+			"set"
 			{
 				"targetname" ""
 			}

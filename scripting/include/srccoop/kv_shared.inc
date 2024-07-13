@@ -116,7 +116,7 @@ bool ParseConditions(KeyValues kv, bool anyPass = false)
 	return false;
 }
 
-bool TestCondition(char szCondition[MAX_KEY], char szValue[MAX_VALUE])
+bool TestCondition(const char szCondition[MAX_KEY], const char szValue[MAX_VALUE])
 {
 	if (StrEqual(szCondition, "globalstate", false))
 	{
@@ -136,9 +136,10 @@ bool TestCondition(char szCondition[MAX_KEY], char szValue[MAX_VALUE])
 	// if no condition types match, check edt defines
 	else
 	{
-		char szDefineValue[MAX_VALUE];
+		char szDefineKey[MAX_KEY], szDefineValue[MAX_VALUE];
+		UpperCaseString(szCondition, szDefineKey, sizeof(szDefineKey));
 		return (
-			g_pLevelLump.m_EdtDefinesMap.GetString(szCondition, szDefineValue, sizeof(szDefineValue))
+			g_pLevelLump.m_EdtDefinesMap.GetString(szDefineKey, szDefineValue, sizeof(szDefineValue))
 			&& StrEqual(szValue, szDefineValue, false)
 		);
 	}

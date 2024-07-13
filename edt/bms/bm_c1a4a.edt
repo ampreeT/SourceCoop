@@ -34,7 +34,7 @@
 		"modify"
 		{
 			"targetname" "c1a4a_c1a4b_transition"
-			"add"
+			"set"
 			{
 				"StartDisabled" "0"
 			}

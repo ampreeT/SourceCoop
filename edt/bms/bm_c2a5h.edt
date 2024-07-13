@@ -56,7 +56,7 @@
 		"modify"
 		{
 			"targetname"	"h_hangar_guard"
-			"add"
+			"set"
 			{
 				"damagefilter"	"__srccoop_damage_filter"
 			}

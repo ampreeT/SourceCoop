@@ -365,7 +365,7 @@ methodmap CBaseEntity
 	{
 		static char szBuffer[MAX_CLASSNAME];
 		this.GetClassname(szBuffer, sizeof(szBuffer));
-		return StrEqual(szClassname, szBuffer);
+		return StrEqual(szClassname, szBuffer, false);
 	}
 	public bool Spawn()
 	{

@@ -71,7 +71,7 @@
 					"add" "2048"
 				}
 			}
-			"add"
+			"set"
 			{
 				"targetname" "c2a1_silodoor_01_button"
 			}

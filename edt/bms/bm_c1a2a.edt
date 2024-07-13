@@ -53,7 +53,7 @@
 		"modify"
 		{
 			"targetname" "puzzle_death"
-			"add"
+			"set"
 			{
 				"classname" "trigger_hurt"
 				"damage" "9999"

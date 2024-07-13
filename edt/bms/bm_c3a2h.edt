@@ -21,7 +21,7 @@
 		"modify"
 		{
 			"targetname" "/^(DepotDoorLeftFUNC|DepotDoorRIGHTFUNC)$/"
-			"add"
+			"set"
 			{
 				"dmg" "999"
 				"forceclosed" "1"
