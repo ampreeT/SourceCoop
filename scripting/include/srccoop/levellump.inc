@@ -10,8 +10,8 @@
 static char g_szOutputSeparator[2];
 
 // Temporary brush entity model placeholders to be identified and fixed up at entity spawn 
-#define BRUSH_FIXUP_MDL "models/error.mdl" // actual model that will be set on fixed up ents
-#define BRUSH_FIXUP_IDENT "$BRUSHFIXUP$" // identifier that the entities with customized brush models will have their "model" property start with
+#define BRUSH_FIXUP_MDL "models/error.mdl" /* actual model that will be set on fixed up ents */
+#define BRUSH_FIXUP_IDENT "$BRUSHFIXUP$" /* identifier that the entities with customized brush models will have their "model" property start with */
 #define BRUSH_FIXUP_IDENT_LEN 12
 #define BRUSH_FIXUP_SEPARATOR " "
 
