@@ -112,7 +112,7 @@ methodmap CoopManager
 		if (CoopManager.IsCoopModeEnabled())
 		{
 			CoopManager.CheckStart();
-			CCoopSpawnSystem.TeleportPlayer(pPlayer);
+			CCoopSpawnSystem.TeleportPlayerOnSpawn(pPlayer);
 		}
 	}
 
@@ -152,7 +152,7 @@ methodmap CoopManager
 		}
 
 		if (bDefaultTeleport)
-			CCoopSpawnSystem.TeleportPlayer(pPlayer);
+			CCoopSpawnSystem.TeleportPlayerOnSpawn(pPlayer);
 		if (bDefaultEquipment)
 			CCoopSpawnSystem.SpawnPlayerEquipment(pPlayer);
 		g_pSpawnOptions.Reset();

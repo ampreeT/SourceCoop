@@ -393,6 +393,7 @@ public void OnClientPutInServer(int client)
 		return;
 	
 	CBasePlayer pPlayer = CBasePlayer(client);
+	CCoopSpawnSystem.OnClientPutInServer(client);
 	ItemInstancingManager.OnClientPutInServer(client);
 	PlayerPatch_OnClientPutInServer(client);
 	CoopManager.OnClientPutInServer(pPlayer);
