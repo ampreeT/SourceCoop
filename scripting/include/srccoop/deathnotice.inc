@@ -76,6 +76,8 @@ enum struct DnData
 	DnTimerData m_sTimerData;
 	// Controls where if the "player_death" event should broadcast.
 	bool m_bBroadcastEnabled;
+	// Are we currently renaming a deathnotice bot?
+	bool m_bChangingBotName;
 	// `sc_killfeed`
 	ConVar m_piNoticeLevel;
 	// `sc_killfeed_player_kills`
@@ -159,25 +161,7 @@ methodmap DnManager
 	//
 	public static Action TextMsg(BfRead bf)
     {
-		if (!CoopManager.IsCoopModeEnabled() || g_sDnData.m_piNoticeLevel.IntValue == 0)
-			return Plugin_Continue;
-
-		bf.ReadByte();
-		char szMessage[96];
-		bf.ReadString(szMessage, sizeof(szMessage));
-
-		// TODO:
-		// This currently works for Black Mesa.
-		//
-		// - Does this work for HL2DM?
-		// - Logic should be implemented for blocking only when a death notice bot is changing their name.
-		//
-		if (StrContains(szMessage, "changed name to") != -1)
-		{
-			return Plugin_Stop;
-    	}
-
-		return Plugin_Continue;
+		return (g_sDnData.m_bChangingBotName) ? Plugin_Stop : Plugin_Continue;
 	}
 	// Hook callback to hide the player death displays unless this plugin's features are enabled.
 	//
@@ -210,7 +194,9 @@ methodmap DnManager
 		{
 			if (pPlayer == g_sDnData.m_pBot1 || pPlayer == g_sDnData.m_pBot2)
 			{
+				g_sDnData.m_bChangingBotName = true;
 				pPlayer.SetName(szName);
+				g_sDnData.m_bChangingBotName = false;
 			}
 		}
 	}
