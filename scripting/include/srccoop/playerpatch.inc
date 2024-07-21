@@ -422,95 +422,92 @@ public MRESReturn Hook_PlayerSpawnPost(int iClient, Handle hReturn, Handle hPara
 // - Force serverside ragdolls
 //------------------------------------------------------
 #if defined PLAYERPATCH_SERVERSIDE_RAGDOLLS
-CBaseAnimating g_pNewRagdoll = NULL_CBASEENTITY;
+bool g_bServerRagdoll[MAXPLAYERS + 1];
 #endif
 
 public MRESReturn Hook_PlayerKilled(int _this, DHookParam hParams)
 {
 	#if defined PLAYERPATCH_SERVERSIDE_RAGDOLLS
-	g_pNewRagdoll = NULL_CBASEENTITY;
+	g_bServerRagdoll[_this] = false;
 	#endif
 
 	if (!CoopManager.IsCoopModeEnabled())
 		return MRES_Ignored;
 	
 	CBasePlayer pPlayer = CBasePlayer(_this);
-	if (!pPlayer.IsValid())
-		return MRES_Ignored;
-	
 	PackPlayerItems(pPlayer);
-
-	#if defined PLAYERPATCH_SERVERSIDE_RAGDOLLS
-	Address pTakeDmgInfo = hParams.GetAddress(1);
-	int dmgType = LoadFromAddress(pTakeDmgInfo + view_as<Address>(60), NumberType_Int32);
-	if (dmgType & DMG_DISSOLVE)
-	{
-		// Dont bother
-		return MRES_Ignored;
-	}
-
-	int iForceBone = GetEntProp(_this, Prop_Send, "m_nForceBone");
-	g_pNewRagdoll = CBaseAnimating(SDKCall(g_pCreateServerRagdoll, _this, iForceBone, pTakeDmgInfo, COLLISION_GROUP_DEBRIS_TRIGGER, false));
-	SDKHook(g_pNewRagdoll.GetEntIndex(), SDKHook_OnTakeDamage, Hook_NoDmg);
-
-	#if defined SRCCOOP_HL2DM
-	PlayerPatch_ApplyServerRagdoll(pPlayer);
-	#endif
-	#endif // PLAYERPATCH_SERVERSIDE_RAGDOLLS
 
 	return MRES_Ignored;
 }
 
 public MRESReturn Hook_PlayerKilledPost(int _this, DHookParam hParams)
 {
-	if (CoopManager.IsCoopModeEnabled())
-	{
-		CBasePlayer pPlayer = CBasePlayer(_this);
-	
-		#if defined PLAYERPATCH_SERVERSIDE_RAGDOLLS && defined SRCCOOP_BLACKMESA
-		if (g_pNewRagdoll.IsValid())
-		{
-			PlayerPatch_ApplyServerRagdoll(pPlayer);
-		}
-		#endif
+	if (!CoopManager.IsCoopModeEnabled())
+		return MRES_Ignored;
 
-		SurvivalManager.OnPlayerDeath(pPlayer);
-	}
+	CBasePlayer pPlayer = CBasePlayer(_this);
+
+	#if defined PLAYERPATCH_SERVERSIDE_RAGDOLLS
+	Address pTakeDmgInfo = hParams.GetAddress(1);
+	PlayerPatch_ApplyServerRagdoll(pPlayer, pTakeDmgInfo);
+	#endif
+	
+	SurvivalManager.OnPlayerDeath(pPlayer);
+
 	return MRES_Ignored;
 }
 
 #if defined PLAYERPATCH_SERVERSIDE_RAGDOLLS
-void PlayerPatch_ApplyServerRagdoll(CBasePlayer pPlayer)
+
+void PlayerPatch_ApplyServerRagdoll(CBasePlayer pPlayer, Address pTakeDmgInfo)
 {
-	CBaseEntity pRagdoll = pPlayer.GetRagdoll();
-	if (pRagdoll.IsValid())
+	int iDmgType = LoadFromAddress(pTakeDmgInfo + view_as<Address>(60), NumberType_Int32);
+	if (iDmgType & DMG_DISSOLVE)
+	{
+		// dont bother
+		return;
+	}
+
+	CBaseAnimating pRagdoll = pPlayer.GetRagdoll();
+	if (pRagdoll != NULL_CBASEENTITY)
 	{
 		pRagdoll.Kill();
 	}
+
 	if (pPlayer.GetTeam() == TEAM_SPECTATOR)
 	{
 		// teamchange induced suicide - no ragdolls
-		g_pNewRagdoll.Kill();
 		return;
 	}
-	pPlayer.SetRagdoll(g_pNewRagdoll);
+	
+	#if defined SRCCOOP_BLACKMESA
+	pPlayer.SetEffects(pPlayer.GetEffects() & ~EF_NODRAW);
+	#endif
+	
+	pRagdoll = CBaseAnimating(SDKCall(g_pCreateServerRagdoll, pPlayer.entindex, pPlayer.GetForceBone(), pTakeDmgInfo, COLLISION_GROUP_DEBRIS_TRIGGER, false));
+	SDKHook(pRagdoll.entindex, SDKHook_OnTakeDamage, Hook_NoDmg);
+
+	pPlayer.SetRagdoll(pRagdoll);
 	pPlayer.SetObserverMode(OBS_MODE_CHASE);
-	pPlayer.SetObserverTarget(g_pNewRagdoll);
+	pPlayer.SetObserverTarget(pRagdoll);
+	g_bServerRagdoll[pPlayer.entindex] = true;
 
 	Call_StartForward(g_OnPlayerRagdollCreatedFwd);
 	Call_PushCell(pPlayer);
-	Call_PushCell(g_pNewRagdoll);
+	Call_PushCell(pRagdoll);
 	Call_Finish();
 }
 
 public MRESReturn Hook_CreateRagdollEntity(int _this)
 {
-	if (!g_pNewRagdoll.IsValid())
-		return MRES_Ignored;
-
 	// avoid invalid cast on m_hRagdoll in hl2mp with the serverside ragdolls
-	return MRES_Supercede;
+	if (g_bServerRagdoll[_this])
+		return MRES_Supercede;
+	
+	return MRES_Ignored;
+
 }
+
 #endif // PLAYERPATCH_SERVERSIDE_RAGDOLLS
 
 //------------------------------------------------------

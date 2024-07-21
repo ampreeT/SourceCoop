@@ -982,6 +982,14 @@ methodmap CBaseAnimating < CBaseEntity
 	{
 		return GetEntityAttachment(this.GetEntIndex(), iAttachment, vecOrigin, vecAngles);
 	}
+	public int GetForceBone()
+	{
+		return GetEntProp(this.GetEntIndex(), Prop_Send, "m_nForceBone");
+	}
+	public void SetForceBone(int iForceBone)
+	{
+		SetEntProp(this.GetEntIndex(), Prop_Send, "m_nForceBone", iForceBone);
+	}
 }
 
 methodmap CBaseTrigger < CBaseEntity
@@ -1882,11 +1890,11 @@ methodmap CBasePlayer < CBaseCombatCharacter
 	{
 		SDKCall(g_pCreateViewModel, this.entindex, iIndex);
 	}
-	public CBaseEntity GetRagdoll()
+	public CBaseAnimating GetRagdoll()
 	{
-		return CBaseEntity(GetEntPropEnt(this.GetEntIndex(), Prop_Send, "m_hRagdoll"));
+		return CBaseAnimating(GetEntPropEnt(this.GetEntIndex(), Prop_Send, "m_hRagdoll"));
 	}
-	public void SetRagdoll(CBaseEntity pEntity)
+	public void SetRagdoll(CBaseAnimating pEntity)
 	{
 		SetEntPropEnt(this.GetEntIndex(), Prop_Send, "m_hRagdoll", pEntity.GetEntIndex());
 	}
