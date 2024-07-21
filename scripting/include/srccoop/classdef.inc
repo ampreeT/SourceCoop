@@ -1695,7 +1695,7 @@ methodmap CBasePlayer < CBaseCombatCharacter
 	}
 	public CPropVehicleDriveable GetVehicle()
 	{
-		return CPropVehicleDriveable(GetEntProp(this.GetEntIndex(), Prop_Send, "m_hVehicle"));
+		return CPropVehicleDriveable(GetEntPropEnt(this.GetEntIndex(), Prop_Send, "m_hVehicle"));
 	}
 	public int GetArmor()
 	{
