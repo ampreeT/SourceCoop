@@ -36,6 +36,9 @@
 		
 		// disable warmup intermission pause
 		"mp_warmup_intermission_time" "0"
+
+		// disable deathmatch messages (dominating etc)
+		"bm_killstreaks_enabled" "0"
 	}
 
 	"client_console"
