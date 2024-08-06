@@ -642,6 +642,55 @@
 					}
 				}
 			}
+			"CBaseAnimating::SetPoseParameter"
+			{
+				"signature"	"CBaseAnimating::SetPoseParameter"
+				"callconv"	"cdecl"
+				"return"	"float"
+				"arguments"
+				{
+					"pStudioHdr"
+					{
+						"type"	"int"
+					}
+					"iParameter"
+					{
+						"type"	"int"
+					}
+					"flValue"
+					{
+						"type"	"float"
+					}
+					"flNewValue"
+					{
+						"type"	"int"
+					}
+				}
+			}
+			//{
+			//	"offset"	"CBaseAnimating::SetPoseParameter"
+			//	"callconv"	"stdcall"
+			//	"return"	"float"
+			//	"arguments"
+			//	{
+			//		"pStudioHdr"
+			//		{
+			//			"type"	"objectptr"
+			//		}
+			//		"iParameter"
+			//		{
+			//			"type"	"int"
+			//		}
+			//		"flValue"
+			//		{
+			//			"type"	"float"
+			//		}
+			//		"flNewValue"
+			//		{
+			//			"type"	"objectptr"
+			//		}
+			//	}
+			//}
 		}
 	}
 	
@@ -731,6 +780,11 @@
 			{
 				"windows"	"\x55\x8B\xEC\x56\x8B\xF1\x80\xBE\x31\x03\x00\x00\x00\x75\x2A\x83\xBE\x74\x04\x00\x00\x00\x75\x2A\xE8\x2A\x2A\x2A\x2A\x85\xC0\x74\x2A\x8B\xCE\xE8\x2A\x2A\x2A\x2A\x8B\x8E\x74\x04\x00\x00\x85\xC9\x74\x2A\x83\x39\x00\x75\x2A\x33\xC9\xFF\x75\x0C"
 				"linux" 	"@_ZN14CBaseAnimating23GetSequenceLinearMotionEiP6Vector"
+			}
+			"CBaseAnimating::SetPoseParameter"	// float CBaseAnimating::SetPoseParameter(CStudioHdr *, int, float)
+			{
+				"windows"	"\x55\x8B\xEC\x56\x8B\x75\x0C\x85\xF6\x2A\x2A\x2A\x2A\x2A\x2A\x8B\x4D\x08\x2A\x2A\x2A\x2A\x2A\x3B\xF0\x2A\x2A\x2A\x2A\x2A\x2A\x8B\x4D\x08\x56\x2A\x2A\x2A\x2A\x2A\xF3\x0F"//"\x55\x8B\xEC\x8B\x45\x08\xD9\x45\x10\x57\x8B\xF9\x85\xC0\x2A\x2A\x56\x8B\x75\x0C\x85\xF6"
+				"linux"		"@_ZN14CBaseAnimating16SetPoseParameterEP10CStudioHdrif"
 			}
 			"CAI_BaseNPC::SetPlayerAvoidState" // void CAI_BaseNPC::SetPlayerAvoidState()
 			{

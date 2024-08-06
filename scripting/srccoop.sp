@@ -277,6 +277,8 @@ public void OnPluginStart()
 			}
 		}
 	}
+
+	g_sPoseParams = new StringMap();
 }
 
 #pragma dynamic ENTITYSTRING_LENGTH
@@ -619,13 +621,28 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 		}
 		#endif
 		
-		#if defined ENTPATCH_BM_LAV
 		if (strcmp(szClassname, "npc_lav") == 0)
 		{
+			#if defined ENTPATCH_BM_LAV
 			SDKHook(iEntIndex, SDKHook_SpawnPost, Hook_LAVSpawnPost);
+			#endif
+
+			#if defined ENTPATCH_BM_TURRET_POSEPARAM
+			SDKHook(iEntIndex, SDKHook_SpawnPost, Hook_PoseParamSpawnPost);
+			SDKHook(iEntIndex, SDKHook_Think, Hook_PoseParamOnThink);
+			#endif
+			
 			return;
 		}
-		#endif
+
+		if (strcmp(szClassname, "npc_abrams") == 0)
+		{
+			#if defined ENTPATCH_BM_TURRET_POSEPARAM
+			SDKHook(iEntIndex, SDKHook_SpawnPost, Hook_PoseParamSpawnPost);
+			SDKHook(iEntIndex, SDKHook_Think, Hook_PoseParamOnThink);
+			#endif
+			return;
+		}
 	}
 	else // !isNPC
 	{
@@ -875,6 +892,10 @@ public void OnEntityDestroyed(int iEntIndex)
 			OnEntityDestroyed_Marionettist(pEntity);
 			return;
 		}
+		#endif
+
+		#if defined ENTPATCH_BM_TURRET_POSEPARAM
+		Hook_PoseParamsOnDestroyed(iEntIndex);
 		#endif
 	}
 }

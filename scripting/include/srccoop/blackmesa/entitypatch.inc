@@ -61,6 +61,71 @@ public void Hook_LAVSpawnPost(int iEntIndex)
 	pEntity.SetEdictFlags(pEntity.GetEdictFlags() | FL_EDICT_ALWAYS);
 }
 
+enum struct PoseParamEntry
+{
+	float m_flPoseParams[24];
+}
+
+StringMap g_sPoseParams;
+
+public void Hook_PoseParamSpawnPost(int iEntIndex)
+{
+	CBaseAnimating pEntity = CBaseAnimating(iEntIndex);
+
+	char szKey[9];
+	FormatEx(szKey, sizeof(szKey), "%x", iEntIndex);
+
+	PoseParamEntry sEntry;
+	for (int i = 0; i < sizeof(sEntry.m_flPoseParams); ++i)
+	{
+		sEntry.m_flPoseParams[i] = pEntity.GetPoseParameter(0);
+	}
+
+	g_sPoseParams.SetArray(szKey, sEntry, sizeof(sEntry));
+}
+
+public void Hook_PoseParamsOnDestroyed(int iEntIndex)
+{
+	char szKey[9];
+	FormatEx(szKey, sizeof(szKey), "%x", iEntIndex);
+
+	if (g_sPoseParams.Remove(szKey))
+	{
+	}
+}
+
+public void Hook_PoseParamOnThink(int iEntIndex)
+{
+	CBaseAnimating pEntity = CBaseAnimating(iEntIndex);
+
+	char szKey[9];
+	FormatEx(szKey, sizeof(szKey), "%x", iEntIndex);
+
+	PoseParamEntry sEntry;
+	if (!g_sPoseParams.GetArray(szKey, sEntry, sizeof(sEntry)))
+		return;
+
+	float flTurretLeftRightPose = pEntity.GetPoseParameter(0);	// 0.7142857313 if pose param index 1
+	// check if the pose parameters got reset
+	if (flTurretLeftRightPose == 0.5 && sEntry.m_flPoseParams[0] != 0.5)
+	{
+		// set the pose parameters back to the previous values
+		for (int i = 0; i < sizeof(sEntry.m_flPoseParams); ++i)
+		{
+			pEntity.SetPoseParameter(i, sEntry.m_flPoseParams[i]);
+		}
+	}
+	// cache the new values if they did not get reset
+	else
+	{
+		for (int i = 0; i < sizeof(sEntry.m_flPoseParams); ++i)
+		{
+			sEntry.m_flPoseParams[i] = pEntity.GetPoseParameter(i);
+		}
+		g_sPoseParams.SetArray(szKey, sEntry, sizeof(sEntry));
+	}
+}
+
 //------------------------------------------------------
 // phys_bone_follower
 // This hook deletes selected NPC's bone followers to increase multiplayer server perf.

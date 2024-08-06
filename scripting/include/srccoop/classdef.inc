@@ -958,6 +958,18 @@ methodmap CBaseAnimating < CBaseEntity
 	{
 		SDKCall(g_pGetSequenceLinearMotion, this, iSequence, vecBuffer);
 	}
+	public int GetMaxPoseParameters()
+	{
+		return GetEntPropArraySize(this.GetEntIndex(), Prop_Data, "m_flPoseParameter");
+	}
+	public float GetPoseParameter(const int iIndex)
+	{
+		return GetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flPoseParameter", iIndex);
+	}
+	public void SetPoseParameter(const int iIndex, const float flPoseParameter)
+	{
+		SetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flPoseParameter", flPoseParameter, iIndex);
+	}
 	public float GetPlaybackRate()
 	{
 		return GetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flPlaybackRate");
