@@ -30,7 +30,7 @@ public MRESReturn Hook_IsPlayerAlly(int _this, Handle hReturn, Handle hParams)
 }
 
 //------------------------------------------------------
-// CNPC_PlayerCompanion - npc_human_scientist*, npc_human_security
+// CNPC_PlayerCompanion - npc_human_scientist*, npc_human_security, npc_gman
 // MP crash fix
 //------------------------------------------------------
 public MRESReturn Hook_PlayerCompanionRunAI(int _this)

@@ -550,6 +550,16 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 			#endif
 			return;
 		}
+		
+		#if defined ENTPATCH_PLAYER_COMPANION
+		if (strcmp(szClassname, "npc_gman") == 0)
+		{
+			DHookEntity(hkRunAI, false, iEntIndex, _, Hook_PlayerCompanionRunAI);
+			DHookEntity(hkRunAI, true, iEntIndex, _, Hook_PlayerCompanionRunAIPost);
+			return;
+		}
+		#endif
+		
 		#endif // SRCCOOP_BLACKMESA
 
 		#if defined ENTPATCH_BM_XENTURRET
