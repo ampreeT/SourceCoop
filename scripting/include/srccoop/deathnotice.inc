@@ -132,6 +132,7 @@ methodmap DnManager
 				{
 					g_sDnData.m_pBot1 = CBasePlayer(CreateFakeClient("ScBot01"));
 					g_sDnData.m_pBot1.SetTeam(TEAM_SPECTATOR);
+					g_sDnData.m_pBot1.SetFlags(FL_FAKECLIENT | FL_NOTARGET);
 				}
 				return g_sDnData.m_pBot1;
 			}
@@ -150,6 +151,7 @@ methodmap DnManager
 				{
 					g_sDnData.m_pBot2 = CBasePlayer(CreateFakeClient("ScBot02"));
 					g_sDnData.m_pBot2.SetTeam(TEAM_SPECTATOR);
+					g_sDnData.m_pBot2.SetFlags(FL_FAKECLIENT | FL_NOTARGET);
 				}
 				return g_sDnData.m_pBot2;
 			}
