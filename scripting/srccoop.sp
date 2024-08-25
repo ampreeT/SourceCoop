@@ -255,14 +255,22 @@ public void OnPluginStart()
 
 	#if defined SRCCOOP_BLACKMESA
 
+	#if defined GAMEPATCH_BLOCK_ANNOUNCER
 	HookEvent("broadcast_teamsound", Event_BroadcastTeamsound, EventHookMode_Pre);
 	HookEvent("broadcast_killstreak", Event_BroadcastKillstreak, EventHookMode_Pre);
+	#endif
+
+	#if defined ENTPATCH_SNIPER
 	AddTempEntHook("BlackMesa Shot", BlackMesaFireBulletsTEHook);
+	#endif
+
+	#if defined ENTPATCH_ENV_INTROCREDITS
 	UserMsg iIntroCredits = GetUserMessageId("IntroCredits");
 	if (iIntroCredits != INVALID_MESSAGE_ID)
 	{
 		HookUserMessage(iIntroCredits, Hook_IntroCreditsMsg, true);
 	}
+	#endif
 
 	#endif // SRCCOOP_BLACKMESA
 	
@@ -353,7 +361,7 @@ public void OnConfigsExecutedPost()
 
 	if (CoopManager.IsFeatureEnabled(FT_STRIP_DEFAULT_EQUIPMENT))
 	{
-		CBaseEntity pGameEquip = CBaseEntity.Create("game_player_equip");	// will spawn players with nothing if it exists
+		CBaseEntity pGameEquip = CBaseEntity.Create("game_player_equip"); // will spawn players with nothing if it exists
 		if (pGameEquip.IsValid())
 		{
 			if (!CoopManager.IsFeatureEnabled(FT_STRIP_DEFAULT_EQUIPMENT_KEEPSUIT))
@@ -363,6 +371,7 @@ public void OnConfigsExecutedPost()
 			pGameEquip.Spawn();
 		}
 	}
+
 	if (CoopManager.IsFeatureEnabled(FT_DISABLE_CANISTER_DROPS))
 	{
 		CBaseEntity pGameGamerules = CBaseEntity.Create("game_mp_gamerules");
@@ -375,12 +384,15 @@ public void OnConfigsExecutedPost()
 	}
 	
 	PrecacheScriptSound("HL2Player.SprintStart");
+
+	#if defined ENTPATCH_BM_XENTURRET
 	AddFileToDownloadsTable("models/props_xen/xen_turret_mpfix.dx80.vtx");
 	AddFileToDownloadsTable("models/props_xen/xen_turret_mpfix.dx90.vtx");
 	AddFileToDownloadsTable("models/props_xen/xen_turret_mpfix.mdl");
 	AddFileToDownloadsTable("models/props_xen/xen_turret_mpfix.phy");
 	AddFileToDownloadsTable("models/props_xen/xen_turret_mpfix.sw.vtx");
 	AddFileToDownloadsTable("models/props_xen/xen_turret_mpfix.vvd");
+	#endif
 
 	#endif // SRCCOOP_BLACKMESA
 }
@@ -797,10 +809,13 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 				{
 					SDKHook(iEntIndex, SDKHook_Spawn, Hook_ItemSpawnDelay);
 				}
+				#if defined ENTPATCH_BM_SNARK_NEST
 				if (strcmp(szClassname, "item_weapon_snark") == 0)
 				{
 					SDKHook(iEntIndex, SDKHook_OnTakeDamagePost, Hook_OnItemSnarkDamagePost);
+					return;
 				}
+				#endif
 				if (strcmp(szClassname, "item_suit") == 0)
 				{
 					DHookEntity(hkOnTryPickUp, true, iEntIndex, _, Hook_OnEquipmentTryPickUpPost);

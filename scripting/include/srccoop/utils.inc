@@ -840,14 +840,9 @@ stock float PlayerDotProductToEntity(CBasePlayer pPlayer, CBaseEntity pEnt)
 
 stock float PlayerDotProductToEntityCenter(CBasePlayer pPlayer, CBaseEntity pEnt)
 {
-	float midpoint[3], mins[3], maxs[3];
-	pEnt.GetMins(mins);
-	pEnt.GetMaxs(maxs);
-	MoveVector(mins, maxs, 0.5, midpoint);
-
-	pEnt.GetAbsOrigin(mins);
-	AddVectors(mins, midpoint, midpoint);
-	return PlayerDotProductToPoint(pPlayer, midpoint);
+	float vecCenter[3];
+	pEnt.WorldSpaceCenter(vecCenter);
+	return PlayerDotProductToPoint(pPlayer, vecCenter);
 }
 
 stock float PlayerDotProductToPoint(CBasePlayer pPlayer, const float vecPoint[3])
