@@ -16,6 +16,11 @@
 				"windows"	"ServerGameDLL010"
 				"linux"		"ServerGameDLL010"
 			}
+			"IServerGameClients"
+			{
+				"windows"	"ServerGameClients003"
+				"linux"		"ServerGameClients003"
+			}
 			"IEngineSoundServer"
 			{
 				"windows"	"IEngineSoundServer003"
@@ -39,6 +44,16 @@
 			{
 				"windows"	"10"
 				"linux"		"10"
+			}
+			"CServerGameClients::GetPlayerState" // CPlayerState *CServerGameClients::GetPlayerState( edict_t *player )
+			{
+				"windows"	"11"
+				"linux"		"11"
+			}
+			"CPlayerState::frags"
+			{
+				"windows"	"44"
+				"linux"		"44"
 			}
 		}
 		"Signatures"

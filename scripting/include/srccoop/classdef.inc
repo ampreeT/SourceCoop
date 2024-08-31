@@ -8,6 +8,8 @@
 #pragma newdecls required
 #pragma semicolon 1
 
+IServerGameClients g_ServerGameClients;
+
 ConVar ai_los_mode;
 
 Handle g_pGlobalEntityGetIndex;
@@ -32,8 +34,10 @@ Handle g_pIsNPC;
 Handle g_pSendWeaponAnim;
 Handle g_pWeaponSwitch;
 Handle g_pWorldSpaceCenter;
+Handle g_pGetPlayerState;
 
 int g_iCSoundSize = -1;
+int g_iCPlayerState_frags = -1;
 
 stock void InitClassdef(GameData pGameConfig)
 {
@@ -42,6 +46,13 @@ stock void InitClassdef(GameData pGameConfig)
 	g_iCSoundSize = GetGamedataInt(pGameConfig, "CSoundSize");
 	if (g_iCSoundSize <= 0)
 		SetFailState("Could not obtain CSound struct size");
+
+	g_iCPlayerState_frags = pGameConfig.GetOffset("CPlayerState::frags");
+	if (g_iCPlayerState_frags < 0)
+		SetFailState("Invalid offset CPlayerState::frags");
+
+	if (!(g_ServerGameClients = IServerGameClients(GetInterface(pGameConfig, "server", "IServerGameClients"))))
+		SetFailState("Could not get interface for %s", "IServerGameClients");
 
 	char szSetCollisionBounds[] = "CBaseEntity::SetCollisionBounds";
 	StartPrepSDKCall(SDKCall_Entity);
@@ -281,6 +292,17 @@ stock void InitClassdef(GameData pGameConfig)
 	{
 		PrepSDKCall_SetReturnInfo(SDKType_Vector, SDKPass_ByRef);
 		if (!(g_pWorldSpaceCenter = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szWorldSpaceCenter);
+	}
+
+	char szGetPlayerState[] = "CServerGameClients::GetPlayerState";
+	StartPrepSDKCall(SDKCall_Raw);
+	if (!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Virtual, szGetPlayerState))
+		LogMessage("Could not obtain gamedata offset %s", szGetPlayerState);
+	else
+	{
+		PrepSDKCall_AddParameter(SDKType_Edict, SDKPass_Pointer);
+		PrepSDKCall_SetReturnInfo(SDKType_PlainOldData, SDKPass_Plain);
+		if (!(g_pGetPlayerState = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szGetPlayerState);
 	}
 
 	#if defined SRCCOOP_BLACKMESA
@@ -1985,12 +2007,7 @@ methodmap CBasePlayer < CBaseCombatCharacter
 	public void SetScore(const int iScore)
 	{
 		SetEntProp(this.GetEntIndex(), Prop_Data, "m_iFrags", iScore);
-
-		// Force server to actually recognize the score update
-		CBaseEntity pTempGameScore = CBaseEntity(CreateEntityByName("game_score"));
-		pTempGameScore.Spawn();
-		pTempGameScore.AcceptInput("ApplyScore", this);
-		pTempGameScore.Kill();
+		g_ServerGameClients.GetPlayerState(this).SetScore(iScore);
 	}
 	/**
 	 * Modifies the player's score by the provided points
@@ -2331,61 +2348,92 @@ methodmap CPlayerResource < CBaseEntity
 	}
 	public static CPlayerResource Get()
 	{
-		return CPlayerResource(FindEntityByClassname(-1, "player_manager"));
+		return CPlayerResource(GetPlayerResourceEntity());
 	}
 
-	public int GetTeam(CBasePlayer pPlayer)
+	public int GetPing(CBasePlayer pPlayer)
 	{
-		int iEntIndex = pPlayer.GetEntIndex();
-		bool bOutOfBounds = (iEntIndex > MaxClients) || (iEntIndex < 0);
-		if (bOutOfBounds)
-			ThrowError("Received out of bounds index %d; range is 0-%i", MaxClients);
-		
-		int iMemberOffset = GetEntSendPropOffs(this.GetEntIndex(), "m_bConnected");
-		if (iMemberOffset == -1)
-			ThrowError("Unable to retrieve offset %s", "m_iTeam");
-		
-		return Deref(this.GetAddress() + iMemberOffset + (iEntIndex * 4), NumberType_Int32);
+		return GetEntProp(this.entindex, Prop_Send, "m_iPing", _, pPlayer.entindex);
 	}
-	public void SetTeam(CBasePlayer pPlayer, const int iTeamNum)
+	public void SetPing(CBasePlayer pPlayer, int iPing)
 	{
-		int iEntIndex = pPlayer.GetEntIndex();
-		bool bOutOfBounds = (iEntIndex > MaxClients) || (iEntIndex < 0);
-		if (bOutOfBounds)
-			ThrowError("Received out of bounds index %d; range is 0-%i", MaxClients);
-		
-		int iMemberOffset = GetEntSendPropOffs(this.GetEntIndex(), "m_iTeam");
-		if (iMemberOffset == -1)
-			ThrowError("Unable to retrieve offset %s", "m_iTeam");
-		
-		StoreToAddress(this.GetAddress() + iMemberOffset + (iEntIndex * 4), iTeamNum, NumberType_Int32);
+		SetEntProp(this.entindex, Prop_Send, "m_iPing", iPing, _, pPlayer.entindex);
+	}
+	public int GetScore(CBasePlayer pPlayer)
+	{
+		return GetEntProp(this.entindex, Prop_Send, "m_iScore", _, pPlayer.entindex);
+	}
+	public void SetScore(CBasePlayer pPlayer, int iScore)
+	{
+		SetEntProp(this.entindex, Prop_Send, "m_iScore", iScore, _, pPlayer.entindex);
+	}
+	public int GetDeaths(CBasePlayer pPlayer)
+	{
+		return GetEntProp(this.entindex, Prop_Send, "m_iDeaths", _, pPlayer.entindex);
+	}
+	public void SetDeaths(CBasePlayer pPlayer, int iDeaths)
+	{
+		SetEntProp(this.entindex, Prop_Send, "m_iDeaths", iDeaths, _, pPlayer.entindex);
 	}
 	public bool IsConnected(CBasePlayer pPlayer)
 	{
-		int iEntIndex = pPlayer.GetEntIndex();
-		bool bOutOfBounds = (iEntIndex > MaxClients) || (iEntIndex < 0);
-		if (bOutOfBounds)
-			ThrowError("Received out of bounds index %d; range is 0-%i", MaxClients);
-		
-		int iMemberOffset = GetEntSendPropOffs(this.GetEntIndex(), "m_bConnected");
-		if (iMemberOffset == -1)
-			ThrowError("Unable to retrieve offset %s", "m_bConnected");
-		
-		return view_as<bool>(Deref(this.GetAddress() + iMemberOffset + (iEntIndex * 4), NumberType_Int32));
+		return view_as<bool>(GetEntProp(this.entindex, Prop_Send, "m_bConnected", _, pPlayer.entindex));
 	}
-	public void SetConnected(CBasePlayer pPlayer, const bool bConnected)
+	public void SetConnected(CBasePlayer pPlayer, bool bConnected)
 	{
-		int iEntIndex = pPlayer.GetEntIndex();
-		bool bOutOfBounds = (iEntIndex > MaxClients) || (iEntIndex < 0);
-		if (bOutOfBounds)
-			ThrowError("Received out of bounds index %d; range is 0-%i", MaxClients);
-		
-		int iMemberOffset = GetEntSendPropOffs(this.GetEntIndex(), "m_bConnected");
-		if (iMemberOffset == -1)
-			ThrowError("Unable to retrieve offset %s", "m_bConnected");
-		
-		StoreToAddress(this.GetAddress() + iMemberOffset + (iEntIndex * 4), view_as<int>(bConnected), NumberType_Int32);
+		SetEntProp(this.entindex, Prop_Send, "m_bConnected", bConnected, _, pPlayer.entindex);
 	}
+	public int GetTeam(CBasePlayer pPlayer)
+	{
+		return GetEntProp(this.entindex, Prop_Send, "m_iTeam", _, pPlayer.entindex);
+	}
+	public void SetTeam(CBasePlayer pPlayer, int iTeam)
+	{
+		SetEntProp(this.entindex, Prop_Send, "m_iTeam", iTeam, _, pPlayer.entindex);
+	}
+	public bool IsAlive(CBasePlayer pPlayer)
+	{
+		return view_as<bool>(GetEntProp(this.entindex, Prop_Send, "m_bAlive", _, pPlayer.entindex));
+	}
+	public void SetAlive(CBasePlayer pPlayer, bool bAlive)
+	{
+		SetEntProp(this.entindex, Prop_Send, "m_bAlive", bAlive, _, pPlayer.entindex);
+	}
+	public int GetHealth(CBasePlayer pPlayer)
+	{
+		return GetEntProp(this.entindex, Prop_Send, "m_iHealth", _, pPlayer.entindex);
+	}
+	public void SetHealth(CBasePlayer pPlayer, int iHealth)
+	{
+		SetEntProp(this.entindex, Prop_Send, "m_iHealth", iHealth, _, pPlayer.entindex);
+	}
+
+	#if defined SRCCOOP_BLACKMESA
+	public int GetAccountId(CBasePlayer pPlayer)
+	{
+		return GetEntProp(this.entindex, Prop_Send, "m_iAccountID", _, pPlayer.entindex);
+	}
+	public void SetAccountId(CBasePlayer pPlayer, int iAccountID)
+	{
+		SetEntProp(this.entindex, Prop_Send, "m_iAccountID", iAccountID, _, pPlayer.entindex);
+	}
+	public bool IsValid(CBasePlayer pPlayer)
+	{
+		return view_as<bool>(GetEntProp(this.entindex, Prop_Send, "m_bValid", _, pPlayer.entindex));
+	}
+	public void SetValid(CBasePlayer pPlayer, bool bValid)
+	{
+		SetEntProp(this.entindex, Prop_Send, "m_bValid", bValid, _, pPlayer.entindex);
+	}
+	public int GetFrags(CBasePlayer pPlayer)
+	{
+		return GetEntProp(this.entindex, Prop_Send, "m_iFrags", _, pPlayer.entindex);
+	}
+	public void SetFrags(CBasePlayer pPlayer, int iFrags)
+	{
+		SetEntProp(this.entindex, Prop_Send, "m_iFrags", iFrags, _, pPlayer.entindex);
+	}
+	#endif // SRCCOOP_BLACKMESA
 }
 
 methodmap CFuncLadder < CBaseEntity
@@ -2537,6 +2585,35 @@ methodmap IServerGameDLL
 	public void GameShutdown()
 	{
 		SDKCall(g_pGameShutdown, this); // GameShutdown() just resets global states
+	}
+}
+
+/**
+ * The player state is an embedded class inside of player that is shared with the engine.
+ * The Engine uses some of this data for responding to external server queries.
+ */
+methodmap CPlayerState
+{
+	public int GetScore()
+	{
+		return LoadFromAddress(view_as<Address>(this) + g_iCPlayerState_frags, NumberType_Int32);
+	}
+	public void SetScore(int iScore)
+	{
+		StoreToAddress(view_as<Address>(this) + g_iCPlayerState_frags, iScore, NumberType_Int32);
+	}
+}
+
+methodmap IServerGameClients
+{
+	public IServerGameClients(Address pAddress)
+	{
+		return view_as<IServerGameClients>(pAddress);
+	}
+	
+	public CPlayerState GetPlayerState(CBasePlayer pPlayer)
+	{
+		return SDKCall(g_pGetPlayerState, this, pPlayer.entindex);
 	}
 }
 
