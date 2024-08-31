@@ -52,7 +52,7 @@ $srcds_coop_bat = @'
 echo [%time%] Starting Black Mesa Dedicated Server..
 
 :loop
-start /WAIT /B srcds.exe -nomessagebox -console -insecure -game bms +maxplayers 32 +map bm_c0a0a
+start /WAIT /B srcds.exe -nomessagebox -console -game bms -ip 0.0.0.0 +maxplayers 32 +mp_teamplay 1 +map bm_c0a0a
 echo [%time%] Restarting Black Mesa Dedicated Server..
 timeout 5 > nul
 goto loop

@@ -52,7 +52,7 @@ rm ".tmp.zip"
 srcds_coop_bash=$(cat << EOF
 #!/bin/bash
 
-./srcds_run -console -insecure -game bms +maxplayers 32 +map bm_c0a0a
+./srcds_run -console -game bms -ip 0.0.0.0 +maxplayers 32 +mp_teamplay 1 +map bm_c0a0a
 EOF
 )
 echo "$srcds_coop_bash" > "./Black Mesa Dedicated Server/srcds_coop.sh"
