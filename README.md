@@ -15,10 +15,11 @@ It currently supports <a href="https://store.steampowered.com/app/362890/Black_M
 
 | Table of Contents |
 |:--:|
-| [🖥️ Setup Guide](#🖥️-setup-guide) - [🌎 Campaign Support](#🌎-campaign-support) - [⚙️ Configuration](#⚙️-configuration) - [🌱 Contributing](#🌱-contributing) - [📸 Credits](#📸-credits) |
+| [🖥️ Setup Guide](#setup-guide) - [🌎 Campaign Support](#campaign-support) - [⚙️ Configuration](#configuration) - [🌱 Contributing](#contributing) - [📸 Credits](#credits) |
 | [📡 Server Running Tips](https://github.com/ampreeT/SourceCoop/wiki/Server-running-tips) - [🔗 Public Servers](https://github.com/ampreeT/SourceCoop/wiki/Public-Servers) |
 | [📝 Developing](https://github.com/ampreeT/SourceCoop/wiki/Developing) - [🗃️ EDT Map Script Format](https://github.com/ampreeT/SourceCoop/wiki/EDT---Map-script-format) - [📘 Authoring Maps](https://github.com/ampreeT/SourceCoop/wiki/Authoring-maps-for-SourceCoop) |
 
+<a id="setup-guide"></a>
 ## 🖥️ Setup Guide
 
 __If you are someone who is looking to play on a server__, then you are already set up and ready to play! Cooperative servers can be found in the server browser just like any other server.
@@ -66,7 +67,7 @@ The script installation will automatically go through the process of installing 
     ./srccoop-bms-linux-install.sh
     ```
 
-- After the installation process is complete, the server can be started by running the following commands. [Make sure that the necessary ports are forwarded so players to be able to join the server!](#🛜-port-forwarding)
+- After the installation process is complete, the server can be started by running the following commands. [Make sure that the necessary ports are forwarded so players to be able to join the server!](#port-forwarding)
     ##### Windows PowerShell Terminal
     ```powershell
     cd "Black Mesa Dedicated Server"
@@ -98,10 +99,11 @@ The script installation will automatically go through the process of installing 
 - Install [Metamod:Source](https://www.sourcemm.net/downloads.php?branch=stable) (latest tested build ➤ __1155__) onto the server.
 - Install [SourceMod](https://www.sourcemod.net/downloads.php?branch=stable) (latest tested build ➤ __6968__) onto the server.
 - Install [the latest SourceCoop release](https://github.com/ampreeT/SourceCoop/releases) onto the server.
-- [Forward the necessary ports.](#🛜-port-forwarding)
+- [Forward the necessary ports.](#port-forwarding)
 
 A visual step-by-step guide for Black Mesa is also available on <a href="https://steamcommunity.com/sharedfiles/filedetails/?id=2200247356"><img src="images/icon-steam-small.png" height="16px"> Steam</a>.
 
+<a id="port-forwarding"></a>
 ### 🛜 Port Forwarding
 
 In order for players to able to join the server, you will need to only forward the default game transmission TCP/UDP port `27015`. All other ports are optional.
@@ -115,6 +117,7 @@ In order for players to able to join the server, you will need to only forward t
 | `27005` | UDP          | Client Port - Can be changed using `-clientport` on startup                 |
 | `26900` | UDP          | Steam Port, outgoing - Can be changed using `-sport` on startup             |
 
+<a id="campaign-support"></a>
 ## 🌎 Campaign Support
 
 <h3><img src="images/icon-bms-small.png" height="20px"> Black Mesa - <a href="https://steamcommunity.com/sharedfiles/filedetails/?id=2375865650">Steam Workshop Collection</a></h3>
@@ -127,6 +130,7 @@ SourceCoop __allows single-player map configurations__ without decompiling and r
 
 If you have already created native cooperative support for your map by including a EDT file, please make a pull request onto the `README.md` with your Steam Workshop item link so we can showcase it off!
 
+<a id="configuration"></a>
 ## ⚙️ Configuration
 
 ### Commands
@@ -230,6 +234,7 @@ ConVar: `sc_ft <FEATURE> <0 or 1>`
 | `CHANGELEVEL_FX`              | Show visual effects (spawn particles) at level change locations.                                                               |
 | `TRANSFER_PLAYER_STATE`       | Enables player persistence through level changes. Currently, players will carry over their health, armor and equipment for the first spawn point (checkpoint) in the map. Afterwards, the default map equipment is used. |
 
+<a id="contributing"></a>
 ## 🌱 Contributing
 
 __If you are looking to help with the development of the project__, we are always looking for more help! Heres some ways you can help:
@@ -241,6 +246,7 @@ __If you are looking to help with the development of the project__, we are alway
 
 __If you are interested in helping us__, contact us on [Discord](https://discord.gg/Fh77rxQaEB) or create a pull request.
 
+<a id="credits"></a>
 ## 📸 Credits
 
 ### 🙏 Contributors
