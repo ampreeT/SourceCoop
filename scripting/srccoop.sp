@@ -164,6 +164,11 @@ void LoadGameData()
 	#if defined ENTPATCH_AI_SCRIPT_CONDITIONS
 	LoadMemPatch(pGameConfig, "CAI_ScriptConditions::EvaluationThink::GetSinglePlayer");
 	#endif
+	
+	#if defined ENTPATCH_LAGCOMP_POSE_PARAMS
+	LoadMemPatch(pGameConfig, "CLagCompensationManager::RestoreEntityFromRecords::SetPoseParameter", true, false);
+	LoadMemPatch(pGameConfig, "CLagCompensationManager::BacktrackEntity::SetPoseParameter", true, false);
+	#endif
 
 	// Init SDKCalls for classdef
 	InitClassdef(pGameConfig);
