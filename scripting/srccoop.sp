@@ -21,7 +21,7 @@ void LoadGameData()
 	g_serverOS = view_as<OperatingSystem>(pGameConfig.GetOffset("_OS_Detector_"));
 
 	if (!(g_ServerGameDLL = IServerGameDLL(GetInterface(pGameConfig, "server", "IServerGameDLL"))))
-		SetFailState("Could not get interface for %s", "g_ServerGameDLL");
+		SetFailState("Could not get interface for %s", "IServerGameDLL");
 	
 	// Calls
 
@@ -163,6 +163,11 @@ void LoadGameData()
 
 	#if defined ENTPATCH_AI_SCRIPT_CONDITIONS
 	LoadMemPatch(pGameConfig, "CAI_ScriptConditions::EvaluationThink::GetSinglePlayer");
+	#endif
+	
+	#if defined ENTPATCH_LAGCOMP_POSE_PARAMS
+	LoadMemPatch(pGameConfig, "CLagCompensationManager::RestoreEntityFromRecords::SetPoseParameter", true, false);
+	LoadMemPatch(pGameConfig, "CLagCompensationManager::BacktrackEntity::SetPoseParameter", true, false);
 	#endif
 
 	// Init SDKCalls for classdef

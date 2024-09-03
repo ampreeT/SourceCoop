@@ -16,6 +16,11 @@
 				"windows"	"ServerGameDLL010"
 				"linux"		"ServerGameDLL010"
 			}
+			"IServerGameClients"
+			{
+				"windows"	"ServerGameClients003"
+				"linux"		"ServerGameClients003"
+			}
 			"IEngineSoundServer"
 			{
 				"windows"	"IEngineSoundServer003"
@@ -39,6 +44,16 @@
 			{
 				"windows"	"10"
 				"linux"		"10"
+			}
+			"CServerGameClients::GetPlayerState" // CPlayerState *CServerGameClients::GetPlayerState( edict_t *player )
+			{
+				"windows"	"11"
+				"linux"		"11"
+			}
+			"CPlayerState::frags"
+			{
+				"windows"	"44"
+				"linux"		"44"
 			}
 		}
 		"Signatures"
@@ -757,8 +772,22 @@
 			}
 			"CAI_ScriptConditions::EvaluationThink" // void CAI_ScriptConditions::EvaluationThink()
 			{
-				"windows" "\x55\x8B\xEC\x83\xEC\x1C\x56\x8B\xF1\x80\xBE\x94\x03\x00\x00\x01" // str: "%s WARNING: Player is NOTARGET"
+				// str: "%s WARNING: Player is NOTARGET"
+				"windows" "\x55\x8B\xEC\x83\xEC\x1C\x56\x8B\xF1\x80\xBE\x94\x03\x00\x00\x01"
 				"linux" "@_ZN20CAI_ScriptConditions15EvaluationThinkEv"
+			}
+			"CLagCompensationManager::RestoreEntityFromRecords"
+			{
+				// str: " restore got most of the way\n"
+				// On win, this is a 1:1 sub call of CLagCompensationManager::FinishLagCompensation, str: "FinishLagCompensation"
+				"windows" "\x55\x8B\xEC\x83\xEC\x14\x53\x8B\x5D\x0C"
+				"linux" "@_ZN23CLagCompensationManager24RestoreEntityFromRecordsEP11CBaseEntityP9LagRecordS3_b"
+			}
+			"CLagCompensationManager::BacktrackEntity"
+			{
+				// str: "Backtrack failed completely"
+				"windows" "\x55\x8B\xEC\x81\xEC\x00\x01\x00\x00\xA1\x2A\x2A\x2A\x2A\x33\xC5\x89\x45\xFC\x8B\x45\x14"
+				"linux" "@_ZN23CLagCompensationManager15BacktrackEntityEP11CBaseEntityfP19CUtlFixedLinkedListI9LagRecordEPS3_S6_b"
 			}
 		}
 
@@ -785,6 +814,41 @@
 					"offset"	"26h"
 					"verify"	"7E"
 					"patch"		"7D"
+				}
+			}
+			"CLagCompensationManager::RestoreEntityFromRecords::SetPoseParameter"
+			{
+				"signature" "CLagCompensationManager::RestoreEntityFromRecords"
+				"linux" // nop out everything related to SetPoseParameter call (exclude first 'mov' and 'add' after jump)
+				{
+					"offset"	"78Fh"
+					"verify"	"F3 2A 2A 2A 2A 2A 89 2A 2A 2A 89 2A 2A E8 2A 2A 2A 2A DD 2A"
+					"patch"		"90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90"
+				}
+				"windows" // nop from jump start up to SetPoseParameter call
+				{
+					"offset"	"3EFh"
+					"verify"	"D9 2A 2A 2A 2A 2A 2A 2A 2A 2A 2A E8 2A 2A 2A 2A"
+					"patch"		"90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90"
+				}
+			}
+			"CLagCompensationManager::BacktrackEntity::SetPoseParameter"
+			{
+				"signature" "CLagCompensationManager::BacktrackEntity"
+				"linux" // nop from jump start up until 'add'
+				{
+					"offset"	"6D0h"
+					"verify"	"89 2A 2A 2A 8B 2A 2A 2A 2A 2A F3 2A 2A 2A 2A 2A 2A 2A 89 2A 2A 2A F3 2A 2A 2A 2A 2A 89 2A 2A E8 2A 2A 2A 2A DD 2A"
+					"patch"		"90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90"
+				}
+				// on win, the SetPoseParameter here is not the same call as in RestoreEntityFromRecords,
+				// but a wrapper function (atm xref to SetPoseParameter with highest address)
+				// may be easier to start at CStudioHdr::GetNumPoseParameters, which should be referenced nearby as a loop condition
+				"windows" // nop from jump start up to SetPoseParameter call
+				{
+					"offset"	"CB4h"
+					"verify"	"D9 2A 51 D9 2A 2A 57 8B 2A E8 2A 2A 2A 2A"
+					"patch"		"90 90 90 90 90 90 90 90 90 90 90 90 90 90"
 				}
 			}
 		}
@@ -1106,7 +1170,8 @@
 			}
 			"CAI_ScriptConditions::EvaluationThink" // void CAI_ScriptConditions::EvaluationThink()
 			{
-				"windows" "\x55\x8B\xEC\x83\xEC\x1C\x56\x8B\xF1\x80\xBE\x88\x03\x00\x00\x01" // str: "%s WARNING: Player is NOTARGET"
+				// str: "%s WARNING: Player is NOTARGET"
+				"windows" "\x55\x8B\xEC\x83\xEC\x1C\x56\x8B\xF1\x80\xBE\x88\x03\x00\x00\x01"
 				"linux" "@_ZN20CAI_ScriptConditions15EvaluationThinkEv"
 			}
 		}
