@@ -121,6 +121,10 @@ void LoadGameData()
 	LoadDHookVirtual(pGameConfig, hkStartObserverMode, "CBasePlayer::StartObserverMode");
 	#endif
 
+	#if defined ENTPATCH_BM_TAU_VELOCITY
+	LoadDHookVirtual(pGameConfig, hkTauItemPostFrame, "CWeapon_Tau::ItemPostFrame");
+	#endif
+
 	// Detour Hooks
 	
 	#if defined PLAYERPATCH_SETSUITUPDATE
@@ -656,6 +660,15 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 	}
 	else // !isNPC
 	{
+		#if defined ENTPATCH_BM_TAU_VELOCITY
+		if (strcmp(szClassname, "weapon_tau") == 0)
+		{
+			DHookEntity(hkTauItemPostFrame, false, iEntIndex, _, Hook_TauItemPostFrame);
+			DHookEntity(hkTauItemPostFrame, true, iEntIndex, _, Hook_TauItemPostFramePost);
+			return;
+		}
+		#endif
+
 		#if defined ENTPATCH_TRIGGER_CHANGELEVEL
 		if (strcmp(szClassname, "trigger_changelevel") == 0)
 		{
