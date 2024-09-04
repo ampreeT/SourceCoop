@@ -665,6 +665,7 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 		{
 			DHookEntity(hkTauItemPostFrame, false, iEntIndex, _, Hook_TauItemPostFrame);
 			DHookEntity(hkTauItemPostFrame, true, iEntIndex, _, Hook_TauItemPostFramePost);
+			return;
 		}
 		#endif
 
