@@ -501,6 +501,13 @@
 					}
 				}
 			}
+			"CWeapon_Tau::ItemPostFrame"
+			{
+				"offset"	"CWeapon_Tau::ItemPostFrame"
+				"hooktype"	"entity"
+				"return"	"void"
+				"this"		"entity"
+			}
 
 			//   _____  ______ _______ ____  _    _ _____  
 			//  |  __ \|  ____|__   __/ __ \| |  | |  __ \ 
@@ -1061,6 +1068,11 @@
 			{
 				"windows"	"343"
 				"linux"		"344"
+			}
+			"CWeapon_Tau::ItemPostFrame"	// CWeapon_Tau::ItemPostFrame(CWeapon_Tau *)
+			{
+				"windows"	"279"
+				"linux"		"280"
 			}
 		}
 	}

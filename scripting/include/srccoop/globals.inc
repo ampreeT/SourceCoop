@@ -111,6 +111,10 @@ DynamicHook hkForceRespawn;
 DynamicHook hkStartObserverMode;
 #endif
 
+#if defined ENTPATCH_BM_TAU_VELOCITY
+DynamicHook hkTauItemPostFrame;
+#endif
+
 #if defined PLAYERPATCH_SETSUITUPDATE
 DynamicDetour hkSetSuitUpdate;
 #endif

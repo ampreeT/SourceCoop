@@ -1287,3 +1287,32 @@ public MRESReturn Hook_TrackTrainBlocked(int _this, Handle hReturn, Handle hPara
 	
 	return MRES_Ignored;
 }
+
+
+//------------------------------------------------------
+// weapon_tau
+// Patches the tau velocity call to `CWeapon_Tau::FireBeam`
+// by hooking the virtual function that calls it.
+//------------------------------------------------------
+public MRESReturn Hook_TauItemPostFrame(int _this, Handle hReturn)
+{
+	if (CoopManager.IsCoopModeEnabled())
+	{
+		g_bIsMultiplayerOverride = false;
+	}
+	return MRES_Ignored;
+}
+
+//------------------------------------------------------
+// weapon_tau
+// Patches the tau velocity call to `CWeapon_Tau::FireBeam`
+// by hooking the virtual function that calls it.
+//------------------------------------------------------
+public MRESReturn Hook_TauItemPostFramePost(int _this, Handle hReturn)
+{
+	if (CoopManager.IsCoopModeEnabled())
+	{
+		g_bIsMultiplayerOverride = true;
+	}
+	return MRES_Ignored;
+}
