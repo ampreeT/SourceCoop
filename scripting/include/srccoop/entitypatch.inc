@@ -8,55 +8,31 @@
 
 // Patches common to multiple source games
 
-void SetLocalPlayerCallingEntity(int iEntIndex)
+/**
+ * Sets an index of a player or entity for which a player will be searched on demand.
+ */
+void SetLocalPlayerEntity(int iEntIndex)
 {
-	SetLocalPlayerCallingEntityEx(CBaseEntity(iEntIndex));
+	SetLocalPlayerEntityEx(CBaseEntity(iEntIndex));
 }
 
-void SetLocalPlayerCallingEntityEx(CBaseEntity pEntity)
+/**
+ * Sets a player or entity for which a player will be searched on demand.
+ */
+void SetLocalPlayerEntityEx(CBaseEntity pEntity)
 {
 	#if defined DEBUG
 	if (g_pLocalPlayerEntity != NULL_CBASEENTITY)
 	{
-		LogDebug("WARN: SetLocalPlayerCallingEntity, but one has already been set (%d).", g_pLocalPlayerEntity.entindex);
+		LogDebug("WARN: SetLocalPlayerEntity, but one has already been set (%d).", g_pLocalPlayerEntity.entindex);
 	}
 	#endif
 	g_pLocalPlayerEntity = pEntity;
 }
 
-void ClearLocalPlayerCallingEntity()
+void ClearLocalPlayerEntity()
 {
 	g_pLocalPlayerEntity = NULL_CBASEENTITY;
-}
-
-public bool HasAnyPlayerWalkedIntoWakeRadius(CAI_BaseNPC pBaseNPC)
-{
-	float flWakeRadius = pBaseNPC.GetWakeRadius();
-	bool bHasBigEnoughRadius = flWakeRadius > 0.1;
-	if (!bHasBigEnoughRadius)
-	{
-		return false;
-	}
-
-	float vec3EntityPosition[3];
-	pBaseNPC.GetAbsOrigin(vec3EntityPosition);
-
-	for (int i = 1; i <= MaxClients; ++i)
-	{
-		CBasePlayer pPlayer = CBasePlayer(i);
-		if (pPlayer.IsValid() && pPlayer.IsAlive() && !(pPlayer.GetFlags() & FL_NOTARGET))
-		{
-			float vec3PlayerPosition[3];
-			pPlayer.GetAbsOrigin(vec3PlayerPosition);
-
-			if (GetVectorDistance(vec3EntityPosition, vec3PlayerPosition) <= flWakeRadius)
-			{
-				return true;
-			}
-		}
-	}
-
-	return false;
 }
 
 //------------------------------------------------------
@@ -124,6 +100,57 @@ public MRESReturn Hook_BaseNPCKeyValuePost(int _this, Handle hReturn, Handle hPa
 public MRESReturn BaseNPCSetModelBlock(int _this, Handle hParams)
 {
 	return MRES_Supercede;
+}
+
+//------------------------------------------------------
+// CAI_BaseNPC::Think
+// Universal GetLocalPlayer pre-setter
+// ran before NPC thinks
+//------------------------------------------------------
+public MRESReturn Hook_BaseNPCThink(int _this)
+{
+	SetLocalPlayerEntity(_this);
+	return MRES_Ignored;
+}
+
+public MRESReturn Hook_BaseNPCThinkPost(int _this)
+{
+	ClearLocalPlayerEntity();
+	return MRES_Ignored;
+}
+
+// NPC Prethink runs as part of Think and guards calls to RunAI and movement.
+// Returning false acts functionally the same as setting ai_disable.
+// This hook is only active when there are no real players on the server!
+public MRESReturn Hook_NpcPreThinkNoPlayers(int _this, DHookReturn hReturn)
+{
+	hReturn.Value = false;
+	return MRES_Supercede;
+}
+
+//------------------------------------------------------
+// CAI_BaseNPC::HandleAnimEvent
+// Universal GetLocalPlayer pre-setter
+// ran before NPC processes animation events
+//------------------------------------------------------
+public MRESReturn Hook_BaseNPCHandleAnimEvent(int _this, Handle hParams)
+{
+	// if (!g_iPlayerCount)
+	// {
+	// 	return MRES_Supercede;
+	// }
+	// SetLocalPlayerEntity(_this);
+	if (g_pLocalPlayerEntity == NULL_CBASEENTITY)
+	{
+		LogDebug("No local entity in Hook_BaseNPCHandleAnimEvent.");
+	}
+	return MRES_Ignored;
+}
+
+public MRESReturn Hook_BaseNPCHandleAnimEventPost(int _this, Handle hParams)
+{
+	// ClearLocalPlayerEntity();
+	return MRES_Ignored;
 }
 
 //------------------------------------------------------
@@ -548,9 +575,9 @@ public MRESReturn Hook_EnvZoomAcceptInput(int _this, Handle hReturn, Handle hPar
 			bHookSkip = true;
 			if (iNewClient > 0)
 			{
-				SetLocalPlayerCallingEntity(iNewClient);
+				SetLocalPlayerEntity(iNewClient);
 				AcceptEntityInput(_this, szNewInput);
-				ClearLocalPlayerCallingEntity();
+				ClearLocalPlayerEntity();
 			}
 			else
 			{
@@ -558,9 +585,9 @@ public MRESReturn Hook_EnvZoomAcceptInput(int _this, Handle hReturn, Handle hPar
 				{
 					if (IsClientInGame(i))
 					{
-						SetLocalPlayerCallingEntity(i);
+						SetLocalPlayerEntity(i);
 						AcceptEntityInput(_this, szNewInput);
-						ClearLocalPlayerCallingEntity();
+						ClearLocalPlayerEntity();
 					}
 				}
 			}
@@ -865,14 +892,14 @@ public MRESReturn Hook_AIConditionsThink(int _this)
 			return MRES_Supercede;
 		}
 
-		SetLocalPlayerCallingEntityEx(pPlayer);
+		SetLocalPlayerEntityEx(pPlayer);
 	}
 	return MRES_Ignored;
 }
 
 public MRESReturn Hook_AIConditionsThinkPost(int _this)
 {
-	ClearLocalPlayerCallingEntity();
+	ClearLocalPlayerEntity();
 	return MRES_Ignored;
 }
 
@@ -1037,6 +1064,36 @@ public MRESReturn Hook_BaseNpcUpdateSleepState(int _this, Handle hParams)
 	}
 
 	return MRES_Supercede;
+}
+
+public bool HasAnyPlayerWalkedIntoWakeRadius(CAI_BaseNPC pBaseNPC)
+{
+	float flWakeRadius = pBaseNPC.GetWakeRadius();
+	bool bHasBigEnoughRadius = flWakeRadius > 0.1;
+	if (!bHasBigEnoughRadius)
+	{
+		return false;
+	}
+
+	float vec3EntityPosition[3];
+	pBaseNPC.GetAbsOrigin(vec3EntityPosition);
+
+	for (int i = 1; i <= MaxClients; ++i)
+	{
+		CBasePlayer pPlayer = CBasePlayer(i);
+		if (pPlayer.IsValid() && pPlayer.IsAlive() && !(pPlayer.GetFlags() & FL_NOTARGET))
+		{
+			float vec3PlayerPosition[3];
+			pPlayer.GetAbsOrigin(vec3PlayerPosition);
+
+			if (GetVectorDistance(vec3EntityPosition, vec3PlayerPosition) <= flWakeRadius)
+			{
+				return true;
+			}
+		}
+	}
+
+	return false;
 }
 
 // `SelectSchedule` crashes because a null local player pointer was accessed.

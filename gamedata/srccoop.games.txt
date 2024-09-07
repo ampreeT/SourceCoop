@@ -592,6 +592,13 @@
 					}
 				}
 			}
+			"CAI_BaseNPC::PreThink"
+			{
+				"signature"	"CAI_BaseNPC::PreThink"
+				"callconv"	"thiscall"
+				"return"	"bool"
+				"this"		"entity"
+			}
 			"CBoneSetup::AccumulatePose"
 			{
 				"signature"	"CBoneSetup::AccumulatePose"
@@ -763,6 +770,11 @@
 			{
 				"windows"	"\x55\x8B\xEC\x56\x8B\xF1\x83\xBE\x8C\x09\x00\x00\x00\x2A\x2A\x2A\x2A\x2A\x2A\xA1\xD0\x91"	// str: "CAI_BaseNPC::UpdateSleepState called with NULL pLocalPlayer\n"
 				"linux"		"@_ZN11CAI_BaseNPC16UpdateSleepStateEb"
+			}
+			"CAI_BaseNPC::PreThink"	// bool CAI_BaseNPC::PreThink( void )
+			{
+				"windows"	"\x55\x8B\xEC\x83\xEC\x2C\xA1\x2A\x2A\x2A\x2A\x33\xC5\x89\x45\xFC\xA1\x2A\x2A\x2A\x2A"	// str: "A.I. Disabled...\n"
+				"linux"		"@_ZN11CAI_BaseNPC8PreThinkEv"
 			}
 			"CreateServerRagdoll" // CBaseEntity CreateServerRagdoll(CBaseAnimating *, int, const CTakeDamageInfo *, int, bool)
 			{

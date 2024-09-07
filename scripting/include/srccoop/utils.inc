@@ -741,8 +741,8 @@ stock int GetRealClientCount(bool bInGameOnly, bool bAliveOnly = false, bool bNo
 		if ((bInGameOnly? IsClientInGame(i) : IsClientConnected(i))
 			&& !IsFakeClient(i)
 			&& (!bAliveOnly || IsPlayerAlive(i))
-			&& (!bNoSpectators || GetClientTeam(i) != TEAM_SPECTATOR)
-		) {
+			&& (!bNoSpectators || GetClientTeam(i) != TEAM_SPECTATOR))
+		{
  			clients++;
  		}
  	}

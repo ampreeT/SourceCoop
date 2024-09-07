@@ -162,6 +162,8 @@ void LoadGameData()
 		LoadDHookDetour(pGameConfig, hkTestGroundMove, "CAI_MoveProbe::TestGroundMove", Hook_TestGroundMove);
 	}
 	#endif
+	
+	LoadDHookDetour(pGameConfig, hkNpcPreThink, "CAI_BaseNPC::PreThink", Hook_NpcPreThinkNoPlayers);
 
 	// Memory Patches
 
@@ -257,7 +259,6 @@ public void OnPluginStart()
 	HookUserMessage(GetUserMessageId("TextMsg"), UserMessage_TextMsg, true);
 	HookEvent("player_death", Event_PlayerDeath, EventHookMode_Pre);
 	HookEvent("entity_killed", Event_EntityKilled, EventHookMode_Pre);
-	
 	HookEvent("player_disconnect", Event_PlayerDisconnect);
 	AddNormalSoundHook(PlayerSoundListener);
 	AddCommandListener(PlayerCommandListener);
@@ -413,6 +414,12 @@ public void OnClientPutInServer(int client)
 	if (IsFakeClient(client))
 		return;
 	
+	if (!g_iPlayerCount++)
+	{
+		// unpause npcs
+		hkNpcPreThink.Disable(Hook_Pre, Hook_NpcPreThinkNoPlayers);
+	}
+
 	CBasePlayer pPlayer = CBasePlayer(client);
 	CCoopSpawnSystem.OnClientPutInServer(client);
 	ItemInstancingManager.OnClientPutInServer(client);
@@ -471,6 +478,15 @@ public void OnClientDisconnect_Post(int client)
 	g_szSteamIds[client] = "";
 	g_bPostTeamSelect[client] = false;
 	g_iAddButtons[client] = 0;
+
+	if (g_iPlayerCount)
+	{
+		g_iPlayerCount = GetRealClientCount(true);
+		if (!g_iPlayerCount)
+		{
+			hkNpcPreThink.Enable(Hook_Pre, Hook_NpcPreThinkNoPlayers);
+		}
+	}
 }
 
 public Action UserMessage_TextMsg(UserMsg pMsg, BfRead bf, const int[] pPlayers, int iPlayerCount, bool bReliable, bool bInitialize)
@@ -525,6 +541,11 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 
 	if (isNPC)
 	{
+		DHookEntity(hkThink, false, iEntIndex, _, Hook_BaseNPCThink);
+		DHookEntity(hkThink, true, iEntIndex, _, Hook_BaseNPCThinkPost);
+		DHookEntity(hkHandleAnimEvent, false, iEntIndex, _, Hook_BaseNPCHandleAnimEvent);
+		DHookEntity(hkHandleAnimEvent, true, iEntIndex, _, Hook_BaseNPCHandleAnimEventPost);
+		
 		#if defined ENTPATCH_CUSTOM_NPC_MODELS
 		DHookEntity(hkKeyValue_char, true, iEntIndex, _, Hook_BaseNPCKeyValuePost);
 		#endif
@@ -552,10 +573,10 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 			DHookEntity(hkIsPlayerAlly, true, iEntIndex, _, Hook_IsPlayerAlly);
 			#endif
 
-			#if defined ENTPATCH_PLAYER_COMPANION
-			DHookEntity(hkRunAI, false, iEntIndex, _, Hook_PlayerCompanionRunAI);
-			DHookEntity(hkRunAI, true, iEntIndex, _, Hook_PlayerCompanionRunAIPost);
-			#endif
+			// #if defined ENTPATCH_PLAYER_COMPANION
+			// DHookEntity(hkRunAI, false, iEntIndex, _, Hook_PlayerCompanionRunAI);
+			// DHookEntity(hkRunAI, true, iEntIndex, _, Hook_PlayerCompanionRunAIPost);
+			// #endif
 			return;
 		}
 
@@ -565,21 +586,21 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 			DHookEntity(hkIsPlayerAlly, true, iEntIndex, _, Hook_IsPlayerAlly);
 			#endif
 
-			#if defined ENTPATCH_PLAYER_COMPANION
-			DHookEntity(hkRunAI, false, iEntIndex, _, Hook_PlayerCompanionRunAI);
-			DHookEntity(hkRunAI, true, iEntIndex, _, Hook_PlayerCompanionRunAIPost);
-			#endif
+			// #if defined ENTPATCH_PLAYER_COMPANION
+			// DHookEntity(hkRunAI, false, iEntIndex, _, Hook_PlayerCompanionRunAI);
+			// DHookEntity(hkRunAI, true, iEntIndex, _, Hook_PlayerCompanionRunAIPost);
+			// #endif
 			return;
 		}
 		
-		#if defined ENTPATCH_PLAYER_COMPANION
-		if (strcmp(szClassname, "npc_gman") == 0)
-		{
-			DHookEntity(hkRunAI, false, iEntIndex, _, Hook_PlayerCompanionRunAI);
-			DHookEntity(hkRunAI, true, iEntIndex, _, Hook_PlayerCompanionRunAIPost);
-			return;
-		}
-		#endif
+		// #if defined ENTPATCH_PLAYER_COMPANION
+		// if (strcmp(szClassname, "npc_gman") == 0)
+		// {
+		// 	DHookEntity(hkRunAI, false, iEntIndex, _, Hook_PlayerCompanionRunAI);
+		// 	DHookEntity(hkRunAI, true, iEntIndex, _, Hook_PlayerCompanionRunAIPost);
+		// 	return;
+		// }
+		// #endif
 		
 		#endif // SRCCOOP_BLACKMESA
 
@@ -587,11 +608,11 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 		if (strcmp(szClassname, "npc_xenturret", false) == 0)
 		{
 			SDKHook(iEntIndex, SDKHook_SpawnPost, Hook_XenTurretSpawnPost);
-			DHookEntity(hkProtoSniperSelectSchedule, false, iEntIndex, _, Hook_XenTurretSelectSchedule);
-			DHookEntity(hkHandleAnimEvent, false, iEntIndex, _, Hook_XenTurretHandleAnimEvent);
-			DHookEntity(hkHandleAnimEvent, true, iEntIndex, _, Hook_XenTurretHandleAnimEventPost);
-			DHookEntity(hkRunAI, false, iEntIndex, _, Hook_XenTurretRunAI);
-			DHookEntity(hkRunAI, true, iEntIndex, _, Hook_XenTurretRunAIPost);
+			// DHookEntity(hkProtoSniperSelectSchedule, false, iEntIndex, _, Hook_XenTurretSelectSchedule);
+			// DHookEntity(hkHandleAnimEvent, false, iEntIndex, _, Hook_XenTurretHandleAnimEvent);
+			// DHookEntity(hkHandleAnimEvent, true, iEntIndex, _, Hook_XenTurretHandleAnimEventPost);
+			// DHookEntity(hkRunAI, false, iEntIndex, _, Hook_XenTurretRunAI);
+			// DHookEntity(hkRunAI, true, iEntIndex, _, Hook_XenTurretRunAIPost);
 			return;
 		}
 		#endif
@@ -613,34 +634,34 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 		}
 		#endif
 
-		#if defined ENTPATCH_BM_HOUNDEYE
-		if (strncmp(szClassname, "npc_houndeye", 12) == 0)
-		{
-			DHookEntity(hkThink, false, iEntIndex, _, Hook_HoundeyeThink);
-			DHookEntity(hkThink, true, iEntIndex, _, Hook_HoundeyeThinkPost);
-			return;
-		}
-		#endif
+		// #if defined ENTPATCH_BM_HOUNDEYE
+		// if (strncmp(szClassname, "npc_houndeye", 12) == 0)
+		// {
+		// 	DHookEntity(hkThink, false, iEntIndex, _, Hook_HoundeyeThink);
+		// 	DHookEntity(hkThink, true, iEntIndex, _, Hook_HoundeyeThinkPost);
+		// 	return;
+		// }
+		// #endif
 
-		#if defined ENTPATCH_BM_GONARCH
-		if (strcmp(szClassname, "npc_gonarch") == 0)
-		{
-			DHookEntity(hkRunAI, false, iEntIndex, _, Hook_GonarchRunAI);
-			DHookEntity(hkRunAI, true, iEntIndex, _, Hook_GonarchRunAIPost);
-			return;
-		}
-		#endif
+		// #if defined ENTPATCH_BM_GONARCH
+		// if (strcmp(szClassname, "npc_gonarch") == 0)
+		// {
+		// 	DHookEntity(hkRunAI, false, iEntIndex, _, Hook_GonarchRunAI);
+		// 	DHookEntity(hkRunAI, true, iEntIndex, _, Hook_GonarchRunAIPost);
+		// 	return;
+		// }
+		// #endif
 
-		#if defined ENTPATCH_BM_NIHILANTH
-		if (strcmp(szClassname, "npc_nihilanth") == 0)
-		{
-			DHookEntity(hkRunAI, false, iEntIndex, _, Hook_NihilanthRunAI);
-			DHookEntity(hkRunAI, true, iEntIndex, _, Hook_NihilanthRunAIPost);
-			DHookEntity(hkHandleAnimEvent, false, iEntIndex, _, Hook_NihilanthHandleAnimEvent);
-			DHookEntity(hkHandleAnimEvent, true, iEntIndex, _, Hook_NihilanthHandleAnimEventPost);
-			return;
-		}
-		#endif
+		// #if defined ENTPATCH_BM_NIHILANTH
+		// if (strcmp(szClassname, "npc_nihilanth") == 0)
+		// {
+		// 	DHookEntity(hkRunAI, false, iEntIndex, _, Hook_NihilanthRunAI);
+		// 	DHookEntity(hkRunAI, true, iEntIndex, _, Hook_NihilanthRunAIPost);
+		// 	DHookEntity(hkHandleAnimEvent, false, iEntIndex, _, Hook_NihilanthHandleAnimEvent);
+		// 	DHookEntity(hkHandleAnimEvent, true, iEntIndex, _, Hook_NihilanthHandleAnimEventPost);
+		// 	return;
+		// }
+		// #endif
 
 		#if defined ENTPATCH_BM_PUFFBALLFUNGUS
 		if (strcmp(szClassname, "npc_puffballfungus") == 0)

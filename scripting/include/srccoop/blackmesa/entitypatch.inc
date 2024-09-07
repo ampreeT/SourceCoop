@@ -10,7 +10,8 @@
 
 //------------------------------------------------------
 // CNPC_Human_Scientist - npc_human_scientist*
-// crash fix on getting scared
+// works around a crash on scientists getting scared
+// (AI_GetSinglePlayer() in CAI_FearBehavior::FindFearWithdrawalDest)
 //------------------------------------------------------
 public MRESReturn Hook_ScientistIRelationType(int _this, Handle hReturn, Handle hParams)
 {
@@ -41,13 +42,13 @@ public MRESReturn Hook_PlayerCompanionRunAI(int _this)
 	{
 		return MRES_Supercede;
 	}
-	SetLocalPlayerCallingEntityEx(pPlayer);
+	SetLocalPlayerEntityEx(pPlayer);
 	return MRES_Ignored;
 }
 
 public MRESReturn Hook_PlayerCompanionRunAIPost(int _this)
 {
-	ClearLocalPlayerCallingEntity();
+	ClearLocalPlayerEntity();
 	return MRES_Ignored;
 }
 
@@ -137,13 +138,13 @@ public MRESReturn Hook_IchthyosaurIdleSound(int _this)
 //------------------------------------------------------
 public MRESReturn Hook_HoundeyeThink(int _this)
 {
-	SetLocalPlayerCallingEntity(_this);
+	SetLocalPlayerEntity(_this);
 	return MRES_Ignored;
 }
 
 public MRESReturn Hook_HoundeyeThinkPost(int _this)
 {
-	ClearLocalPlayerCallingEntity();
+	ClearLocalPlayerEntity();
 	return MRES_Ignored;
 }
 
@@ -159,13 +160,13 @@ public MRESReturn Hook_GonarchRunAI(int _this)
 	{
 		return MRES_Supercede;
 	}
-	SetLocalPlayerCallingEntityEx(pPlayer);
+	SetLocalPlayerEntityEx(pPlayer);
 	return MRES_Ignored;
 }
 
 public MRESReturn Hook_GonarchRunAIPost(int _this)
 {
-	ClearLocalPlayerCallingEntity();
+	ClearLocalPlayerEntity();
 	return MRES_Ignored;
 }
 
@@ -181,12 +182,12 @@ public MRESReturn Hook_NihilanthRunAI(int _this)
 	{
 		return MRES_Supercede;
 	}
-	SetLocalPlayerCallingEntityEx(pPlayer);
+	SetLocalPlayerEntityEx(pPlayer);
 	return MRES_Ignored;
 }
 public MRESReturn Hook_NihilanthRunAIPost(int _this)
 {
-	ClearLocalPlayerCallingEntity();
+	ClearLocalPlayerEntity();
 	return MRES_Ignored;
 }
 
@@ -218,12 +219,12 @@ public Action Hook_PuffballFungusDmg(int victim, int &attacker, int &inflictor, 
 /**
 public MRESReturn Hook_PropChargerThink(int _this)
 {
-	SetLocalPlayerCallingEntity(_this);
+	SetLocalPlayerEntity(_this);
 	return MRES_Ignored;
 }
 public MRESReturn Hook_PropChargerThinkPost(int _this)
 {
-	ClearLocalPlayerCallingEntity();
+	ClearLocalPlayerEntity();
 	return MRES_Ignored;
 }
 **/
@@ -263,12 +264,12 @@ public MRESReturn Hook_XenTurretHandleAnimEvent(int _this, Handle hParams)
 	{
 		return MRES_Supercede;
 	}
-	SetLocalPlayerCallingEntity(_this);
+	SetLocalPlayerEntity(_this);
 	return MRES_Ignored;
 }
 public MRESReturn Hook_XenTurretHandleAnimEventPost(int _this, Handle hParams)
 {
-	ClearLocalPlayerCallingEntity();
+	ClearLocalPlayerEntity();
 	return MRES_Ignored;
 }
 
@@ -278,12 +279,12 @@ public MRESReturn Hook_XenTurretRunAI(int _this)
 	{
 		return MRES_Supercede;
 	}
-	SetLocalPlayerCallingEntity(_this);
+	SetLocalPlayerEntity(_this);
 	return MRES_Ignored;
 }
 public MRESReturn Hook_XenTurretRunAIPost(int _this)
 {
-	ClearLocalPlayerCallingEntity();
+	ClearLocalPlayerEntity();
 	return MRES_Ignored;
 }
 
@@ -435,7 +436,7 @@ void OnEntityDestroyed_Marionettist(CBaseEntity pEntity)
 					pPlayer.SetMoveType(MOVETYPE_WALK);
 				}
 			}
-			g_pActiveMarionettist[i] = CBaseEntity(-1);
+			g_pActiveMarionettist[i] = NULL_CBASEENTITY;
 			break;
 		}
 	}
