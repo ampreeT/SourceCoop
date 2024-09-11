@@ -164,3 +164,57 @@ methodmap CBM_MP_GameRules < CMultiplayRules
 		GameRules_SetProp(szStateProp, bInIntermission, _, STATE_ELEMENT_IS_IN_INTERMISSION);
 	}
 }
+
+methodmap CBlackMesaBaseCombatWeapon < CBaseCombatWeapon
+{
+	public CBlackMesaBaseCombatWeapon(const int iEntIndex = -1)
+	{
+		return view_as<CBlackMesaBaseCombatWeapon>(CBaseCombatWeapon(iEntIndex));
+	}
+}
+
+methodmap CBlackMesaBaseCombatWeaponIronsights < CBlackMesaBaseCombatWeapon
+{
+	public CBlackMesaBaseCombatWeaponIronsights(const int iEntIndex = -1)
+	{
+		return view_as<CBlackMesaBaseCombatWeaponIronsights>(CBlackMesaBaseCombatWeapon(iEntIndex));
+	}
+
+	public bool IsInIronsights()
+	{
+		return view_as<bool>(GetEntProp(this.GetEntIndex(), Prop_Send, "m_bIronSights"));
+	}
+	public bool IsInIronsightsPostProcess()
+	{
+		return view_as<bool>(GetEntProp(this.GetEntIndex(), Prop_Send, "m_bIronSightsScopePostprocess"));
+	}
+	public bool SetIronsights(const bool bIronsights)
+	{
+		SetEntProp(this.GetEntIndex(), Prop_Send, "m_bIronSights", bIronsights);
+	}
+	public bool SetIronsightsPostProcess(const bool bIronsights)
+	{
+		SetEntProp(this.GetEntIndex(), Prop_Send, "m_bIronSightsScopePostprocess", bIronsights);
+	}
+}
+
+methodmap CWeapon_Crossbow < CBlackMesaBaseCombatWeaponIronsights
+{
+	public CWeapon_Crossbow(const int iEntIndex = -1)
+	{
+		return view_as<CWeapon_Crossbow>(CBlackMesaBaseCombatWeaponIronsights(iEntIndex));
+	}
+	public static CWeapon_Crossbow Create()
+	{
+		return CWeapon_Crossbow(CreateEntityByName("weapon_crossbow"));
+	}
+
+	public bool IsRearming()
+	{
+		return GetEntProp(this.GetEntIndex(), Prop_Send, "m_bNeedsToRearm") != 0;
+	}
+	public void SetRearming(const bool bRearming)
+	{
+		SetEntProp(this.GetEntIndex(), Prop_Send, "m_bNeedsToRearm", bRearming);
+	}
+}

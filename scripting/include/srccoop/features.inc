@@ -23,6 +23,7 @@ enum SourceCoopFeature
 	FT_CHANGELEVEL_FX						=	(1 << 12),
 	FT_KEEP_EQUIPMENT						=	(1 << 13),
 	FT_TRANSFER_PLAYER_STATE				=	(1 << 14),
+	FT_SP_WEAPONS							=	(1 << 15),
 }
 
 methodmap FeatureMap < StringMap
@@ -45,6 +46,7 @@ methodmap FeatureMap < StringMap
 		pMap.SetValue("CHANGELEVEL_FX", FT_CHANGELEVEL_FX);
 		pMap.SetValue("KEEP_EQUIPMENT", FT_KEEP_EQUIPMENT);
 		pMap.SetValue("TRANSFER_PLAYER_STATE", FT_TRANSFER_PLAYER_STATE);
+		pMap.SetValue("SP_WEAPONS", FT_SP_WEAPONS);
 		
 		return view_as<FeatureMap>(pMap);
 	}

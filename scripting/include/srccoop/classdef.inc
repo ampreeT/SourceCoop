@@ -35,6 +35,7 @@ Handle g_pSendWeaponAnim;
 Handle g_pWeaponSwitch;
 Handle g_pWorldSpaceCenter;
 Handle g_pGetPlayerState;
+Handle g_pSelectWeightedSequence;
 
 int g_iCSoundSize = -1;
 int g_iCPlayerState_frags = -1;
@@ -303,6 +304,17 @@ stock void InitClassdef(GameData pGameConfig)
 		PrepSDKCall_AddParameter(SDKType_Edict, SDKPass_Pointer);
 		PrepSDKCall_SetReturnInfo(SDKType_PlainOldData, SDKPass_Plain);
 		if (!(g_pGetPlayerState = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szGetPlayerState);
+	}
+
+	char szSelectWeightedSequence[] = "CBaseAnimating::SelectWeightedSequence";
+	StartPrepSDKCall(SDKCall_Entity);
+	if (!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Virtual, szSelectWeightedSequence))
+		LogMessage("Could not obtain gamedata offset %s", szSelectWeightedSequence);
+	else
+	{
+		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
+		PrepSDKCall_SetReturnInfo(SDKType_PlainOldData, SDKPass_Plain);
+		if (!(g_pSelectWeightedSequence = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szSelectWeightedSequence);
 	}
 
 	#if defined SRCCOOP_BLACKMESA
@@ -960,6 +972,14 @@ methodmap CBaseAnimating < CBaseEntity
 		return view_as<CBaseAnimating>(CBaseEntity(iEntIndex));
 	}
 
+	public int GetSkin()
+	{
+		return GetEntProp(this.GetEntIndex(), Prop_Send, "m_nSkin");
+	}
+	public int SetSkin(const int iSkin)
+	{
+		SetEntProp(this.GetEntIndex(), Prop_Send, "m_nSkin", iSkin);
+	}
 	public float GetModelScale()
 	{
 		return GetEntPropFloat(this.GetEntIndex(), Prop_Send, "m_flModelScale");
@@ -1008,9 +1028,18 @@ methodmap CBaseAnimating < CBaseEntity
 	{
 		return GetEntProp(this.GetEntIndex(), Prop_Send, "m_nForceBone");
 	}
-	public void SetForceBone(int iForceBone)
+	public void SetForceBone(const int iForceBone)
 	{
 		SetEntProp(this.GetEntIndex(), Prop_Send, "m_nForceBone", iForceBone);
+	}
+	public int SelectWeightedSequence(const int iActivity)
+	{
+		// TODO:
+		// This is currently only implemented in Black Mesa but it may be required for others.
+		// Reimplement the logic from scratch.
+		if (!g_pSelectWeightedSequence)
+			ThrowError("`CBaseAnimating::SelectWeightedSequence` is not implemented as a virtual function in this game.");
+		return SDKCall(g_pSelectWeightedSequence, this.GetEntIndex(), iActivity);
 	}
 }
 
@@ -1284,9 +1313,9 @@ methodmap CBaseCombatWeapon < CBaseAnimating
 		return view_as<CBaseCombatWeapon>(CBaseAnimating(iEntIndex));
 	}
 	
-	public CBaseEntity GetOwner()
+	public CBaseCombatCharacter GetOwner()
 	{
-		return CBaseEntity(GetEntPropEnt(this.GetEntIndex(), Prop_Send, "m_hOwner"));
+		return CBaseCombatCharacter(GetEntPropEnt(this.GetEntIndex(), Prop_Send, "m_hOwner"));
 	}
 	public int GetPrimaryAmmo()
 	{
@@ -1368,6 +1397,10 @@ methodmap CBaseCombatWeapon < CBaseAnimating
 	{
 		return SDKCall(g_pSendWeaponAnim, this.GetEntIndex(), iActivity);
 	}
+	public bool IsReloading()
+	{
+		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_bInReload") != 0;
+	} 
 }
 
 methodmap CPredictedViewModel < CBaseAnimating
@@ -1952,6 +1985,18 @@ methodmap CBasePlayer < CBaseCombatCharacter
 	{
 		SetEntProp(this.GetEntIndex(), Prop_Send, "m_iHideHUD", iHideHud);
 	}
+	public void ShowCrosshair(const bool bShow)
+	{
+		int iHideHUD = this.GetHideHud();
+		if (bShow)
+		{
+			this.SetHideHud(iHideHUD & ~HIDEHUD_CROSSHAIR);
+		}
+		else
+		{
+			this.SetHideHud(iHideHUD | HIDEHUD_CROSSHAIR);
+		}
+	}
 	public void SetTeam(const int iTeamIndex)
 	{
 		ChangeClientTeam(this.GetEntIndex(), iTeamIndex);
@@ -2036,6 +2081,74 @@ methodmap CBasePlayer < CBaseCombatCharacter
 			this.GetLadder().FireOutput("OnPlayerGotOffLadder", this.GetEntIndex());
 		}
 		SetEntPropEnt(this.GetEntIndex(), Prop_Data, "m_hLadder", pLadder.entindex);
+	}
+	public int GetDefaultFOV()
+	{
+		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_iDefaultFOV");
+	}
+	public int GetFOV()
+	{
+		int iFOV = GetEntProp(this.GetEntIndex(), Prop_Data, "m_iFOV");
+		iFOV = iFOV == 0 ? this.GetDefaultFOV() : iFOV;
+
+		float flFOVRate = GetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flFOVRate");
+		if (flFOVRate == 0.0)
+			return iFOV;
+		
+		float flDeltaTime = (GetGameTime() - GetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flFOVTime")) / flFOVRate;
+		if (flDeltaTime >= 1.0)
+		{
+			SetEntProp(this.GetEntIndex(), Prop_Data, "m_iFOVStart", iFOV);
+			return iFOV;
+		}
+		else
+		{
+			float flFOVStart = float(GetEntProp(this.GetEntIndex(), Prop_Data, "m_iFOVStart"));
+			return RoundFloat(SimpleSplineRemapValClamped(flDeltaTime, 0.0, 1.0, flFOVStart, float(iFOV)));
+		}
+	}
+	public bool SetFOV(CBaseEntity pRequester, const int iFOV, const float flZoomRate, const int iZoomStart = 0)
+	{
+		if (!pRequester.IsValid())
+			return false;
+		
+		CBaseEntity pZoomOwner = CBaseEntity(GetEntPropEnt(this.GetEntIndex(), Prop_Data, "m_hZoomOwner"));
+		// If we already have an owner, we only allow requests from that owner
+		if (pZoomOwner.IsValid() && pZoomOwner != pRequester)
+		{
+			if (!CanOverrideEnvZoomOwner(pZoomOwner))
+				return false;
+		}
+		else
+		{
+			if (iFOV == 0)
+			{
+				pZoomOwner = NULL_CBASEENTITY;
+			}
+			else
+			{
+				pZoomOwner = pRequester;
+			}
+			SetEntPropEnt(this.GetEntIndex(), Prop_Data, "m_hZoomOwner", pZoomOwner.GetEntIndex());
+		}
+
+		SetEntProp(this.GetEntIndex(), Prop_Data, "m_iFOVStart", iZoomStart > 0 ? iZoomStart : this.GetFOV());
+		SetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flFOVTime", GetGameTime());
+		SetEntProp(this.GetEntIndex(), Prop_Data, "m_iFOV", iFOV);
+		SetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flFOVRate", flZoomRate);
+		return true;
+	}
+	public QueryCookie QueryConvar(const char[] szCvar, ConVarQueryFinished fnCallback, any value = 0)
+	{
+		return QueryClientConVar(this.GetEntIndex(), szCvar, fnCallback, value);
+	}
+	public bool IsDrawingViewmodel()
+	{
+		return GetEntProp(this.GetEntIndex(), Prop_Send, "m_bDrawViewmodel") != 0;
+	}
+	public bool SetDrawViewmodel(const bool bDrawViewmodel)
+	{
+		SetEntProp(this.GetEntIndex(), Prop_Send, "m_bDrawViewmodel", bDrawViewmodel);
 	}
 }
 
@@ -2745,4 +2858,40 @@ methodmap CUtlVector
 	{
 		StoreToAddress(this.m_pElements() + i * elSize, data, NumberType_Int32);
 	}
+}
+
+// hermite basis function for smooth interpolation
+// Similar to Gain() above, but very cheap to call
+// value should be between 0 & 1 inclusive
+stock float SimpleSpline(const float value)
+{
+	float valueSquared = value * value;
+
+	// Nice little ease-in, ease-out spline-like curve
+	return (3.0 * valueSquared) - (2.0 * valueSquared * value);
+}
+
+stock float SimpleSplineRemapValClamped(const float val, const float A, const float B, const float C, const float D)
+{
+	if (A == B)
+		return val >= B ? D : C;
+	float cVal = (val - A) / (B - A);
+	if (cVal > 1.0)
+	{
+		cVal = 1.0;
+	}
+	else if (cVal < 0.0)
+	{
+		cVal = 0.0;
+	}
+	return C + (D - C) * SimpleSpline(cVal);
+}
+
+stock bool CanOverrideEnvZoomOwner(CBaseEntity pZoomOwner)
+{
+	char szClassname[MAX_CLASSNAME];
+	if (!pZoomOwner.GetClassname(szClassname, sizeof(szClassname)) || strcmp(szClassname, "env_zoom") != 0)
+		return false;
+	
+	return pZoomOwner.HasSpawnFlag(ENV_ZOOM_OVERRIDE);
 }

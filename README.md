@@ -217,22 +217,23 @@ ConVar: `sc_ft <FEATURE> <0 or 1>`
 >
 > It is recommended to leave these features at the default values as these are configured per map within EDT configurations. __Modifying feature values could negatively impact the gameplay experience__.
 
-| **Feature**                     | **Description**                                                                                                                    |
+| **Feature**                     | **Description** |
 |-----------------------------|--------------------------------------------------------------------------------------------------------------------------------|
-| `FIRSTPERSON_DEATHCAM`        | Enables the first-person death camera.                                                                                          |
-| `HEV_SOUNDS`                  | Enables HEV sounds.                                                                                                         |
-| `INSTANCE_ITEMS`              | Instances pickup items and weapons for each player. Instanced items disappear once picked up and 'respawn' along with the player.        |
-| `INSTANCE_ITEMS_NORESET`      | If enabled, items will not 'respawn' picked up items after death.                                                                       |
-| `KEEP_EQUIPMENT`              | Makes players spawn with previously picked up equipment (suit, weapons). Global for all players.                               |
-| `STRIP_DEFAULT_EQUIPMENT`     | Removes default multiplayer equipment.                                                                                         |
-| `STRIP_DEFAULT_EQUIPMENT_KEEPSUIT` |                                                                                                                                  |
-| `DISABLE_CANISTER_DROPS`      | Disables item drops when players die in multiplayer.                                                                             |
-| `NO_TELEFRAGGING`             | Prevents teleporting props and players from slaying other players.                                                             |
-| `NOBLOCK`                     | Prevents player-on-player collisions. (This feature requires `mp_teamplay 1` to fix smoothness issues.)                                                        |
-| `SHOW_WELCOME_MESSAGE`        | Shows players a greeting message with basic plugin info.                                                                       |
+| `FIRSTPERSON_DEATHCAM`        | Enables the first-person death camera. |
+| `HEV_SOUNDS`                  | Enables HEV sounds. |
+| `INSTANCE_ITEMS`              | Instances pickup items and weapons for each player. Instanced items disappear once picked up and 'respawn' along with the player. |
+| `INSTANCE_ITEMS_NORESET`      | If enabled, items will not 'respawn' picked up items after death. |
+| `KEEP_EQUIPMENT`              | Makes players spawn with previously picked up equipment (suit, weapons). Global for all players. |
+| `STRIP_DEFAULT_EQUIPMENT`     | Removes default multiplayer equipment. |
+| `STRIP_DEFAULT_EQUIPMENT_KEEPSUIT` | |
+| `DISABLE_CANISTER_DROPS`      | Disables item drops when players die in multiplayer. |
+| `NO_TELEFRAGGING`             | Prevents teleporting props and players from slaying other players. |
+| `NOBLOCK`                     | Prevents player-on-player collisions. (This feature requires `mp_teamplay 1` to fix smoothness issues.) |
+| `SHOW_WELCOME_MESSAGE`        | Shows players a greeting message with basic plugin info. |
 | `AUTODETECT_MAP_END`          | Detects commonly used commands for ending singleplayer maps from `point_clientcommand` and `point_servercommand` entities and changes the map. At first, this feature checks `sourcecoop_homemap` is set (see below), then checks if `nextmap` is set. If none are set, the map is not changed. Recommended to keep enabled. |
-| `CHANGELEVEL_FX`              | Show visual effects (spawn particles) at level change locations.                                                               |
+| `CHANGELEVEL_FX`              | Show visual effects (spawn particles) at level change locations. |
 | `TRANSFER_PLAYER_STATE`       | Enables player persistence through level changes. Currently, players will carry over their health, armor and equipment for the first spawn point (checkpoint) in the map. Afterwards, the default map equipment is used. |
+| `SP_WEAPONS`                  | Sets whether to use the singleplayer variants of weapons. |
 
 <a id="contributing"></a>
 ## 🌱 Contributing

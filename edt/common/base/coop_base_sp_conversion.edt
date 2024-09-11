@@ -10,6 +10,7 @@
 		"INSTANCE_ITEMS" "1"
 		"STRIP_DEFAULT_EQUIPMENT" "1"
 		"DISABLE_CANISTER_DROPS" "1"
+		"SP_WEAPONS" "1"
 	}
 	"console"
 	{

@@ -8,6 +8,8 @@
 
 // Patches for Black Mesa
 
+static bool g_pPlayerIronsightClassic[MAXPLAYERS + 1];
+
 //------------------------------------------------------
 // CNPC_Human_Scientist - npc_human_scientist*
 // crash fix on getting scared
@@ -520,7 +522,7 @@ public MRESReturn Hook_WeaponSetModel(int _this, DHookParam hParams)
 		CBaseCombatWeapon pWeapon = CBaseCombatWeapon(_this);
 		if (pWeapon.IsValid())
 		{
-			CBaseCombatCharacter pOwner = view_as<CBaseCombatCharacter>(pWeapon.GetOwner());
+			CBaseCombatCharacter pOwner = pWeapon.GetOwner();
 			if (pOwner.IsValid() && !pOwner.IsClassPlayer())
 			{
 				static const char szWeaponModel[][][] =
@@ -791,4 +793,341 @@ public Action Timer_SetTripmineSpriteColor(Handle timer, CSpriteTeam pSpriteTeam
 	pSpriteTeam.SetRenderAlpha(0);
 
 	return Plugin_Continue;
+}
+
+//------------------------------------------------------
+// weapon_357/weapon_crossbow
+// New constructed logic of toggling ironsights.
+//------------------------------------------------------
+public MRESReturn Hook_ToggleIronsights(int _this, Handle hParams)
+{
+	if (CoopManager.IsCoopModeEnabled() && CoopManager.IsFeatureEnabled(FT_SP_WEAPONS))
+	{
+		CBlackMesaBaseCombatWeaponIronsights pWeapon = CBlackMesaBaseCombatWeaponIronsights(_this);
+		if (pWeapon.IsReloading())
+			return MRES_Supercede;
+		
+		CBlackMesaPlayer pPlayer = view_as<CBlackMesaPlayer>(pWeapon.GetOwner());
+		if (!pPlayer.IsValid())
+			return MRES_Supercede;
+		
+		char szClassname[MAX_CLASSNAME];
+		bool bIsCrossbow = pWeapon.GetClassname(szClassname, sizeof(szClassname)) && strcmp(szClassname, "weapon_crossbow") == 0;
+		bool bWillBeUsingIronsights = !pWeapon.IsInIronsights();
+
+		int iFOV;
+		if (bIsCrossbow)
+		{
+			CWeapon_Crossbow pCrossbow = view_as<CWeapon_Crossbow>(pWeapon);
+			bool bIsRearming = pCrossbow.IsRearming();
+			if (bWillBeUsingIronsights && bIsRearming)
+				return MRES_Supercede;
+			
+			// Values grabbed out of `weapon_crossbow.dmx`.
+			iFOV = g_pPlayerIronsightClassic[pPlayer.GetEntIndex()] ? 20 : 10;
+
+			if (!g_pPlayerIronsightClassic[pPlayer.GetEntIndex()])
+			{
+				CPredictedViewModel pViewModel = pPlayer.GetViewModel();
+				if (pViewModel.IsValid())
+				{
+					if (bWillBeUsingIronsights || !bIsRearming)
+					{
+						pWeapon.SendWeaponAnim(bWillBeUsingIronsights ? ACT_VM_IDLE_TO_IS : ACT_VM_IS_TO_IDLE);
+					}
+				}
+			}
+		}
+		else
+		{
+			// Values grabbed out of `weapon_357.dmx`.
+			iFOV = g_pPlayerIronsightClassic[pPlayer.GetEntIndex()] ? 40 : 55;
+
+			if (!g_pPlayerIronsightClassic[pPlayer.GetEntIndex()])
+			{
+				pWeapon.SendWeaponAnim(bWillBeUsingIronsights ? ACT_VM_IDLE_TO_IS : ACT_VM_IS_TO_IDLE);
+				pPlayer.ShowCrosshair(!bWillBeUsingIronsights);
+			}
+		}
+		pPlayer.SetFOV(pWeapon, bWillBeUsingIronsights ? iFOV : 0, 0.5);
+		pWeapon.SetIronsights(bWillBeUsingIronsights);
+
+		if (bWillBeUsingIronsights)
+		{
+			// TODO: Spam clicking will block input for a long time.
+			// Fix this
+			pWeapon.SetNextPrimaryAttack(pWeapon.GetNextPrimaryAttack() + 0.75);
+			pWeapon.SetNextSecondaryAttack(pWeapon.GetNextSecondaryAttack() + 0.75);
+		}
+
+		return MRES_Supercede;
+	}
+	return MRES_Ignored;
+}
+
+//------------------------------------------------------
+// weapon_357
+// Fixes the shooting animation played while using ironsights.
+//------------------------------------------------------
+public MRESReturn Hook_IronsightGetPrimaryAttackActivity(int _this, Handle hReturn)
+{
+	if (CoopManager.IsCoopModeEnabled() && CoopManager.IsFeatureEnabled(FT_SP_WEAPONS))
+	{
+		CBlackMesaBaseCombatWeaponIronsights pWeapon = CBlackMesaBaseCombatWeaponIronsights(_this);
+		if (pWeapon.IsInIronsights())
+		{
+			CBasePlayer pPlayer = view_as<CBasePlayer>(pWeapon.GetOwner());
+			if (pPlayer.IsValid() && !g_pPlayerIronsightClassic[pPlayer.GetEntIndex()])
+			{
+				DHookSetReturn(hReturn, ACT_VM_PRIMARYATTACK_IS);
+				return MRES_Supercede;
+			}
+		}
+	}
+	return MRES_Ignored;
+}
+
+//------------------------------------------------------
+// weapon_crossbow
+// Fixes the shooting animation played while using ironsights.
+//------------------------------------------------------
+public MRESReturn Hook_CrossbowGetPrimaryAttackActivity(int _this, Handle hReturn)
+{
+	if (CoopManager.IsCoopModeEnabled() && CoopManager.IsFeatureEnabled(FT_SP_WEAPONS))
+	{
+		CBlackMesaBaseCombatWeaponIronsights pWeapon = CBlackMesaBaseCombatWeaponIronsights(_this);
+		if (pWeapon.IsInIronsights())
+		{
+			DHookSetReturn(hReturn, ACT_VM_PRIMARYATTACK);
+			return MRES_Supercede;
+		}
+	}
+	return MRES_Ignored;
+}
+
+//------------------------------------------------------
+// Caches the player ConVar `cl_ironsight_classic`.
+//------------------------------------------------------
+void ConvarQuery_IronsightClassic(QueryCookie hCookie, int iClient, ConVarQueryResult hResult, const char[] szCvar, const char[] szValue, any value)
+{
+	if (strcmp(szValue, "false") == 0 || strcmp(szValue, "0") == 0)
+	{
+		g_pPlayerIronsightClassic[iClient] = false;
+	}
+	else
+	{
+		g_pPlayerIronsightClassic[iClient] = true;
+	}
+}
+
+//------------------------------------------------------
+// Caches the client settings used for ironsights.
+//------------------------------------------------------
+public MRESReturn Hook_IronsightDeployPost_SaveSettings(int _this, Handle hReturn)
+{
+	if (CoopManager.IsCoopModeEnabled() && CoopManager.IsFeatureEnabled(FT_SP_WEAPONS))
+	{
+		CBaseCombatWeapon pWeapon = CBaseCombatWeapon(_this);
+		CBasePlayer pPlayer = view_as<CBasePlayer>(pWeapon.GetOwner());
+		if (pPlayer.IsValid())
+		{
+			pPlayer.QueryConvar("cl_ironsight_classic", ConvarQuery_IronsightClassic);
+		}
+	}
+	return MRES_Ignored;
+}
+
+//------------------------------------------------------
+// grenade_bolt
+// Disables explosive bolts by blocking the call.
+//------------------------------------------------------
+public MRESReturn Hook_GrenadeBoltAcceptInput(int _this, Handle hReturn, Handle hParams)
+{
+	if (CoopManager.IsCoopModeEnabled() && CoopManager.IsFeatureEnabled(FT_SP_WEAPONS))
+	{
+		char szInputType[MAX_FORMAT];
+		DHookGetParamString(hParams, 1, szInputType, sizeof(szInputType));
+		if (strcmp(szInputType, "SetToExplode", false) == 0)
+		{
+			DHookSetReturn(hReturn, true);
+			return MRES_Supercede;
+		}
+	}
+	return MRES_Ignored;
+}
+
+//------------------------------------------------------
+// weapon_crossbow
+// Sets the skin of the crossbow.
+//------------------------------------------------------
+public MRESReturn Hook_CrossbowDeployPost(int _this, Handle hReturn)
+{
+	if (CoopManager.IsCoopModeEnabled() && CoopManager.IsFeatureEnabled(FT_SP_WEAPONS))
+	{
+		CBaseCombatWeapon pWeapon = CBaseCombatWeapon(_this);
+		CBasePlayer pPlayer = view_as<CBasePlayer>(pWeapon.GetOwner());
+		if (pPlayer.IsValid())
+		{
+			CPredictedViewModel pViewModel = pPlayer.GetViewModel();
+			if (pViewModel.IsValid())
+			{
+				pViewModel.SetSkin(0);
+			}
+		}
+	}
+	return MRES_Ignored;
+}
+
+//------------------------------------------------------
+// weapon_crossbow
+// Sets the rearming animation (not the state!) after firing.
+// Also fixes the scope in animation covering the screen by setting it to idle.
+//
+// TODO: Hooking ItemPostFrame with IsMultiplayer = false causes prediction issues.
+// Fix this by not calling IsMultiplayer = false.
+//------------------------------------------------------
+public MRESReturn Hook_CrossbowItemPostFrame(int _this, Handle hReturn)
+{
+	if (CoopManager.IsCoopModeEnabled() && CoopManager.IsFeatureEnabled(FT_SP_WEAPONS))
+	{
+		g_bIsMultiplayerOverride = false;
+
+		CBaseCombatWeapon pWeapon = CBaseCombatWeapon(_this);
+		CBasePlayer pPlayer = view_as<CBasePlayer>(pWeapon.GetOwner());
+		if (pPlayer.IsValid())
+		{
+			CPredictedViewModel pViewModel = pPlayer.GetViewModel();
+			if (pViewModel.IsValid())
+			{
+				// Switch to idle animation so the scope does not block the view.
+				if (pViewModel.GetSequence() == pViewModel.SelectWeightedSequence(ACT_VM_IDLE_TO_IS) && pViewModel.GetCycle() >= 0.55)
+				{
+					pWeapon.SendWeaponAnim(ACT_VM_IDLE);
+				}
+			}
+		}
+	}
+	return MRES_Ignored;
+}
+
+//------------------------------------------------------
+// weapon_crossbow
+// See `Hook_CrossbowItemPostFrame` for details.
+//------------------------------------------------------
+public MRESReturn Hook_CrossbowItemPostFramePost(int _this, Handle hReturn)
+{
+	if (CoopManager.IsCoopModeEnabled() && CoopManager.IsFeatureEnabled(FT_SP_WEAPONS))
+	{
+		g_bIsMultiplayerOverride = true;
+	}
+	return MRES_Ignored;
+}
+
+//------------------------------------------------------
+// weapon_crossbow
+// This does the following:
+//
+// - Causes `CWeapon_Crossbow::FireBolt` to get called instead of `CWeapon_Crossbow::FireHitscanBolt` on secondary attacks
+// - Sets the rearm bool
+// - Sets animations
+//------------------------------------------------------
+public MRESReturn Hook_CrossbowPrimaryAttack(int _this, Handle hReturn, Handle hParams)
+{
+	if (CoopManager.IsCoopModeEnabled() && CoopManager.IsFeatureEnabled(FT_SP_WEAPONS))
+	{
+		g_bIsMultiplayerOverride = false;
+	}
+	return MRES_Ignored;
+}
+
+//------------------------------------------------------
+// weapon_crossbow
+// See `Hook_CrossbowPrimaryAttack` for details.
+//------------------------------------------------------
+public MRESReturn Hook_CrossbowPrimaryAttackPost(int _this, Handle hReturn, Handle hParams)
+{
+	if (CoopManager.IsCoopModeEnabled() && CoopManager.IsFeatureEnabled(FT_SP_WEAPONS))
+	{
+		g_bIsMultiplayerOverride = true;
+	}
+	return MRES_Ignored;
+}
+
+//------------------------------------------------------
+// weapon_crossbow
+// Fixes the rearm animation when pulling out the crossbow.
+//------------------------------------------------------
+public MRESReturn Hook_CrossbowGetDrawActivity(int _this, Handle hReturn)
+{
+	if (CoopManager.IsCoopModeEnabled() && CoopManager.IsFeatureEnabled(FT_SP_WEAPONS))
+	{
+		g_bIsMultiplayerOverride = false;
+	}
+	return MRES_Ignored;
+}
+
+//------------------------------------------------------
+// weapon_crossbow
+// See `Hook_CrossbowGetDrawActivity` for details.
+//------------------------------------------------------
+public MRESReturn Hook_CrossbowGetDrawActivityPost(int _this, Handle hReturn)
+{
+	if (CoopManager.IsCoopModeEnabled() && CoopManager.IsFeatureEnabled(FT_SP_WEAPONS))
+	{
+		g_bIsMultiplayerOverride = true;
+	}
+	return MRES_Ignored;
+}
+
+//------------------------------------------------------
+// weapon_crossbow
+// `CWeapon_Crossbow::FireBolt` is only called by `CWeapon_Crossbow::PrimaryAttack` which is hooked.
+// If this gets called with singleplayer being set, this will crash the server.
+//------------------------------------------------------
+public MRESReturn Hook_CrossbowFireBolt(int _this, Handle hReturn, Handle hParams)
+{
+	if (CoopManager.IsCoopModeEnabled() && CoopManager.IsFeatureEnabled(FT_SP_WEAPONS))
+	{
+		g_bIsMultiplayerOverride = true;
+	}
+	return MRES_Ignored;
+}
+
+//------------------------------------------------------
+// weapon_crossbow
+// See `Hook_CrossbowFireBolt` for details.
+//------------------------------------------------------
+public MRESReturn Hook_CrossbowFireBoltPost(int _this, Handle hReturn, Handle hParams)
+{
+	if (CoopManager.IsCoopModeEnabled() && CoopManager.IsFeatureEnabled(FT_SP_WEAPONS))
+	{
+		g_bIsMultiplayerOverride = false;
+	}
+	return MRES_Ignored;
+}
+
+//------------------------------------------------------
+// weapon_tau
+// Fixes the tau velocity.
+//------------------------------------------------------
+public MRESReturn Hook_TauFireBeam(int _this, Handle hReturn)
+{
+	if (CoopManager.IsCoopModeEnabled() && CoopManager.IsFeatureEnabled(FT_SP_WEAPONS))
+	{
+		g_bIsMultiplayerOverride = false;
+	}
+	return MRES_Ignored;
+}
+
+//------------------------------------------------------
+// weapon_tau
+// See `Hook_TauFireBeamPost` for details.
+//------------------------------------------------------
+public MRESReturn Hook_TauFireBeamPost(int _this, Handle hReturn)
+{
+	if (CoopManager.IsCoopModeEnabled() && CoopManager.IsFeatureEnabled(FT_SP_WEAPONS))
+	{
+		g_bIsMultiplayerOverride = true;
+	}
+	return MRES_Ignored;
 }
