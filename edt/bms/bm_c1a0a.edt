@@ -7,7 +7,6 @@
 	"intro_type"	"none"
 	"equipment"
 	{
-		"item" "item_weapon_crowbar"
 	}
 	"entity"
 	{

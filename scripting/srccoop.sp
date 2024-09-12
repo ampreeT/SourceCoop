@@ -902,7 +902,7 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 		if (strcmp(szClassname, "music_track") == 0)
 		{
 			DHookEntity(hkThink, false, iEntIndex, _, Hook_MusicTrackThink);
-			DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_MusicTrackAceptInput);
+			DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_MusicTrackAcceptInput);
 			return;
 		}
 		#endif

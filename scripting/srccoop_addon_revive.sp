@@ -363,10 +363,13 @@ public Action Timer_SetRagdollEffects(Handle timer, CBasePlayer pPlayer)
 			if (g_pConVarRagdollParticle.BoolValue && Conf.RAGDOLL_PARTICLE[0] != EOS)
 			{
 				CParticleSystem pParticle = CParticleSystem.Create(Conf.RAGDOLL_PARTICLE);
-				pParticle.SetParent(pRagdoll);
-				pParticle.Teleport(vec3_origin);
-				pParticle.Spawn();
-				pParticle.Activate();
+				if (pParticle.IsValid())
+				{
+					pParticle.SetParent(pRagdoll);
+					pParticle.Teleport(vec3_origin);
+					pParticle.Spawn();
+					pParticle.Activate();
+				}
 			}
 		}
 	}

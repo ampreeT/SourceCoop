@@ -168,6 +168,7 @@
 #if defined SRCCOOP_BLACKMESA
 #include <srccoop/blackmesa/entitypatch>
 #include <srccoop/blackmesa/deathnotice>
+#include <srccoop/blackmesa/idle_anims>
 #elseif defined SRCCOOP_HL2DM
 #include <srccoop/hl2dm/deathnotice>
 #endif

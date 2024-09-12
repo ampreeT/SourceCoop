@@ -38,28 +38,17 @@ public void Hook_PlayerPreThinkPost(int iClient)
 	if (!CoopManager.IsCoopModeEnabled())
 		return;
 	
+	#if defined SRCCOOP_BLACKMESA
+	IdleAnims_Player_PreThink(iClient);
+	#endif
+	
 	CBasePlayer pPlayer = CBasePlayer(iClient);
 	if (pPlayer.IsAlive())
 	{
 		#if defined SRCCOOP_BLACKMESA
-
 		CBaseCombatWeapon pWeapon = pPlayer.GetActiveWeapon();
 		if (pWeapon.IsValid())
 		{
-			if (PlayingAdmireGloves(pPlayer))
-			{
-				// if weapon viewmodel index is different at this point, player canceled admire animation
-				if ((pWeapon.GetViewModelIndex() != 1) || (pPlayer.GetViewModel().GetWeaponTimeIdle() <= GetGameTime()))
-				{
-					PlayAdmireGloves(pPlayer, false);
-				}
-				else
-				{
-					// this has to be here because the active weapon cant be -1 due to tpose
-					PreventWeaponFiring(pWeapon, 1.0);
-				}
-			}
-			
 			if (pPlayer.GetCarriedObject().IsValid())
 			{
 				// fix clientside prediction errors when dropping objects
@@ -84,7 +73,6 @@ public void Hook_PlayerPreThinkPost(int iClient)
 				}
 			}
 		}
-
 		#endif // SRCCOOP_BLACKMESA
 	}
 	else // Dead
@@ -481,21 +469,40 @@ void PlayerPatch_ApplyServerRagdoll(CBasePlayer pPlayer, Address pTakeDmgInfo)
 	}
 	
 	#if defined SRCCOOP_BLACKMESA
-	pPlayer.SetEffects(pPlayer.GetEffects() & ~EF_NODRAW);
+	int iRagdollInheritIndex;
+	if (g_pIdle[pPlayer.GetEntIndex()].m_pModel.IsValid())
+	{
+		// Player is currently using model for idle animations.
+		// The nodraw is required for hiding the player the tick he dies.
+		// The model that was parented is cleared since `CreateServerRagdoll` will not work otherwise.
+		pPlayer.AddEffects(EF_NODRAW);
+		g_pIdle[pPlayer.GetEntIndex()].m_pModel.ClearParent();
+		iRagdollInheritIndex = g_pIdle[pPlayer.GetEntIndex()].m_pModel.GetEntIndex();
+	}
+	else
+	{
+		pPlayer.RemoveEffects(EF_NODRAW);
+		iRagdollInheritIndex = pPlayer.GetEntIndex();
+	}
+	#else
+	int iRagdollInheritIndex = this.GetEntIndex();
 	#endif
 	
-	pRagdoll = CBaseAnimating(SDKCall(g_pCreateServerRagdoll, pPlayer.entindex, pPlayer.GetForceBone(), pTakeDmgInfo, COLLISION_GROUP_DEBRIS_TRIGGER, false));
-	SDKHook(pRagdoll.entindex, SDKHook_OnTakeDamage, Hook_NoDmg);
+	pRagdoll = CBaseAnimating(SDKCall(g_pCreateServerRagdoll, iRagdollInheritIndex, pPlayer.GetForceBone(), pTakeDmgInfo, COLLISION_GROUP_DEBRIS_TRIGGER, false));
+	if (pRagdoll.IsValid())
+	{
+		SDKHook(pRagdoll.entindex, SDKHook_OnTakeDamage, Hook_NoDmg);
 
-	pPlayer.SetRagdoll(pRagdoll);
-	pPlayer.SetObserverMode(OBS_MODE_CHASE);
-	pPlayer.SetObserverTarget(pRagdoll);
-	g_bServerRagdoll[pPlayer.entindex] = true;
+		pPlayer.SetRagdoll(pRagdoll);
+		pPlayer.SetObserverMode(OBS_MODE_CHASE);
+		pPlayer.SetObserverTarget(pRagdoll);
+		g_bServerRagdoll[pPlayer.entindex] = true;
 
-	Call_StartForward(g_OnPlayerRagdollCreatedFwd);
-	Call_PushCell(pPlayer);
-	Call_PushCell(pRagdoll);
-	Call_Finish();
+		Call_StartForward(g_OnPlayerRagdollCreatedFwd);
+		Call_PushCell(pPlayer);
+		Call_PushCell(pRagdoll);
+		Call_Finish();
+	}
 }
 
 public MRESReturn Hook_CreateRagdollEntity(int _this)
@@ -884,70 +891,6 @@ Action Timer_FixWeaponPrediction(Handle timer, CBasePlayer pPlayer)
 		RestorePackedItems(pPlayer);
 
 	return Plugin_Handled;
-}
-
-//------------------------------------------------------
-// Admire gloves animation
-//------------------------------------------------------
-bool g_bPlayingAdmireGloves[MAXPLAYERS+1];
-
-public void PlayAdmireGloves(CBasePlayer pPlayer, const bool bStartAnim)
-{
-	CPredictedViewModel pViewModel = pPlayer.GetViewModel();
-	if (pViewModel.IsValid())
-	{
-		if (bStartAnim)
-		{
-			g_bPlayingAdmireGloves[pPlayer.GetEntIndex()] = true;
-			
-			PrecacheModel("models/weapons/v_hands.mdl");
-			pViewModel.SetModel("models/weapons/v_hands.mdl");
-			
-			if (pPlayer.GetActiveWeapon().IsValid())
-			{
-				// This will force weapon to not reset the sequence on viewmodel once client-side flCycle reaches 1.0
-				pPlayer.GetActiveWeapon().SetViewModelIndex(1);
-				pPlayer.GetActiveWeapon().AcceptInput("HideWeapon");
-			}
-			
-			// Reset cycle and playbackrate
-			pViewModel.SetCycle(0.0);
-			pViewModel.SetPlaybackRate(1.0);
-			// This is an estimated time of sequence due to m_flCycle not incrementing
-			// CBaseCombatWeapon and CPredictedViewModel have .Get and .SetWeaponIdleTime()
-			pViewModel.SetWeaponTimeIdle(GetGameTime() + 6.0);
-		}
-		else
-		{
-			g_bPlayingAdmireGloves[pPlayer.GetEntIndex()] = false;
-			
-			CBaseCombatWeapon pVMActiveWeapon = pViewModel.GetOwningWeapon();
-			pPlayer.EquipWeapon(pVMActiveWeapon);
-			
-			CBaseCombatWeapon pLastWeapon = pPlayer.GetLastWeapon();
-			if (pLastWeapon.IsValid())
-			{
-				pLastWeapon.SetViewModelIndex(0);
-			}
-			
-			if (pVMActiveWeapon.IsValid())
-			{
-				pVMActiveWeapon.SetViewModelIndex(0);
-				
-				// Reset viewmodel if exists
-				char szModelName[64];
-				pVMActiveWeapon.GetModelName(szModelName, sizeof(szModelName));
-				ReplaceString(szModelName, sizeof(szModelName), "/w_", "/v_", false);
-				if (FileExists(szModelName, true, NULL_STRING))
-					pViewModel.SetModel(szModelName);
-			}
-		}
-	}
-}
-
-public bool PlayingAdmireGloves(CBasePlayer pPlayer)
-{
-	return g_bPlayingAdmireGloves[pPlayer.GetEntIndex()];
 }
 
 //------------------------------------------------------
