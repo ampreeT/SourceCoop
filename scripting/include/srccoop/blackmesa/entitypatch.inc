@@ -801,7 +801,7 @@ public Action Timer_SetTripmineSpriteColor(Handle timer, CSpriteTeam pSpriteTeam
 //------------------------------------------------------
 public MRESReturn Hook_ToggleIronsights(int _this, Handle hParams)
 {
-	if (CoopManager.IsCoopModeEnabled() && CoopManager.IsFeatureEnabled(FT_SP_WEAPONS))
+	if (CoopManager.IsFeatureEnabled(FT_SP_WEAPONS))
 	{
 		CBlackMesaBaseCombatWeaponIronsights pWeapon = CBlackMesaBaseCombatWeaponIronsights(_this);
 		if (pWeapon.IsReloading())
@@ -852,13 +852,7 @@ public MRESReturn Hook_ToggleIronsights(int _this, Handle hParams)
 		pPlayer.SetFOV(pWeapon, bWillBeUsingIronsights ? iFOV : 0, 0.5);
 		pWeapon.SetIronsights(bWillBeUsingIronsights);
 
-		if (bWillBeUsingIronsights)
-		{
-			// TODO: Spam clicking will block input for a long time.
-			// Fix this
-			pWeapon.SetNextPrimaryAttack(pWeapon.GetNextPrimaryAttack() + 0.75);
-			pWeapon.SetNextSecondaryAttack(pWeapon.GetNextSecondaryAttack() + 0.75);
-		}
+		PreventWeaponFiring(pWeapon, 0.5);
 
 		return MRES_Supercede;
 	}
@@ -871,7 +865,7 @@ public MRESReturn Hook_ToggleIronsights(int _this, Handle hParams)
 //------------------------------------------------------
 public MRESReturn Hook_IronsightGetPrimaryAttackActivity(int _this, Handle hReturn)
 {
-	if (CoopManager.IsCoopModeEnabled() && CoopManager.IsFeatureEnabled(FT_SP_WEAPONS))
+	if (CoopManager.IsFeatureEnabled(FT_SP_WEAPONS))
 	{
 		CBlackMesaBaseCombatWeaponIronsights pWeapon = CBlackMesaBaseCombatWeaponIronsights(_this);
 		if (pWeapon.IsInIronsights())
@@ -893,7 +887,7 @@ public MRESReturn Hook_IronsightGetPrimaryAttackActivity(int _this, Handle hRetu
 //------------------------------------------------------
 public MRESReturn Hook_CrossbowGetPrimaryAttackActivity(int _this, Handle hReturn)
 {
-	if (CoopManager.IsCoopModeEnabled() && CoopManager.IsFeatureEnabled(FT_SP_WEAPONS))
+	if (CoopManager.IsFeatureEnabled(FT_SP_WEAPONS))
 	{
 		CBlackMesaBaseCombatWeaponIronsights pWeapon = CBlackMesaBaseCombatWeaponIronsights(_this);
 		if (pWeapon.IsInIronsights())
@@ -925,7 +919,7 @@ void ConvarQuery_IronsightClassic(QueryCookie hCookie, int iClient, ConVarQueryR
 //------------------------------------------------------
 public MRESReturn Hook_IronsightDeployPost_SaveSettings(int _this, Handle hReturn)
 {
-	if (CoopManager.IsCoopModeEnabled() && CoopManager.IsFeatureEnabled(FT_SP_WEAPONS))
+	if (CoopManager.IsFeatureEnabled(FT_SP_WEAPONS))
 	{
 		CBaseCombatWeapon pWeapon = CBaseCombatWeapon(_this);
 		CBasePlayer pPlayer = view_as<CBasePlayer>(pWeapon.GetOwner());
@@ -943,7 +937,7 @@ public MRESReturn Hook_IronsightDeployPost_SaveSettings(int _this, Handle hRetur
 //------------------------------------------------------
 public MRESReturn Hook_GrenadeBoltAcceptInput(int _this, Handle hReturn, Handle hParams)
 {
-	if (CoopManager.IsCoopModeEnabled() && CoopManager.IsFeatureEnabled(FT_SP_WEAPONS))
+	if (CoopManager.IsFeatureEnabled(FT_SP_WEAPONS))
 	{
 		char szInputType[MAX_FORMAT];
 		DHookGetParamString(hParams, 1, szInputType, sizeof(szInputType));
@@ -962,7 +956,7 @@ public MRESReturn Hook_GrenadeBoltAcceptInput(int _this, Handle hReturn, Handle 
 //------------------------------------------------------
 public MRESReturn Hook_CrossbowDeployPost(int _this, Handle hReturn)
 {
-	if (CoopManager.IsCoopModeEnabled() && CoopManager.IsFeatureEnabled(FT_SP_WEAPONS))
+	if (CoopManager.IsFeatureEnabled(FT_SP_WEAPONS))
 	{
 		CBaseCombatWeapon pWeapon = CBaseCombatWeapon(_this);
 		CBasePlayer pPlayer = view_as<CBasePlayer>(pWeapon.GetOwner());
@@ -988,7 +982,7 @@ public MRESReturn Hook_CrossbowDeployPost(int _this, Handle hReturn)
 //------------------------------------------------------
 public MRESReturn Hook_CrossbowItemPostFrame(int _this, Handle hReturn)
 {
-	if (CoopManager.IsCoopModeEnabled() && CoopManager.IsFeatureEnabled(FT_SP_WEAPONS))
+	if (CoopManager.IsFeatureEnabled(FT_SP_WEAPONS))
 	{
 		g_bIsMultiplayerOverride = false;
 
@@ -1016,7 +1010,7 @@ public MRESReturn Hook_CrossbowItemPostFrame(int _this, Handle hReturn)
 //------------------------------------------------------
 public MRESReturn Hook_CrossbowItemPostFramePost(int _this, Handle hReturn)
 {
-	if (CoopManager.IsCoopModeEnabled() && CoopManager.IsFeatureEnabled(FT_SP_WEAPONS))
+	if (CoopManager.IsFeatureEnabled(FT_SP_WEAPONS))
 	{
 		g_bIsMultiplayerOverride = true;
 	}
@@ -1033,7 +1027,7 @@ public MRESReturn Hook_CrossbowItemPostFramePost(int _this, Handle hReturn)
 //------------------------------------------------------
 public MRESReturn Hook_CrossbowPrimaryAttack(int _this, Handle hReturn, Handle hParams)
 {
-	if (CoopManager.IsCoopModeEnabled() && CoopManager.IsFeatureEnabled(FT_SP_WEAPONS))
+	if (CoopManager.IsFeatureEnabled(FT_SP_WEAPONS))
 	{
 		g_bIsMultiplayerOverride = false;
 	}
@@ -1046,7 +1040,7 @@ public MRESReturn Hook_CrossbowPrimaryAttack(int _this, Handle hReturn, Handle h
 //------------------------------------------------------
 public MRESReturn Hook_CrossbowPrimaryAttackPost(int _this, Handle hReturn, Handle hParams)
 {
-	if (CoopManager.IsCoopModeEnabled() && CoopManager.IsFeatureEnabled(FT_SP_WEAPONS))
+	if (CoopManager.IsFeatureEnabled(FT_SP_WEAPONS))
 	{
 		g_bIsMultiplayerOverride = true;
 	}
@@ -1059,7 +1053,7 @@ public MRESReturn Hook_CrossbowPrimaryAttackPost(int _this, Handle hReturn, Hand
 //------------------------------------------------------
 public MRESReturn Hook_CrossbowGetDrawActivity(int _this, Handle hReturn)
 {
-	if (CoopManager.IsCoopModeEnabled() && CoopManager.IsFeatureEnabled(FT_SP_WEAPONS))
+	if (CoopManager.IsFeatureEnabled(FT_SP_WEAPONS))
 	{
 		g_bIsMultiplayerOverride = false;
 	}
@@ -1072,7 +1066,7 @@ public MRESReturn Hook_CrossbowGetDrawActivity(int _this, Handle hReturn)
 //------------------------------------------------------
 public MRESReturn Hook_CrossbowGetDrawActivityPost(int _this, Handle hReturn)
 {
-	if (CoopManager.IsCoopModeEnabled() && CoopManager.IsFeatureEnabled(FT_SP_WEAPONS))
+	if (CoopManager.IsFeatureEnabled(FT_SP_WEAPONS))
 	{
 		g_bIsMultiplayerOverride = true;
 	}
@@ -1086,7 +1080,7 @@ public MRESReturn Hook_CrossbowGetDrawActivityPost(int _this, Handle hReturn)
 //------------------------------------------------------
 public MRESReturn Hook_CrossbowFireBolt(int _this, Handle hReturn, Handle hParams)
 {
-	if (CoopManager.IsCoopModeEnabled() && CoopManager.IsFeatureEnabled(FT_SP_WEAPONS))
+	if (CoopManager.IsFeatureEnabled(FT_SP_WEAPONS))
 	{
 		g_bIsMultiplayerOverride = true;
 	}
@@ -1099,7 +1093,7 @@ public MRESReturn Hook_CrossbowFireBolt(int _this, Handle hReturn, Handle hParam
 //------------------------------------------------------
 public MRESReturn Hook_CrossbowFireBoltPost(int _this, Handle hReturn, Handle hParams)
 {
-	if (CoopManager.IsCoopModeEnabled() && CoopManager.IsFeatureEnabled(FT_SP_WEAPONS))
+	if (CoopManager.IsFeatureEnabled(FT_SP_WEAPONS))
 	{
 		g_bIsMultiplayerOverride = false;
 	}
@@ -1112,7 +1106,7 @@ public MRESReturn Hook_CrossbowFireBoltPost(int _this, Handle hReturn, Handle hP
 //------------------------------------------------------
 public MRESReturn Hook_TauFireBeam(int _this, Handle hReturn)
 {
-	if (CoopManager.IsCoopModeEnabled() && CoopManager.IsFeatureEnabled(FT_SP_WEAPONS))
+	if (CoopManager.IsFeatureEnabled(FT_SP_WEAPONS))
 	{
 		g_bIsMultiplayerOverride = false;
 	}
@@ -1125,7 +1119,7 @@ public MRESReturn Hook_TauFireBeam(int _this, Handle hReturn)
 //------------------------------------------------------
 public MRESReturn Hook_TauFireBeamPost(int _this, Handle hReturn)
 {
-	if (CoopManager.IsCoopModeEnabled() && CoopManager.IsFeatureEnabled(FT_SP_WEAPONS))
+	if (CoopManager.IsFeatureEnabled(FT_SP_WEAPONS))
 	{
 		g_bIsMultiplayerOverride = true;
 	}
