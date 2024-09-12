@@ -485,7 +485,7 @@ void PlayerPatch_ApplyServerRagdoll(CBasePlayer pPlayer, Address pTakeDmgInfo)
 		iRagdollInheritIndex = pPlayer.GetEntIndex();
 	}
 	#else
-	int iRagdollInheritIndex = this.GetEntIndex();
+	int iRagdollInheritIndex = pPlayer.GetEntIndex();
 	#endif
 	
 	pRagdoll = CBaseAnimating(SDKCall(g_pCreateServerRagdoll, iRagdollInheritIndex, pPlayer.GetForceBone(), pTakeDmgInfo, COLLISION_GROUP_DEBRIS_TRIGGER, false));
