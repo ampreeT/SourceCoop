@@ -104,8 +104,7 @@ public MRESReturn BaseNPCSetModelBlock(int _this, Handle hParams)
 
 //------------------------------------------------------
 // CAI_BaseNPC::Think
-// Universal GetLocalPlayer pre-setter
-// ran before NPC thinks
+// Universal GetLocalPlayer pre-setter, ran before NPC thinks
 //------------------------------------------------------
 public MRESReturn Hook_BaseNPCThink(int _this)
 {
@@ -119,38 +118,13 @@ public MRESReturn Hook_BaseNPCThinkPost(int _this)
 	return MRES_Ignored;
 }
 
-// NPC Prethink runs as part of Think and guards calls to RunAI and movement.
-// Returning false acts functionally the same as setting ai_disable.
+// CAI_BaseNPC::PreThink runs as part of Think and guards calls to RunAI and movement.
+// Returning false acts functionally same as setting ai_disable.
 // This hook is only active when there are no real players on the server!
-public MRESReturn Hook_NpcPreThinkNoPlayers(int _this, DHookReturn hReturn)
+public MRESReturn Hook_BaseNPCPreThinkNoPlayers(int _this, DHookReturn hReturn)
 {
 	hReturn.Value = false;
 	return MRES_Supercede;
-}
-
-//------------------------------------------------------
-// CAI_BaseNPC::HandleAnimEvent
-// Universal GetLocalPlayer pre-setter
-// ran before NPC processes animation events
-//------------------------------------------------------
-public MRESReturn Hook_BaseNPCHandleAnimEvent(int _this, Handle hParams)
-{
-	// if (!g_iPlayerCount)
-	// {
-	// 	return MRES_Supercede;
-	// }
-	// SetLocalPlayerEntity(_this);
-	if (g_pLocalPlayerEntity == NULL_CBASEENTITY)
-	{
-		LogDebug("No local entity in Hook_BaseNPCHandleAnimEvent.");
-	}
-	return MRES_Ignored;
-}
-
-public MRESReturn Hook_BaseNPCHandleAnimEventPost(int _this, Handle hParams)
-{
-	// ClearLocalPlayerEntity();
-	return MRES_Ignored;
 }
 
 //------------------------------------------------------

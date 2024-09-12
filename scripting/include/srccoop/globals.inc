@@ -91,14 +91,6 @@ DynamicHook hkOnTryPickUp;
 DynamicHook hkIchthyosaurIdleSound;
 #endif
 
-#if defined ENTPATCH_BM_XENTURRET || defined ENTPATCH_BM_NIHILANTH
-DynamicHook hkHandleAnimEvent;
-#endif
-
-#if defined ENTPATCH_BM_XENTURRET || defined ENTPATCH_BM_NIHILANTH || defined ENTPATCH_BM_GONARCH || defined ENTPATCH_PLAYER_COMPANION
-DynamicHook hkRunAI;
-#endif
-
 #if defined ENTPATCH_FUNC_TRACKAUTOCHANGE || defined ENTPATCH_FUNC_TRACKTRAIN
 DynamicHook hkBlocked;
 #endif
@@ -143,6 +135,10 @@ DynamicDetour hkSetPlayerAvoidState;
 DynamicDetour hkBaseNpcUpdateSleepState;
 #endif
 
+#if defined ENTPATCH_NPC_THINK_LOCALPLAYER
+DynamicDetour hkBaseNpcPreThink;
+#endif
+
 #if defined SRCCOOP_HL2DM && defined PLAYERPATCH_SERVERSIDE_RAGDOLLS
 DynamicHook hkCreateRagdollEntity;
 #endif
@@ -151,8 +147,6 @@ DynamicHook hkCreateRagdollEntity;
 DynamicDetour hkAccumulatePose;
 DynamicDetour hkTestGroundMove;
 #endif
-
-DynamicDetour hkNpcPreThink;
 
 // ----------------------------
 // Adresses, Interfaces

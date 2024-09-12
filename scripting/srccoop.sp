@@ -97,14 +97,6 @@ void LoadGameData()
 	LoadDHookVirtual(pGameConfig, hkIchthyosaurIdleSound, "CNPC_Ichthyosaur::IdleSound");
 	#endif
 
-	#if defined ENTPATCH_BM_XENTURRET || defined ENTPATCH_BM_NIHILANTH
-	LoadDHookVirtual(pGameConfig, hkHandleAnimEvent, "CBaseAnimating::HandleAnimEvent");
-	#endif
-
-	#if defined ENTPATCH_BM_XENTURRET || defined ENTPATCH_BM_NIHILANTH || defined ENTPATCH_BM_GONARCH
-	LoadDHookVirtual(pGameConfig, hkRunAI, "CAI_BaseNPC::RunAI");
-	#endif
-
 	#if defined ENTPATCH_FUNC_TRACKAUTOCHANGE || defined ENTPATCH_FUNC_TRACKTRAIN
 	LoadDHookVirtual(pGameConfig, hkBlocked, "CBaseEntity::Blocked");
 	#endif
@@ -155,6 +147,10 @@ void LoadGameData()
 	LoadDHookDetour(pGameConfig, hkPickup_ForcePlayerToDropThisObject, "Pickup_ForcePlayerToDropThisObject", Hook_ForcePlayerToDropThisObject);
 	#endif
 
+	#if defined ENTPATCH_NPC_THINK_LOCALPLAYER
+	LoadDHookDetour(pGameConfig, hkBaseNpcPreThink, "CAI_BaseNPC::PreThink", Hook_BaseNPCPreThinkNoPlayers);
+	#endif
+
 	#if defined SRCCOOP_BLACKMESA
 	if (g_serverOS == OS_Linux)
 	{
@@ -162,8 +158,6 @@ void LoadGameData()
 		LoadDHookDetour(pGameConfig, hkTestGroundMove, "CAI_MoveProbe::TestGroundMove", Hook_TestGroundMove);
 	}
 	#endif
-	
-	LoadDHookDetour(pGameConfig, hkNpcPreThink, "CAI_BaseNPC::PreThink", Hook_NpcPreThinkNoPlayers);
 
 	// Memory Patches
 
@@ -416,8 +410,10 @@ public void OnClientPutInServer(int client)
 	
 	if (!g_iPlayerCount++)
 	{
+		#if defined ENTPATCH_NPC_THINK_LOCALPLAYER
 		// unpause npcs
-		hkNpcPreThink.Disable(Hook_Pre, Hook_NpcPreThinkNoPlayers);
+		hkBaseNpcPreThink.Disable(Hook_Pre, Hook_BaseNPCPreThinkNoPlayers);
+		#endif
 	}
 
 	CBasePlayer pPlayer = CBasePlayer(client);
@@ -482,10 +478,13 @@ public void OnClientDisconnect_Post(int client)
 	if (g_iPlayerCount)
 	{
 		g_iPlayerCount = GetRealClientCount(true);
+		
+		#if defined ENTPATCH_NPC_THINK_LOCALPLAYER
 		if (!g_iPlayerCount)
 		{
-			hkNpcPreThink.Enable(Hook_Pre, Hook_NpcPreThinkNoPlayers);
+			hkBaseNpcPreThink.Enable(Hook_Pre, Hook_BaseNPCPreThinkNoPlayers);
 		}
+		#endif
 	}
 }
 
@@ -541,10 +540,10 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 
 	if (isNPC)
 	{
+		#if defined ENTPATCH_NPC_THINK_LOCALPLAYER
 		DHookEntity(hkThink, false, iEntIndex, _, Hook_BaseNPCThink);
 		DHookEntity(hkThink, true, iEntIndex, _, Hook_BaseNPCThinkPost);
-		DHookEntity(hkHandleAnimEvent, false, iEntIndex, _, Hook_BaseNPCHandleAnimEvent);
-		DHookEntity(hkHandleAnimEvent, true, iEntIndex, _, Hook_BaseNPCHandleAnimEventPost);
+		#endif
 		
 		#if defined ENTPATCH_CUSTOM_NPC_MODELS
 		DHookEntity(hkKeyValue_char, true, iEntIndex, _, Hook_BaseNPCKeyValuePost);
@@ -563,6 +562,7 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 		#endif
 
 		#if defined SRCCOOP_BLACKMESA
+
 		if (strncmp(szClassname, "npc_human_scientist", 19) == 0)
 		{
 			#if defined ENTPATCH_RELATION_TYPE
@@ -573,46 +573,23 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 			DHookEntity(hkIsPlayerAlly, true, iEntIndex, _, Hook_IsPlayerAlly);
 			#endif
 
-			// #if defined ENTPATCH_PLAYER_COMPANION
-			// DHookEntity(hkRunAI, false, iEntIndex, _, Hook_PlayerCompanionRunAI);
-			// DHookEntity(hkRunAI, true, iEntIndex, _, Hook_PlayerCompanionRunAIPost);
-			// #endif
 			return;
 		}
 
+		#if defined ENTPATCH_PLAYER_ALLY
 		if (strcmp(szClassname, "npc_human_security") == 0)
 		{
-			#if defined ENTPATCH_PLAYER_ALLY
 			DHookEntity(hkIsPlayerAlly, true, iEntIndex, _, Hook_IsPlayerAlly);
-			#endif
-
-			// #if defined ENTPATCH_PLAYER_COMPANION
-			// DHookEntity(hkRunAI, false, iEntIndex, _, Hook_PlayerCompanionRunAI);
-			// DHookEntity(hkRunAI, true, iEntIndex, _, Hook_PlayerCompanionRunAIPost);
-			// #endif
 			return;
 		}
-		
-		// #if defined ENTPATCH_PLAYER_COMPANION
-		// if (strcmp(szClassname, "npc_gman") == 0)
-		// {
-		// 	DHookEntity(hkRunAI, false, iEntIndex, _, Hook_PlayerCompanionRunAI);
-		// 	DHookEntity(hkRunAI, true, iEntIndex, _, Hook_PlayerCompanionRunAIPost);
-		// 	return;
-		// }
-		// #endif
+		#endif
 		
 		#endif // SRCCOOP_BLACKMESA
 
 		#if defined ENTPATCH_BM_XENTURRET
-		if (strcmp(szClassname, "npc_xenturret", false) == 0)
+		if (strcmp(szClassname, "npc_xenturret") == 0)
 		{
 			SDKHook(iEntIndex, SDKHook_SpawnPost, Hook_XenTurretSpawnPost);
-			// DHookEntity(hkProtoSniperSelectSchedule, false, iEntIndex, _, Hook_XenTurretSelectSchedule);
-			// DHookEntity(hkHandleAnimEvent, false, iEntIndex, _, Hook_XenTurretHandleAnimEvent);
-			// DHookEntity(hkHandleAnimEvent, true, iEntIndex, _, Hook_XenTurretHandleAnimEventPost);
-			// DHookEntity(hkRunAI, false, iEntIndex, _, Hook_XenTurretRunAI);
-			// DHookEntity(hkRunAI, true, iEntIndex, _, Hook_XenTurretRunAIPost);
 			return;
 		}
 		#endif
@@ -633,35 +610,6 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 			return;
 		}
 		#endif
-
-		// #if defined ENTPATCH_BM_HOUNDEYE
-		// if (strncmp(szClassname, "npc_houndeye", 12) == 0)
-		// {
-		// 	DHookEntity(hkThink, false, iEntIndex, _, Hook_HoundeyeThink);
-		// 	DHookEntity(hkThink, true, iEntIndex, _, Hook_HoundeyeThinkPost);
-		// 	return;
-		// }
-		// #endif
-
-		// #if defined ENTPATCH_BM_GONARCH
-		// if (strcmp(szClassname, "npc_gonarch") == 0)
-		// {
-		// 	DHookEntity(hkRunAI, false, iEntIndex, _, Hook_GonarchRunAI);
-		// 	DHookEntity(hkRunAI, true, iEntIndex, _, Hook_GonarchRunAIPost);
-		// 	return;
-		// }
-		// #endif
-
-		// #if defined ENTPATCH_BM_NIHILANTH
-		// if (strcmp(szClassname, "npc_nihilanth") == 0)
-		// {
-		// 	DHookEntity(hkRunAI, false, iEntIndex, _, Hook_NihilanthRunAI);
-		// 	DHookEntity(hkRunAI, true, iEntIndex, _, Hook_NihilanthRunAIPost);
-		// 	DHookEntity(hkHandleAnimEvent, false, iEntIndex, _, Hook_NihilanthHandleAnimEvent);
-		// 	DHookEntity(hkHandleAnimEvent, true, iEntIndex, _, Hook_NihilanthHandleAnimEventPost);
-		// 	return;
-		// }
-		// #endif
 
 		#if defined ENTPATCH_BM_PUFFBALLFUNGUS
 		if (strcmp(szClassname, "npc_puffballfungus") == 0)

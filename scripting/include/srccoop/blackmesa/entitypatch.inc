@@ -31,28 +31,6 @@ public MRESReturn Hook_IsPlayerAlly(int _this, Handle hReturn, Handle hParams)
 }
 
 //------------------------------------------------------
-// CNPC_PlayerCompanion - npc_human_scientist*, npc_human_security, npc_gman
-// MP crash fix
-//------------------------------------------------------
-public MRESReturn Hook_PlayerCompanionRunAI(int _this)
-{
-	CBaseEntity pThis = CBaseEntity(_this);
-	CBasePlayer pPlayer = GetNearestPlayer(pThis, true);
-	if (pPlayer == NULL_CBASEENTITY)
-	{
-		return MRES_Supercede;
-	}
-	SetLocalPlayerEntityEx(pPlayer);
-	return MRES_Ignored;
-}
-
-public MRESReturn Hook_PlayerCompanionRunAIPost(int _this)
-{
-	ClearLocalPlayerEntity();
-	return MRES_Ignored;
-}
-
-//------------------------------------------------------
 // CAI_BaseNPC - npc_lav
 // fixes the client crash seen in bm_c2a5g related to LAV npc
 //------------------------------------------------------
@@ -133,74 +111,6 @@ public MRESReturn Hook_IchthyosaurIdleSound(int _this)
 }
 
 //------------------------------------------------------
-// CNPC_Houndeye::NPCThink() - npc_houndeye*
-// multiplayer crashfix (fixes houndeyes with m_bEnableMemoryUpdateEveryFrame 1 / InputEnableMemUpdatePerFrame input)
-//------------------------------------------------------
-public MRESReturn Hook_HoundeyeThink(int _this)
-{
-	SetLocalPlayerEntity(_this);
-	return MRES_Ignored;
-}
-
-public MRESReturn Hook_HoundeyeThinkPost(int _this)
-{
-	ClearLocalPlayerEntity();
-	return MRES_Ignored;
-}
-
-//------------------------------------------------------
-// CNPC_Gonarch - npc_gonarch
-// MP crash fix
-//------------------------------------------------------
-public MRESReturn Hook_GonarchRunAI(int _this)
-{
-	CBaseEntity pThis = CBaseEntity(_this);
-	CBasePlayer pPlayer = GetNearestPlayer(pThis, true);
-	if (pPlayer == NULL_CBASEENTITY)
-	{
-		return MRES_Supercede;
-	}
-	SetLocalPlayerEntityEx(pPlayer);
-	return MRES_Ignored;
-}
-
-public MRESReturn Hook_GonarchRunAIPost(int _this)
-{
-	ClearLocalPlayerEntity();
-	return MRES_Ignored;
-}
-
-//------------------------------------------------------
-// CNPC_Nihilanth - npc_nihilanth
-// MP crash fix
-//------------------------------------------------------
-public MRESReturn Hook_NihilanthRunAI(int _this)
-{
-	CBaseEntity pThis = CBaseEntity(_this);
-	CBasePlayer pPlayer = GetNearestPlayer(pThis, true);
-	if (pPlayer == NULL_CBASEENTITY)
-	{
-		return MRES_Supercede;
-	}
-	SetLocalPlayerEntityEx(pPlayer);
-	return MRES_Ignored;
-}
-public MRESReturn Hook_NihilanthRunAIPost(int _this)
-{
-	ClearLocalPlayerEntity();
-	return MRES_Ignored;
-}
-
-public MRESReturn Hook_NihilanthHandleAnimEvent(int _this, Handle hParams)
-{
-	return Hook_NihilanthRunAI(_this);
-}
-public MRESReturn Hook_NihilanthHandleAnimEventPost(int _this, Handle hParams)
-{
-	return Hook_NihilanthRunAIPost(_this);
-}
-
-//------------------------------------------------------
 // CAI_BaseNPC - npc_puffballfungus
 // MP TakeDamage crash fix
 //------------------------------------------------------
@@ -246,48 +156,7 @@ public Action BlackMesaFireBulletsTEHook(const char[] szTEName, const int[] iCli
 
 //------------------------------------------------------
 // CNPC_XenTurret - npc_xenturret
-// Crash fix - selecting schedules in empty server causes all sorts of issues due to calls to UTIL_GetLocalPlayer()
 //------------------------------------------------------
-public MRESReturn Hook_XenTurretSelectSchedule(int _this, Handle hReturn)
-{
-	if (!GetClientCount())
-	{
-		DHookSetReturn(hReturn, 88);
-		return MRES_Supercede;
-	}
-	return MRES_Ignored;
-}
-
-public MRESReturn Hook_XenTurretHandleAnimEvent(int _this, Handle hParams)
-{
-	if (!GetClientCount())
-	{
-		return MRES_Supercede;
-	}
-	SetLocalPlayerEntity(_this);
-	return MRES_Ignored;
-}
-public MRESReturn Hook_XenTurretHandleAnimEventPost(int _this, Handle hParams)
-{
-	ClearLocalPlayerEntity();
-	return MRES_Ignored;
-}
-
-public MRESReturn Hook_XenTurretRunAI(int _this)
-{
-	if (!GetClientCount())
-	{
-		return MRES_Supercede;
-	}
-	SetLocalPlayerEntity(_this);
-	return MRES_Ignored;
-}
-public MRESReturn Hook_XenTurretRunAIPost(int _this)
-{
-	ClearLocalPlayerEntity();
-	return MRES_Ignored;
-}
-
 public void Hook_XenTurretSpawnPost(int iEntIndex)
 {
 	// Use our fixed model, which doesn't have the clientside particles which affected everyone's screens even when they shouldn't.
