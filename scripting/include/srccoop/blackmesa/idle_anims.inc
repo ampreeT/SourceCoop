@@ -64,7 +64,9 @@ public void IdleAnims_Player_PreThink(const int iClient)
 					pPlayer.GetAbsOrigin(vec3Pos);
 
 					float vec3Angles[3];
-					pPlayer.GetAbsAngles(vec3Angles);
+					pPlayer.GetAngles(vec3Angles);
+					vec3Angles[0] = 0.0;
+					vec3Angles[2] = 0.0;
 
 					g_pIdle[iPlayerIndex].m_pModel.SetOrigin(vec3Pos);
 					g_pIdle[iPlayerIndex].m_pModel.SetAngles(vec3Angles);
