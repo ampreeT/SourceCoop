@@ -194,6 +194,7 @@ public void IdleAnims_Player_PreThink(const int iClient)
 		// TODO:
 		// Set bodygroup and other black mesa specific variables
 		// "cheek_depth", "cheek_fat_max", "cheek_fat_min", ect.
+		// Should m_AnimOverlay be modifed too?
 		
 		int r, g, b, a;
 		pPlayer.GetRenderColor(r, g, b, a);
