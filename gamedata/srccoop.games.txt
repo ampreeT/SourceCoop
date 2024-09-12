@@ -501,12 +501,54 @@
 					}
 				}
 			}
-			"CWeapon_Tau::ItemPostFrame"
+			"CBaseCombatWeapon::Deploy"
 			{
-				"offset"	"CWeapon_Tau::ItemPostFrame"
+				"offset"	"CBaseCombatWeapon::Deploy"
 				"hooktype"	"entity"
 				"return"	"void"
 				"this"		"entity"
+			}
+			"CBaseCombatWeapon::ItemPostFrame"
+			{
+				"offset"	"CBaseCombatWeapon::ItemPostFrame"
+				"hooktype"	"entity"
+				"return"	"void"
+				"this"		"entity"
+			}
+			"CBaseCombatWeapon::PrimaryAttack"
+			{
+				"offset"	"CBaseCombatWeapon::PrimaryAttack"
+				"hooktype"	"entity"
+				"return"	"void"
+				"this"		"entity"
+			}
+			"CBaseCombatWeapon::GetPrimaryAttackActivity"
+			{
+				"offset"	"CBaseCombatWeapon::GetPrimaryAttackActivity"
+				"hooktype"	"entity"
+				"return"	"int"
+				"this"		"entity"
+			}
+			"CBaseCombatWeapon::GetDrawActivity"
+			{
+				"offset"	"CBaseCombatWeapon::GetDrawActivity"
+				"hooktype"	"entity"
+				"return"	"int"
+				"this"		"entity"
+			}
+			"CWeapon_Crossbow::FireBolt"
+			{
+				"offset"	"CWeapon_Crossbow::FireBolt"
+				"hooktype"	"entity"
+				"return"	"bool"
+				"this"		"entity"
+				"arguments"
+				{
+					"bUnknown"
+					{
+						"type"	"bool"
+					}
+				}
 			}
 
 			//   _____  ______ _______ ____  _    _ _____  
@@ -664,6 +706,32 @@
 					}
 				}
 			}
+			"CBlackMesaBaseWeaponIronSights::ToggleIronSights"
+			{
+				"signature"	"CBlackMesaBaseWeaponIronSights::ToggleIronSights"
+				"callconv"	"thiscall"
+				"return"	"void"
+				"this"		"entity"
+			}
+			"CWeapon_Tau::FireBeam"
+			{
+				"signature"	"CWeapon_Tau::FireBeam"
+				"callconv"	"thiscall"
+				"return"	"void"
+				"this"		"entity"
+				"arguments"
+				{
+					"pfUnknown1"
+					{
+						// the real type is float*
+						"type"	"int"
+					}
+					"bUnknown2"
+					{
+						"type"	"bool"
+					}
+				}
+			}
 		}
 	}
 	
@@ -780,21 +848,31 @@
 			"CAI_ScriptConditions::EvaluationThink" // void CAI_ScriptConditions::EvaluationThink()
 			{
 				// str: "%s WARNING: Player is NOTARGET"
-				"windows" "\x55\x8B\xEC\x83\xEC\x1C\x56\x8B\xF1\x80\xBE\x94\x03\x00\x00\x01"
-				"linux" "@_ZN20CAI_ScriptConditions15EvaluationThinkEv"
+				"windows"	"\x55\x8B\xEC\x83\xEC\x1C\x56\x8B\xF1\x80\xBE\x94\x03\x00\x00\x01"
+				"linux" 	"@_ZN20CAI_ScriptConditions15EvaluationThinkEv"
 			}
 			"CLagCompensationManager::RestoreEntityFromRecords"
 			{
 				// str: " restore got most of the way\n"
 				// On win, this is a 1:1 sub call of CLagCompensationManager::FinishLagCompensation, str: "FinishLagCompensation"
-				"windows" "\x55\x8B\xEC\x83\xEC\x14\x53\x8B\x5D\x0C"
-				"linux" "@_ZN23CLagCompensationManager24RestoreEntityFromRecordsEP11CBaseEntityP9LagRecordS3_b"
+				"windows"	"\x55\x8B\xEC\x83\xEC\x14\x53\x8B\x5D\x0C"
+				"linux"		"@_ZN23CLagCompensationManager24RestoreEntityFromRecordsEP11CBaseEntityP9LagRecordS3_b"
 			}
 			"CLagCompensationManager::BacktrackEntity"
 			{
 				// str: "Backtrack failed completely"
-				"windows" "\x55\x8B\xEC\x81\xEC\x00\x01\x00\x00\xA1\x2A\x2A\x2A\x2A\x33\xC5\x89\x45\xFC\x8B\x45\x14"
-				"linux" "@_ZN23CLagCompensationManager15BacktrackEntityEP11CBaseEntityfP19CUtlFixedLinkedListI9LagRecordEPS3_S6_b"
+				"windows"	"\x55\x8B\xEC\x81\xEC\x00\x01\x00\x00\xA1\x2A\x2A\x2A\x2A\x33\xC5\x89\x45\xFC\x8B\x45\x14"
+				"linux"		"@_ZN23CLagCompensationManager15BacktrackEntityEP11CBaseEntityfP19CUtlFixedLinkedListI9LagRecordEPS3_S6_b"
+			}
+			"CBlackMesaBaseWeaponIronSights::ToggleIronSights"
+			{
+				"windows"	"\x55\x8B\xEC\x83\xEC\x14\x56\x57\x8B\xF9\x2A\x2A\x2A\x2A\x2A\x8B\xF0\x89\x75\xEC\x85\xF6\x2A\x2A\x5F\x32\xC0\x5E\x8B"
+				"linux"		"@_ZN30CBlackMesaBaseWeaponIronSights16ToggleIronSightsEv"
+			}
+			"CWeapon_Tau::FireBeam"
+			{
+				"windows"	"\x55\x8B\xEC\x83\xEC\x5C\x56\x57\x8B\xF9\x2A\x2A\x2A\x2A\x2A\x8B\xF0\x85\xF6\x2A\x2A\x2A\x2A\x2A\x2A"
+				"linux"		"@_ZN11CWeapon_Tau8FireBeamERKfb"
 			}
 		}
 
@@ -1069,10 +1147,40 @@
 				"windows"	"343"
 				"linux"		"344"
 			}
-			"CWeapon_Tau::ItemPostFrame"	// CWeapon_Tau::ItemPostFrame(CWeapon_Tau *)
+			"CBaseAnimating::SelectWeightedSequence"	// CBaseAnimating::SelectWeightedSequence(Activity)
+			{
+				"windows"	"211"
+				"linux"		"212"
+			}
+			"CBaseCombatWeapon::Deploy"	// CBaseCombatWeapon::Deploy()
+			{
+				"windows"	"268"
+				"linux"		"269"
+			}
+			"CBaseCombatWeapon::ItemPostFrame"	// CBaseCombatWeapon::ItemPostFrame()
 			{
 				"windows"	"279"
 				"linux"		"280"
+			}
+			"CBaseCombatWeapon::PrimaryAttack"	// CBaseCombatWeapon::PrimaryAttack()
+			{
+				"windows"	"295"
+				"linux"		"296"
+			}
+			"CBaseCombatWeapon::GetPrimaryAttackActivity"	// CBaseCombatWeapon::GetPrimaryAttackActivity()
+			{
+				"windows"	"297"
+				"linux"		"298"
+			}
+			"CBaseCombatWeapon::GetDrawActivity"	// CBaseCombatWeapon::GetDrawActivity() const
+			{
+				"windows"	"299"
+				"linux"		"300"
+			}
+			"CWeapon_Crossbow::FireBolt"	// CWeapon_Crossbow::FireBolt(bool)
+			{
+				"windows"	"423"
+				"linux"		"424"
 			}
 		}
 	}
@@ -1353,6 +1461,36 @@
 			{
 				"windows"	"149"
 				"linux"		"150"
+			}
+
+			// This is not implemented for this game.
+			//"CBaseAnimating::SelectWeightedSequence"	// CBaseAnimating::SelectWeightedSequence(Activity)
+			//{
+			//}
+			"CBaseCombatWeapon::Deploy"	// CBaseCombatWeapon::Deploy()
+			{
+				"windows"	"248"
+				"linux"		"249"
+			}
+			"CBaseCombatWeapon::ItemPostFrame"	// CBaseCombatWeapon::ItemPostFrame()
+			{
+				"windows"	"259"
+				"linux"		"260"
+			}
+			"CBaseCombatWeapon::PrimaryAttack"	// CBaseCombatWeapon::PrimaryAttack()
+			{
+				"windows"	"273"
+				"linux"		"274"
+			}
+			"CBaseCombatWeapon::GetPrimaryAttackActivity"	// CBaseCombatWeapon::GetPrimaryAttackActivity()
+			{
+				"windows"	"275"
+				"linux"		"276"
+			}
+			"CBaseCombatWeapon::GetDrawActivity"	// CBaseCombatWeapon::GetDrawActivity() const
+			{
+				"windows"	"277"
+				"linux"		"278"
 			}
 		}
 	}
