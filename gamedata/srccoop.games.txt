@@ -26,6 +26,11 @@
 				"windows"	"IEngineSoundServer003"
 				"linux"		"IEngineSoundServer003"
 			}
+			"PlayerInfoManager"
+			{
+				"windows"	"PlayerInfoManager002"
+				"linux"		"PlayerInfoManager002"
+			}
 
 			"CSoundSize"
 			{
@@ -1187,6 +1192,11 @@
 				"windows"	"235"
 				"linux"		"236"
 			}
+			"CPlayerInfoManager::GetGlobalVars"	// CPlayerInfoManager::GetGlobalVars()
+			{
+				"windows"	"1"
+				"linux"		"1"
+			}
 		}
 	}
 
@@ -1500,6 +1510,11 @@
 			{
 				"windows"	"216"
 				"linux"		"217"
+			}
+			"CPlayerInfoManager::GetGlobalVars"	// CPlayerInfoManager::GetGlobalVars()
+			{
+				"windows"	"1"
+				"linux"		"1"
 			}
 		}
 	}

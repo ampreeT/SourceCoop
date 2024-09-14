@@ -9,6 +9,7 @@
 #pragma semicolon 1
 
 IServerGameClients g_ServerGameClients;
+CPlayerInfoManager g_pPlayerInfoManager;
 
 ConVar ai_los_mode;
 
@@ -37,6 +38,7 @@ Handle g_pWorldSpaceCenter;
 Handle g_pGetPlayerState;
 Handle g_pSelectWeightedSequence;
 Handle g_pSendViewModelMatchingSequence;
+Handle g_pGetGlobalVars;
 
 int g_iCSoundSize = -1;
 int g_iCPlayerState_frags = -1;
@@ -53,8 +55,11 @@ stock void InitClassdef(GameData pGameConfig)
 	if (g_iCPlayerState_frags < 0)
 		SetFailState("Invalid offset CPlayerState::frags");
 
-	if (!(g_ServerGameClients = IServerGameClients(GetInterface(pGameConfig, "server", "IServerGameClients"))))
+	if (!(g_ServerGameClients = view_as<IServerGameClients>(GetInterface(pGameConfig, "server", "IServerGameClients"))))
 		SetFailState("Could not get interface for %s", "IServerGameClients");
+	
+	if (!(g_pPlayerInfoManager = view_as<CPlayerInfoManager>(GetInterface(pGameConfig, "server", "PlayerInfoManager"))))
+		SetFailState("Could not get interface for %s", "PlayerInfoManager");
 
 	char szSetCollisionBounds[] = "CBaseEntity::SetCollisionBounds";
 	StartPrepSDKCall(SDKCall_Entity);
@@ -326,6 +331,16 @@ stock void InitClassdef(GameData pGameConfig)
 	{
 		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
 		if (!(g_pSendViewModelMatchingSequence = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szSendViewModelMatchingSequence);
+	}
+
+	char szGetGlobalVars[] = "CPlayerInfoManager::GetGlobalVars";
+	StartPrepSDKCall(SDKCall_Raw);
+	if (!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Virtual, szGetGlobalVars))
+		LogMessage("Could not obtain gamedata offset %s", szGetGlobalVars);
+	else
+	{
+		PrepSDKCall_SetReturnInfo(SDKType_PlainOldData, SDKPass_Plain);
+		if (!(g_pGetGlobalVars = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szGetGlobalVars);
 	}
 
 	#if defined SRCCOOP_BLACKMESA
@@ -2215,7 +2230,7 @@ methodmap CBasePlayer < CBaseCombatCharacter
 	public void SetScore(const int iScore)
 	{
 		SetEntProp(this.GetEntIndex(), Prop_Data, "m_iFrags", iScore);
-		g_ServerGameClients.GetPlayerState(this).SetScore(iScore);
+		IServerGameClients().GetPlayerState(this).SetScore(iScore);
 	}
 	/**
 	 * Modifies the player's score by the provided points
@@ -2944,9 +2959,9 @@ methodmap CPlayerState
 
 methodmap IServerGameClients
 {
-	public IServerGameClients(Address pAddress)
+	public IServerGameClients()
 	{
-		return view_as<IServerGameClients>(pAddress);
+		return g_ServerGameClients;
 	}
 	
 	public CPlayerState GetPlayerState(CBasePlayer pPlayer)
@@ -3119,4 +3134,44 @@ stock bool CanOverrideEnvZoomOwner(CBaseEntity pZoomOwner)
 		return false;
 	
 	return pZoomOwner.HasSpawnFlag(ENV_ZOOM_OVERRIDE);
+}
+
+methodmap CPlayerInfoManager
+{
+	public CPlayerInfoManager()
+	{
+		return g_pPlayerInfoManager;
+	}
+
+	public CGlobalVarsBase GetGlobalVars()
+	{
+		return view_as<CGlobalVarsBase>(SDKCall(g_pGetGlobalVars, view_as<Address>(this)));
+	}
+}
+
+methodmap CGlobalVarsBase
+{
+	public bool IsValid()
+	{
+		return view_as<int>(this) != 0;
+	}
+
+	// struct is almost 1:1 https://github.com/ValveSoftware/source-sdk-2013/blob/0d8dceea4310fde5706b3ce1c70609d72a38efdf/sp/src/public/globalvars_base.h#L19
+	public int GetMaxPlayers()
+	{
+		return LoadFromAddress(view_as<Address>(this) + 0x14, NumberType_Int32);
+	}
+	public void SetMaxPlayers(const int iMaxPlayers)
+	{
+		if (iMaxPlayers >= MAXPLAYERS)
+		{
+			ThrowError("`CGlobalVarsBase::SetMaxPlayers`");
+		}
+		StoreToAddress(view_as<Address>(this) + 0x14, iMaxPlayers, NumberType_Int32);
+	}
+}
+
+methodmap CGlobalVars < CGlobalVarsBase
+{
+	
 }
