@@ -441,7 +441,7 @@ public void OnClientPutInServer(int client)
 	DHookEntity(hkEvent_Killed, true, client, _, Hook_PlayerKilledPost);
 
 	#if defined SRCCOOP_BLACKMESA
-	DHookEntity(hkSetModel, false, client, _, IdleAnims_Hook_PlayerSetModel);
+	DHookEntity(hkSetModel, true, client, _, IdleAnims_Hook_PlayerSetModel_Post);
 	#endif
 
 	#if defined PLAYERPATCH_RESTORE_MP_FORCERESPAWN

@@ -27,7 +27,7 @@ enum struct IdleAnimEntry
 
 public IdleAnimEntry g_pIdle[MAXPLAYERS + 1];
 
-public MRESReturn IdleAnims_Hook_PlayerSetModel(const int iPlayerIndex, DHookParam hParams)
+public MRESReturn IdleAnims_Hook_PlayerSetModel_Post(const int iPlayerIndex, DHookParam hParams)
 {
 	if (!DHookIsNullParam(hParams, 1) && g_pIdle[iPlayerIndex].m_pModel.IsValid())
 	{
