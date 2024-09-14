@@ -113,8 +113,15 @@ void LoadGameData()
 	LoadDHookVirtual(pGameConfig, hkStartObserverMode, "CBasePlayer::StartObserverMode");
 	#endif
 
-	#if defined ENTPATCH_BM_TAU_VELOCITY
-	LoadDHookVirtual(pGameConfig, hkTauItemPostFrame, "CWeapon_Tau::ItemPostFrame");
+	#if defined ENTPATCH_BM_SP_WEAPONS
+	LoadDHookVirtual(pGameConfig, hkBaseCombatWeaponDeploy, "CBaseCombatWeapon::Deploy");
+	LoadDHookVirtual(pGameConfig, hkBaseCombatWeaponItemPostFrame, "CBaseCombatWeapon::ItemPostFrame");
+	LoadDHookVirtual(pGameConfig, hkBaseCombatWeaponPrimaryAttack, "CBaseCombatWeapon::PrimaryAttack");
+	LoadDHookVirtual(pGameConfig, hkBaseCombatWeaponGetPrimaryAttackActivity, "CBaseCombatWeapon::GetPrimaryAttackActivity");
+	LoadDHookVirtual(pGameConfig, hkBaseCombatWeaponGetDrawActivity, "CBaseCombatWeapon::GetDrawActivity");
+	LoadDHookVirtual(pGameConfig, hkCrossbowFireBolt, "CWeapon_Crossbow::FireBolt");
+	LoadDHookDetour(pGameConfig, hkToggleIronsights, "CBlackMesaBaseWeaponIronSights::ToggleIronSights", Hook_ToggleIronsights);
+	LoadDHookDetour(pGameConfig, hkTauFireBeam, "CWeapon_Tau::FireBeam", Hook_TauFireBeam, Hook_TauFireBeamPost);
 	#endif
 
 	// Detour Hooks
@@ -436,6 +443,10 @@ public void OnClientPutInServer(int client)
 	DHookEntity(hkEvent_Killed, false, client, _, Hook_PlayerKilled);
 	DHookEntity(hkEvent_Killed, true, client, _, Hook_PlayerKilledPost);
 
+	#if defined SRCCOOP_BLACKMESA
+	DHookEntity(hkSetModel, true, client, _, IdleAnims_Hook_PlayerSetModel_Post);
+	#endif
+
 	#if defined PLAYERPATCH_RESTORE_MP_FORCERESPAWN
 	DHookEntity(hkForceRespawn, false, client, _, Hook_PlayerForceRespawn);
 	#endif
@@ -629,11 +640,32 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 	}
 	else // !isNPC
 	{
-		#if defined ENTPATCH_BM_TAU_VELOCITY
-		if (strcmp(szClassname, "weapon_tau") == 0)
+		#if defined ENTPATCH_BM_SP_WEAPONS
+		if (strcmp(szClassname, "weapon_357") == 0)
 		{
-			DHookEntity(hkTauItemPostFrame, false, iEntIndex, _, Hook_TauItemPostFrame);
-			DHookEntity(hkTauItemPostFrame, true, iEntIndex, _, Hook_TauItemPostFramePost);
+			DHookEntity(hkBaseCombatWeaponDeploy, false, iEntIndex, _, Hook_IronsightDeployPost_SaveSettings);
+			DHookEntity(hkBaseCombatWeaponGetPrimaryAttackActivity, false, iEntIndex, _, Hook_IronsightGetPrimaryAttackActivity);
+		}
+
+		if (strcmp(szClassname, "grenade_bolt") == 0)
+		{
+			DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_GrenadeBoltAcceptInput);
+			return;
+		}
+
+		if (strcmp(szClassname, "weapon_crossbow") == 0)
+		{
+			DHookEntity(hkBaseCombatWeaponItemPostFrame, false, iEntIndex, _, Hook_CrossbowItemPostFrame);
+			DHookEntity(hkBaseCombatWeaponItemPostFrame, true, iEntIndex, _, Hook_CrossbowItemPostFramePost);
+			DHookEntity(hkBaseCombatWeaponDeploy, false, iEntIndex, _, Hook_IronsightDeployPost_SaveSettings);
+			DHookEntity(hkBaseCombatWeaponDeploy, true, iEntIndex, _, Hook_CrossbowDeployPost);
+			DHookEntity(hkBaseCombatWeaponPrimaryAttack, false, iEntIndex, _, Hook_CrossbowPrimaryAttack);
+			DHookEntity(hkBaseCombatWeaponPrimaryAttack, true, iEntIndex, _, Hook_CrossbowPrimaryAttackPost);
+			DHookEntity(hkBaseCombatWeaponGetDrawActivity, false, iEntIndex, _, Hook_CrossbowGetDrawActivity);
+			DHookEntity(hkBaseCombatWeaponGetDrawActivity, true, iEntIndex, _, Hook_CrossbowGetDrawActivityPost);
+			DHookEntity(hkCrossbowFireBolt, false, iEntIndex, _, Hook_CrossbowFireBolt);
+			DHookEntity(hkCrossbowFireBolt, true, iEntIndex, _, Hook_CrossbowFireBoltPost);
+			DHookEntity(hkBaseCombatWeaponGetPrimaryAttackActivity, false, iEntIndex, _, Hook_CrossbowGetPrimaryAttackActivity);
 			return;
 		}
 		#endif
@@ -843,7 +875,7 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 		if (strcmp(szClassname, "music_track") == 0)
 		{
 			DHookEntity(hkThink, false, iEntIndex, _, Hook_MusicTrackThink);
-			DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_MusicTrackAceptInput);
+			DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_MusicTrackAcceptInput);
 			return;
 		}
 		#endif

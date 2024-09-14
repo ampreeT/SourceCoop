@@ -104,7 +104,7 @@
 	#define ENTPATCH_BM_MISC_MARIONETTIST
 	#define ENTPATCH_BM_MUSIC_TRACK
 	#define ENTPATCH_BM_SNARK_NEST
-	#define ENTPATCH_BM_TAU_VELOCITY
+	#define ENTPATCH_BM_SP_WEAPONS
 
 	#define PLAYERPATCH_SETSUITUPDATE
 	#define PLAYERPATCH_PICKUP_FORCEPLAYERTODROPTHISOBJECT
@@ -165,6 +165,7 @@
 #if defined SRCCOOP_BLACKMESA
 #include <srccoop/blackmesa/entitypatch>
 #include <srccoop/blackmesa/deathnotice>
+#include <srccoop/blackmesa/idle_anims>
 #elseif defined SRCCOOP_HL2DM
 #include <srccoop/hl2dm/deathnotice>
 #endif

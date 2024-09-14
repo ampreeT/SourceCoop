@@ -9,6 +9,7 @@
 #pragma semicolon 1
 
 IServerGameClients g_ServerGameClients;
+CPlayerInfoManager g_pPlayerInfoManager;
 
 ConVar ai_los_mode;
 
@@ -35,6 +36,9 @@ Handle g_pSendWeaponAnim;
 Handle g_pWeaponSwitch;
 Handle g_pWorldSpaceCenter;
 Handle g_pGetPlayerState;
+Handle g_pSelectWeightedSequence;
+Handle g_pSendViewModelMatchingSequence;
+Handle g_pGetGlobalVars;
 
 int g_iCSoundSize = -1;
 int g_iCPlayerState_frags = -1;
@@ -51,8 +55,11 @@ stock void InitClassdef(GameData pGameConfig)
 	if (g_iCPlayerState_frags < 0)
 		SetFailState("Invalid offset CPlayerState::frags");
 
-	if (!(g_ServerGameClients = IServerGameClients(GetInterface(pGameConfig, "server", "IServerGameClients"))))
+	if (!(g_ServerGameClients = view_as<IServerGameClients>(GetInterface(pGameConfig, "server", "IServerGameClients"))))
 		SetFailState("Could not get interface for %s", "IServerGameClients");
+	
+	if (!(g_pPlayerInfoManager = view_as<CPlayerInfoManager>(GetInterface(pGameConfig, "server", "PlayerInfoManager"))))
+		SetFailState("Could not get interface for %s", "PlayerInfoManager");
 
 	char szSetCollisionBounds[] = "CBaseEntity::SetCollisionBounds";
 	StartPrepSDKCall(SDKCall_Entity);
@@ -305,6 +312,37 @@ stock void InitClassdef(GameData pGameConfig)
 		if (!(g_pGetPlayerState = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szGetPlayerState);
 	}
 
+	char szSelectWeightedSequence[] = "CBaseAnimating::SelectWeightedSequence";
+	StartPrepSDKCall(SDKCall_Entity);
+	if (!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Virtual, szSelectWeightedSequence))
+		LogMessage("Could not obtain gamedata offset %s", szSelectWeightedSequence);
+	else
+	{
+		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
+		PrepSDKCall_SetReturnInfo(SDKType_PlainOldData, SDKPass_Plain);
+		if (!(g_pSelectWeightedSequence = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szSelectWeightedSequence);
+	}
+
+	char szSendViewModelMatchingSequence[] = "CBaseViewModel::SendViewModelMatchingSequence";
+	StartPrepSDKCall(SDKCall_Entity);
+	if (!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Virtual, szSendViewModelMatchingSequence))
+		LogMessage("Could not obtain gamedata offset %s", szSendViewModelMatchingSequence);
+	else
+	{
+		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
+		if (!(g_pSendViewModelMatchingSequence = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szSendViewModelMatchingSequence);
+	}
+
+	char szGetGlobalVars[] = "CPlayerInfoManager::GetGlobalVars";
+	StartPrepSDKCall(SDKCall_Raw);
+	if (!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Virtual, szGetGlobalVars))
+		LogMessage("Could not obtain gamedata offset %s", szGetGlobalVars);
+	else
+	{
+		PrepSDKCall_SetReturnInfo(SDKType_PlainOldData, SDKPass_Plain);
+		if (!(g_pGetGlobalVars = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szGetGlobalVars);
+	}
+
 	#if defined SRCCOOP_BLACKMESA
 	InitClassdefBM(pGameConfig);
 	#endif
@@ -314,7 +352,7 @@ stock void InitClassdef(GameData pGameConfig)
 
 methodmap CBaseEntity
 {
-	public CBaseEntity(const int iEntIndex = NULL_CBASEENTITY)
+	public CBaseEntity(const int iEntIndex = -1)
 	{
 		return view_as<CBaseEntity>(iEntIndex > -1 ? EntIndexToEntRef(iEntIndex) : iEntIndex);
 	}
@@ -767,6 +805,14 @@ methodmap CBaseEntity
 	{
 		SetEntProp(this.GetEntIndex(), Prop_Data, "m_fEffects", iEffects); 
 	}
+	public void AddEffects(const int iEffects)
+	{
+		this.SetEffects(this.GetEffects() | iEffects);
+	}
+	public void RemoveEffects(const int iEffects)
+	{
+		this.SetEffects(this.GetEffects() & ~iEffects);
+	}
 	public int GetTakeDamage()
 	{
 		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_takedamage");
@@ -960,6 +1006,18 @@ methodmap CBaseAnimating < CBaseEntity
 		return view_as<CBaseAnimating>(CBaseEntity(iEntIndex));
 	}
 
+	public bool IsValid()
+	{
+		return view_as<CBaseEntity>(this).IsValid() && this.GetEntIndex() > 0;
+	}
+	public int GetSkin()
+	{
+		return GetEntProp(this.GetEntIndex(), Prop_Send, "m_nSkin");
+	}
+	public int SetSkin(const int iSkin)
+	{
+		SetEntProp(this.GetEntIndex(), Prop_Send, "m_nSkin", iSkin);
+	}
 	public float GetModelScale()
 	{
 		return GetEntPropFloat(this.GetEntIndex(), Prop_Send, "m_flModelScale");
@@ -1008,17 +1066,63 @@ methodmap CBaseAnimating < CBaseEntity
 	{
 		return GetEntProp(this.GetEntIndex(), Prop_Send, "m_nForceBone");
 	}
-	public void SetForceBone(int iForceBone)
+	public void SetForceBone(const int iForceBone)
 	{
 		SetEntProp(this.GetEntIndex(), Prop_Send, "m_nForceBone", iForceBone);
 	}
+	public int SelectWeightedSequence(const int iActivity)
+	{
+		// TODO:
+		// This is currently only implemented in Black Mesa but it may be required for others.
+		// Reimplement the logic from scratch.
+		if (!g_pSelectWeightedSequence)
+			ThrowError("`CBaseAnimating::SelectWeightedSequence` is not implemented as a virtual function in this game.");
+		return SDKCall(g_pSelectWeightedSequence, this.GetEntIndex(), iActivity);
+	}
+	public float GetPoseParameter(const int iIndex)
+	{
+		return GetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flPoseParameter", iIndex);
+	}
+	public void SetPoseParameter(const int iIndex, const float flPoseParameter)
+	{
+		SetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flPoseParameter", flPoseParameter, iIndex);
+	}
+	public bool IsSequenceFinished()
+	{
+		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_bSequenceFinished") != 0;
+	}
+	public void SetSequenceFinished(const bool bFinished)
+	{
+		SetEntProp(this.GetEntIndex(), Prop_Data, "m_bSequenceFinished", bFinished);
+	}
+	public float GetAnimTime()
+	{
+		return GetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flAnimTime");
+	}
+	public void SetAnimTime(const float flAnimTime)
+	{
+		SetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flAnimTime", flAnimTime);
+	}
 }
 
-methodmap CBaseTrigger < CBaseEntity
+methodmap CBaseToggle < CBaseEntity
+{
+	public CBaseToggle(const int iEntIndex = -1)
+	{
+		return view_as<CBaseToggle>(CBaseEntity(iEntIndex));
+	}
+
+	public bool IsValid()
+	{
+		return view_as<CBaseEntity>(this).IsValid() && this.GetEntIndex() > 0;
+	}
+}
+
+methodmap CBaseTrigger < CBaseToggle
 {
 	public CBaseTrigger(const int iEntIndex = -1)
 	{
-		return view_as<CBaseTrigger>(CBaseEntity(iEntIndex));
+		return view_as<CBaseTrigger>(CBaseToggle(iEntIndex));
 	}
 
 	public bool IsEnabled()
@@ -1029,7 +1133,6 @@ methodmap CBaseTrigger < CBaseEntity
 	{
 		SetEntProp(this.GetEntIndex(), Prop_Data, "m_bDisabled", !bEnabled);
 	}
-	
 }
 
 methodmap CChangelevel < CBaseTrigger
@@ -1071,6 +1174,11 @@ methodmap CPointEntity < CBaseEntity
 	public CPointEntity(const int iEntIndex = -1)
 	{
 		return view_as<CPointEntity>(CBaseEntity(iEntIndex));
+	}
+
+	public bool IsValid()
+	{
+		return view_as<CBaseEntity>(this).IsValid() && this.GetEntIndex() > 0;
 	}
 }
 
@@ -1231,11 +1339,24 @@ methodmap CPointHurt < CPointEntity
 	}
 }
 
-methodmap CLogicAchievement < CBaseEntity
+methodmap CLogicalEntity < CBaseEntity
+{
+	public CLogicalEntity(const int iEntIndex = -1)
+	{
+		return view_as<CLogicalEntity>(CBaseEntity(iEntIndex));
+	}
+	
+	public bool IsValid()
+	{
+		return view_as<CBaseEntity>(this).IsValid() && this.GetEntIndex() > 0;
+	}
+}
+
+methodmap CLogicAchievement < CLogicalEntity
 {
 	public CLogicAchievement(const int iEntIndex = -1)
 	{
-		return view_as<CLogicAchievement>(CBaseEntity(iEntIndex));
+		return view_as<CLogicAchievement>(CLogicalEntity(iEntIndex));
 	}
 	public static CLogicAchievement Create()
 	{
@@ -1259,6 +1380,10 @@ methodmap CAI_ScriptConditions < CBaseEntity
 		return CAI_ScriptConditions(CreateEntityByName("ai_script_conditions"));
 	}
 
+	public bool IsValid()
+	{
+		return view_as<CBaseEntity>(this).IsValid() && this.GetEntIndex() > 0;
+	}
 	public bool IsEnabled()
 	{
 		return !view_as<bool>(GetEntProp(this.GetEntIndex(), Prop_Data, "m_fDisabled"));
@@ -1284,9 +1409,9 @@ methodmap CBaseCombatWeapon < CBaseAnimating
 		return view_as<CBaseCombatWeapon>(CBaseAnimating(iEntIndex));
 	}
 	
-	public CBaseEntity GetOwner()
+	public CBaseCombatCharacter GetOwner()
 	{
-		return CBaseEntity(GetEntPropEnt(this.GetEntIndex(), Prop_Send, "m_hOwner"));
+		return CBaseCombatCharacter(GetEntPropEnt(this.GetEntIndex(), Prop_Send, "m_hOwner"));
 	}
 	public int GetPrimaryAmmo()
 	{
@@ -1368,13 +1493,30 @@ methodmap CBaseCombatWeapon < CBaseAnimating
 	{
 		return SDKCall(g_pSendWeaponAnim, this.GetEntIndex(), iActivity);
 	}
+	public bool IsReloading()
+	{
+		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_bInReload") != 0;
+	} 
 }
 
-methodmap CPredictedViewModel < CBaseAnimating
+methodmap CBaseViewModel < CBaseAnimating
+{
+	public CBaseViewModel(const int iEntIndex = -1)
+	{
+		return view_as<CBaseViewModel>(CBaseAnimating(iEntIndex));
+	}
+
+	public void SendViewModelMatchingSequence(const int iSequence)
+	{
+		SDKCall(g_pSendViewModelMatchingSequence, this.GetEntIndex(), iSequence);
+	}
+}
+
+methodmap CPredictedViewModel < CBaseViewModel
 {
 	public CPredictedViewModel(const int iEntIndex = -1)
 	{
-		return view_as<CPredictedViewModel>(CBaseAnimating(iEntIndex));
+		return view_as<CPredictedViewModel>(CBaseViewModel(iEntIndex));
 	}
 	
 	public float GetWeaponTimeIdle()
@@ -1391,6 +1533,58 @@ methodmap CPredictedViewModel < CBaseAnimating
 	}
 }
 
+methodmap CBaseProp < CBaseAnimating
+{
+	public CBaseProp(const int iEntIndex = -1)
+	{
+		return view_as<CBaseProp>(CBaseAnimating(iEntIndex));
+	}
+}
+
+methodmap CBreakableProp < CBaseProp
+{
+	public CBreakableProp(const int iEntIndex = -1)
+	{
+		return view_as<CBreakableProp>(CBaseProp(iEntIndex));
+	}
+}
+
+methodmap CDynamicProp < CBreakableProp
+{
+	public CDynamicProp(const int iEntIndex = -1)
+	{
+		return view_as<CDynamicProp>(CBreakableProp(iEntIndex));
+	}
+	public static CDynamicProp Create(const char[] szModelName)
+	{
+		CDynamicProp pDynamicProp = CDynamicProp(CreateEntityByName("prop_dynamic"));
+		if (pDynamicProp.IsValid())
+		{
+			int iModelIndex = PrecacheModel(szModelName);
+			if (iModelIndex)
+			{
+				pDynamicProp.SetModel(szModelName);
+				pDynamicProp.SetModelIndex(iModelIndex);
+				pDynamicProp.Activate();
+				pDynamicProp.Spawn();
+			}
+		}
+		return pDynamicProp;
+	}
+	public void SetAnimation(const char[] szSequenceName)
+	{
+		this.AcceptInputStr("SetAnimation", szSequenceName);
+	}
+}
+
+methodmap CPropVehicle < CBaseProp
+{
+	public CPropVehicle(const int iEntIndex = -1)
+	{
+		return view_as<CPropVehicle>(CBaseProp(iEntIndex));
+	}
+}
+
 methodmap CPropVehicleDriveable < CBaseAnimating
 {
 	public CPropVehicleDriveable(const int iEntIndex = -1)
@@ -1399,11 +1593,27 @@ methodmap CPropVehicleDriveable < CBaseAnimating
 	}
 }
 
-methodmap CBaseCombatCharacter < CBaseAnimating
+methodmap CBaseAnimatingOverlay < CBaseAnimating
+{
+	public CBaseAnimatingOverlay(const int iEntIndex = -1)
+	{
+		return view_as<CBaseAnimatingOverlay>(CBaseAnimating(iEntIndex));
+	}
+} 
+
+methodmap CBaseFlex < CBaseAnimatingOverlay
+{
+	public CBaseFlex(const int iEntIndex = -1)
+	{
+		return view_as<CBaseFlex>(CBaseAnimatingOverlay(iEntIndex));
+	}
+}
+
+methodmap CBaseCombatCharacter < CBaseFlex
 {
 	public CBaseCombatCharacter(const int iEntIndex = -1)
 	{
-		return view_as<CBaseCombatCharacter>(CBaseAnimating(iEntIndex));
+		return view_as<CBaseCombatCharacter>(CBaseFlex(iEntIndex));
 	}
 
 	public int GetLifeState()
@@ -1908,9 +2118,10 @@ methodmap CBasePlayer < CBaseCombatCharacter
 	{
 		SetEntPropEnt(this.GetEntIndex(), Prop_Send, "m_hViewModel", pEntity.GetEntIndex(), iIndex);
 	}
-	public void CreateViewModel(const int iIndex = 0)
+	public CPredictedViewModel CreateViewModel(const int iIndex = 0)
 	{
 		SDKCall(g_pCreateViewModel, this.entindex, iIndex);
+		return this.GetViewModel(iIndex);
 	}
 	public CBaseAnimating GetRagdoll()
 	{
@@ -1951,6 +2162,18 @@ methodmap CBasePlayer < CBaseCombatCharacter
 	public void SetHideHud(const int iHideHud)
 	{
 		SetEntProp(this.GetEntIndex(), Prop_Send, "m_iHideHUD", iHideHud);
+	}
+	public void ShowCrosshair(const bool bShow)
+	{
+		int iHideHUD = this.GetHideHud();
+		if (bShow)
+		{
+			this.SetHideHud(iHideHUD & ~HIDEHUD_CROSSHAIR);
+		}
+		else
+		{
+			this.SetHideHud(iHideHUD | HIDEHUD_CROSSHAIR);
+		}
 	}
 	public void SetTeam(const int iTeamIndex)
 	{
@@ -2007,7 +2230,7 @@ methodmap CBasePlayer < CBaseCombatCharacter
 	public void SetScore(const int iScore)
 	{
 		SetEntProp(this.GetEntIndex(), Prop_Data, "m_iFrags", iScore);
-		g_ServerGameClients.GetPlayerState(this).SetScore(iScore);
+		IServerGameClients().GetPlayerState(this).SetScore(iScore);
 	}
 	/**
 	 * Modifies the player's score by the provided points
@@ -2037,6 +2260,109 @@ methodmap CBasePlayer < CBaseCombatCharacter
 		}
 		SetEntPropEnt(this.GetEntIndex(), Prop_Data, "m_hLadder", pLadder.entindex);
 	}
+	public int GetDefaultFOV()
+	{
+		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_iDefaultFOV");
+	}
+	public int GetFOV()
+	{
+		int iFOV = GetEntProp(this.GetEntIndex(), Prop_Data, "m_iFOV");
+		iFOV = iFOV == 0 ? this.GetDefaultFOV() : iFOV;
+
+		float flFOVRate = GetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flFOVRate");
+		if (flFOVRate == 0.0)
+			return iFOV;
+		
+		float flDeltaTime = (GetGameTime() - GetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flFOVTime")) / flFOVRate;
+		if (flDeltaTime >= 1.0)
+		{
+			SetEntProp(this.GetEntIndex(), Prop_Data, "m_iFOVStart", iFOV);
+			return iFOV;
+		}
+		else
+		{
+			float flFOVStart = float(GetEntProp(this.GetEntIndex(), Prop_Data, "m_iFOVStart"));
+			return RoundFloat(SimpleSplineRemapValClamped(flDeltaTime, 0.0, 1.0, flFOVStart, float(iFOV)));
+		}
+	}
+	public bool SetFOV(CBaseEntity pRequester, const int iFOV, const float flZoomRate, const int iZoomStart = 0)
+	{
+		if (!pRequester.IsValid())
+			return false;
+		
+		CBaseEntity pZoomOwner = CBaseEntity(GetEntPropEnt(this.GetEntIndex(), Prop_Data, "m_hZoomOwner"));
+		// If we already have an owner, we only allow requests from that owner
+		if (pZoomOwner.IsValid() && pZoomOwner != pRequester)
+		{
+			if (!CanOverrideEnvZoomOwner(pZoomOwner))
+				return false;
+		}
+		else
+		{
+			if (iFOV == 0)
+			{
+				pZoomOwner = NULL_CBASEENTITY;
+			}
+			else
+			{
+				pZoomOwner = pRequester;
+			}
+			SetEntPropEnt(this.GetEntIndex(), Prop_Data, "m_hZoomOwner", pZoomOwner.GetEntIndex());
+		}
+
+		SetEntProp(this.GetEntIndex(), Prop_Data, "m_iFOVStart", iZoomStart > 0 ? iZoomStart : this.GetFOV());
+		SetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flFOVTime", GetGameTime());
+		SetEntProp(this.GetEntIndex(), Prop_Data, "m_iFOV", iFOV);
+		SetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flFOVRate", flZoomRate);
+		return true;
+	}
+	public QueryCookie QueryConvar(const char[] szCvar, ConVarQueryFinished fnCallback, any value = 0)
+	{
+		return QueryClientConVar(this.GetEntIndex(), szCvar, fnCallback, value);
+	}
+	public bool IsDrawingViewModel()
+	{
+		return GetEntProp(this.GetEntIndex(), Prop_Send, "m_bDrawViewmodel") != 0;
+	}
+	public void DrawViewModel(const bool bDrawViewmodel)
+	{
+		SetEntProp(this.GetEntIndex(), Prop_Send, "m_bDrawViewmodel", bDrawViewmodel);
+	}
+	public void StartAdmireGlovesAnimation()
+	{
+		// TODO:
+		// Create HL2DM implementation.
+		#if defined SRCCOOP_BLACKMESA
+		static const char g_szModelNameProxy[] = "models/weapons/v_357.mdl";
+		static const char g_szModelNameGloves[] = "models/weapons/v_hands.mdl";
+
+		if (this.GetActiveWeapon().IsValid())
+			return;
+
+		CPredictedViewModel pViewModel = this.GetViewModel(0);
+		if (pViewModel.IsValid())
+		{
+			pViewModel = this.CreateViewModel(0);
+			if (!pViewModel.IsValid())
+				return;
+		}
+
+		// We use a model as a proxy here so that the `SendViewModelMatchingSequence` will
+		// send the animation to the gloves. This is done by setting the model then replacing the model index.
+		int iModelIndexProxy = PrecacheModel(g_szModelNameProxy);
+		int iModelIndex = PrecacheModel(g_szModelNameGloves);
+		if (iModelIndexProxy && iModelIndex)
+		{
+			// TODO:
+			// For HL2DM, `ACT_VM_IDLE` might be used instead.
+			this.DrawViewModel(true);
+			pViewModel.RemoveEffects(EF_NODRAW);
+			pViewModel.SetModel(g_szModelNameProxy);
+			pViewModel.SetModelIndex(iModelIndex);
+			pViewModel.SendViewModelMatchingSequence(pViewModel.SelectWeightedSequence(ACT_VM_DRAW));
+		}
+		#endif
+	}
 }
 
 methodmap CBeam < CBaseEntity
@@ -2050,6 +2376,10 @@ methodmap CBeam < CBaseEntity
 		return CBeam(CreateEntityByName("beam"));
 	}
 
+	public bool IsValid()
+	{
+		return view_as<CBaseEntity>(this).IsValid() && this.GetEntIndex() > 0;
+	}
 	public int GetAttachmentCount()
 	{
 		return GetEntProp(this.GetEntIndex(), Prop_Send, "m_nNumBeamEnts");
@@ -2148,6 +2478,10 @@ methodmap CSprite < CBaseEntity
 		return CSprite(CreateEntityByName("env_sprite"));
 	}
 
+	public bool IsValid()
+	{
+		return view_as<CBaseEntity>(this).IsValid() && this.GetEntIndex() > 0;
+	}
 	public float GetScale()
 	{
 		return GetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flSpriteScale");
@@ -2236,14 +2570,21 @@ methodmap CParticleSystem < CBaseEntity
 	public static CParticleSystem Create(const char[] szEffectName, bool bStartActive = true)
 	{
 		CParticleSystem pParticle = CParticleSystem(CreateEntityByName("info_particle_system"));
-		pParticle.SetEffectName(szEffectName);
-		if (bStartActive)
+		if (pParticle.IsValid())
 		{
-			pParticle.SetStartActive(bStartActive);
+			pParticle.SetEffectName(szEffectName);
+			if (bStartActive)
+			{
+				pParticle.SetStartActive(bStartActive);
+			}
 		}
 		return pParticle;
 	}
 	
+	public bool IsValid()
+	{
+		return view_as<CBaseEntity>(this).IsValid() && this.GetEntIndex() > 0;
+	}
 	public bool IsActive()
 	{
 		return view_as<bool>(GetEntProp(this.GetEntIndex(), Prop_Data, "m_bActive"));
@@ -2326,6 +2667,10 @@ methodmap CTeam < CBaseEntity
 		return NULL_CBASEENTITY;
 	}
 
+	public bool IsValid()
+	{
+		return view_as<CBaseEntity>(this).IsValid() && this.GetEntIndex() > 0;
+	}
 	public int GetTeam()
 	{
 		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_iTeamNum");
@@ -2351,6 +2696,10 @@ methodmap CPlayerResource < CBaseEntity
 		return CPlayerResource(GetPlayerResourceEntity());
 	}
 
+	public bool IsValid()
+	{
+		return view_as<CBaseEntity>(this).IsValid() && this.GetEntIndex() > 0;
+	}
 	public int GetPing(CBasePlayer pPlayer)
 	{
 		return GetEntProp(this.entindex, Prop_Send, "m_iPing", _, pPlayer.entindex);
@@ -2417,11 +2766,11 @@ methodmap CPlayerResource < CBaseEntity
 	{
 		SetEntProp(this.entindex, Prop_Send, "m_iAccountID", iAccountID, _, pPlayer.entindex);
 	}
-	public bool IsValid(CBasePlayer pPlayer)
+	public bool IsValidPlayer(CBasePlayer pPlayer)
 	{
 		return view_as<bool>(GetEntProp(this.entindex, Prop_Send, "m_bValid", _, pPlayer.entindex));
 	}
-	public void SetValid(CBasePlayer pPlayer, bool bValid)
+	public void SetValidPlayer(CBasePlayer pPlayer, bool bValid)
 	{
 		SetEntProp(this.entindex, Prop_Send, "m_bValid", bValid, _, pPlayer.entindex);
 	}
@@ -2447,6 +2796,10 @@ methodmap CFuncLadder < CBaseEntity
 		return CFuncLadder(CreateEntityByName("func_ladder"));
 	}
 
+	public bool IsValid()
+	{
+		return view_as<CBaseEntity>(this).IsValid() && this.GetEntIndex() > 0;
+	}
 	public bool IsEnabled()
 	{
 		return !GetEntProp(this.GetEntIndex(), Prop_Data, "m_bDisabled");
@@ -2606,9 +2959,9 @@ methodmap CPlayerState
 
 methodmap IServerGameClients
 {
-	public IServerGameClients(Address pAddress)
+	public IServerGameClients()
 	{
-		return view_as<IServerGameClients>(pAddress);
+		return g_ServerGameClients;
 	}
 	
 	public CPlayerState GetPlayerState(CBasePlayer pPlayer)
@@ -2745,4 +3098,80 @@ methodmap CUtlVector
 	{
 		StoreToAddress(this.m_pElements() + i * elSize, data, NumberType_Int32);
 	}
+}
+
+// hermite basis function for smooth interpolation
+// Similar to Gain() above, but very cheap to call
+// value should be between 0 & 1 inclusive
+stock float SimpleSpline(const float value)
+{
+	float valueSquared = value * value;
+
+	// Nice little ease-in, ease-out spline-like curve
+	return (3.0 * valueSquared) - (2.0 * valueSquared * value);
+}
+
+stock float SimpleSplineRemapValClamped(const float val, const float A, const float B, const float C, const float D)
+{
+	if (A == B)
+		return val >= B ? D : C;
+	float cVal = (val - A) / (B - A);
+	if (cVal > 1.0)
+	{
+		cVal = 1.0;
+	}
+	else if (cVal < 0.0)
+	{
+		cVal = 0.0;
+	}
+	return C + (D - C) * SimpleSpline(cVal);
+}
+
+stock bool CanOverrideEnvZoomOwner(CBaseEntity pZoomOwner)
+{
+	char szClassname[MAX_CLASSNAME];
+	if (!pZoomOwner.GetClassname(szClassname, sizeof(szClassname)) || strcmp(szClassname, "env_zoom") != 0)
+		return false;
+	
+	return pZoomOwner.HasSpawnFlag(ENV_ZOOM_OVERRIDE);
+}
+
+methodmap CPlayerInfoManager
+{
+	public CPlayerInfoManager()
+	{
+		return g_pPlayerInfoManager;
+	}
+
+	public CGlobalVarsBase GetGlobalVars()
+	{
+		return view_as<CGlobalVarsBase>(SDKCall(g_pGetGlobalVars, view_as<Address>(this)));
+	}
+}
+
+methodmap CGlobalVarsBase
+{
+	public bool IsValid()
+	{
+		return view_as<int>(this) != 0;
+	}
+
+	// struct is almost 1:1 https://github.com/ValveSoftware/source-sdk-2013/blob/0d8dceea4310fde5706b3ce1c70609d72a38efdf/sp/src/public/globalvars_base.h#L19
+	public int GetMaxPlayers()
+	{
+		return LoadFromAddress(view_as<Address>(this) + 0x14, NumberType_Int32);
+	}
+	public void SetMaxPlayers(const int iMaxPlayers)
+	{
+		if (iMaxPlayers >= MAXPLAYERS)
+		{
+			ThrowError("`CGlobalVarsBase::SetMaxPlayers`");
+		}
+		StoreToAddress(view_as<Address>(this) + 0x14, iMaxPlayers, NumberType_Int32);
+	}
+}
+
+methodmap CGlobalVars < CGlobalVarsBase
+{
+	
 }

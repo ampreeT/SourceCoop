@@ -103,8 +103,15 @@ DynamicHook hkForceRespawn;
 DynamicHook hkStartObserverMode;
 #endif
 
-#if defined ENTPATCH_BM_TAU_VELOCITY
-DynamicHook hkTauItemPostFrame;
+#if defined ENTPATCH_BM_SP_WEAPONS
+DynamicHook hkBaseCombatWeaponItemPostFrame;
+DynamicHook hkBaseCombatWeaponDeploy;
+DynamicHook hkBaseCombatWeaponPrimaryAttack;
+DynamicHook hkBaseCombatWeaponGetPrimaryAttackActivity;
+DynamicHook hkBaseCombatWeaponGetDrawActivity;
+DynamicHook hkCrossbowFireBolt;
+DynamicDetour hkToggleIronsights;
+DynamicDetour hkTauFireBeam;
 #endif
 
 #if defined PLAYERPATCH_SETSUITUPDATE
