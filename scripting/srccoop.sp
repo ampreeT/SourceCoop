@@ -440,6 +440,10 @@ public void OnClientPutInServer(int client)
 	DHookEntity(hkEvent_Killed, false, client, _, Hook_PlayerKilled);
 	DHookEntity(hkEvent_Killed, true, client, _, Hook_PlayerKilledPost);
 
+	#if defined SRCCOOP_BLACKMESA
+	DHookEntity(hkSetModel, true, client, _, IdleAnims_Hook_PlayerSetModel_Post);
+	#endif
+
 	#if defined PLAYERPATCH_RESTORE_MP_FORCERESPAWN
 	DHookEntity(hkForceRespawn, false, client, _, Hook_PlayerForceRespawn);
 	#endif
@@ -902,7 +906,7 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 		if (strcmp(szClassname, "music_track") == 0)
 		{
 			DHookEntity(hkThink, false, iEntIndex, _, Hook_MusicTrackThink);
-			DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_MusicTrackAceptInput);
+			DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_MusicTrackAcceptInput);
 			return;
 		}
 		#endif

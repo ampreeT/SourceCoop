@@ -8,7 +8,6 @@
 	"equipment"
 	{
 		"health" "70"
-		"item" "item_weapon_crowbar"
 		"lookup"
 		{
 			"targetname" "global_newgame_spawner_suit"

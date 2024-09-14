@@ -534,7 +534,7 @@ public MRESReturn Hook_WeaponSetModel(int _this, DHookParam hParams)
 					{ "models/weapons/w_rpg_mp.mdl", "models/weapons/w_rpg.mdl" },
 				};
 
-				char szModelName[MAX_CLASSNAME];
+				char szModelName[MAX_MODELNAME];
 				DHookGetParamString(hParams, 1, szModelName, sizeof(szModelName));
 
 				for (int i = 0; i < sizeof(szWeaponModel); i++)
@@ -584,7 +584,7 @@ public MRESReturn Hook_MusicTrackThink(int _this)
 	return MRES_Supercede;
 }
 
-public MRESReturn Hook_MusicTrackAceptInput(int _this, Handle hReturn, Handle hParams)
+public MRESReturn Hook_MusicTrackAcceptInput(int _this, Handle hReturn, Handle hParams)
 {
 	char szInputType[MAX_FORMAT];
 	char szBuffer[MAX_VALUE];
@@ -635,14 +635,14 @@ public MRESReturn Hook_MusicTrackAceptInput(int _this, Handle hReturn, Handle hP
 // item_suit
 // play admire gloves animation
 //------------------------------------------------------
-public Action Hook_SuitTouchPickup(const char[] output, int caller, int activator, float delay)
+public Action Hook_SuitTouchPickup(const char[] szOutput, int iCaller, int iActivator, float flDelay)
 {
-	if (CBaseEntity(caller).HasSpawnFlag(SF_BOOTSEQUENCE))
+	if (CBaseEntity(iCaller).HasSpawnFlag(SF_BOOTSEQUENCE))
 	{
-		CBasePlayer pPlayer = CBasePlayer(activator);
+		CBasePlayer pPlayer = CBasePlayer(iActivator);
 		if (pPlayer.IsValid())
 		{
-			PlayAdmireGloves(pPlayer, true);
+			pPlayer.StartAdmireGlovesAnimation();
 		}
 	}
 	

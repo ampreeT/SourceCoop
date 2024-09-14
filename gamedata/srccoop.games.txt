@@ -1182,6 +1182,11 @@
 				"windows"	"423"
 				"linux"		"424"
 			}
+			"CBaseViewModel::SendViewModelMatchingSequence"	// CBaseViewModel::SendViewModelMatchingSequence(int)
+			{
+				"windows"	"235"
+				"linux"		"236"
+			}
 		}
 	}
 
@@ -1462,7 +1467,6 @@
 				"windows"	"149"
 				"linux"		"150"
 			}
-
 			// This is not implemented for this game.
 			//"CBaseAnimating::SelectWeightedSequence"	// CBaseAnimating::SelectWeightedSequence(Activity)
 			//{
@@ -1491,6 +1495,11 @@
 			{
 				"windows"	"277"
 				"linux"		"278"
+			}
+			"CBaseViewModel::SendViewModelMatchingSequence"	// CBaseViewModel::SendViewModelMatchingSequence(int)
+			{
+				"windows"	"216"
+				"linux"		"217"
 			}
 		}
 	}

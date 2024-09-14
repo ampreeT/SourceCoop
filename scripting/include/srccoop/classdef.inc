@@ -36,6 +36,7 @@ Handle g_pWeaponSwitch;
 Handle g_pWorldSpaceCenter;
 Handle g_pGetPlayerState;
 Handle g_pSelectWeightedSequence;
+Handle g_pSendViewModelMatchingSequence;
 
 int g_iCSoundSize = -1;
 int g_iCPlayerState_frags = -1;
@@ -317,6 +318,16 @@ stock void InitClassdef(GameData pGameConfig)
 		if (!(g_pSelectWeightedSequence = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szSelectWeightedSequence);
 	}
 
+	char szSendViewModelMatchingSequence[] = "CBaseViewModel::SendViewModelMatchingSequence";
+	StartPrepSDKCall(SDKCall_Entity);
+	if (!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Virtual, szSendViewModelMatchingSequence))
+		LogMessage("Could not obtain gamedata offset %s", szSendViewModelMatchingSequence);
+	else
+	{
+		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
+		if (!(g_pSendViewModelMatchingSequence = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szSendViewModelMatchingSequence);
+	}
+
 	#if defined SRCCOOP_BLACKMESA
 	InitClassdefBM(pGameConfig);
 	#endif
@@ -326,7 +337,7 @@ stock void InitClassdef(GameData pGameConfig)
 
 methodmap CBaseEntity
 {
-	public CBaseEntity(const int iEntIndex = NULL_CBASEENTITY)
+	public CBaseEntity(const int iEntIndex = -1)
 	{
 		return view_as<CBaseEntity>(iEntIndex > -1 ? EntIndexToEntRef(iEntIndex) : iEntIndex);
 	}
@@ -779,6 +790,14 @@ methodmap CBaseEntity
 	{
 		SetEntProp(this.GetEntIndex(), Prop_Data, "m_fEffects", iEffects); 
 	}
+	public void AddEffects(const int iEffects)
+	{
+		this.SetEffects(this.GetEffects() | iEffects);
+	}
+	public void RemoveEffects(const int iEffects)
+	{
+		this.SetEffects(this.GetEffects() & ~iEffects);
+	}
 	public int GetTakeDamage()
 	{
 		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_takedamage");
@@ -972,6 +991,10 @@ methodmap CBaseAnimating < CBaseEntity
 		return view_as<CBaseAnimating>(CBaseEntity(iEntIndex));
 	}
 
+	public bool IsValid()
+	{
+		return view_as<CBaseEntity>(this).IsValid() && this.GetEntIndex() > 0;
+	}
 	public int GetSkin()
 	{
 		return GetEntProp(this.GetEntIndex(), Prop_Send, "m_nSkin");
@@ -1041,13 +1064,50 @@ methodmap CBaseAnimating < CBaseEntity
 			ThrowError("`CBaseAnimating::SelectWeightedSequence` is not implemented as a virtual function in this game.");
 		return SDKCall(g_pSelectWeightedSequence, this.GetEntIndex(), iActivity);
 	}
+	public float GetPoseParameter(const int iIndex)
+	{
+		return GetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flPoseParameter", iIndex);
+	}
+	public void SetPoseParameter(const int iIndex, const float flPoseParameter)
+	{
+		SetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flPoseParameter", flPoseParameter, iIndex);
+	}
+	public bool IsSequenceFinished()
+	{
+		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_bSequenceFinished") != 0;
+	}
+	public void SetSequenceFinished(const bool bFinished)
+	{
+		SetEntProp(this.GetEntIndex(), Prop_Data, "m_bSequenceFinished", bFinished);
+	}
+	public float GetAnimTime()
+	{
+		return GetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flAnimTime");
+	}
+	public void SetAnimTime(const float flAnimTime)
+	{
+		SetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flAnimTime", flAnimTime);
+	}
 }
 
-methodmap CBaseTrigger < CBaseEntity
+methodmap CBaseToggle < CBaseEntity
+{
+	public CBaseToggle(const int iEntIndex = -1)
+	{
+		return view_as<CBaseToggle>(CBaseEntity(iEntIndex));
+	}
+
+	public bool IsValid()
+	{
+		return view_as<CBaseEntity>(this).IsValid() && this.GetEntIndex() > 0;
+	}
+}
+
+methodmap CBaseTrigger < CBaseToggle
 {
 	public CBaseTrigger(const int iEntIndex = -1)
 	{
-		return view_as<CBaseTrigger>(CBaseEntity(iEntIndex));
+		return view_as<CBaseTrigger>(CBaseToggle(iEntIndex));
 	}
 
 	public bool IsEnabled()
@@ -1058,7 +1118,6 @@ methodmap CBaseTrigger < CBaseEntity
 	{
 		SetEntProp(this.GetEntIndex(), Prop_Data, "m_bDisabled", !bEnabled);
 	}
-	
 }
 
 methodmap CChangelevel < CBaseTrigger
@@ -1100,6 +1159,11 @@ methodmap CPointEntity < CBaseEntity
 	public CPointEntity(const int iEntIndex = -1)
 	{
 		return view_as<CPointEntity>(CBaseEntity(iEntIndex));
+	}
+
+	public bool IsValid()
+	{
+		return view_as<CBaseEntity>(this).IsValid() && this.GetEntIndex() > 0;
 	}
 }
 
@@ -1260,11 +1324,24 @@ methodmap CPointHurt < CPointEntity
 	}
 }
 
-methodmap CLogicAchievement < CBaseEntity
+methodmap CLogicalEntity < CBaseEntity
+{
+	public CLogicalEntity(const int iEntIndex = -1)
+	{
+		return view_as<CLogicalEntity>(CBaseEntity(iEntIndex));
+	}
+	
+	public bool IsValid()
+	{
+		return view_as<CBaseEntity>(this).IsValid() && this.GetEntIndex() > 0;
+	}
+}
+
+methodmap CLogicAchievement < CLogicalEntity
 {
 	public CLogicAchievement(const int iEntIndex = -1)
 	{
-		return view_as<CLogicAchievement>(CBaseEntity(iEntIndex));
+		return view_as<CLogicAchievement>(CLogicalEntity(iEntIndex));
 	}
 	public static CLogicAchievement Create()
 	{
@@ -1288,6 +1365,10 @@ methodmap CAI_ScriptConditions < CBaseEntity
 		return CAI_ScriptConditions(CreateEntityByName("ai_script_conditions"));
 	}
 
+	public bool IsValid()
+	{
+		return view_as<CBaseEntity>(this).IsValid() && this.GetEntIndex() > 0;
+	}
 	public bool IsEnabled()
 	{
 		return !view_as<bool>(GetEntProp(this.GetEntIndex(), Prop_Data, "m_fDisabled"));
@@ -1403,11 +1484,24 @@ methodmap CBaseCombatWeapon < CBaseAnimating
 	} 
 }
 
-methodmap CPredictedViewModel < CBaseAnimating
+methodmap CBaseViewModel < CBaseAnimating
+{
+	public CBaseViewModel(const int iEntIndex = -1)
+	{
+		return view_as<CBaseViewModel>(CBaseAnimating(iEntIndex));
+	}
+
+	public void SendViewModelMatchingSequence(const int iSequence)
+	{
+		SDKCall(g_pSendViewModelMatchingSequence, this.GetEntIndex(), iSequence);
+	}
+}
+
+methodmap CPredictedViewModel < CBaseViewModel
 {
 	public CPredictedViewModel(const int iEntIndex = -1)
 	{
-		return view_as<CPredictedViewModel>(CBaseAnimating(iEntIndex));
+		return view_as<CPredictedViewModel>(CBaseViewModel(iEntIndex));
 	}
 	
 	public float GetWeaponTimeIdle()
@@ -1424,6 +1518,58 @@ methodmap CPredictedViewModel < CBaseAnimating
 	}
 }
 
+methodmap CBaseProp < CBaseAnimating
+{
+	public CBaseProp(const int iEntIndex = -1)
+	{
+		return view_as<CBaseProp>(CBaseAnimating(iEntIndex));
+	}
+}
+
+methodmap CBreakableProp < CBaseProp
+{
+	public CBreakableProp(const int iEntIndex = -1)
+	{
+		return view_as<CBreakableProp>(CBaseProp(iEntIndex));
+	}
+}
+
+methodmap CDynamicProp < CBreakableProp
+{
+	public CDynamicProp(const int iEntIndex = -1)
+	{
+		return view_as<CDynamicProp>(CBreakableProp(iEntIndex));
+	}
+	public static CDynamicProp Create(const char[] szModelName)
+	{
+		CDynamicProp pDynamicProp = CDynamicProp(CreateEntityByName("prop_dynamic"));
+		if (pDynamicProp.IsValid())
+		{
+			int iModelIndex = PrecacheModel(szModelName);
+			if (iModelIndex)
+			{
+				pDynamicProp.SetModel(szModelName);
+				pDynamicProp.SetModelIndex(iModelIndex);
+				pDynamicProp.Activate();
+				pDynamicProp.Spawn();
+			}
+		}
+		return pDynamicProp;
+	}
+	public void SetAnimation(const char[] szSequenceName)
+	{
+		this.AcceptInputStr("SetAnimation", szSequenceName);
+	}
+}
+
+methodmap CPropVehicle < CBaseProp
+{
+	public CPropVehicle(const int iEntIndex = -1)
+	{
+		return view_as<CPropVehicle>(CBaseProp(iEntIndex));
+	}
+}
+
 methodmap CPropVehicleDriveable < CBaseAnimating
 {
 	public CPropVehicleDriveable(const int iEntIndex = -1)
@@ -1432,11 +1578,27 @@ methodmap CPropVehicleDriveable < CBaseAnimating
 	}
 }
 
-methodmap CBaseCombatCharacter < CBaseAnimating
+methodmap CBaseAnimatingOverlay < CBaseAnimating
+{
+	public CBaseAnimatingOverlay(const int iEntIndex = -1)
+	{
+		return view_as<CBaseAnimatingOverlay>(CBaseAnimating(iEntIndex));
+	}
+} 
+
+methodmap CBaseFlex < CBaseAnimatingOverlay
+{
+	public CBaseFlex(const int iEntIndex = -1)
+	{
+		return view_as<CBaseFlex>(CBaseAnimatingOverlay(iEntIndex));
+	}
+}
+
+methodmap CBaseCombatCharacter < CBaseFlex
 {
 	public CBaseCombatCharacter(const int iEntIndex = -1)
 	{
-		return view_as<CBaseCombatCharacter>(CBaseAnimating(iEntIndex));
+		return view_as<CBaseCombatCharacter>(CBaseFlex(iEntIndex));
 	}
 
 	public int GetLifeState()
@@ -1941,9 +2103,10 @@ methodmap CBasePlayer < CBaseCombatCharacter
 	{
 		SetEntPropEnt(this.GetEntIndex(), Prop_Send, "m_hViewModel", pEntity.GetEntIndex(), iIndex);
 	}
-	public void CreateViewModel(const int iIndex = 0)
+	public CPredictedViewModel CreateViewModel(const int iIndex = 0)
 	{
 		SDKCall(g_pCreateViewModel, this.entindex, iIndex);
+		return this.GetViewModel(iIndex);
 	}
 	public CBaseAnimating GetRagdoll()
 	{
@@ -2142,13 +2305,48 @@ methodmap CBasePlayer < CBaseCombatCharacter
 	{
 		return QueryClientConVar(this.GetEntIndex(), szCvar, fnCallback, value);
 	}
-	public bool IsDrawingViewmodel()
+	public bool IsDrawingViewModel()
 	{
 		return GetEntProp(this.GetEntIndex(), Prop_Send, "m_bDrawViewmodel") != 0;
 	}
-	public bool SetDrawViewmodel(const bool bDrawViewmodel)
+	public void DrawViewModel(const bool bDrawViewmodel)
 	{
 		SetEntProp(this.GetEntIndex(), Prop_Send, "m_bDrawViewmodel", bDrawViewmodel);
+	}
+	public void StartAdmireGlovesAnimation()
+	{
+		// TODO:
+		// Create HL2DM implementation.
+		#if defined SRCCOOP_BLACKMESA
+		static const char g_szModelNameProxy[] = "models/weapons/v_357.mdl";
+		static const char g_szModelNameGloves[] = "models/weapons/v_hands.mdl";
+
+		if (this.GetActiveWeapon().IsValid())
+			return;
+
+		CPredictedViewModel pViewModel = this.GetViewModel(0);
+		if (pViewModel.IsValid())
+		{
+			pViewModel = this.CreateViewModel(0);
+			if (!pViewModel.IsValid())
+				return;
+		}
+
+		// We use a model as a proxy here so that the `SendViewModelMatchingSequence` will
+		// send the animation to the gloves. This is done by setting the model then replacing the model index.
+		int iModelIndexProxy = PrecacheModel(g_szModelNameProxy);
+		int iModelIndex = PrecacheModel(g_szModelNameGloves);
+		if (iModelIndexProxy && iModelIndex)
+		{
+			// TODO:
+			// For HL2DM, `ACT_VM_IDLE` might be used instead.
+			this.DrawViewModel(true);
+			pViewModel.RemoveEffects(EF_NODRAW);
+			pViewModel.SetModel(g_szModelNameProxy);
+			pViewModel.SetModelIndex(iModelIndex);
+			pViewModel.SendViewModelMatchingSequence(pViewModel.SelectWeightedSequence(ACT_VM_DRAW));
+		}
+		#endif
 	}
 }
 
@@ -2163,6 +2361,10 @@ methodmap CBeam < CBaseEntity
 		return CBeam(CreateEntityByName("beam"));
 	}
 
+	public bool IsValid()
+	{
+		return view_as<CBaseEntity>(this).IsValid() && this.GetEntIndex() > 0;
+	}
 	public int GetAttachmentCount()
 	{
 		return GetEntProp(this.GetEntIndex(), Prop_Send, "m_nNumBeamEnts");
@@ -2261,6 +2463,10 @@ methodmap CSprite < CBaseEntity
 		return CSprite(CreateEntityByName("env_sprite"));
 	}
 
+	public bool IsValid()
+	{
+		return view_as<CBaseEntity>(this).IsValid() && this.GetEntIndex() > 0;
+	}
 	public float GetScale()
 	{
 		return GetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flSpriteScale");
@@ -2349,14 +2555,21 @@ methodmap CParticleSystem < CBaseEntity
 	public static CParticleSystem Create(const char[] szEffectName, bool bStartActive = true)
 	{
 		CParticleSystem pParticle = CParticleSystem(CreateEntityByName("info_particle_system"));
-		pParticle.SetEffectName(szEffectName);
-		if (bStartActive)
+		if (pParticle.IsValid())
 		{
-			pParticle.SetStartActive(bStartActive);
+			pParticle.SetEffectName(szEffectName);
+			if (bStartActive)
+			{
+				pParticle.SetStartActive(bStartActive);
+			}
 		}
 		return pParticle;
 	}
 	
+	public bool IsValid()
+	{
+		return view_as<CBaseEntity>(this).IsValid() && this.GetEntIndex() > 0;
+	}
 	public bool IsActive()
 	{
 		return view_as<bool>(GetEntProp(this.GetEntIndex(), Prop_Data, "m_bActive"));
@@ -2439,6 +2652,10 @@ methodmap CTeam < CBaseEntity
 		return NULL_CBASEENTITY;
 	}
 
+	public bool IsValid()
+	{
+		return view_as<CBaseEntity>(this).IsValid() && this.GetEntIndex() > 0;
+	}
 	public int GetTeam()
 	{
 		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_iTeamNum");
@@ -2464,6 +2681,10 @@ methodmap CPlayerResource < CBaseEntity
 		return CPlayerResource(GetPlayerResourceEntity());
 	}
 
+	public bool IsValid()
+	{
+		return view_as<CBaseEntity>(this).IsValid() && this.GetEntIndex() > 0;
+	}
 	public int GetPing(CBasePlayer pPlayer)
 	{
 		return GetEntProp(this.entindex, Prop_Send, "m_iPing", _, pPlayer.entindex);
@@ -2530,11 +2751,11 @@ methodmap CPlayerResource < CBaseEntity
 	{
 		SetEntProp(this.entindex, Prop_Send, "m_iAccountID", iAccountID, _, pPlayer.entindex);
 	}
-	public bool IsValid(CBasePlayer pPlayer)
+	public bool IsValidPlayer(CBasePlayer pPlayer)
 	{
 		return view_as<bool>(GetEntProp(this.entindex, Prop_Send, "m_bValid", _, pPlayer.entindex));
 	}
-	public void SetValid(CBasePlayer pPlayer, bool bValid)
+	public void SetValidPlayer(CBasePlayer pPlayer, bool bValid)
 	{
 		SetEntProp(this.entindex, Prop_Send, "m_bValid", bValid, _, pPlayer.entindex);
 	}
@@ -2560,6 +2781,10 @@ methodmap CFuncLadder < CBaseEntity
 		return CFuncLadder(CreateEntityByName("func_ladder"));
 	}
 
+	public bool IsValid()
+	{
+		return view_as<CBaseEntity>(this).IsValid() && this.GetEntIndex() > 0;
+	}
 	public bool IsEnabled()
 	{
 		return !GetEntProp(this.GetEntIndex(), Prop_Data, "m_bDisabled");
