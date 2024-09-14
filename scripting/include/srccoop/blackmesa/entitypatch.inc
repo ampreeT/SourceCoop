@@ -534,7 +534,7 @@ public MRESReturn Hook_WeaponSetModel(int _this, DHookParam hParams)
 					{ "models/weapons/w_rpg_mp.mdl", "models/weapons/w_rpg.mdl" },
 				};
 
-				char szModelName[MAX_CLASSNAME];
+				char szModelName[MAX_MODELNAME];
 				DHookGetParamString(hParams, 1, szModelName, sizeof(szModelName));
 
 				for (int i = 0; i < sizeof(szWeaponModel); i++)

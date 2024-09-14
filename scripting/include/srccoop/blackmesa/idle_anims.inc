@@ -27,38 +27,93 @@ enum struct IdleAnimEntry
 
 public IdleAnimEntry g_pIdle[MAXPLAYERS + 1];
 
-public Action IdleAnims_SetTransmit(const int iEntity, const int iClient)
+public MRESReturn IdleAnims_Hook_PlayerSetModel(const int iPlayerIndex, DHookParam hParams)
+{
+	if (!DHookIsNullParam(hParams, 1) && g_pIdle[iPlayerIndex].m_pModel.IsValid())
+	{
+		char szModelName[MAX_MODELNAME];
+		DHookGetParamString(hParams, 1, szModelName, sizeof(szModelName));
+		if (PrecacheModel(szModelName))
+		{
+			g_pIdle[iPlayerIndex].m_pModel.SetModel(szModelName);
+			if (g_pIdle[iPlayerIndex].m_eIdleType == IdleNoWeapon)
+			{
+				g_pIdle[iPlayerIndex].m_pModel.SetAnimation("idle_noweapon");
+			}
+			else if (g_pIdle[iPlayerIndex].m_eIdleType == SwimIdleNoWeapon)
+			{
+				g_pIdle[iPlayerIndex].m_pModel.SetAnimation("swimidle_noweapon");
+			}
+			else if (g_pIdle[iPlayerIndex].m_eIdleType == SwimNoWeapon)
+			{
+				g_pIdle[iPlayerIndex].m_pModel.SetAnimation("swim_noweapon");
+			}
+			else if (g_pIdle[iPlayerIndex].m_eIdleType == RunNoWeapon)
+			{
+				g_pIdle[iPlayerIndex].m_pModel.SetAnimation("run_noweapon");
+			}
+			else if (g_pIdle[iPlayerIndex].m_eIdleType == LadderNoWeapon)
+			{
+				g_pIdle[iPlayerIndex].m_pModel.SetAnimation("ladder_noweapon");
+			}
+			else if (g_pIdle[iPlayerIndex].m_eIdleType == JumpStartNoWeapon)
+			{
+				g_pIdle[iPlayerIndex].m_pModel.SetAnimation("jump_start_noweapon");
+			}
+			else if (g_pIdle[iPlayerIndex].m_eIdleType == CIdleNoWeapon)
+			{
+				g_pIdle[iPlayerIndex].m_pModel.SetAnimation("cidle_noweapon");
+			}
+			else if (g_pIdle[iPlayerIndex].m_eIdleType == CWalkNoWeapon)
+			{
+				g_pIdle[iPlayerIndex].m_pModel.SetAnimation("cwalk_noweapon");
+			}
+		}
+	}
+	return MRES_Ignored;
+}
+
+public Action IdleAnims_Hook_SetTransmit(const int iEntity, const int iClient)
 {
 	CDynamicProp pDynamicProp = CDynamicProp(iEntity);
 	CBasePlayer pPlayer = CBasePlayer(iClient);
 	CBasePlayer pParentPlayer = view_as<CBasePlayer>(pDynamicProp.GetParent());
-	if (pParentPlayer == pPlayer)
+	if (pParentPlayer == NULL_CBASEENTITY)
+		return Plugin_Handled;
+	
+	Obs_Mode iObserverMode = pPlayer.GetObserverMode();
+
+	if (iObserverMode != OBS_MODE_NONE)
+	{
+		if (iObserverMode == OBS_MODE_IN_EYE)
+		{
+			return Plugin_Handled;
+		}
+	}
+	else if (pPlayer == pParentPlayer)
 	{
 		// TODO:
-		// Thirdperson support
-		return Plugin_Handled;
-	}
-	if (pParentPlayer.IsValid() && pPlayer.GetObserverTarget() == pParentPlayer && pPlayer.GetObserverMode() == OBS_MODE_IN_EYE)
-	{
+		// Add thirdperson support
 		return Plugin_Handled;
 	}
 
 	return Plugin_Continue;
 }
 
-public void IdleAnims_Player_PreThink(const int iClient)
+public void IdleAnims_Hook_PlayerPreThinkPost(const int iClient)
 {
 	CBasePlayer pPlayer = CBasePlayer(iClient);
 	int iPlayerIndex = pPlayer.GetEntIndex();
-	if (pPlayer.IsAlive() && !pPlayer.GetActiveWeapon().IsValid())
+	bool bHasModel = g_pIdle[iPlayerIndex].m_pModel.IsValid();
+	if (pPlayer.IsAlive() && pPlayer.GetActiveWeapon() == NULL_CBASEENTITY)
 	{
-		if (!g_pIdle[iPlayerIndex].m_pModel.IsValid())
+		if (!bHasModel)
 		{
 			char szModelName[MAX_MODELNAME];
 			if (pPlayer.GetModelName(szModelName, sizeof(szModelName)))
 			{
 				g_pIdle[iPlayerIndex].m_pModel = CDynamicProp.Create(szModelName);
-				if (g_pIdle[iPlayerIndex].m_pModel.IsValid())
+				if (g_pIdle[iPlayerIndex].m_pModel != NULL_CBASEENTITY)
 				{
 					float vec3Pos[3];
 					pPlayer.GetAbsOrigin(vec3Pos);
@@ -74,22 +129,26 @@ public void IdleAnims_Player_PreThink(const int iClient)
 					g_pIdle[iPlayerIndex].m_pModel.SetAnimation("idle_noweapon");
 					g_pIdle[iPlayerIndex].m_eIdleType = IdleNoWeapon;
 
-					SDKHook(g_pIdle[iPlayerIndex].m_pModel.GetEntIndex(), SDKHook_SetTransmit, IdleAnims_SetTransmit);
+					SDKHook(g_pIdle[iPlayerIndex].m_pModel.GetEntIndex(), SDKHook_SetTransmit, IdleAnims_Hook_SetTransmit);
+
+					bHasModel = true;
 				}
 			}
 		}
 	}
 	else
 	{
-		if (g_pIdle[iPlayerIndex].m_pModel.IsValid())
+		if (bHasModel)
 		{
 			g_pIdle[iPlayerIndex].m_pModel.Kill();
 			g_pIdle[iPlayerIndex].m_pModel = NULL_CBASEENTITY;
+			bHasModel = false;
 		}
 	}
 
-	if (g_pIdle[iPlayerIndex].m_pModel.IsValid())
+	if (bHasModel)
 	{
+		bool bHasGroundEntity = pPlayer.GetGroundEntity() != NULL_CBASEENTITY;
 		float vec3Velocity[3];
 		pPlayer.GetAbsVelocity(vec3Velocity);
 
@@ -123,8 +182,8 @@ public void IdleAnims_Player_PreThink(const int iClient)
 				}
 			}
 		}
-		else if ((!pPlayer.GetGroundEntity().IsValid() && g_pIdle[iPlayerIndex].m_eIdleType == JumpStartNoWeapon) ||
-				 (pPlayer.GetGroundEntity().IsValid() && !pPlayer.WasPressingButton(IN_JUMP) && pPlayer.IsPressingButton(IN_JUMP)))
+		else if ((!bHasGroundEntity && g_pIdle[iPlayerIndex].m_eIdleType == JumpStartNoWeapon) ||
+				 (bHasGroundEntity && !pPlayer.WasPressingButton(IN_JUMP) && pPlayer.IsPressingButton(IN_JUMP)))
 		{
 			if (g_pIdle[iPlayerIndex].m_eIdleType != JumpStartNoWeapon)
 			{
@@ -199,7 +258,7 @@ public void IdleAnims_Player_PreThink(const int iClient)
 		int r, g, b, a;
 		pPlayer.GetRenderColor(r, g, b, a);
 		g_pIdle[iPlayerIndex].m_pModel.SetRenderColor(r, g, b, a);
-
+		
 		for (int i = 0; i < 24; ++i)
 		{
 			g_pIdle[iPlayerIndex].m_pModel.SetPoseParameter(i, pPlayer.GetPoseParameter(i));

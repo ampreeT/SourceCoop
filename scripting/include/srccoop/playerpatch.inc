@@ -39,7 +39,7 @@ public void Hook_PlayerPreThinkPost(int iClient)
 		return;
 	
 	#if defined SRCCOOP_BLACKMESA
-	IdleAnims_Player_PreThink(iClient);
+	IdleAnims_Hook_PlayerPreThinkPost(iClient);
 	#endif
 	
 	CBasePlayer pPlayer = CBasePlayer(iClient);

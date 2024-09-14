@@ -337,7 +337,7 @@ stock void InitClassdef(GameData pGameConfig)
 
 methodmap CBaseEntity
 {
-	public CBaseEntity(const int iEntIndex = NULL_CBASEENTITY)
+	public CBaseEntity(const int iEntIndex = -1)
 	{
 		return view_as<CBaseEntity>(iEntIndex > -1 ? EntIndexToEntRef(iEntIndex) : iEntIndex);
 	}
