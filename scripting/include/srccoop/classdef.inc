@@ -39,6 +39,7 @@ Handle g_pGetPlayerState;
 Handle g_pSelectWeightedSequence;
 Handle g_pSendViewModelMatchingSequence;
 Handle g_pGetGlobalVars;
+Handle g_pAppendCriteria;
 
 int g_iCSoundSize = -1;
 int g_iCPlayerState_frags = -1;
@@ -341,6 +342,18 @@ stock void InitClassdef(GameData pGameConfig)
 	{
 		PrepSDKCall_SetReturnInfo(SDKType_PlainOldData, SDKPass_Plain);
 		if (!(g_pGetGlobalVars = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szGetGlobalVars);
+	}
+	
+	char szAppendCriteria[] = "AI_CriteriaSet::AppendCriteria";
+	StartPrepSDKCall(SDKCall_Raw);
+	if (!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Signature, szAppendCriteria))
+		LogMessage("Could not obtain gamedata offset %s", szAppendCriteria);
+	else
+	{
+		PrepSDKCall_AddParameter(SDKType_String, SDKPass_Pointer);
+		PrepSDKCall_AddParameter(SDKType_String, SDKPass_Pointer);
+		PrepSDKCall_AddParameter(SDKType_Float, SDKPass_Plain);
+		if (!(g_pAppendCriteria = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szAppendCriteria);
 	}
 
 	#if defined SRCCOOP_BLACKMESA
@@ -1192,6 +1205,23 @@ methodmap CSceneEntity < CPointEntity
 	{
 		// Could also be a "scripted_scene`.
 		return CSceneEntity(CreateEntityByName("logic_choreographed_scene"));
+	}
+
+	public float GetCurrentTime()
+	{
+		return GetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flCurrentTime");
+	}
+	public void SetCurrentTime(const float flCurrentTime)
+	{
+		SetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flCurrentTime", flCurrentTime);
+	}
+	public float GetForceClientTime()
+	{
+		return GetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flForceClientTime");
+	}
+	public void SetForceClientTime(const float flForceClientTime)
+	{
+		SetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flForceClientTime", flForceClientTime);
 	}
 }
 
@@ -3174,4 +3204,21 @@ methodmap CGlobalVarsBase
 methodmap CGlobalVars < CGlobalVarsBase
 {
 	
+}
+
+methodmap AI_CriteriaSet
+{
+	public AI_CriteriaSet(const Address pAddress)
+	{
+		return view_as<AI_CriteriaSet>(pAddress);
+	}
+
+	public Address GetAddress()
+	{
+		return view_as<Address>(this);
+	}
+	public void AppendCriteria(const char[] szCriteria, const char[] szValue, const float flWeight = 1.0)
+	{
+		SDKCall(g_pAppendCriteria, this.GetAddress(), szCriteria, szValue, flWeight);
+	}
 }
