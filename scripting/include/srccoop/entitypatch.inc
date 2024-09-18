@@ -190,6 +190,10 @@ public MRESReturn Hook_FindNamedEntity(int _this, Handle hReturn, Handle hParams
 	return MRES_Ignored;
 }
 
+//------------------------------------------------------
+// NPCs that use the response system https://developer.valvesoftware.com/wiki/Response_System
+// The original function calls `AI_GetSinglePlayer()` which will end up returning null.
+//------------------------------------------------------
 public MRESReturn Hook_ExpresserHost_DoModifyOrAppendCriteriaPost(Handle hParams)
 {
 	CBaseEntity pSpeaker = CBaseEntity(DHookGetParam(hParams, 1));
