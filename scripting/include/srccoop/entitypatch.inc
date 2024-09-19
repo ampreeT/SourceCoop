@@ -197,7 +197,7 @@ public MRESReturn Hook_FindNamedEntity(int _this, Handle hReturn, Handle hParams
 public MRESReturn Hook_ExpresserHost_DoModifyOrAppendCriteriaPost(Handle hParams)
 {
 	CBaseEntity pSpeaker = CBaseEntity(DHookGetParam(hParams, 1));
-	CBasePlayer pPlayer = GetNearestPlayerPreferAlive(pSpeaker);
+	CBasePlayer pPlayer = GetNearestPlayerPreferAlive(pSpeaker, true);
 	if (pPlayer != NULL_CBASEENTITY)
 	{
 		AI_CriteriaSet pCriteria = AI_CriteriaSet(DHookGetParam(hParams, 2));
@@ -212,7 +212,7 @@ public MRESReturn Hook_ExpresserHost_DoModifyOrAppendCriteriaPost(Handle hParams
 		
 		// This is rounded from a float to string to save stack space for string formatting.
 		char szLength[16];
-		Format(szLength, sizeof(szLength), "%i", iLength);
+		IntToString(iLength, szLength, sizeof(szLength));
 		pCriteria.AppendCriteria("distancetoplayer", szLength);
 
 		// Original SDK code checks if the player is looking at the speaker.
