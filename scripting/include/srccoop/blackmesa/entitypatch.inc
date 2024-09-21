@@ -232,16 +232,34 @@ public MRESReturn Hook_PropChargerThinkPost(int _this)
 
 //------------------------------------------------------
 // TE - BlackMesa Shot
-// Fix npc_sniper tracers hard crashing some client configurations
+// Fix npc_sniper tracers hard crashing some client configurations and
+// hides the tracers of certain npcs due to incorrect firing position
 //------------------------------------------------------
 public Action BlackMesaFireBulletsTEHook(const char[] szTEName, const int[] iClients, int iNumClients, float flDelay)
 {
+	// Prevent crashes from `npc_sniper` on certain client configurations. 
 	int iAmmoId = TE_ReadNum("m_iAmmoID");
 	if (iAmmoId == AMMO_SNIPERROUND)
-	{
-		TE_WriteNum("m_bDoTracers", 0);
 		return Plugin_Changed;
-	}
+	
+	// TE will crash all clients without a valid entity.
+	CBaseEntity pEntity = CBaseEntity(TE_ReadNum("m_iEntityIndex"));
+	if (pEntity == NULL_CBASEENTITY)
+		return Plugin_Changed;
+
+	char szClassname[MAX_CLASSNAME];
+	if (!pEntity.GetClassname(szClassname, sizeof(szClassname)))
+		return Plugin_Changed;
+
+	// Hide tracers of broken npcs.
+	// TODO:
+	// Instead of hiding the tracers, they should be displayed correctly.
+	if (strcmp(szClassname, "npc_sentry_ground") == 0 ||
+		strcmp(szClassname, "npc_sentry_ceiling") == 0 ||
+		strcmp(szClassname, "npc_abrams") == 0 ||
+		strcmp(szClassname, "npc_lav") == 0)
+		return Plugin_Changed;
+
 	return Plugin_Continue;
 }
 
