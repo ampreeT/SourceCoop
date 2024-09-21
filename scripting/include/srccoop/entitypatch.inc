@@ -367,7 +367,7 @@ void InitTrigger(CBaseEntity pTrigger)
 	static char szBuffer[PLATFORM_MAX_PATH];
 	pTrigger.GetModelName(szBuffer, sizeof(szBuffer));
 	pTrigger.SetModel(szBuffer); // initialize the model from name
-	pTrigger.SetEffects(pTrigger.GetEffects() | EF_NODRAW);
+	pTrigger.AddEffects(EF_NODRAW);
 }
 
 //------------------------------------------------------
