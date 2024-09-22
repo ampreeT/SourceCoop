@@ -55,7 +55,7 @@ public MRESReturn Hook_UTIL_GetLocalPlayer(Handle hReturn)
 				return MRES_Ignored;
 			}
 		}
-		LogDebug("Overriding UTIL_GetLocalPlayer");
+		// LogDebug("Overriding UTIL_GetLocalPlayer");
 		DHookSetReturn(hReturn, pPlayer.GetEntIndex());
 		return MRES_Supercede;
 	}
@@ -108,6 +108,7 @@ public MRESReturn BaseNPCSetModelBlock(int _this, Handle hParams)
 //------------------------------------------------------
 public MRESReturn Hook_BaseNPCThink(int _this)
 {
+	// Set this entity into context
 	SetLocalPlayerEntity(_this);
 	return MRES_Ignored;
 }
@@ -118,12 +119,13 @@ public MRESReturn Hook_BaseNPCThinkPost(int _this)
 	return MRES_Ignored;
 }
 
-// CAI_BaseNPC::PreThink runs as part of Think and guards calls to RunAI and movement.
-// Returning false acts functionally same as setting ai_disable.
+//------------------------------------------------------
+// Physics_RunThinkFunctions - The main physics simulation loop against all entities
 // This hook is only active when there are no real players on the server!
-public MRESReturn Hook_BaseNPCPreThinkNoPlayers(int _this, DHookReturn hReturn)
+// Its main purpose is to ensure NPCs can always find a valid player pointer when thinking. 
+//------------------------------------------------------
+public MRESReturn Hook_Physics_RunThinkFunctions(DHookReturn hParams)
 {
-	hReturn.Value = false;
 	return MRES_Supercede;
 }
 

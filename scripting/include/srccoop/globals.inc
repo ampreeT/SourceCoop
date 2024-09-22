@@ -143,7 +143,7 @@ DynamicDetour hkBaseNpcUpdateSleepState;
 #endif
 
 #if defined ENTPATCH_NPC_THINK_LOCALPLAYER
-DynamicDetour hkBaseNpcPreThink;
+DynamicDetour hkPhysics_RunThinkFunctions;
 #endif
 
 #if defined SRCCOOP_HL2DM && defined PLAYERPATCH_SERVERSIDE_RAGDOLLS

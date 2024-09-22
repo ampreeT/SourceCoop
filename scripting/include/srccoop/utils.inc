@@ -963,6 +963,31 @@ stock bool IsBoxIntersectingBox(const float boxMin1[3], const float boxMax1[3], 
 	return true;
 }
 
+stock any Min(any value, any min)
+{
+	return value < min ? min : value;
+}
+
+stock any Max(any value, any max)
+{
+	return value > max ? max : value;
+}
+
+stock any Clamp(any value, any min, any max)
+{
+	value = Min(value, min);
+	value = Max(value, max);
+	return value;
+}
+
+stock bool IsInBounds(any value, any min, any max)
+{
+	if (value < min || value > max)
+		return false;
+	
+	return true;
+}
+
 //------------------------------------------------------
 // File utils
 //------------------------------------------------------

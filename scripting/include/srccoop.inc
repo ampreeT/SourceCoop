@@ -144,6 +144,7 @@
 
 #include <logdebug>
 
+#include <srccoop/util/assert>
 #include <srccoop/typedef>
 #include <srccoop/typedef_game>
 #include <srccoop/public>

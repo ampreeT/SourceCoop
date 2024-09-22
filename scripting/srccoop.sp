@@ -155,7 +155,7 @@ void LoadGameData()
 	#endif
 
 	#if defined ENTPATCH_NPC_THINK_LOCALPLAYER
-	LoadDHookDetour(pGameConfig, hkBaseNpcPreThink, "CAI_BaseNPC::PreThink", Hook_BaseNPCPreThinkNoPlayers);
+	LoadDHookDetour(pGameConfig, hkPhysics_RunThinkFunctions, "Physics_RunThinkFunctions", Hook_Physics_RunThinkFunctions);
 	#endif
 
 	#if defined SRCCOOP_BLACKMESA
@@ -418,8 +418,8 @@ public void OnClientPutInServer(int client)
 	if (!g_iPlayerCount++)
 	{
 		#if defined ENTPATCH_NPC_THINK_LOCALPLAYER
-		// unpause npcs
-		hkBaseNpcPreThink.Disable(Hook_Pre, Hook_BaseNPCPreThinkNoPlayers);
+		// resume entity thinking
+		hkPhysics_RunThinkFunctions.Disable(Hook_Pre, Hook_Physics_RunThinkFunctions);
 		#endif
 	}
 
@@ -493,7 +493,8 @@ public void OnClientDisconnect_Post(int client)
 		#if defined ENTPATCH_NPC_THINK_LOCALPLAYER
 		if (!g_iPlayerCount)
 		{
-			hkBaseNpcPreThink.Enable(Hook_Pre, Hook_BaseNPCPreThinkNoPlayers);
+			// pause entity thinking
+			hkPhysics_RunThinkFunctions.Enable(Hook_Pre, Hook_Physics_RunThinkFunctions);
 		}
 		#endif
 	}
