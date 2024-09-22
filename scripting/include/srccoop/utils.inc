@@ -6,6 +6,7 @@
 #pragma newdecls required
 #pragma semicolon 1
 
+#include <srccoop/util/assert>
 #include <srccoop/util/stringbuilder>
 
 //------------------------------------------------------

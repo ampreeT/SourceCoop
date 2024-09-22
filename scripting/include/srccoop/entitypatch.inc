@@ -124,7 +124,7 @@ public MRESReturn Hook_BaseNPCThinkPost(int _this)
 // This hook is only active when there are no real players on the server!
 // Its main purpose is to ensure NPCs can always find a valid player pointer when thinking. 
 //------------------------------------------------------
-public MRESReturn Hook_Physics_RunThinkFunctions(DHookReturn hParams)
+public MRESReturn Hook_Physics_RunThinkFunctions(DHookParam hParams)
 {
 	return MRES_Supercede;
 }
