@@ -194,6 +194,41 @@ public MRESReturn Hook_FindNamedEntity(int _this, Handle hReturn, Handle hParams
 }
 
 //------------------------------------------------------
+// NPCs that use the response system https://developer.valvesoftware.com/wiki/Response_System
+// The original function calls `AI_GetSinglePlayer()` which will end up returning null.
+//------------------------------------------------------
+public MRESReturn Hook_ExpresserHost_DoModifyOrAppendCriteriaPost(Handle hParams)
+{
+	CBaseEntity pSpeaker = CBaseEntity(DHookGetParam(hParams, 1));
+	CBasePlayer pPlayer = GetNearestPlayerPreferAlive(pSpeaker, true);
+	if (pPlayer != NULL_CBASEENTITY)
+	{
+		AI_CriteriaSet pCriteria = AI_CriteriaSet(DHookGetParam(hParams, 2));
+
+		float vec3SpeakerPosition[3];
+		pSpeaker.GetAbsOrigin(vec3SpeakerPosition);
+
+		float vec3PlayerPosition[3];
+		pPlayer.GetAbsOrigin(vec3PlayerPosition);
+
+		int iLength = RoundFloat(GetVectorDistance(vec3SpeakerPosition, vec3PlayerPosition));
+		
+		// This is rounded from a float to string to save stack space for string formatting.
+		char szLength[16];
+		IntToString(iLength, szLength, sizeof(szLength));
+		pCriteria.AppendCriteria("distancetoplayer", szLength);
+
+		// Original SDK code checks if the player is looking at the speaker.
+		// This is not used as the closest player that is alive may not be looking at the speaker while other players are.
+		if (/*pPlayer.FInViewConeEntity(pSpeaker) &&*/ pPlayer.FVisibleEntity(pSpeaker))
+		{
+			pCriteria.AppendCriteria("seenbyplayer", "1");
+		}
+	}
+	return MRES_Ignored;
+}
+
+//------------------------------------------------------
 // CChangelevel - trigger_changelevel
 // Hook to handle mapchanges
 //------------------------------------------------------
@@ -335,7 +370,7 @@ void InitTrigger(CBaseEntity pTrigger)
 	static char szBuffer[PLATFORM_MAX_PATH];
 	pTrigger.GetModelName(szBuffer, sizeof(szBuffer));
 	pTrigger.SetModel(szBuffer); // initialize the model from name
-	pTrigger.SetEffects(pTrigger.GetEffects() | EF_NODRAW);
+	pTrigger.AddEffects(EF_NODRAW);
 }
 
 //------------------------------------------------------

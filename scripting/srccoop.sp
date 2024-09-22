@@ -64,9 +64,10 @@ void LoadGameData()
 	LoadDHookVirtual(pGameConfig, hkIsPlayerAlly, "CAI_BaseNPC::IsPlayerAlly");
 	#endif
 
-	#if defined ENTPATCH_FIND_NAMED_ENTITY
+	#if defined ENTPATCH_NPC_DIALOGUE
 	LoadDHookVirtual(pGameConfig, hkFindNamedEntity, "CSceneEntity::FindNamedEntity");
 	LoadDHookVirtual(pGameConfig, hkFindNamedEntityClosest, "CSceneEntity::FindNamedEntityClosest");
+	LoadDHookDetour(pGameConfig, hkExpresserHostDoModifyOrAppendCriteria, "CAI_ExpresserHost_NPC_DoModifyOrAppendCriteria", _, Hook_ExpresserHost_DoModifyOrAppendCriteriaPost);
 	#endif
 
 	#if defined ENTPATCH_SNIPER
@@ -792,7 +793,7 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 		}
 		#endif
 		
-		#if defined ENTPATCH_FIND_NAMED_ENTITY
+		#if defined ENTPATCH_NPC_DIALOGUE
 		if ((strcmp(szClassname, "instanced_scripted_scene", false) == 0) ||
 				(strcmp(szClassname, "logic_choreographed_scene", false) == 0) ||
 				(strcmp(szClassname, "scripted_scene", false) == 0))

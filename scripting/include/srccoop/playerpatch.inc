@@ -823,7 +823,7 @@ void PackPlayerItems(CBasePlayer pPlayer)
 		pPlayer.RemoveWeapon(pWeapon);
 		pWeapon.SetModelIndex(pWeapon.GetWeaponModelIndex(.bViewModel = false));
 		pWeapon.SetSpawnFlags(pWeapon.GetSpawnFlags() | SF_ITEM_NORESPAWN);
-		pWeapon.SetEffects(pWeapon.GetEffects() | EF_NODRAW | EF_NOSHADOW);
+		pWeapon.AddEffects(EF_NODRAW | EF_NOSHADOW);
 	}
 	pPlayer.RemoveAllItems();
 }

@@ -78,9 +78,10 @@ DynamicHook hkIsPlayerAlly;
 DynamicHook hkProtoSniperSelectSchedule;
 #endif
 
-#if defined ENTPATCH_FIND_NAMED_ENTITY
+#if defined ENTPATCH_NPC_DIALOGUE
 DynamicHook hkFindNamedEntity;
 DynamicHook hkFindNamedEntityClosest;
+DynamicDetour hkExpresserHostDoModifyOrAppendCriteria;
 #endif
 
 #if defined SRCCOOP_BLACKMESA

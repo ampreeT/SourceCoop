@@ -358,7 +358,7 @@ public Action Timer_SetRagdollEffects(Handle timer, CBasePlayer pPlayer)
 		if (pRagdoll.IsValid())
 		{
 			if (g_pConVarRagdollBlink.BoolValue)
-				pRagdoll.SetEffects(pRagdoll.GetEffects() | EF_ITEM_BLINK);
+				pRagdoll.AddEffects(EF_ITEM_BLINK);
 
 			if (g_pConVarRagdollParticle.BoolValue && Conf.RAGDOLL_PARTICLE[0] != EOS)
 			{

@@ -1533,7 +1533,7 @@ public void FixupBrushModelsPost(DataPack pack)
 		pThis.Teleport(vecOrigin);
 		pThis.SetCollisionBounds(vecMins, vecMaxs);
 		pThis.SetSolidType(SOLID_BBOX);
-		pThis.SetEffects(pThis.GetEffects() | EF_NODRAW);
+		pThis.AddEffects(EF_NODRAW);
 	}
 	delete pack;
 }
