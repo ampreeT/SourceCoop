@@ -561,17 +561,10 @@ public Action Hook_PlayerTraceAttack(int victim, int &attacker, int &inflictor, 
 //------------------------------------------------------
 public Action Hook_PlayerTakeDamage(int victim, int &attacker, int &inflictor, float &damage, int &damagetype)
 {
-	if (CoopManager.IsFeatureEnabled(FT_NO_TELEFRAGGING))
-	{
-		CBaseEntity pInflictor = CBaseEntity(inflictor);
-		
-		// Disable telefragging (CTriggerTeleport::TelefragEntities)
-		if (pInflictor.IsValid() && pInflictor.IsClassname("trigger_teleport"))
-		{
-			return Plugin_Handled;
-		}
-	}
-	if (CoopManager.IsCoopModeEnabled() && !mp_friendlyfire.BoolValue)
+	if (!CoopManager.IsCoopModeEnabled())
+		return Plugin_Continue;
+
+	if (!mp_friendlyfire.BoolValue)
 	{
 		// Disable FF from other sources such as the tau cannon
 		if (attacker != victim && CBasePlayer(attacker).IsClassPlayer())
@@ -579,6 +572,20 @@ public Action Hook_PlayerTakeDamage(int victim, int &attacker, int &inflictor, f
 			return Plugin_Handled;
 		}
 	}
+
+	CBaseEntity pInflictor = CBaseEntity(inflictor);
+	if (pInflictor != NULL_CBASEENTITY)
+	{
+		// Disable telefragging (CTriggerTeleport::TelefragEntities)
+		if (pInflictor.IsClassname("trigger_teleport"))
+		{
+			if (CoopManager.IsFeatureEnabled(FT_NOBLOCK))
+			{
+				return Plugin_Handled;
+			}
+		}
+	}
+	
 	return Plugin_Continue;
 }
 
