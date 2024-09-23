@@ -639,6 +639,19 @@
 					}
 				}
 			}
+			"Physics_RunThinkFunctions"
+			{
+				"signature"	"Physics_RunThinkFunctions"
+				"callconv"	"cdecl"
+				"return"	"void"
+				"arguments"
+				{
+					"simulating"
+					{
+						"type"	"bool"
+					}
+				}
+			}
 			"CBoneSetup::AccumulatePose"
 			{
 				"signature"	"CBoneSetup::AccumulatePose"
@@ -851,8 +864,13 @@
 			}
 			"CAI_BaseNPC::UpdateSleepState"	// void CAI_BaseNPC::UpdateSleepState( bool bInPVS )
 			{
-				"windows"	"\x55\x8B\xEC\x56\x8B\xF1\x83\xBE\x8C\x09\x00\x00\x00\x2A\x2A\x2A\x2A\x2A\x2A\xA1\xD0\x91"	// str: "CAI_BaseNPC::UpdateSleepState called with NULL pLocalPlayer\n"
+				"windows"	"\x55\x8B\xEC\x56\x8B\xF1\x83\xBE\x8C\x09\x00\x00\x00\x2A\x2A\x2A\x2A\x2A\x2A\xA1\xD0\x91" // str: "CAI_BaseNPC::UpdateSleepState called with NULL pLocalPlayer\n"
 				"linux"		"@_ZN11CAI_BaseNPC16UpdateSleepStateEb"
+			}
+			"CBaseEntity::SetNextThink" // void SetNextThink( float nextThinkTime, const char *szContext = NULL );
+			{
+				"windows"	"\x55\x8B\xEC\xF3\x0F\x10\x45\x08\x0F\x2E\x05\x2A\x2A\x2A\x2A" // str: "Doing partial rebuild of Node Graph..."
+				"linux"		"@_ZN11CBaseEntity12SetNextThinkEfPKc"
 			}
 			"CreateServerRagdoll" // CBaseEntity CreateServerRagdoll(CBaseAnimating *, int, const CTakeDamageInfo *, int, bool)
 			{
@@ -895,6 +913,12 @@
 			{
 				"windows"	"\x55\x8B\xEC\x83\xEC\x5C\x56\x57\x8B\xF9\x2A\x2A\x2A\x2A\x2A\x8B\xF0\x85\xF6\x2A\x2A\x2A\x2A\x2A\x2A"
 				"linux"		"@_ZN11CWeapon_Tau8FireBeamERKfb"
+			}
+			"Physics_RunThinkFunctions"
+			{
+				// str: "sv_teststepsimulation" (referenced convar)
+				"windows"	"\x55\x8B\xEC\x83\xEC\x08\xA1\x2A\x2A\x2A\x2A\x33\xC5\x89\x45\xFC\xA1\x2A\x2A\x2A\x2A"
+				"linux"		"@_Z25Physics_RunThinkFunctionsb"
 			}
 			"CAI_ExpresserHost_NPC_DoModifyOrAppendCriteria"
 			{

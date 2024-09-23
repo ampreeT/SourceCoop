@@ -19,6 +19,7 @@
 
 #include <topmenus>
 
+#include <srccoop/util/assert>
 #include <srccoop/typedef_game>
 #include <srccoop/public>
 #include <srccoop/classdef>

@@ -92,14 +92,6 @@ DynamicHook hkOnTryPickUp;
 DynamicHook hkIchthyosaurIdleSound;
 #endif
 
-#if defined ENTPATCH_BM_XENTURRET || defined ENTPATCH_BM_NIHILANTH
-DynamicHook hkHandleAnimEvent;
-#endif
-
-#if defined ENTPATCH_BM_XENTURRET || defined ENTPATCH_BM_NIHILANTH || defined ENTPATCH_BM_GONARCH || defined ENTPATCH_PLAYER_COMPANION
-DynamicHook hkRunAI;
-#endif
-
 #if defined ENTPATCH_FUNC_TRACKAUTOCHANGE || defined ENTPATCH_FUNC_TRACKTRAIN
 DynamicHook hkBlocked;
 #endif
@@ -151,6 +143,10 @@ DynamicDetour hkSetPlayerAvoidState;
 DynamicDetour hkBaseNpcUpdateSleepState;
 #endif
 
+#if defined ENTPATCH_NPC_THINK_LOCALPLAYER
+DynamicDetour hkPhysics_RunThinkFunctions;
+#endif
+
 #if defined SRCCOOP_HL2DM && defined PLAYERPATCH_SERVERSIDE_RAGDOLLS
 DynamicHook hkCreateRagdollEntity;
 #endif
@@ -174,6 +170,7 @@ char g_szEntityString[ENTITYSTRING_LENGTH];
 char g_szSteamIds[MAXPLAYERS+1][32];
 bool g_bTempDontHookEnts;
 bool g_bMapStarted;
+int g_iPlayerCount;
 bool g_bPostTeamSelect[MAXPLAYERS+1];
 int g_iAddButtons[MAXPLAYERS+1];
 int g_bUnblockRespawn[MAXPLAYERS+1];

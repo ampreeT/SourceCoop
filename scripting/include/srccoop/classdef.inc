@@ -31,6 +31,7 @@ Handle g_pGetSequenceLinearMotion;
 Handle g_pShouldPlayerAvoid;
 Handle g_pRemoveAllItems;
 Handle g_pCreateViewModel;
+Handle g_pSetNextThink;
 Handle g_pIsNPC;
 Handle g_pSendWeaponAnim;
 Handle g_pWeaponSwitch;
@@ -72,7 +73,18 @@ stock void InitClassdef(GameData pGameConfig)
 		PrepSDKCall_AddParameter(SDKType_Vector, SDKPass_ByRef);
 		if (!(g_pSetCollisionBounds = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szSetCollisionBounds);
 	}
-		
+
+	char szSetNextThink[] = "CBaseEntity::SetNextThink";
+	StartPrepSDKCall(SDKCall_Entity);
+	if (!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Signature, szSetNextThink))
+		LogMessage("Could not obtain gamedata signature %s", szSetNextThink);
+	else
+	{
+		PrepSDKCall_AddParameter(SDKType_Float, SDKPass_Plain);
+		PrepSDKCall_AddParameter(SDKType_String, SDKPass_Pointer, VDECODE_FLAG_ALLOWNULL);
+		if (!(g_pSetNextThink = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szSetNextThink);
+	}
+
 	char szIsNpc[] = "CBaseEntity::IsNPC";
 	StartPrepSDKCall(SDKCall_Entity);
 	if (!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Virtual, szIsNpc))
@@ -738,10 +750,9 @@ methodmap CBaseEntity
 		int iThinkTick = this.GetNextThinkTick();
 		return iThinkTick == -1? -1.0 : TICKS_TO_TIME(iThinkTick);
 	}
-	public void SetNextThink(const float flThinkTime)
+	public void SetNextThink(float flNextThink, const char[] szContext = NULL_STRING)
 	{
-		int iThinkTick = (flThinkTime == -1) ? -1 : (TIME_TO_TICKS(flThinkTime));
-		this.SetNextThinkTick(iThinkTick);
+		SDKCall(g_pSetNextThink, this.entindex, flNextThink, szContext);
 	}
 	public int GetSimulationTick()
 	{
@@ -1823,6 +1834,14 @@ methodmap CAI_BaseNPC < CBaseCombatCharacter
 		// TODO:
 		// Reconstruct function from scratch.
 		// https://github.com/ValveSoftware/source-sdk-2013/blob/0d8dceea4310fde5706b3ce1c70609d72a38efdf/mp/src/game/server/ai_basenpc.cpp#L4440
+	}
+	public AI_Efficiency_t GetEfficiency()
+	{
+		return view_as<AI_Efficiency_t>(GetEntProp(this.GetEntIndex(), Prop_Data, "m_Efficiency"));
+	}
+	public void SetEfficiency(const AI_Efficiency_t iEfficiency)
+	{
+		SetEntProp(this.GetEntIndex(), Prop_Data, "m_Efficiency", iEfficiency);
 	}
 	public CBaseEntity GetEnemy()
 	{
@@ -3173,9 +3192,9 @@ methodmap CPlayerInfoManager
 		return g_pPlayerInfoManager;
 	}
 
-	public CGlobalVarsBase GetGlobalVars()
+	public CGlobalVars GetGlobalVars()
 	{
-		return view_as<CGlobalVarsBase>(SDKCall(g_pGetGlobalVars, view_as<Address>(this)));
+		return SDKCall(g_pGetGlobalVars, view_as<Address>(this));
 	}
 }
 
@@ -3193,10 +3212,9 @@ methodmap CGlobalVarsBase
 	}
 	public void SetMaxPlayers(const int iMaxPlayers)
 	{
-		if (iMaxPlayers >= MAXPLAYERS)
-		{
-			ThrowError("`CGlobalVarsBase::SetMaxPlayers`");
-		}
+		assert(this.IsValid(), "Invalid state")
+		assert(IsInBounds(iMaxPlayers, 0, MaxClients), "Invalid maxplayers [%d]", iMaxPlayers)
+		
 		StoreToAddress(view_as<Address>(this) + 0x14, iMaxPlayers, NumberType_Int32);
 	}
 }
