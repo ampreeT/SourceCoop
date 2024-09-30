@@ -153,8 +153,8 @@
 #include <srccoop/blackmesa/typedef>
 #include <srccoop/blackmesa/classdef>
 #endif
-#include <srccoop/config>
 #include <srccoop/utils>
+#include <srccoop/config>
 #include <srccoop/features>
 #include <srccoop/globals>
 #include <srccoop/kv_shared>

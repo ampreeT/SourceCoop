@@ -12,6 +12,23 @@
 //------------------------------------------------------
 // Gamedata utils
 //------------------------------------------------------
+
+/* Macros for loading gamedata key values into configuration structs */
+
+// Prefix for keys in gamedata. Define before including. 
+#if !defined CONF_PREFIX
+ #define CONF_PREFIX ""
+#endif
+
+// Creates a init func for the struct. Pass in a CONF_TYPE macro for each of the struct's variables.
+#define CONF_INIT(%1) void Initialize(GameData pGameConfig) {%1}
+
+#define CONF_STR(%1) GetGamedataString(pGameConfig, CONF_PREFIX...#%1, this.%1, sizeof(this.%1));
+#define CONF_FLT(%1) this.%1 = GetGamedataFloat(pGameConfig, CONF_PREFIX...#%1);
+#define CONF_INT(%1) this.%1 = GetGamedataInt(pGameConfig, CONF_PREFIX...#%1);
+#define CONF_CLR(%1) GetGamedataColor(pGameConfig, CONF_PREFIX...#%1, this.%1);
+
+
 stock void GetGamedataString(GameData pGameConfig, const char[] szKey, char[] szVal, int len)
 {
 	if (!pGameConfig.GetKeyValue(szKey, szVal, len))
