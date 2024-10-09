@@ -147,6 +147,10 @@ DynamicDetour hkBaseNpcUpdateSleepState;
 DynamicDetour hkPhysics_RunThinkFunctions;
 #endif
 
+#if defined GAMEPATCH_PREDICTED_EFFECTS
+DynamicDetour hkSuppressTE;
+#endif
+
 #if defined SRCCOOP_HL2DM && defined PLAYERPATCH_SERVERSIDE_RAGDOLLS
 DynamicHook hkCreateRagdollEntity;
 #endif

@@ -181,7 +181,7 @@ public MRESReturn Hook_FindNamedEntity(int _this, Handle hReturn, Handle hParams
 			if (pActor.IsValid())
 			{
 				CBasePlayer pBestPlayer = GetNearestPlayer(pActor);
-				if (pBestPlayer.IsValid())
+				if (pBestPlayer != NULL_CBASEENTITY)
 				{
 					DHookSetReturn(hReturn, pBestPlayer.GetEntIndex());
 					return MRES_Supercede;
@@ -1354,4 +1354,14 @@ public MRESReturn Hook_TrackTrainBlocked(int _this, Handle hReturn, Handle hPara
 	}
 	
 	return MRES_Ignored;
+}
+
+//------------------------------------------------------
+// Unblocks sending missing TE's (impact effects)
+// by disabling serverside prediction recipient culling
+//------------------------------------------------------
+public MRESReturn Hook_SuppressTE(DHookReturn hReturn, DHookParam hParams)
+{
+	hReturn.Value = false;
+	return MRES_Supercede;
 }

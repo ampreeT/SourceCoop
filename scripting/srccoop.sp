@@ -159,6 +159,10 @@ void LoadGameData()
 	LoadDHookDetour(pGameConfig, hkPhysics_RunThinkFunctions, "Physics_RunThinkFunctions", Hook_Physics_RunThinkFunctions);
 	#endif
 
+	#if defined GAMEPATCH_PREDICTED_EFFECTS
+	LoadDHookDetour(pGameConfig, hkSuppressTE, "CTempEntsSystem::SuppressTE", Hook_SuppressTE);
+	#endif
+
 	#if defined SRCCOOP_BLACKMESA
 	if (g_serverOS == OS_Linux)
 	{
