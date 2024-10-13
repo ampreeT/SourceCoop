@@ -470,6 +470,7 @@ enum struct CCoopSpawnSystemData
 	CCoopEquipment m_pDefaultEquipment;		// holds map's equipment configuration
 	bool m_bOrdered;						// whether checkpoints are specified in order of progression
 	bool m_bRespawnOnLogicAutosave;			// use logic_autosave for survival respawns
+	bool m_bDefaultGameEquipment;			// allow equipping of game's default items
 }
 
 CCoopSpawnSystemData g_pSpawnSystemData;
@@ -490,6 +491,7 @@ methodmap CCoopSpawnSystem
 		data.m_iCurrentCheckpoint = -1;
 		data.m_iSpawnAtCheckpoint = -1;
 		data.m_pDefaultEquipment.Clear();
+		data.m_bDefaultGameEquipment = false;
 
 		CCoopSpawnEntry pEntry;
 		for (int i = 0; i < data.m_pCheckpointList.Length; i++)
@@ -666,21 +668,8 @@ methodmap CCoopSpawnSystem
 		return false;
 	}
 	
-	public static void StripPlayer(CBasePlayer pPlayer)
-	{
-		if (CoopManager.IsFeatureEnabled(FT_STRIP_DEFAULT_EQUIPMENT))
-		{
-			pPlayer.RemoveAllItems(!CoopManager.IsFeatureEnabled(FT_STRIP_DEFAULT_EQUIPMENT_KEEPSUIT));
-		}
-	}
-	
 	public static void SpawnPlayerEquipment(CBasePlayer pPlayer)
 	{
-		#if !defined SRCCOOP_BLACKMESA
-		// bm uses game_player_equip
-		CCoopSpawnSystem.StripPlayer(pPlayer);
-		#endif
-
 		CCoopEquipment pSavedEquipment;
 		if (data.m_iCurrentCheckpoint == 0 && EquipmentManager.GetEquipment(pPlayer, pSavedEquipment))
 		{
@@ -936,7 +925,19 @@ methodmap CCoopSpawnSystem
 						}
 						else if (strcmp(szKey, "item", false) == 0)
 						{
-							data.m_pDefaultEquipment.AddItem(szValue);
+							CCoopSpawnSystem.AddSpawnItem(szValue, true);
+						}
+						else if (strcmp(szKey, "defaults", false) == 0)
+						{
+							data.m_bDefaultGameEquipment = !!StringToInt(szValue);
+							
+							#if defined SRCCOOP_BLACKMESA
+							// to simulate classic multiplayer, we need the suit added
+							if (data.m_bDefaultGameEquipment)
+							{
+								CCoopSpawnSystem.AddSpawnItem("item_suit");
+							}
+							#endif
 						}
 						else
 						{

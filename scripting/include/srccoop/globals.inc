@@ -49,6 +49,7 @@ DynamicHook hkThink;
 DynamicHook hkUpdateOnRemove;
 DynamicHook hkEvent_Killed;
 DynamicHook hkKeyValue_char;
+DynamicDetour hkGiveDefaultItems;
 
 #if defined GAMEPATCH_ALLOW_FLASHLIGHT
 DynamicHook hkFAllowFlashlight;

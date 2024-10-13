@@ -224,8 +224,6 @@ ConVar: `sc_ft <FEATURE> <0 or 1>`
 | `INSTANCE_ITEMS`              | Instances pickup items and weapons for each player. Instanced items disappear once picked up and 'respawn' along with the player. |
 | `INSTANCE_ITEMS_NORESET`      | If enabled, items will not 'respawn' picked up items after death. |
 | `KEEP_EQUIPMENT`              | Makes players spawn with previously picked up equipment (suit, weapons). Global for all players. |
-| `STRIP_DEFAULT_EQUIPMENT`     | Removes default multiplayer equipment. |
-| `STRIP_DEFAULT_EQUIPMENT_KEEPSUIT` | |
 | `DISABLE_CANISTER_DROPS`      | Disables item drops when players die in multiplayer. |
 | `NO_TELEFRAGGING`             | Prevents teleporting props and players from slaying other players. |
 | `NOBLOCK`                     | Prevents player-on-player collisions. (This feature requires `mp_teamplay 1` to fix smoothness issues.) |

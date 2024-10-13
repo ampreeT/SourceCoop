@@ -16,6 +16,18 @@ public MRESReturn Hook_FAllowFlashlight(Handle hReturn, Handle hParams)
 }
 
 //------------------------------------------------------
+// Default spawn items
+//------------------------------------------------------
+public MRESReturn Hook_GiveDefaultItems(int _this)
+{
+	if (CoopManager.IsCoopModeEnabled() && !g_pSpawnSystemData.m_bDefaultGameEquipment)
+	{
+		return MRES_Supercede;
+	}
+	return MRES_Ignored;
+}
+
+//------------------------------------------------------
 // The singleplayer override for PreThink handles our
 // prop pickup, sprinting, vm anims, suit queue updates, etc
 //
