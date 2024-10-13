@@ -127,7 +127,7 @@ void LoadGameData()
 
 	// Detour Hooks
 	
-	#if defined PLAYERPATCH_SETSUITUPDATE
+	#if defined PLAYERPATCH_SUIT_SOUNDS
 	LoadDHookDetour(pGameConfig, hkSetSuitUpdate, "CBasePlayer::SetSuitUpdate", Hook_SetSuitUpdate, Hook_SetSuitUpdatePost);
 	#endif
 	

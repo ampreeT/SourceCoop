@@ -41,6 +41,7 @@ Handle g_pSelectWeightedSequence;
 Handle g_pSendViewModelMatchingSequence;
 Handle g_pGetGlobalVars;
 Handle g_pAppendCriteria;
+Handle g_pSetSuitUpdate;
 
 int g_iCSoundSize = -1;
 int g_iCPlayerState_frags = -1;
@@ -113,6 +114,18 @@ stock void InitClassdef(GameData pGameConfig)
 	{
 		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
 		if (!(g_pCreateViewModel = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szCreateViewModel);
+	}
+
+	char szSetSuitUpdate[] = "CBasePlayer::SetSuitUpdate";
+	StartPrepSDKCall(SDKCall_Player);
+	if (!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Signature, szSetSuitUpdate))
+		LogMessage("Could not obtain gamedata offset %s", szSetSuitUpdate);
+	else
+	{
+		PrepSDKCall_AddParameter(SDKType_String, SDKPass_Pointer, VDECODE_FLAG_ALLOWNULL);
+		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
+		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
+		if (!(g_pSetSuitUpdate = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szSetSuitUpdate);
 	}
 	
 	char szGlobalEntity_GetIndex[] = "GlobalEntity_GetIndex";
@@ -2001,6 +2014,22 @@ methodmap CBasePlayer < CBaseCombatCharacter
 	public void SetSuit(const bool bShouldHaveSuit)
 	{
 		SetEntProp(this.GetEntIndex(), Prop_Send, "m_bWearingSuit", bShouldHaveSuit);
+	}
+	public void SetSuitUpdate(const char[] szName, int fgroup, int iNoRepeat)
+	{
+		SDKCall(g_pSetSuitUpdate, this.entindex, szName, fgroup, iNoRepeat);
+	}
+	public void ClearSuitQueue()
+	{
+		for (int i = 0; i < 4; i++)
+		{
+			SetEntProp(this.entindex, Prop_Data, "m_rgSuitPlayList", 0, 4, i);
+		}
+		for (int i = 0; i < 32; i++)
+		{
+			SetEntProp(this.entindex, Prop_Data, "m_rgiSuitNoRepeat", 0, 4, i);
+			SetEntPropFloat(this.entindex, Prop_Data, "m_rgflSuitNoRepeatTime", 0.0, i);
+		}
 	}
 	public bool IsSprinting()
 	{

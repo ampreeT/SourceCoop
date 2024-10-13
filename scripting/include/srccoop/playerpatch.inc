@@ -226,6 +226,7 @@ char szLastSuitSound[MAXPLAYERS+1][PLATFORM_MAX_PATH];
 
 public Action PlayerSoundListener(int clients[MAXPLAYERS], int &numClients, char sample[PLATFORM_MAX_PATH], int &entity, int &channel, float &volume, int &level, int &pitch, int &flags, char soundEntry[PLATFORM_MAX_PATH], int &seed)
 {
+	#if defined PLAYERPATCH_SUIT_SOUNDS
 	if (strncmp(sample, "!HEV_", 5) == 0)
 	{
 		// Here we save last played HEV sound so we can stop it on respawn
@@ -234,6 +235,7 @@ public Action PlayerSoundListener(int clients[MAXPLAYERS], int &numClients, char
 			szLastSuitSound[clients[i]] = sample;
 		}
 	}
+	#endif
 
 	#if defined SRCCOOP_BLACKMESA
 	if (strncmp(sample, "physics\\footsteps\\", 18) == 0 || strncmp(sample, "player/suit_sprint.wav", 22) == 0)
@@ -372,8 +374,13 @@ public MRESReturn Hook_PlayerSpawnPost(int iClient, Handle hReturn, Handle hPara
 			
 			#endif // SRCCOOP_BLACKMESA
 
+			#if defined PLAYERPATCH_SUIT_SOUNDS
+
 			// Stop HEV sounds
+			pPlayer.ClearSuitQueue();
 			StopSound(iClient, SNDCHAN_STATIC, szLastSuitSound[iClient]);
+			
+			#endif // PLAYERPATCH_SUIT_SOUNDS
 
 			CoopManager.OnPlayerSpawned(pPlayer);
 		}

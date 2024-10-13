@@ -115,7 +115,7 @@ DynamicDetour hkToggleIronsights;
 DynamicDetour hkTauFireBeam;
 #endif
 
-#if defined PLAYERPATCH_SETSUITUPDATE
+#if defined PLAYERPATCH_SUIT_SOUNDS
 DynamicDetour hkSetSuitUpdate;
 #endif
 
