@@ -30,14 +30,18 @@
 #include <srccoop/utils>
 #include <srccoop/features>
 
-stock void InitSourceCoopAddon()
+stock GameData InitSourceCoopAddon(bool bCloseGameData = true)
 {
 	GameData pGameConfig = LoadGameConfigFile(SRCCOOP_GAMEDATA_NAME);
 	if (pGameConfig == null)
 		SetFailState("Couldn't load game config: \"%s\"", SRCCOOP_GAMEDATA_NAME);
 	
 	InitClassdef(pGameConfig);
-	CloseHandle(pGameConfig);
+	if (bCloseGameData)
+	{
+		CloseHandle(pGameConfig);
+	}
+	return pGameConfig;
 }
 
 stock GameData LoadSourceCoopConfig()
