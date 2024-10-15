@@ -22,6 +22,7 @@ Handle g_pGlobalEntitySetState;
 Handle g_pGlobalEntitySetCounter;
 Handle g_pGlobalEntityAdd;
 Handle g_pGameShutdown;
+Handle g_pGetTempEntsSystem;
 Handle g_pSetCollisionBounds;
 Handle g_pQueryHearSound;
 Handle g_pGetSoundInterests;
@@ -214,6 +215,16 @@ stock void InitClassdef(GameData pGameConfig)
 	else
 	{
 		if (!(g_pGameShutdown = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szGameShutdown);
+	}
+
+	char szGetTempEntsSystem[] = "CServerTools::GetTempEntsSystem";
+	StartPrepSDKCall(SDKCall_Raw);
+	if (!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Virtual, szGetTempEntsSystem))
+		LogMessage("Could not obtain gamedata offset %s", szGetTempEntsSystem);
+	else
+	{
+		PrepSDKCall_SetReturnInfo(SDKType_PlainOldData, SDKPass_Plain);
+		if (!(g_pGetTempEntsSystem = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szGetTempEntsSystem);
 	}
 
 	char szQueryHearSound[] = "CAI_BaseNPC::QueryHearSound";
@@ -2987,6 +2998,19 @@ methodmap IServerGameDLL
 	public void GameShutdown()
 	{
 		SDKCall(g_pGameShutdown, this); // GameShutdown() just resets global states
+	}
+}
+
+methodmap IServerTools
+{
+	public IServerTools(Address pAddress)
+	{
+		return view_as<IServerTools>(pAddress);
+	}
+	
+	public Address GetTempEntsSystem()
+	{
+		return SDKCall(g_pGetTempEntsSystem, this);
 	}
 }
 

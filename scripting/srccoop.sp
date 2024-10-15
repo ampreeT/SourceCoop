@@ -20,8 +20,14 @@ void LoadGameData()
 	
 	g_serverOS = view_as<OperatingSystem>(pGameConfig.GetOffset("_OS_Detector_"));
 
+	// Init SDKCalls for classdef
+	InitClassdef(pGameConfig);
+	
 	if (!(g_ServerGameDLL = IServerGameDLL(GetInterface(pGameConfig, "server", "IServerGameDLL"))))
 		SetFailState("Could not get interface for %s", "IServerGameDLL");
+
+	if (!(g_ServerTools = IServerTools(GetInterface(pGameConfig, "server", "IServerTools"))))
+		SetFailState("Could not get interface for %s", "IServerTools");
 	
 	// Calls
 
@@ -160,6 +166,13 @@ void LoadGameData()
 	LoadDHookDetour(pGameConfig, hkPhysics_RunThinkFunctions, "Physics_RunThinkFunctions", Hook_Physics_RunThinkFunctions);
 	#endif
 
+	#if defined GAMEPATCH_PREDICTED_EFFECTS
+	LoadDHookDetour(pGameConfig, hkIgnorePredictionCull, "CRecipientFilter::IgnorePredictionCull", Hook_IgnorePredictionCull);
+	LoadDHookVirtual(pGameConfig, hkDispatchEffect, "CTempEntsSystem::DispatchEffect");
+	if (hkDispatchEffect.HookRaw(Hook_Pre, g_ServerTools.GetTempEntsSystem(), Hook_DispatchEffect) == INVALID_HOOK_ID)
+		SetFailState("Could not hook CTempEntsSystem::DispatchEffect");
+	#endif
+
 	#if defined SRCCOOP_BLACKMESA
 	if (g_serverOS == OS_Linux)
 	{
@@ -178,9 +191,6 @@ void LoadGameData()
 	LoadMemPatch(pGameConfig, "CLagCompensationManager::RestoreEntityFromRecords::SetPoseParameter", true, false);
 	LoadMemPatch(pGameConfig, "CLagCompensationManager::BacktrackEntity::SetPoseParameter", true, false);
 	#endif
-
-	// Init SDKCalls for classdef
-	InitClassdef(pGameConfig);
 	
 	pGameConfig.Close();
 }

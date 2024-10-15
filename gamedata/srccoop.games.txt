@@ -26,6 +26,11 @@
 				"windows"	"IEngineSoundServer003"
 				"linux"		"IEngineSoundServer003"
 			}
+			"IServerTools"
+			{
+				"windows"	"VSERVERTOOLS003"
+				"linux"		"VSERVERTOOLS003"
+			}
 			"PlayerInfoManager"
 			{
 				"windows"	"PlayerInfoManager002"
@@ -59,6 +64,11 @@
 			{
 				"windows"	"44"
 				"linux"		"44"
+			}
+			"CServerTools::GetTempEntsSystem"
+			{
+				"windows"	"32"
+				"linux"		"33"
 			}
 		}
 		"Signatures"
@@ -555,6 +565,39 @@
 					}
 				}
 			}
+			"CTempEntsSystem::DispatchEffect"
+			{
+				"offset"	"CTempEntsSystem::DispatchEffect"
+				"hooktype"	"raw"
+				"return"	"void"
+				"this"		"ignore"
+				"arguments"
+				{
+					"filter"
+					{
+						"type"	"objectptr"
+						"flags"	"byref"
+					}
+					"delay"
+					{
+						"type"	"float"
+					}
+					"pos"
+					{
+						"type"	"vectorptr"
+						"flags"	"byref"
+					}
+					"pName"
+					{
+						"type"	"charptr"
+					}
+					"data"
+					{
+						"type"	"objectptr"
+						"flags"	"byref"
+					}
+				}
+			}
 
 			//   _____  ______ _______ ____  _    _ _____  
 			//  |  __ \|  ____|__   __/ __ \| |  | |  __ \ 
@@ -774,6 +817,13 @@
 				"return"	"void"
 				"this"		"entity"
 			}
+			"CRecipientFilter::IgnorePredictionCull"
+			{
+				"signature"	"CRecipientFilter::IgnorePredictionCull"
+				"callconv"	"thiscall"
+				"return"	"bool"
+				"this"		"ignore"
+			}
 		}
 	}
 	
@@ -941,6 +991,11 @@
 			{
 				"windows"	"\x53\x56\x57\x8B\xF9\x8B\x0D\x2A\x2A\x2A\x2A\x8B\x01\x8B\x80\x88\x00\x00\x00"
 				"linux"		"@_ZN16CBlackMesaPlayer16GiveDefaultItemsEv"
+			}
+			"CRecipientFilter::IgnorePredictionCull"
+			{
+				"windows"	"\x8A\x41\x1D"
+				"linux"		"@_ZNK16CRecipientFilter20IgnorePredictionCullEv"
 			}
 		}
 
@@ -1259,6 +1314,11 @@
 			{
 				"windows"	"1"
 				"linux"		"1"
+			}
+			"CTempEntsSystem::DispatchEffect" // CTempEntsSystem::DispatchEffect(IRecipientFilter&, float, Vector const&, char const*, CEffectData const&)
+			{
+				"windows"	"39"
+				"linux"		"40"
 			}
 		}
 	}
@@ -1593,6 +1653,11 @@
 			{
 				"windows"	"1"
 				"linux"		"1"
+			}
+			"CTempEntsSystem::DispatchEffect" // CTempEntsSystem::DispatchEffect(IRecipientFilter&, float, Vector const&, char const*, CEffectData const&)
+			{
+				"windows"	"38"
+				"linux"		"39"
 			}
 		}
 	}

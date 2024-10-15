@@ -181,7 +181,7 @@ public MRESReturn Hook_FindNamedEntity(int _this, Handle hReturn, Handle hParams
 			if (pActor.IsValid())
 			{
 				CBasePlayer pBestPlayer = GetNearestPlayer(pActor);
-				if (pBestPlayer.IsValid())
+				if (pBestPlayer != NULL_CBASEENTITY)
 				{
 					DHookSetReturn(hReturn, pBestPlayer.GetEntIndex());
 					return MRES_Supercede;
@@ -1353,5 +1353,31 @@ public MRESReturn Hook_TrackTrainBlocked(int _this, Handle hReturn, Handle hPara
 		}
 	}
 	
+	return MRES_Ignored;
+}
+
+//------------------------------------------------------
+// Unblocks sending missing TE's (impact effects)
+// by disabling serverside prediction recipient culling
+//------------------------------------------------------
+bool g_bIgnorePredictionCull = true;
+
+public MRESReturn Hook_IgnorePredictionCull(DHookReturn hReturn)
+{
+	hReturn.Value = g_bIgnorePredictionCull;
+	g_bIgnorePredictionCull = true; // reset for next call
+	return MRES_Supercede;
+}
+
+public MRESReturn Hook_DispatchEffect(DHookParam hParams)
+{
+	// World impacts are correctly predicted by client.
+	// Filter them out out of the server dispatched ones.
+	char szName[16];
+	hParams.GetString(4, szName, sizeof(szName));
+	if (StrEqual(szName, "Impact"))
+	{
+		g_bIgnorePredictionCull = false;
+	}
 	return MRES_Ignored;
 }
