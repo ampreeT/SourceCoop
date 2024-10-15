@@ -147,6 +147,11 @@ DynamicDetour hkBaseNpcUpdateSleepState;
 DynamicDetour hkPhysics_RunThinkFunctions;
 #endif
 
+#if defined GAMEPATCH_PREDICTED_EFFECTS
+DynamicDetour hkIgnorePredictionCull;
+DynamicHook hkDispatchEffect;
+#endif
+
 #if defined SRCCOOP_HL2DM && defined PLAYERPATCH_SERVERSIDE_RAGDOLLS
 DynamicHook hkCreateRagdollEntity;
 #endif
@@ -160,6 +165,7 @@ DynamicDetour hkTestGroundMove;
 // Adresses, Interfaces
 // ----------------------------
 IServerGameDLL g_ServerGameDLL;
+IServerTools g_ServerTools;
 
 // ----------------------------
 // Plugin variables
