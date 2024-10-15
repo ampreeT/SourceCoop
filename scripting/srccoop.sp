@@ -61,6 +61,7 @@ void LoadGameData()
 	LoadDHookVirtual(pGameConfig, hkUpdateOnRemove, "CBaseEntity::UpdateOnRemove");
 	LoadDHookVirtual(pGameConfig, hkEvent_Killed, "CBaseEntity::Event_Killed");
 	LoadDHookVirtual(pGameConfig, hkKeyValue_char, "CBaseEntity::KeyValue_char");
+	LoadDHookDetour(pGameConfig, hkGiveDefaultItems, "*Player::GiveDefaultItems", Hook_GiveDefaultItems);
 
 	#if defined ENTPATCH_RELATION_TYPE
 	LoadDHookVirtual(pGameConfig, hkIRelationType, "CBaseCombatCharacter::IRelationType");
@@ -380,19 +381,6 @@ public void OnConfigsExecutedPost()
 	g_pLevelLump.ApplyLateConvars();
 
 	#if defined SRCCOOP_BLACKMESA
-
-	if (CoopManager.IsFeatureEnabled(FT_STRIP_DEFAULT_EQUIPMENT))
-	{
-		CBaseEntity pGameEquip = CBaseEntity.Create("game_player_equip"); // will spawn players with nothing if it exists
-		if (pGameEquip.IsValid())
-		{
-			if (!CoopManager.IsFeatureEnabled(FT_STRIP_DEFAULT_EQUIPMENT_KEEPSUIT))
-			{
-				pGameEquip.SetSpawnFlags(SF_PLAYER_EQUIP_STRIP_SUIT);
-			}
-			pGameEquip.Spawn();
-		}
-	}
 
 	if (CoopManager.IsFeatureEnabled(FT_DISABLE_CANISTER_DROPS))
 	{

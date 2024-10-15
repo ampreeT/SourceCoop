@@ -810,6 +810,13 @@
 					}
 				}
 			}
+			"*Player::GiveDefaultItems"
+			{
+				"signature"	"*Player::GiveDefaultItems"
+				"callconv"	"thiscall"
+				"return"	"void"
+				"this"		"entity"
+			}
 			"CRecipientFilter::IgnorePredictionCull"
 			{
 				"signature"	"CRecipientFilter::IgnorePredictionCull"
@@ -979,6 +986,11 @@
 			{
 				"windows"	"\x55\x8B\xEC\x83\xEC\x50\xA1\x2A\x2A\x2A\x2A\x33\xC5\x89\x45\x2A\x53\x8B\x5D\x2A\xB8\xFF\xFF\x00\x00"
 				"linux"		"@_ZN14AI_CriteriaSet14AppendCriteriaEPKcS1_f"
+			}
+			"*Player::GiveDefaultItems"
+			{
+				"windows"	"\x53\x56\x57\x8B\xF9\x8B\x0D\x2A\x2A\x2A\x2A\x8B\x01\x8B\x80\x88\x00\x00\x00"
+				"linux"		"@_ZN16CBlackMesaPlayer16GiveDefaultItemsEv"
 			}
 			"CRecipientFilter::IgnorePredictionCull"
 			{
@@ -1429,6 +1441,11 @@
 			{
 				"windows"	"\x55\x8B\xEC\x83\xEC\x48\x53\x56\x8B\x75\x08\xBB\xFF\xFF\x00\x00\x57\x8B\xF9\x66\x89\x5D"
 				"linux"		"@_ZN14AI_CriteriaSet14AppendCriteriaEPKcS1_f"
+			}
+			"*Player::GiveDefaultItems"
+			{
+				"windows"	"\x56\x57\x8B\xF9\x6A\x01\x8B\x07"
+				"linux"		"@_ZN13CHL2MP_Player16GiveDefaultItemsEv"
 			}
 		}
 

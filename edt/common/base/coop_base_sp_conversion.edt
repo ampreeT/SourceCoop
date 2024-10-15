@@ -5,19 +5,21 @@
 "config"
 {
 	"intro_type" "freeze"
+	
 	"features"
 	{
 		"INSTANCE_ITEMS" "1"
-		"STRIP_DEFAULT_EQUIPMENT" "1"
 		"DISABLE_CANISTER_DROPS" "1"
 		"SP_WEAPONS" "1"
 	}
+
 	"console"
 	{
 		"mp_falldamage" "1"
 		"bm_multiplayer_fall_protection" "1"
 		"sv_mp_spawneffect_item" "0"
 	}
+
 	"define"
 	{
 		"outputs_fixup_player_in_target" "1"
@@ -33,6 +35,12 @@
 		"never_close_areaportals" "1"
 		"fix_reload_triggers" "1"
 	}
+
+	"equipment"
+	{
+		"defaults" "0"
+	}
+
 	"entity_base_sp_conversion"
 	{
 		// remove globalnames - prevents entities not spawning due to the map transition system not being in place
