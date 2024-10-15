@@ -234,7 +234,8 @@ void MarionettistManipulate(int iMarionettist, int iClient, CBasePlayer pPlayer)
 	
 	// start it
 	pPuppet.AcceptInputStr("Manipulate", "!activator", pPlayer);
-	DHookEntity(hkThink, true, pPuppet.GetEntIndex(), _, Hook_MarionettistPuppetThinkPost);
+	hkThink.HookEntity(Hook_Post, pPuppet.GetEntIndex(), Hook_MarionettistPuppetThinkPost);
+	hkUpdateOnRemove.HookEntity(Hook_Post, pPuppet.GetEntIndex(), Hook_MarionettistPuppetRemoved);
 	g_pActiveMarionettist[iClient] = pPuppet;
 }
 
@@ -293,11 +294,12 @@ public MRESReturn Hook_MarionettistPuppetThinkPost(int _this)
 }
 
 // Catches all sources of removal, potentially resets player noclip.
-void OnEntityDestroyed_Marionettist(CBaseEntity pEntity)
+MRESReturn Hook_MarionettistPuppetRemoved(int iEntIndex)
 {
+	CBaseEntity pPuppet = CBaseEntity(iEntIndex);
 	for (int i = 1; i <= MaxClients; i++)
 	{
-		if (g_pActiveMarionettist[i] == pEntity)
+		if (g_pActiveMarionettist[i] == pPuppet)
 		{
 			if (GetEntProp(g_pActiveMarionettist[i].GetEntIndex(), Prop_Data, "m_bIgnoreCollisions"))
 			{
@@ -311,6 +313,7 @@ void OnEntityDestroyed_Marionettist(CBaseEntity pEntity)
 			break;
 		}
 	}
+	return MRES_Ignored;
 }
 
 //------------------------------------------------------

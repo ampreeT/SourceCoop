@@ -905,24 +905,6 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 	}
 }
 
-public void OnEntityDestroyed(int iEntIndex)
-{
-	CBaseEntity pEntity = CBaseEntity(iEntIndex);
-	if (pEntity.IsValid())
-	{
-		static char szClassname[MAX_CLASSNAME];
-		pEntity.GetClassname(szClassname, sizeof(szClassname));
-
-		#if defined ENTPATCH_BM_MISC_MARIONETTIST
-		if (strcmp(szClassname, "misc_marionettist") == 0)
-		{
-			OnEntityDestroyed_Marionettist(pEntity);
-			return;
-		}
-		#endif
-	}
-}
-
 public void Hook_EntitySpawnPost(int iEntIndex)
 {
 	if (CoopManager.IsCoopModeEnabled())
