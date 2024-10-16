@@ -66,8 +66,8 @@ DynamicHook hkRestoreWorld;
 DynamicHook hkRespawnPlayers;
 #endif
 
-#if defined ENTPATCH_RELATION_TYPE
-DynamicHook hkIRelationType;
+#if defined ENTPATCH_NPC_RUNTASK
+DynamicHook hkBaseNpcRunTask;
 #endif
 
 #if defined ENTPATCH_PLAYER_ALLY
@@ -180,11 +180,14 @@ FeatureMap g_pFeatureMap;
 
 ArrayList g_pPostponedSpawns;
 
-// represents the return value of the IsMultiplayer hook
+// Represents the return value of the IsMultiplayer hook.
 bool g_bIsMultiplayerOverride = true;
 
+// Overrides `gpGlobals->maxclients`. The value is defaulted to `-1` to represent no override.
+int g_iMaxClientsOverride = -1;
+
 // the entity which UTIL_GetLocalPlayer hook will return the closest player to, alternatively containing the player index itself
-CBaseEntity g_pLocalPlayerEntity = view_as<CBaseEntity>(-1);
+CBaseEntity g_pLocalPlayerEntity = NULL_CBASEENTITY;
 
 // ----------------------------
 // Plugin API

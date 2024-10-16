@@ -11,17 +11,6 @@
 static bool g_pPlayerIronsightClassic[MAXPLAYERS + 1];
 
 //------------------------------------------------------
-// CNPC_Human_Scientist - npc_human_scientist*
-// works around a crash on scientists getting scared
-// (AI_GetSinglePlayer() in CAI_FearBehavior::FindFearWithdrawalDest)
-//------------------------------------------------------
-public MRESReturn Hook_ScientistIRelationType(int _this, Handle hReturn, Handle hParams)
-{
-	DHookSetReturn(hReturn, D_LI);
-	return MRES_Supercede;
-}
-
-//------------------------------------------------------
 // CNPC_PlayerCompanion - npc_human_scientist*, npc_human_security
 // scientists should classify as allies (in MP, base function returns false when player is not passed in)
 // this allows npcs to pass filter in "player ally only" triggers

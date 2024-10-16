@@ -1894,6 +1894,10 @@ methodmap CAI_BaseNPC < CBaseCombatCharacter
 		int iConditionList = LoadFromAddress(pOffset, NumberType_Int8);	
 		return view_as<bool>(iConditionList & (1 << iBitIndex));
 	}
+	public int GetTaskInterrupt()
+	{
+		return GetEntProp(this.GetEntIndex(), Prop_Data, "iTaskInterrupt");
+	}
 	public bool IsMoving()
 	{
 		// CAI_BaseNPC::IsMoving( void ) ==> GetNavigator()->IsGoalSet() ==> GetPath()->GoalType() != GOALTYPE_NONE
@@ -2317,6 +2321,9 @@ methodmap CBasePlayer < CBaseCombatCharacter
 	{
 		int iFOV = GetEntProp(this.GetEntIndex(), Prop_Data, "m_iFOV");
 		iFOV = iFOV == 0 ? this.GetDefaultFOV() : iFOV;
+
+		// TODO:
+		// Implement vehichle FOV logic https://github.com/ValveSoftware/source-sdk-2013/blob/0d8dceea4310fde5706b3ce1c70609d72a38efdf/sp/src/game/server/player.cpp#L8395
 
 		float flFOVRate = GetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flFOVRate");
 		if (flFOVRate == 0.0)
@@ -3238,5 +3245,30 @@ methodmap AI_CriteriaSet
 	public void AppendCriteria(const char[] szCriteria, const char[] szValue, const float flWeight = 1.0)
 	{
 		SDKCall(g_pAppendCriteria, this.GetAddress(), szCriteria, szValue, flWeight);
+	}
+}
+
+methodmap Task_t
+{
+	public Task_t(const Address pAddress)
+	{
+		return view_as<Task_t>(pAddress);
+	}
+
+	public sharedtasks_e GetTask()
+	{
+		return view_as<sharedtasks_e>(LoadFromAddress(view_as<Address>(this) + 0x0, NumberType_Int32));
+	}
+	public void SetTask(const sharedtasks_e iTask)
+	{
+		StoreToAddress(view_as<Address>(this) + 0x0, iTask, NumberType_Int32);
+	}
+	public float GetTaskData()
+	{
+		return LoadFromAddress(view_as<Address>(this) + 0x4, NumberType_Int32); 
+	}
+	public void SetTaskData(const float flTaskData)
+	{
+		StoreToAddress(view_as<Address>(this) + 0x4, flTaskData, NumberType_Int32); 
 	}
 }
