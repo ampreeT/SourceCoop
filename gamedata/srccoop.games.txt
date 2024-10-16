@@ -824,6 +824,41 @@
 				"return"	"bool"
 				"this"		"ignore"
 			}
+			"CBaseAnimating::Dissolve"
+			{
+				"signature"	"CBaseAnimating::Dissolve"
+				"callconv"	"thiscall"
+				"return"	"bool"
+				"this"		"entity"
+				"arguments"
+				{
+					"pMaterialName"
+					{
+						"type"	"charptr"
+					}
+					"flStartTime"
+					{
+						"type"	"float"
+					}
+					"bNPCOnly"
+					{
+						"type"	"bool"
+					}
+					"nDissolveType"
+					{
+						"type"	"int"
+					}
+					"vDissolverOrigin"
+					{
+						"type"	"object"
+						"size"	"12"
+					}
+					"iMagnitude"
+					{
+						"type"	"int"
+					}
+				}
+			}
 		}
 	}
 	
@@ -996,6 +1031,11 @@
 			{
 				"windows"	"\x8A\x41\x1D"
 				"linux"		"@_ZNK16CRecipientFilter20IgnorePredictionCullEv"
+			}
+			"CBaseAnimating::Dissolve" // CBaseAnimating::Dissolve(char const*,float,bool,int,Vector,int)
+			{
+				"windows"	"\x55\x8B\xEC\x80\x7D\x10\x00\x56\x57" // str: "ragdoll_dissolved"
+				"linux"		"@_ZN14CBaseAnimating8DissolveEPKcfbi6Vectori"
 			}
 		}
 

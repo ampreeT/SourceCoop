@@ -46,8 +46,6 @@ void LoadGameData()
 		SetFailState("Could not prep SDK call %s", szCreateServerRagdoll);
 	#endif
 
-	// Virtual Hooks
-
 	LoadDHookVirtual(pGameConfig, hkLevelInit, "CServerGameDLL::LevelInit");
 	if (hkLevelInit.HookRaw(Hook_Pre, view_as<Address>(g_ServerGameDLL), Hook_OnLevelInit) == INVALID_HOOK_ID)
 		SetFailState("Could not hook CServerGameDLL::LevelInit");
@@ -131,8 +129,6 @@ void LoadGameData()
 	LoadDHookDetour(pGameConfig, hkToggleIronsights, "CBlackMesaBaseWeaponIronSights::ToggleIronSights", Hook_ToggleIronsights);
 	LoadDHookDetour(pGameConfig, hkTauFireBeam, "CWeapon_Tau::FireBeam", Hook_TauFireBeam, Hook_TauFireBeamPost);
 	#endif
-
-	// Detour Hooks
 	
 	#if defined PLAYERPATCH_SUIT_SOUNDS
 	LoadDHookDetour(pGameConfig, hkSetSuitUpdate, "CBasePlayer::SetSuitUpdate", Hook_SetSuitUpdate, Hook_SetSuitUpdatePost);
@@ -164,6 +160,10 @@ void LoadGameData()
 
 	#if defined ENTPATCH_NPC_THINK_LOCALPLAYER
 	LoadDHookDetour(pGameConfig, hkPhysics_RunThinkFunctions, "Physics_RunThinkFunctions", Hook_Physics_RunThinkFunctions);
+	#endif
+
+	#if defined ENTPATCH_BM_DISSOLVE
+	LoadDHookDetour(pGameConfig, hkDissolve, "CBaseAnimating::Dissolve", Hook_Dissolve);
 	#endif
 
 	#if defined GAMEPATCH_PREDICTED_EFFECTS
