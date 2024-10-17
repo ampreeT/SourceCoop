@@ -61,10 +61,6 @@ void LoadGameData()
 	LoadDHookVirtual(pGameConfig, hkKeyValue_char, "CBaseEntity::KeyValue_char");
 	LoadDHookDetour(pGameConfig, hkGiveDefaultItems, "*Player::GiveDefaultItems", Hook_GiveDefaultItems);
 
-	#if defined ENTPATCH_RELATION_TYPE
-	LoadDHookVirtual(pGameConfig, hkIRelationType, "CBaseCombatCharacter::IRelationType");
-	#endif
-
 	#if defined ENTPATCH_PLAYER_ALLY
 	LoadDHookVirtual(pGameConfig, hkIsPlayerAlly, "CAI_BaseNPC::IsPlayerAlly");
 	#endif
@@ -106,7 +102,11 @@ void LoadGameData()
 	#if defined ENTPATCH_FUNC_TRACKAUTOCHANGE || defined ENTPATCH_FUNC_TRACKTRAIN
 	LoadDHookVirtual(pGameConfig, hkBlocked, "CBaseEntity::Blocked");
 	#endif
-
+	
+	#if defined ENTPATCH_NPC_RUNTASK
+	LoadDHookVirtual(pGameConfig, hkBaseNpcRunTask, "CAI_BaseNPC::RunTask");
+	#endif
+	
 	#if defined SRCCOOP_HL2DM && defined PLAYERPATCH_SERVERSIDE_RAGDOLLS
 	LoadDHookVirtual(pGameConfig, hkCreateRagdollEntity, "CBasePlayer::CreateRagdollEntity");
 	#endif
@@ -547,13 +547,18 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 	SDKHook(iEntIndex, SDKHook_Spawn, Hook_FixupBrushModels);
 	SDKHook(iEntIndex, SDKHook_SpawnPost, Hook_EntitySpawnPost);
 	
-	bool isNPC = pEntity.IsClassNPC();
+	bool bIsNPC = pEntity.IsClassNPC();
 
-	if (isNPC)
+	if (bIsNPC)
 	{
 		#if defined ENTPATCH_NPC_THINK_LOCALPLAYER
 		DHookEntity(hkThink, false, iEntIndex, _, Hook_BaseNPCThink);
 		DHookEntity(hkThink, true, iEntIndex, _, Hook_BaseNPCThinkPost);
+		#endif
+		
+		#if defined ENTPATCH_NPC_RUNTASK
+		DHookEntity(hkBaseNpcRunTask, false, iEntIndex, _, Hook_BaseNPCRunTask);
+		DHookEntity(hkBaseNpcRunTask, true, iEntIndex, _, Hook_BaseNPCRunTaskPost);
 		#endif
 		
 		#if defined ENTPATCH_CUSTOM_NPC_MODELS
@@ -576,10 +581,6 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 
 		if (strncmp(szClassname, "npc_human_scientist", 19) == 0)
 		{
-			#if defined ENTPATCH_RELATION_TYPE
-			DHookEntity(hkIRelationType, true, iEntIndex, _, Hook_ScientistIRelationType);
-			#endif
-			
 			#if defined ENTPATCH_PLAYER_ALLY
 			DHookEntity(hkIsPlayerAlly, true, iEntIndex, _, Hook_IsPlayerAlly);
 			#endif

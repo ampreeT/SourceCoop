@@ -131,17 +131,17 @@
 				"return"	"int"
 				"this"		"ignore"
 			}
-			"CBaseCombatCharacter::IRelationType"
+			"CAI_BaseNPC::RunTask"
 			{
-				"offset"	"CBaseCombatCharacter::IRelationType"
+				"offset"	"CAI_BaseNPC::RunTask"
 				"hooktype"	"entity"
-				"return"	"int"
+				"return"	"void"
 				"this"		"entity"
 				"arguments"
 				{
-					"pTarget"
+					"pTask"
 					{
-						"type"	"cbaseentity"
+						"type"	"int"
 					}
 				}
 			}
@@ -1155,10 +1155,10 @@
 				"windows"	"167"
 				"linux"		"168"
 			}
-			"CBaseCombatCharacter::IRelationType"	// CBaseCombatCharacter::IRelationType(CBaseEntity*)
+			"CAI_BaseNPC::RunTask"	// CAI_BaseNPC::RunTask(Task_t const*)
 			{
-				"windows"	"318"
-				"linux"		"319"
+				"windows"	"370"	// vtable dumper will get this wrong!! XREF: "No RunTask entry for %s\n"
+				"linux"		"369"
 			}
 			"CAI_BaseNPC::IsPlayerAlly" // CAI_BaseNPC::IsPlayerAlly(CBasePlayer*)
 			{
@@ -1589,6 +1589,11 @@
 			{
 				"windows"	"34"
 				"linux"		"35"
+			}
+			"CAI_BaseNPC::RunTask"	// CAI_BaseNPC::RunTask(Task_t const*)
+			{
+				"windows"	"346"	// vtable dumper will get this wrong!! XREF: "No RunTask entry for %s\n"
+				"linux"		"345"
 			}
 			"CSceneEntity::FindNamedEntity" // CSceneEntity::FindNamedEntity(char const*, CBaseEntity*, bool, bool)
 			{

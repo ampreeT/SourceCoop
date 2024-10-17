@@ -21,18 +21,54 @@ void SetLocalPlayerEntity(int iEntIndex)
  */
 void SetLocalPlayerEntityEx(CBaseEntity pEntity)
 {
-	#if defined DEBUG
 	if (g_pLocalPlayerEntity != NULL_CBASEENTITY)
 	{
-		LogDebug("WARN: SetLocalPlayerEntity, but one has already been set (%d).", g_pLocalPlayerEntity.entindex);
+		ThrowError("WARN: SetLocalPlayerEntity, but one has already been set (%d).", g_pLocalPlayerEntity.entindex);
 	}
-	#endif
+
 	g_pLocalPlayerEntity = pEntity;
 }
 
 void ClearLocalPlayerEntity()
 {
+	if (g_pLocalPlayerEntity == NULL_CBASEENTITY)
+	{
+		ThrowError("WARN: ClearLocalPlayerEntity, but none was set.");
+	}
+
 	g_pLocalPlayerEntity = NULL_CBASEENTITY;
+}
+
+void SetMaxClientsOverride()
+{
+	if (g_iMaxClientsOverride != -1)
+	{
+		ThrowError("WARN: SetMaxClientsOverride, but one has already been set (%i).", g_iMaxClientsOverride);
+	}
+	
+	g_iMaxClientsOverride = gpGlobals.GetMaxPlayers();
+	gpGlobals.SetMaxPlayers(1);
+}
+
+void ClearMaxClientsOverride()
+{
+	if (g_iMaxClientsOverride == -1)
+	{
+		ThrowError("WARN: ClearMaxClientsOverride, but none was set.");
+	}
+
+	gpGlobals.SetMaxPlayers(g_iMaxClientsOverride);
+	g_iMaxClientsOverride = -1;
+}
+
+bool IsOverridingMaxClients()
+{
+	return g_iMaxClientsOverride != -1;
+}
+
+bool IsOverridingLocalPlayerEntity()
+{
+	return g_pLocalPlayerEntity != NULL_CBASEENTITY;
 }
 
 //------------------------------------------------------
@@ -1107,12 +1143,50 @@ public bool HasAnyPlayerWalkedIntoWakeRadius(CAI_BaseNPC pBaseNPC)
 	return false;
 }
 
+// Fixes local player task issues.
+// `CAI_BaseNPC::RunTask` calls into `UTIL_GetLocalPlayer` and `AI_GetSinglePlayer` which is null in multiplayer.
+//
+// ## Citations
+//
+// - [Source SDK 2013](https://github.com/ValveSoftware/source-sdk-2013/blob/0d8dceea4310fde5706b3ce1c70609d72a38efdf/mp/src/game/server/ai_basenpc_schedule.cpp#L3191)
+//
+public MRESReturn Hook_BaseNPCRunTask(int _this, Handle hParams)
+{
+	CAI_BaseNPC pEntity = CAI_BaseNPC(_this);
+	Task_t pTask = DHookGetParam(hParams, 1);
+	sharedtasks_e eTask = pTask.GetTask();
+	int iTaskInterrupt = pEntity.GetTaskInterrupt();
+	
+	if ((eTask == TASK_MOVE_AWAY_PATH && iTaskInterrupt == 0) ||
+		(eTask == TASK_FACE_PLAYER) ||
+		(eTask == view_as<sharedtasks_e>(100000)))	// TASK_FEAR_GET_PATH_TO_SAFETY_HINT
+	{
+		if (!IsOverridingLocalPlayerEntity())
+		{
+			// This should never happen as `CAI_BaseNPC::RunTask` is called from the hooked function `CAI_BaseNPC::Think`.
+			ThrowError("`CAI_BaseNPC::RunTask` called without overriding local player.");
+		}
+		SetMaxClientsOverride();
+	}
+	return MRES_Ignored;
+}
+
+public MRESReturn Hook_BaseNPCRunTaskPost(int _this, Handle hParams)
+{
+	if (IsOverridingMaxClients())
+	{
+		ClearMaxClientsOverride();
+	}
+	return MRES_Ignored;
+}
+
 // `SelectSchedule` crashes because a null local player pointer was accessed.
 // The entire function is reconstructed to remove the check.
 // 
 // Class: `CProtoSniper` - npc_sniper
 //
 // ## Citations
+//
 // - [Source SDK 2013](https://github.com/ValveSoftware/source-sdk-2013/blob/0d8dceea4310fde5706b3ce1c70609d72a38efdf/mp/src/game/server/hl2/proto_sniper.cpp#L1385)
 //
 public MRESReturn Hook_ProtoSniperSelectSchedule(int _this, Handle hReturn)
