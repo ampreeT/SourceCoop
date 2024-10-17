@@ -998,3 +998,22 @@ public MRESReturn Hook_TauFireBeamPost(int _this, Handle hReturn)
 	}
 	return MRES_Ignored;
 }
+
+//------------------------------------------------------
+// CBaseAnimating::Dissolve
+// Prevents removal of players by dissolve types
+// 3, 4 -- 'Fade', 'Remove now'
+//------------------------------------------------------
+public MRESReturn Hook_Dissolve(int _this, DHookReturn hReturn, DHookParam hParams)
+{
+	int nDissolveType = hParams.Get(4);
+	if (nDissolveType == ENTITY_DISSOLVE_FADE || nDissolveType == ENTITY_DISSOLVE_REMOVE_NOW)
+	{
+		if (CBaseEntity(_this).IsClassPlayer())
+		{
+			hParams.Set(4, ENTITY_DISSOLVE_NORMAL);
+			return MRES_ChangedHandled;
+		}
+	}
+	return MRES_Ignored;
+}

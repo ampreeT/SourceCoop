@@ -148,6 +148,10 @@ DynamicDetour hkBaseNpcUpdateSleepState;
 DynamicDetour hkPhysics_RunThinkFunctions;
 #endif
 
+#if defined ENTPATCH_BM_DISSOLVE
+DynamicDetour hkDissolve;
+#endif
+
 #if defined GAMEPATCH_PREDICTED_EFFECTS
 DynamicDetour hkIgnorePredictionCull;
 DynamicHook hkDispatchEffect;
