@@ -23,6 +23,7 @@ Handle g_pGlobalEntitySetState;
 Handle g_pGlobalEntitySetCounter;
 Handle g_pGlobalEntityAdd;
 Handle g_pGameShutdown;
+Handle g_pGetTempEntsSystem;
 Handle g_pSetCollisionBounds;
 Handle g_pQueryHearSound;
 Handle g_pGetSoundInterests;
@@ -38,10 +39,13 @@ Handle g_pSendWeaponAnim;
 Handle g_pWeaponSwitch;
 Handle g_pWorldSpaceCenter;
 Handle g_pGetPlayerState;
+#if defined SRCCOOP_BLACKMESA
 Handle g_pSelectWeightedSequence;
+#endif
 Handle g_pSendViewModelMatchingSequence;
 Handle g_pGetGlobalVars;
 Handle g_pAppendCriteria;
+Handle g_pSetSuitUpdate;
 
 int g_iCSoundSize = -1;
 int g_iCPlayerState_frags = -1;
@@ -114,6 +118,18 @@ stock void InitClassdef(GameData pGameConfig)
 	{
 		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
 		if (!(g_pCreateViewModel = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szCreateViewModel);
+	}
+
+	char szSetSuitUpdate[] = "CBasePlayer::SetSuitUpdate";
+	StartPrepSDKCall(SDKCall_Player);
+	if (!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Signature, szSetSuitUpdate))
+		LogMessage("Could not obtain gamedata offset %s", szSetSuitUpdate);
+	else
+	{
+		PrepSDKCall_AddParameter(SDKType_String, SDKPass_Pointer, VDECODE_FLAG_ALLOWNULL);
+		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
+		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
+		if (!(g_pSetSuitUpdate = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szSetSuitUpdate);
 	}
 	
 	char szGlobalEntity_GetIndex[] = "GlobalEntity_GetIndex";
@@ -215,6 +231,16 @@ stock void InitClassdef(GameData pGameConfig)
 	else
 	{
 		if (!(g_pGameShutdown = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szGameShutdown);
+	}
+
+	char szGetTempEntsSystem[] = "CServerTools::GetTempEntsSystem";
+	StartPrepSDKCall(SDKCall_Raw);
+	if (!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Virtual, szGetTempEntsSystem))
+		LogMessage("Could not obtain gamedata offset %s", szGetTempEntsSystem);
+	else
+	{
+		PrepSDKCall_SetReturnInfo(SDKType_PlainOldData, SDKPass_Plain);
+		if (!(g_pGetTempEntsSystem = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szGetTempEntsSystem);
 	}
 
 	char szQueryHearSound[] = "CAI_BaseNPC::QueryHearSound";
@@ -326,6 +352,8 @@ stock void InitClassdef(GameData pGameConfig)
 		if (!(g_pGetPlayerState = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szGetPlayerState);
 	}
 
+	#if defined SRCCOOP_BLACKMESA
+	// only virtual in BM
 	char szSelectWeightedSequence[] = "CBaseAnimating::SelectWeightedSequence";
 	StartPrepSDKCall(SDKCall_Entity);
 	if (!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Virtual, szSelectWeightedSequence))
@@ -336,6 +364,7 @@ stock void InitClassdef(GameData pGameConfig)
 		PrepSDKCall_SetReturnInfo(SDKType_PlainOldData, SDKPass_Plain);
 		if (!(g_pSelectWeightedSequence = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szSelectWeightedSequence);
 	}
+	#endif
 
 	char szSendViewModelMatchingSequence[] = "CBaseViewModel::SendViewModelMatchingSequence";
 	StartPrepSDKCall(SDKCall_Entity);
@@ -1098,15 +1127,15 @@ methodmap CBaseAnimating < CBaseEntity
 	{
 		SetEntProp(this.GetEntIndex(), Prop_Send, "m_nForceBone", iForceBone);
 	}
+	#if defined SRCCOOP_BLACKMESA
 	public int SelectWeightedSequence(const int iActivity)
 	{
 		// TODO:
 		// This is currently only implemented in Black Mesa but it may be required for others.
 		// Reimplement the logic from scratch.
-		if (!g_pSelectWeightedSequence)
-			ThrowError("`CBaseAnimating::SelectWeightedSequence` is not implemented as a virtual function in this game.");
 		return SDKCall(g_pSelectWeightedSequence, this.GetEntIndex(), iActivity);
 	}
+	#endif
 	public float GetPoseParameter(const int iIndex)
 	{
 		return GetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flPoseParameter", iIndex);
@@ -2009,6 +2038,22 @@ methodmap CBasePlayer < CBaseCombatCharacter
 	public void SetSuit(const bool bShouldHaveSuit)
 	{
 		SetEntProp(this.GetEntIndex(), Prop_Send, "m_bWearingSuit", bShouldHaveSuit);
+	}
+	public void SetSuitUpdate(const char[] szName, int fgroup, int iNoRepeat)
+	{
+		SDKCall(g_pSetSuitUpdate, this.entindex, szName, fgroup, iNoRepeat);
+	}
+	public void ClearSuitQueue()
+	{
+		for (int i = 0; i < 4; i++)
+		{
+			SetEntProp(this.entindex, Prop_Data, "m_rgSuitPlayList", 0, 4, i);
+		}
+		for (int i = 0; i < 32; i++)
+		{
+			SetEntProp(this.entindex, Prop_Data, "m_rgiSuitNoRepeat", 0, 4, i);
+			SetEntPropFloat(this.entindex, Prop_Data, "m_rgflSuitNoRepeatTime", 0.0, i);
+		}
 	}
 	public bool IsSprinting()
 	{
@@ -2998,6 +3043,19 @@ methodmap IServerGameDLL
 	public void GameShutdown()
 	{
 		SDKCall(g_pGameShutdown, this); // GameShutdown() just resets global states
+	}
+}
+
+methodmap IServerTools
+{
+	public IServerTools(Address pAddress)
+	{
+		return view_as<IServerTools>(pAddress);
+	}
+	
+	public Address GetTempEntsSystem()
+	{
+		return SDKCall(g_pGetTempEntsSystem, this);
 	}
 }
 

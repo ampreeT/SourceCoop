@@ -2,6 +2,8 @@
 #include <sdktools>
 #include <sdkhooks>
 
+#define CONF_PREFIX "REVIVE_"
+
 #include <srccoop_api>
 
 #pragma semicolon 1;
@@ -27,23 +29,16 @@ enum struct ReviveConfig
 	char BAR_MODEL[PLATFORM_MAX_PATH];
 	char RAGDOLL_PARTICLE[128];
 
-	void Init(GameData pGameConfig)
-	{
-		#define CONF_PREFIX "REVIVE_"
-		#define STR(%1) GetGamedataString(pGameConfig, CONF_PREFIX...#%1, this.%1, sizeof(this.%1))
-		#define FLT(%1) this.%1 = GetGamedataFloat(pGameConfig, CONF_PREFIX...#%1)
-		#define INT(%1) this.%1 = GetGamedataInt(pGameConfig, CONF_PREFIX...#%1)
-		#define CLR(%1) GetGamedataColor(pGameConfig, CONF_PREFIX...#%1, this.%1)
-
-		STR(SND_START);
-		STR(SND_DENY);
-		STR(SND_RESPAWN);
-		INT(SND_RESPAWN_PITCH);
-		INT(SNDLEVEL);
-		CLR(BAR_COLOR);
-		STR(BAR_MODEL);
-		STR(RAGDOLL_PARTICLE);
-	}
+	CONF_INIT(\
+		CONF_STR(SND_START)\
+		CONF_STR(SND_DENY)\
+		CONF_STR(SND_RESPAWN)\
+		CONF_INT(SND_RESPAWN_PITCH)\
+		CONF_INT(SNDLEVEL)\
+		CONF_CLR(BAR_COLOR)\
+		CONF_STR(BAR_MODEL)\
+		CONF_STR(RAGDOLL_PARTICLE)\
+	)
 }
 
 ReviveConfig Conf;
@@ -72,7 +67,7 @@ public void OnPluginStart()
 	LoadTranslations("common.phrases");
 	
 	GameData pConfig = LoadSourceCoopConfig();
-	Conf.Init(pConfig);
+	Conf.Initialize(pConfig);
 	pConfig.Close();
 	
 	g_pConVarReviveTime = CreateConVar("sourcecoop_revive_time", "4.0", "Sets time that you have to hold E to revive.", _, true, 0.0, false);

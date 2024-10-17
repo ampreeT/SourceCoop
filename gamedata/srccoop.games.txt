@@ -26,6 +26,11 @@
 				"windows"	"IEngineSoundServer003"
 				"linux"		"IEngineSoundServer003"
 			}
+			"IServerTools"
+			{
+				"windows"	"VSERVERTOOLS003"
+				"linux"		"VSERVERTOOLS003"
+			}
 			"PlayerInfoManager"
 			{
 				"windows"	"PlayerInfoManager002"
@@ -59,6 +64,11 @@
 			{
 				"windows"	"44"
 				"linux"		"44"
+			}
+			"CServerTools::GetTempEntsSystem"
+			{
+				"windows"	"32"
+				"linux"		"33"
 			}
 		}
 		"Signatures"
@@ -555,6 +565,39 @@
 					}
 				}
 			}
+			"CTempEntsSystem::DispatchEffect"
+			{
+				"offset"	"CTempEntsSystem::DispatchEffect"
+				"hooktype"	"raw"
+				"return"	"void"
+				"this"		"ignore"
+				"arguments"
+				{
+					"filter"
+					{
+						"type"	"objectptr"
+						"flags"	"byref"
+					}
+					"delay"
+					{
+						"type"	"float"
+					}
+					"pos"
+					{
+						"type"	"vectorptr"
+						"flags"	"byref"
+					}
+					"pName"
+					{
+						"type"	"charptr"
+					}
+					"data"
+					{
+						"type"	"objectptr"
+						"flags"	"byref"
+					}
+				}
+			}
 
 			//   _____  ______ _______ ____  _    _ _____  
 			//  |  __ \|  ____|__   __/ __ \| |  | |  __ \ 
@@ -767,6 +810,55 @@
 					}
 				}
 			}
+			"*Player::GiveDefaultItems"
+			{
+				"signature"	"*Player::GiveDefaultItems"
+				"callconv"	"thiscall"
+				"return"	"void"
+				"this"		"entity"
+			}
+			"CRecipientFilter::IgnorePredictionCull"
+			{
+				"signature"	"CRecipientFilter::IgnorePredictionCull"
+				"callconv"	"thiscall"
+				"return"	"bool"
+				"this"		"ignore"
+			}
+			"CBaseAnimating::Dissolve"
+			{
+				"signature"	"CBaseAnimating::Dissolve"
+				"callconv"	"thiscall"
+				"return"	"bool"
+				"this"		"entity"
+				"arguments"
+				{
+					"pMaterialName"
+					{
+						"type"	"charptr"
+					}
+					"flStartTime"
+					{
+						"type"	"float"
+					}
+					"bNPCOnly"
+					{
+						"type"	"bool"
+					}
+					"nDissolveType"
+					{
+						"type"	"int"
+					}
+					"vDissolverOrigin"
+					{
+						"type"	"object"
+						"size"	"12"
+					}
+					"iMagnitude"
+					{
+						"type"	"int"
+					}
+				}
+			}
 		}
 	}
 	
@@ -929,6 +1021,21 @@
 			{
 				"windows"	"\x55\x8B\xEC\x83\xEC\x50\xA1\x2A\x2A\x2A\x2A\x33\xC5\x89\x45\x2A\x53\x8B\x5D\x2A\xB8\xFF\xFF\x00\x00"
 				"linux"		"@_ZN14AI_CriteriaSet14AppendCriteriaEPKcS1_f"
+			}
+			"*Player::GiveDefaultItems"
+			{
+				"windows"	"\x53\x56\x57\x8B\xF9\x8B\x0D\x2A\x2A\x2A\x2A\x8B\x01\x8B\x80\x88\x00\x00\x00"
+				"linux"		"@_ZN16CBlackMesaPlayer16GiveDefaultItemsEv"
+			}
+			"CRecipientFilter::IgnorePredictionCull"
+			{
+				"windows"	"\x8A\x41\x1D"
+				"linux"		"@_ZNK16CRecipientFilter20IgnorePredictionCullEv"
+			}
+			"CBaseAnimating::Dissolve" // CBaseAnimating::Dissolve(char const*,float,bool,int,Vector,int)
+			{
+				"windows"	"\x55\x8B\xEC\x80\x7D\x10\x00\x56\x57" // str: "ragdoll_dissolved"
+				"linux"		"@_ZN14CBaseAnimating8DissolveEPKcfbi6Vectori"
 			}
 		}
 
@@ -1248,6 +1355,11 @@
 				"windows"	"1"
 				"linux"		"1"
 			}
+			"CTempEntsSystem::DispatchEffect" // CTempEntsSystem::DispatchEffect(IRecipientFilter&, float, Vector const&, char const*, CEffectData const&)
+			{
+				"windows"	"39"
+				"linux"		"40"
+			}
 		}
 	}
 
@@ -1272,6 +1384,11 @@
 			{
 				"windows"	"\x55\x8B\xEC\x81\xC1\x4C\x01\x00\x00"
 				"linux"		"@_ZN11CBaseEntity18SetCollisionBoundsERK6VectorS2_"
+			}
+			"CBaseEntity::SetNextThink" // void SetNextThink( float nextThinkTime, const char *szContext = NULL );
+			{
+				"windows"	"\x55\x8B\xEC\xF3\x0F\x10\x45\x08\x0F\x2E\x05\x2A\x2A\x2A\x2A" // str: "Doing partial rebuild of Node Graph..."
+				"linux"		"@_ZN11CBaseEntity12SetNextThinkEfPKc"
 			}
 			"CreateServerRagdoll" // CBaseEntity CreateServerRagdoll(CBaseAnimating *, int, const CTakeDamageInfo *, int, bool)
 			{
@@ -1362,13 +1479,23 @@
 			}
 			"CAI_ExpresserHost_NPC_DoModifyOrAppendCriteria"
 			{
-				"windows"	"\x55\x8B\xEC\x83\xEC\x0C\x53\x56\x8B\x75\x08\x57\xFF\xB6\xA0\x09\x00\x00\x2A\x2A\x2A\x2A\x2A\x8B\x7D\x0C\x83\xC4"
+				"windows"	"\x55\x8B\xEC\x83\xEC\x0C\x53\x56\x8B\x75\x08\x57\xFF\xB6\x50\x09\x00\x00\x2A\x2A\x2A\x2A\x2A\x8B\x7D\x0C\x83\xC4"
 				"linux"		"@_Z46CAI_ExpresserHost_NPC_DoModifyOrAppendCriteriaP11CAI_BaseNPCR14AI_CriteriaSet"
 			}
 			"AI_CriteriaSet::AppendCriteria"
 			{
 				"windows"	"\x55\x8B\xEC\x83\xEC\x48\x53\x56\x8B\x75\x08\xBB\xFF\xFF\x00\x00\x57\x8B\xF9\x66\x89\x5D"
 				"linux"		"@_ZN14AI_CriteriaSet14AppendCriteriaEPKcS1_f"
+			}
+			"*Player::GiveDefaultItems"
+			{
+				"windows"	"\x56\x57\x8B\xF9\x6A\x01\x8B\x07"
+				"linux"		"@_ZN13CHL2MP_Player16GiveDefaultItemsEv"
+			}
+			"CRecipientFilter::IgnorePredictionCull"
+			{
+				"windows"	"\x8A\x41\x1D"
+				"linux"		"@_ZNK16CRecipientFilter20IgnorePredictionCullEv"
 			}
 		}
 
@@ -1543,10 +1670,11 @@
 				"windows"	"149"
 				"linux"		"150"
 			}
-			// This is not implemented for this game.
-			//"CBaseAnimating::SelectWeightedSequence"	// CBaseAnimating::SelectWeightedSequence(Activity)
-			//{
-			//}
+			"CBasePlayer::CreateViewModel" // CBasePlayer::CreateViewModel(int)
+			{
+				"windows"	"321"
+				"linux"		"322"
+			}
 			"CBaseCombatWeapon::Deploy"	// CBaseCombatWeapon::Deploy()
 			{
 				"windows"	"248"
@@ -1581,6 +1709,11 @@
 			{
 				"windows"	"1"
 				"linux"		"1"
+			}
+			"CTempEntsSystem::DispatchEffect" // CTempEntsSystem::DispatchEffect(IRecipientFilter&, float, Vector const&, char const*, CEffectData const&)
+			{
+				"windows"	"38"
+				"linux"		"39"
 			}
 		}
 	}

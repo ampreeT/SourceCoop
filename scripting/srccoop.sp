@@ -20,8 +20,14 @@ void LoadGameData()
 	
 	g_serverOS = view_as<OperatingSystem>(pGameConfig.GetOffset("_OS_Detector_"));
 
+	// Init SDKCalls for classdef
+	InitClassdef(pGameConfig);
+	
 	if (!(g_ServerGameDLL = IServerGameDLL(GetInterface(pGameConfig, "server", "IServerGameDLL"))))
 		SetFailState("Could not get interface for %s", "IServerGameDLL");
+
+	if (!(g_ServerTools = IServerTools(GetInterface(pGameConfig, "server", "IServerTools"))))
+		SetFailState("Could not get interface for %s", "IServerTools");
 	
 	// Calls
 
@@ -40,8 +46,6 @@ void LoadGameData()
 		SetFailState("Could not prep SDK call %s", szCreateServerRagdoll);
 	#endif
 
-	// Virtual Hooks
-
 	LoadDHookVirtual(pGameConfig, hkLevelInit, "CServerGameDLL::LevelInit");
 	if (hkLevelInit.HookRaw(Hook_Pre, view_as<Address>(g_ServerGameDLL), Hook_OnLevelInit) == INVALID_HOOK_ID)
 		SetFailState("Could not hook CServerGameDLL::LevelInit");
@@ -55,6 +59,7 @@ void LoadGameData()
 	LoadDHookVirtual(pGameConfig, hkUpdateOnRemove, "CBaseEntity::UpdateOnRemove");
 	LoadDHookVirtual(pGameConfig, hkEvent_Killed, "CBaseEntity::Event_Killed");
 	LoadDHookVirtual(pGameConfig, hkKeyValue_char, "CBaseEntity::KeyValue_char");
+	LoadDHookDetour(pGameConfig, hkGiveDefaultItems, "*Player::GiveDefaultItems", Hook_GiveDefaultItems);
 
 	#if defined ENTPATCH_PLAYER_ALLY
 	LoadDHookVirtual(pGameConfig, hkIsPlayerAlly, "CAI_BaseNPC::IsPlayerAlly");
@@ -124,10 +129,8 @@ void LoadGameData()
 	LoadDHookDetour(pGameConfig, hkToggleIronsights, "CBlackMesaBaseWeaponIronSights::ToggleIronSights", Hook_ToggleIronsights);
 	LoadDHookDetour(pGameConfig, hkTauFireBeam, "CWeapon_Tau::FireBeam", Hook_TauFireBeam, Hook_TauFireBeamPost);
 	#endif
-
-	// Detour Hooks
 	
-	#if defined PLAYERPATCH_SETSUITUPDATE
+	#if defined PLAYERPATCH_SUIT_SOUNDS
 	LoadDHookDetour(pGameConfig, hkSetSuitUpdate, "CBasePlayer::SetSuitUpdate", Hook_SetSuitUpdate, Hook_SetSuitUpdatePost);
 	#endif
 	
@@ -159,6 +162,17 @@ void LoadGameData()
 	LoadDHookDetour(pGameConfig, hkPhysics_RunThinkFunctions, "Physics_RunThinkFunctions", Hook_Physics_RunThinkFunctions);
 	#endif
 
+	#if defined ENTPATCH_BM_DISSOLVE
+	LoadDHookDetour(pGameConfig, hkDissolve, "CBaseAnimating::Dissolve", Hook_Dissolve);
+	#endif
+
+	#if defined GAMEPATCH_PREDICTED_EFFECTS
+	LoadDHookDetour(pGameConfig, hkIgnorePredictionCull, "CRecipientFilter::IgnorePredictionCull", Hook_IgnorePredictionCull);
+	LoadDHookVirtual(pGameConfig, hkDispatchEffect, "CTempEntsSystem::DispatchEffect");
+	if (hkDispatchEffect.HookRaw(Hook_Pre, g_ServerTools.GetTempEntsSystem(), Hook_DispatchEffect) == INVALID_HOOK_ID)
+		SetFailState("Could not hook CTempEntsSystem::DispatchEffect");
+	#endif
+
 	#if defined SRCCOOP_BLACKMESA
 	if (g_serverOS == OS_Linux)
 	{
@@ -177,9 +191,6 @@ void LoadGameData()
 	LoadMemPatch(pGameConfig, "CLagCompensationManager::RestoreEntityFromRecords::SetPoseParameter", true, false);
 	LoadMemPatch(pGameConfig, "CLagCompensationManager::BacktrackEntity::SetPoseParameter", true, false);
 	#endif
-
-	// Init SDKCalls for classdef
-	InitClassdef(pGameConfig);
 	
 	pGameConfig.Close();
 }
@@ -370,19 +381,6 @@ public void OnConfigsExecutedPost()
 	g_pLevelLump.ApplyLateConvars();
 
 	#if defined SRCCOOP_BLACKMESA
-
-	if (CoopManager.IsFeatureEnabled(FT_STRIP_DEFAULT_EQUIPMENT))
-	{
-		CBaseEntity pGameEquip = CBaseEntity.Create("game_player_equip"); // will spawn players with nothing if it exists
-		if (pGameEquip.IsValid())
-		{
-			if (!CoopManager.IsFeatureEnabled(FT_STRIP_DEFAULT_EQUIPMENT_KEEPSUIT))
-			{
-				pGameEquip.SetSpawnFlags(SF_PLAYER_EQUIP_STRIP_SUIT);
-			}
-			pGameEquip.Spawn();
-		}
-	}
 
 	if (CoopManager.IsFeatureEnabled(FT_DISABLE_CANISTER_DROPS))
 	{
@@ -905,24 +903,6 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 		// 	SDKHook(iEntIndex, SDKHook_SpawnPost, Hook_ExplosionSpawn);
 		// 	return;
 		// }
-	}
-}
-
-public void OnEntityDestroyed(int iEntIndex)
-{
-	CBaseEntity pEntity = CBaseEntity(iEntIndex);
-	if (pEntity.IsValid())
-	{
-		static char szClassname[MAX_CLASSNAME];
-		pEntity.GetClassname(szClassname, sizeof(szClassname));
-
-		#if defined ENTPATCH_BM_MISC_MARIONETTIST
-		if (strcmp(szClassname, "misc_marionettist") == 0)
-		{
-			OnEntityDestroyed_Marionettist(pEntity);
-			return;
-		}
-		#endif
 	}
 }
 

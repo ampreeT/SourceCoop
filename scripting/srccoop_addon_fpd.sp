@@ -1,4 +1,5 @@
 #include <sdkhooks>
+#include <dhooks>
 #include <sourcemod>
 #include <clientprefs>
 
@@ -33,12 +34,16 @@ ConVar        g_pConvarFadeToBlackLength;
 ConVar        g_pConvarPlayerToggle;
 Cookie        g_pStateCookie;
 int           g_iAttacment[MAXPLAYERS + 1];
+DynamicHook   hkUpdateOnRemove;
 
 public void OnPluginStart()
 {
 	g_Engine = GetEngineVersion();
 	LoadTranslations("srccoop_fpd.phrases");
-	InitSourceCoopAddon();
+
+	GameData pGameConfig = InitSourceCoopAddon(false);
+	LoadDHookVirtual(pGameConfig, hkUpdateOnRemove, "CBaseEntity::UpdateOnRemove");
+	pGameConfig.Close();
 
 	g_pStateCookie = new Cookie("sourcecoop_fpd", "First person death", CookieAccess_Protected);
 	g_pConvarFadeToBlackLength = CreateConVar("sourcecoop_fpd_fade_ms", "1500", "Duration in milliseconds to fade first-person death screen to black. 0 to disable.", _, true, 0.0);
@@ -152,21 +157,7 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 		if (strcmp(szClassname, "camera_death") == 0)
 		{
 			SDKHook(iEntIndex, SDKHook_SpawnPost, Hook_CameraDeathSpawn);
-		}
-	}
-}
-
-public void OnEntityDestroyed(int iEntIndex)
-{
-	if (g_Engine == Engine_BlackMesa)
-	{
-		CBaseEntity pEntity = CBaseEntity(iEntIndex);
-		if (pEntity.IsValid())
-		{
-			if (pEntity.IsClassname("camera_death"))
-			{
-				Hook_CameraDeathDestroyed(pEntity);
-			}
+			hkUpdateOnRemove.HookEntity(Hook_Post, iEntIndex, Hook_CameraDeathRemoved);
 		}
 	}
 }
@@ -190,8 +181,9 @@ public void Hook_CameraDeathSpawn(int iEntIndex)
 	AcceptEntityInput(iEntIndex, "Kill");
 }
 
-void Hook_CameraDeathDestroyed(CBaseEntity pEntity)
+MRESReturn Hook_CameraDeathRemoved(int iEntIndex)
 {
+	CBaseEntity pEntity = CBaseEntity(iEntIndex);
 	for (int i = 1; i <= MaxClients; i++)
 	{
 		if (IsClientInGame(i))
@@ -203,6 +195,7 @@ void Hook_CameraDeathDestroyed(CBaseEntity pEntity)
 			}
 		}
 	}
+	return MRES_Ignored;
 }
 
 public void SC_OnPlayerRagdollCreated(CBasePlayer pPlayer, CBaseAnimating pRagdoll)

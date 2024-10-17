@@ -47,12 +47,13 @@
 	#define ENTPATCH_FUNC_TRACKTRAIN
 	#define ENTPATCH_NPC_RUNTASK
 	
-	#define PLAYERPATCH_SETSUITUPDATE
+	#define PLAYERPATCH_SUIT_SOUNDS
 	#define PLAYERPATCH_PICKUP_FORCEPLAYERTODROPTHISOBJECT
 	#define PLAYERPATCH_SERVERSIDE_RAGDOLLS
 
 	#define GAMEPATCH_UTIL_GETLOCALPLAYER
 	#define GAMEPATCH_IS_MULTIPLAYER
+	#define GAMEPATCH_PREDICTED_EFFECTS
 
 #else
 	
@@ -106,8 +107,9 @@
 	#define ENTPATCH_BM_MUSIC_TRACK
 	#define ENTPATCH_BM_SNARK_NEST
 	#define ENTPATCH_BM_SP_WEAPONS
+	#define ENTPATCH_BM_DISSOLVE
 
-	#define PLAYERPATCH_SETSUITUPDATE
+	#define PLAYERPATCH_SUIT_SOUNDS
 	#define PLAYERPATCH_PICKUP_FORCEPLAYERTODROPTHISOBJECT
 	#define PLAYERPATCH_SERVERSIDE_RAGDOLLS
 	#define PLAYERPATCH_RESTORE_MP_FORCERESPAWN
@@ -121,6 +123,7 @@
 	#define GAMEPATCH_BLOCK_ANNOUNCER
 	#define GAMEPATCH_ALLOW_FLASHLIGHT
 	#define GAMEPATCH_TEAMSELECT_UI
+	#define GAMEPATCH_PREDICTED_EFFECTS
 
 #endif // SRCCOOP_BLACKMESA
 
@@ -154,8 +157,8 @@
 #include <srccoop/blackmesa/typedef>
 #include <srccoop/blackmesa/classdef>
 #endif
-#include <srccoop/config>
 #include <srccoop/utils>
+#include <srccoop/config>
 #include <srccoop/features>
 #include <srccoop/globals>
 #include <srccoop/kv_shared>

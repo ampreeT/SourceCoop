@@ -49,6 +49,7 @@ DynamicHook hkThink;
 DynamicHook hkUpdateOnRemove;
 DynamicHook hkEvent_Killed;
 DynamicHook hkKeyValue_char;
+DynamicDetour hkGiveDefaultItems;
 
 #if defined GAMEPATCH_ALLOW_FLASHLIGHT
 DynamicHook hkFAllowFlashlight;
@@ -115,7 +116,7 @@ DynamicDetour hkToggleIronsights;
 DynamicDetour hkTauFireBeam;
 #endif
 
-#if defined PLAYERPATCH_SETSUITUPDATE
+#if defined PLAYERPATCH_SUIT_SOUNDS
 DynamicDetour hkSetSuitUpdate;
 #endif
 
@@ -147,6 +148,15 @@ DynamicDetour hkBaseNpcUpdateSleepState;
 DynamicDetour hkPhysics_RunThinkFunctions;
 #endif
 
+#if defined ENTPATCH_BM_DISSOLVE
+DynamicDetour hkDissolve;
+#endif
+
+#if defined GAMEPATCH_PREDICTED_EFFECTS
+DynamicDetour hkIgnorePredictionCull;
+DynamicHook hkDispatchEffect;
+#endif
+
 #if defined SRCCOOP_HL2DM && defined PLAYERPATCH_SERVERSIDE_RAGDOLLS
 DynamicHook hkCreateRagdollEntity;
 #endif
@@ -160,6 +170,7 @@ DynamicDetour hkTestGroundMove;
 // Adresses, Interfaces
 // ----------------------------
 IServerGameDLL g_ServerGameDLL;
+IServerTools g_ServerTools;
 
 // ----------------------------
 // Plugin variables
