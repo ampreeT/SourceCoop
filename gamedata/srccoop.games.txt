@@ -1050,7 +1050,7 @@
 			}
 			"CAI_BaseNPC::RunTask"	// CAI_BaseNPC::RunTask(Task_t const*)
 			{
-				"windows"	"368"
+				"windows"	"370"	// vtable dumper will get this wrong!! XREF: "No RunTask entry for %s\n"
 				"linux"		"369"
 			}
 			"CAI_BaseNPC::IsPlayerAlly" // CAI_BaseNPC::IsPlayerAlly(CBasePlayer*)
@@ -1465,7 +1465,7 @@
 			}
 			"CAI_BaseNPC::RunTask"	// CAI_BaseNPC::RunTask(Task_t const*)
 			{
-				"windows"	"344"
+				"windows"	"346"	// vtable dumper will get this wrong!! XREF: "No RunTask entry for %s\n"
 				"linux"		"345"
 			}
 			"CSceneEntity::FindNamedEntity" // CSceneEntity::FindNamedEntity(char const*, CBaseEntity*, bool, bool)

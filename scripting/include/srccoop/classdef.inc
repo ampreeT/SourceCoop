@@ -10,6 +10,7 @@
 
 IServerGameClients g_ServerGameClients;
 CPlayerInfoManager g_pPlayerInfoManager;
+CGlobalVars gpGlobals;
 
 ConVar ai_los_mode;
 
@@ -371,6 +372,9 @@ stock void InitClassdef(GameData pGameConfig)
 	#if defined SRCCOOP_BLACKMESA
 	InitClassdefBM(pGameConfig);
 	#endif
+	
+	if (!(gpGlobals = g_pPlayerInfoManager.GetGlobalVars()))
+		SetFailState("Could not get gpGlobals from PlayerInfoManager");
 }
 
 #define NULL_CBASEENTITY view_as<any>(-1)

@@ -46,7 +46,6 @@ void SetMaxClientsOverride()
 		ThrowError("WARN: SetMaxClientsOverride, but one has already been set (%i).", g_iMaxClientsOverride);
 	}
 	
-	CGlobalVars gpGlobals = CPlayerInfoManager().GetGlobalVars();
 	g_iMaxClientsOverride = gpGlobals.GetMaxPlayers();
 	gpGlobals.SetMaxPlayers(1);
 }
@@ -58,7 +57,6 @@ void ClearMaxClientsOverride()
 		ThrowError("WARN: ClearMaxClientsOverride, but none was set.");
 	}
 
-	CGlobalVars gpGlobals = CPlayerInfoManager().GetGlobalVars();
 	gpGlobals.SetMaxPlayers(g_iMaxClientsOverride);
 	g_iMaxClientsOverride = -1;
 }
