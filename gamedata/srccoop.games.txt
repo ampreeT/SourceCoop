@@ -1492,6 +1492,11 @@
 				"windows"	"\x56\x57\x8B\xF9\x6A\x01\x8B\x07"
 				"linux"		"@_ZN13CHL2MP_Player16GiveDefaultItemsEv"
 			}
+			"CRecipientFilter::IgnorePredictionCull"
+			{
+				"windows"	"\x8A\x41\x1D"
+				"linux"		"@_ZNK16CRecipientFilter20IgnorePredictionCullEv"
+			}
 		}
 
 		//   _    _ _      ___  __  __ _____     __  __ ______ __  __ _____     _______ _____ _    _ ______  _____ 

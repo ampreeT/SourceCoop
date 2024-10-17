@@ -1379,5 +1379,11 @@ public MRESReturn Hook_DispatchEffect(DHookParam hParams)
 	{
 		g_bIgnorePredictionCull = false;
 	}
+	#if defined SRCCOOP_HL2DM
+	if (StrEqual(szName, "StunstickImpact"))
+	{
+		g_bIgnorePredictionCull = false;
+	}
+	#endif
 	return MRES_Ignored;
 }
