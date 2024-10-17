@@ -1385,6 +1385,11 @@
 				"windows"	"\x55\x8B\xEC\x81\xC1\x4C\x01\x00\x00"
 				"linux"		"@_ZN11CBaseEntity18SetCollisionBoundsERK6VectorS2_"
 			}
+			"CBaseEntity::SetNextThink" // void SetNextThink( float nextThinkTime, const char *szContext = NULL );
+			{
+				"windows"	"\x55\x8B\xEC\xF3\x0F\x10\x45\x08\x0F\x2E\x05\x2A\x2A\x2A\x2A" // str: "Doing partial rebuild of Node Graph..."
+				"linux"		"@_ZN11CBaseEntity12SetNextThinkEfPKc"
+			}
 			"CreateServerRagdoll" // CBaseEntity CreateServerRagdoll(CBaseAnimating *, int, const CTakeDamageInfo *, int, bool)
 			{
 				"windows"	"\x53\x8B\xDC\x83\xEC\x08\x83\xE4\xF0\x83\xC4\x04\x55\x8B\x6B\x04\x89\x6C\x24\x04\x8B\xEC\xB8\x68\x32\x00\x00"
@@ -1474,7 +1479,7 @@
 			}
 			"CAI_ExpresserHost_NPC_DoModifyOrAppendCriteria"
 			{
-				"windows"	"\x55\x8B\xEC\x83\xEC\x0C\x53\x56\x8B\x75\x08\x57\xFF\xB6\xA0\x09\x00\x00\x2A\x2A\x2A\x2A\x2A\x8B\x7D\x0C\x83\xC4"
+				"windows"	"\x55\x8B\xEC\x83\xEC\x0C\x53\x56\x8B\x75\x08\x57\xFF\xB6\x50\x09\x00\x00\x2A\x2A\x2A\x2A\x2A\x8B\x7D\x0C\x83\xC4"
 				"linux"		"@_Z46CAI_ExpresserHost_NPC_DoModifyOrAppendCriteriaP11CAI_BaseNPCR14AI_CriteriaSet"
 			}
 			"AI_CriteriaSet::AppendCriteria"
@@ -1655,10 +1660,11 @@
 				"windows"	"149"
 				"linux"		"150"
 			}
-			// This is not implemented for this game.
-			//"CBaseAnimating::SelectWeightedSequence"	// CBaseAnimating::SelectWeightedSequence(Activity)
-			//{
-			//}
+			"CBasePlayer::CreateViewModel" // CBasePlayer::CreateViewModel(int)
+			{
+				"windows"	"321"
+				"linux"		"322"
+			}
 			"CBaseCombatWeapon::Deploy"	// CBaseCombatWeapon::Deploy()
 			{
 				"windows"	"248"

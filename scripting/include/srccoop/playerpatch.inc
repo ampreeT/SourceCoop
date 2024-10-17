@@ -234,7 +234,10 @@ public Action PlayerCommandListener(int client, const char[] command, int argc)
 //------------------------------------------------------
 // Player sounds
 //------------------------------------------------------
+
+#if defined PLAYERPATCH_SUIT_SOUNDS
 char szLastSuitSound[MAXPLAYERS+1][PLATFORM_MAX_PATH];
+#endif
 
 public Action PlayerSoundListener(int clients[MAXPLAYERS], int &numClients, char sample[PLATFORM_MAX_PATH], int &entity, int &channel, float &volume, int &level, int &pitch, int &flags, char soundEntry[PLATFORM_MAX_PATH], int &seed)
 {
