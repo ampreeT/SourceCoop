@@ -95,7 +95,12 @@ methodmap DnManager
 	public static void Initialize()
 	{
 		g_sDnData.m_sList = new ArrayList(sizeof(DnEntry));
+		// The killfeed is by default only enabled for BM, pending full integration with other games.
+		#if defined SRCCOOP_BLACKMESA
 		g_sDnData.m_piNoticeLevel = CreateConVar("sc_killfeed", "2", "Controls the display of the kill feed (0: disabled, 1: chat, 2: hud). If this Convar is set to `2`, then the plugin will spawn in fake clients to display on the kill feed.", _, true, 0.0, true, 2.0);
+		#else
+		g_sDnData.m_piNoticeLevel = CreateConVar("sc_killfeed", "0", "Controls the display of the kill feed (0: disabled, 1: chat, 2: hud). If this Convar is set to `2`, then the plugin will spawn in fake clients to display on the kill feed.", _, true, 0.0, true, 2.0);
+		#endif
 		g_sDnData.m_piNoticePlayerKills = CreateConVar("sc_killfeed_player_kills", "2", "Controls display of player kills on the kill feed (0: hide, 1: players, 2: entities).", _, true, 0.0, true, 2.0);
 		g_sDnData.m_piNoticeEntityKills = CreateConVar("sc_killfeed_entity_kills", "2", "Controls display of entity kills on the kill feed (0: hide, 1: players, 2: entities).", _, true, 0.0, true, 2.0);
 		g_sDnData.m_piNoticeSuicides = CreateConVar("sc_killfeed_suicides", "2", "Controls display of suicides on the kill feed (0: hide, 1: players, 2: entities).", _, true, 0.0, true, 2.0);
