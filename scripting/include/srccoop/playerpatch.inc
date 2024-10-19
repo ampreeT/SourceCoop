@@ -58,6 +58,7 @@ public void Hook_PlayerPreThinkPost(int iClient)
 	if (pPlayer.IsAlive())
 	{
 		#if defined SRCCOOP_BLACKMESA
+
 		CBaseCombatWeapon pWeapon = pPlayer.GetActiveWeapon();
 		if (pWeapon.IsValid())
 		{
@@ -85,12 +86,14 @@ public void Hook_PlayerPreThinkPost(int iClient)
 				}
 			}
 		}
+
 		#endif // SRCCOOP_BLACKMESA
 	}
 	else // Dead
 	{
 		if (pPlayer.GetTeam() != TEAM_SPECTATOR)
 		{
+			// Respawn handling
 			if (GetGameTime() - pPlayer.GetDeathTime() > g_pConvarCoopRespawnTime.FloatValue)
 			{
 				int iPressed = pPlayer.GetPressedButtons();
@@ -370,44 +373,43 @@ public MRESReturn Hook_PlayerSpawnPost(int iClient, Handle hReturn, Handle hPara
 			// Apply on-spawn convars
 			SendClientConvars(iClient, true);
 
-			#if defined SRCCOOP_BLACKMESA
-
-			QueryClientConVar(iClient, "r_bloomtintexponent_nextgen", QueryConVar_Bloom, 2.2);
-			QueryClientConVar(iClient, "r_bloomtintr_nextgen", QueryConVar_Bloom, 0.25);
-			QueryClientConVar(iClient, "r_bloomtintg_nextgen", QueryConVar_Bloom, 0.25);
-			QueryClientConVar(iClient, "r_bloomtintb_nextgen", QueryConVar_Bloom, 0.25);
-			QueryClientConVar(iClient, "gb_flashlight_intensity", QueryConVar_Bloom, 0.8);
-
-			// Fix for lag no collide with mp_teamplay 0
-			if (!CBM_MP_GameRules.IsTeamplay()) pPlayer.SetCollisionGroup(COLLISION_GROUP_INTERACTIVE_DEBRIS);
-			
 			// Correct the 'damages' from the prethink hook hack
+			#if defined SRCCOOP_BLACKMESA
 			pPlayer.SetSuit(false);
 			pPlayer.SetMaxSpeed(190.0);
 			pPlayer.SetIsSprinting(false);
 			pPlayer.SetSolidFlags(pPlayer.GetSolidFlags() & ~FSOLID_NOT_SOLID);
-			
-			#endif // SRCCOOP_BLACKMESA
-
-			#if defined PLAYERPATCH_SUIT_SOUNDS
+			#endif
 
 			// Stop HEV sounds
+			#if defined PLAYERPATCH_SUIT_SOUNDS
 			pPlayer.ClearSuitQueue();
 			StopSound(iClient, SNDCHAN_STATIC, szLastSuitSound[iClient]);
-			
-			#endif // PLAYERPATCH_SUIT_SOUNDS
+			#endif
 
 			CoopManager.OnPlayerSpawned(pPlayer);
 		}
 		else // Not alive => entered the game
 		{
+			// Set initial view
+			CCoopSpawnSystem.TeleportPlayerOnSpawn(pPlayer);
+
+			// Initialize clientside convars from skill.cfg, which may have not executed.
+			#if defined SRCCOOP_BLACKMESA
+			QueryClientConVar(iClient, "r_bloomtintexponent_nextgen", QueryConVar_Bloom, 2.2);
+			QueryClientConVar(iClient, "r_bloomtintr_nextgen", QueryConVar_Bloom, 0.25);
+			QueryClientConVar(iClient, "r_bloomtintg_nextgen", QueryConVar_Bloom, 0.25);
+			QueryClientConVar(iClient, "r_bloomtintb_nextgen", QueryConVar_Bloom, 0.25);
+			QueryClientConVar(iClient, "gb_flashlight_intensity", QueryConVar_Bloom, 0.8);
+			#endif
+			
 			#if defined GAMEPATCH_TEAMSELECT_UI
 
 			if (GetClientTeam(iClient) == TEAM_SPECTATOR)
 			{
 				if (g_pConvarDisableTeamSelect.BoolValue)
 				{
-					// hide team select
+					// Hide team select
 					ClientCommand(iClient, "hidepanel team");
 					ClientCommand(iClient, "hidepanel deathmatch");
 					ChangeClientTeam(iClient, TEAM_SCIENTIST);
@@ -415,7 +417,7 @@ public MRESReturn Hook_PlayerSpawnPost(int iClient, Handle hReturn, Handle hPara
 				}
 				else
 				{
-					// always show DM variant of team select
+					// Always show DM variant of team select
 					ClientCommand(iClient, "hidepanel team");
 					ClientCommand(iClient, "showpanel deathmatch");
 				}
