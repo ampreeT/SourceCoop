@@ -12,6 +12,11 @@
 			"targetname" "suit"
 		}
 	}
+	"features"
+	{
+		// spawn with crowbar once it's picked up
+		"KEEP_EQUIPMENT" "1"
+	}
 	"entity"
 	{
 		// delay map start
@@ -27,33 +32,6 @@
 		"delete"
 		{
 			"targetname" "crusher_kill_relay"
-		}
-		// spawn with crowbar once it's picked up
-		"add"
-		{
-			"classname" "game_player_equip"
-			"targetname" "spawn_crowbar"
-			"weapon_crowbar" "1"
-		}
-		"add"
-		{
-			"classname" "point_template"
-			"Template01" "spawn_crowbar"
-			"targetname" "spawn_crowbar_spawner"
-		}
-		"modify"
-		{
-			"hammerid" "2145021"
-			"classname" "item_weapon_crowbar"
-			"outputs"
-			{
-				"add"
-				{
-					"output" "OnPlayerPickup"
-					"target" "spawn_crowbar_spawner"
-					"input" "ForceSpawn"
-				}
-			}
 		}
 		// use changelevel touch trigger
 		"modify"
