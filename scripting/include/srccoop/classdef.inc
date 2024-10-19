@@ -2446,11 +2446,10 @@ methodmap CBasePlayer < CBaseCombatCharacter
 
 		CPredictedViewModel pViewModel = this.GetViewModel(0);
 		if (pViewModel.IsValid())
-		{
 			pViewModel = this.CreateViewModel(0);
-			if (!pViewModel.IsValid())
-				return;
-		}
+		
+		if (!pViewModel.IsValid())
+			return;
 
 		// We use a model as a proxy here so that the `SendViewModelMatchingSequence` will
 		// send the animation to the gloves. This is done by setting the model then replacing the model index.
