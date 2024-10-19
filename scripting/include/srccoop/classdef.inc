@@ -123,7 +123,7 @@ stock void InitClassdef(GameData pGameConfig)
 	char szSetSuitUpdate[] = "CBasePlayer::SetSuitUpdate";
 	StartPrepSDKCall(SDKCall_Player);
 	if (!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Signature, szSetSuitUpdate))
-		LogMessage("Could not obtain gamedata offset %s", szSetSuitUpdate);
+		LogMessage("Could not obtain gamedata signature %s", szSetSuitUpdate);
 	else
 	{
 		PrepSDKCall_AddParameter(SDKType_String, SDKPass_Pointer, VDECODE_FLAG_ALLOWNULL);
@@ -389,7 +389,7 @@ stock void InitClassdef(GameData pGameConfig)
 	char szAppendCriteria[] = "AI_CriteriaSet::AppendCriteria";
 	StartPrepSDKCall(SDKCall_Raw);
 	if (!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Signature, szAppendCriteria))
-		LogMessage("Could not obtain gamedata offset %s", szAppendCriteria);
+		LogMessage("Could not obtain gamedata signature %s", szAppendCriteria);
 	else
 	{
 		PrepSDKCall_AddParameter(SDKType_String, SDKPass_Pointer);
