@@ -1037,6 +1037,11 @@
 				"windows"	"\x55\x8B\xEC\x80\x7D\x10\x00\x56\x57" // str: "ragdoll_dissolved"
 				"linux"		"@_ZN14CBaseAnimating8DissolveEPKcfbi6Vectori"
 			}
+			"CBM_MP_GameRules::Activate" // CBM_MP_GameRules::Activate()
+			{
+				"windows"	"\x55\x8B\xEC\x81\xEC\x08\x08\x00\x00\xA1\x2A\x2A\x2A\x2A\x33\xC5\x89\x45\xFC\x56" // str: "%s.cfg\n"
+				"linux"		"@_ZN16CBM_MP_GameRules8ActivateEv"
+			}
 		}
 
 		//  ____  __  __  _____    __  __ ______ __  __ _____     _______ _____ _    _ ______  _____ 
@@ -1097,6 +1102,22 @@
 					"offset"	"CB4h"
 					"verify"	"D9 2A 51 D9 2A 2A 57 8B 2A E8 2A 2A 2A 2A"
 					"patch"		"90 90 90 90 90 90 90 90 90 90 90 90 90 90"
+				}
+			}
+			"CBM_MP_GameRules::Activate::DoNotHardCodeGravityThnx"
+			{
+				"signature" "CBM_MP_GameRules::Activate"
+				"linux" // nop [mov,mov,call] (ConVar::SetValue)
+				{
+					"offset"	"12Eh"
+					"verify"	"C7 44 24 04 20 03 00 00 89 34 24 E8 2A 2A 2A 2A"
+					"patch"		"90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90"
+				}
+				"windows" // nop [push,mov,call] (ConVar::SetValue)
+				{
+					"offset"	"63h"
+					"verify"	"68 20 03 00 00 B9 2A 2A 2A 2A E8 2A 2A 2A 2A"
+					"patch"		"90 90 90 90 90 90 90 90 90 90 90 90 90 90 90"
 				}
 			}
 		}
