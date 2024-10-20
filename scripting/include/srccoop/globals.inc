@@ -167,6 +167,11 @@ DynamicDetour hkTestGroundMove;
 #endif
 
 // ----------------------------
+// MemPatches
+// ----------------------------
+ArrayList g_pCoopModeMemPatchList;
+
+// ----------------------------
 // Adresses, Interfaces
 // ----------------------------
 IServerGameDLL g_ServerGameDLL;

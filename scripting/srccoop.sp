@@ -182,6 +182,7 @@ void LoadGameData()
 	#endif
 
 	// Memory Patches
+	g_pCoopModeMemPatchList = new ArrayList();
 
 	#if defined ENTPATCH_AI_SCRIPT_CONDITIONS
 	LoadMemPatch(pGameConfig, "CAI_ScriptConditions::EvaluationThink::GetSinglePlayer");
@@ -192,7 +193,27 @@ void LoadGameData()
 	LoadMemPatch(pGameConfig, "CLagCompensationManager::BacktrackEntity::SetPoseParameter", true, false);
 	#endif
 	
+	#if defined GAMEPATCH_BM_GRAVITY
+	g_pCoopModeMemPatchList.Push(LoadMemPatch(pGameConfig, "CBM_MP_GameRules::Activate::DoNotHardCodeGravityThnx", false, false));
+	#endif
+	
 	pGameConfig.Close();
+}
+
+void ToggleGlobalPatches(bool bCoopMode)
+{
+	for (int i = 0; i < g_pCoopModeMemPatchList.Length; i++)
+	{
+		MemoryPatch pPatch = g_pCoopModeMemPatchList.Get(i);
+		if (bCoopMode)
+		{
+			pPatch.Enable();
+		}
+		else
+		{
+			pPatch.Disable();
+		}
+	}
 }
 
 void LoadConfig()
@@ -332,7 +353,10 @@ public MRESReturn Hook_OnLevelInit(DHookReturn hReturn, DHookParam hParams)
 	// save original string for dumps
 	g_szEntityString = szMapEntities;
 
-	if (CoopManager.OnLevelInit(szMapEntities))
+	bool bCoopMode = CoopManager.OnLevelInit(szMapEntities);
+	ToggleGlobalPatches(bCoopMode);
+
+	if (bCoopMode)
 	{
 		hParams.SetString(2, szMapEntities);
 		return MRES_ChangedHandled;

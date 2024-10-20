@@ -137,7 +137,7 @@ stock MemoryPatch LoadMemPatch(GameData pGameConfig, const char[] szName, bool b
 	{
 		if (bRequired)
 			SetFailState("Failed to verify mempatch \"%s\"", szName);
-		LogMessage("Failed to verify mempatch \"%s\"", szName);
+		LogError("Failed to verify mempatch \"%s\"", szName);
 	}
 	else if (bEnable)
 	{
