@@ -34,6 +34,7 @@ Handle g_pShouldPlayerAvoid;
 Handle g_pRemoveAllItems;
 Handle g_pCreateViewModel;
 Handle g_pSetNextThink;
+Handle g_pSetNextThinkNullString;
 Handle g_pIsNPC;
 Handle g_pSendWeaponAnim;
 Handle g_pWeaponSwitch;
@@ -88,6 +89,16 @@ stock void InitClassdef(GameData pGameConfig)
 		PrepSDKCall_AddParameter(SDKType_Float, SDKPass_Plain);
 		PrepSDKCall_AddParameter(SDKType_String, SDKPass_Pointer, VDECODE_FLAG_ALLOWNULL);
 		if (!(g_pSetNextThink = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szSetNextThink);
+	}
+
+	StartPrepSDKCall(SDKCall_Entity);
+	if (!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Signature, szSetNextThink))
+		LogMessage("Could not obtain gamedata signature %s", szSetNextThink);
+	else
+	{
+		PrepSDKCall_AddParameter(SDKType_Float, SDKPass_Plain);
+		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
+		if (!(g_pSetNextThinkNullString = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szSetNextThink);
 	}
 
 	char szIsNpc[] = "CBaseEntity::IsNPC";
@@ -598,6 +609,14 @@ methodmap CBaseEntity
 	{
 		SetEntProp(this.GetEntIndex(), Prop_Data, "m_iEFlags", iEFlags);
 	}
+	public void AddEFlags(const int iEFlags)
+	{
+		this.SetEFlags(this.GetEFlags() | iEFlags);
+	}
+	public void RemoveEFlags(const int iEFlags)
+	{
+		this.SetEFlags(this.GetEFlags() & ~iEFlags);
+	}
 	public int GetEdictFlags()
 	{
 		return GetEdictFlags(this.GetEntIndex());
@@ -781,11 +800,18 @@ methodmap CBaseEntity
 	public float GetNextThink()
 	{
 		int iThinkTick = this.GetNextThinkTick();
-		return iThinkTick == -1? -1.0 : TICKS_TO_TIME(iThinkTick);
+		return iThinkTick == -1 ? -1.0 : TICKS_TO_TIME(iThinkTick);
 	}
 	public void SetNextThink(float flNextThink, const char[] szContext = NULL_STRING)
 	{
-		SDKCall(g_pSetNextThink, this.entindex, flNextThink, szContext);
+		if (strlen(szContext) > 0)
+		{
+			SDKCall(g_pSetNextThink, this.entindex, flNextThink, szContext);
+		}
+		else
+		{
+			SDKCall(g_pSetNextThinkNullString, this.entindex, flNextThink, 0);
+		}
 	}
 	public int GetSimulationTick()
 	{

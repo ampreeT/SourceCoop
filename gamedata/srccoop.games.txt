@@ -598,6 +598,13 @@
 					}
 				}
 			}
+			"CPropChargerBase::ChargerThink"
+			{
+				"offset"	"CPropChargerBase::ChargerThink"
+				"hooktype"	"entity"
+				"return"	"void"
+				"this"		"entity"
+			}
 
 			//   _____  ______ _______ ____  _    _ _____  
 			//  |  __ \|  ____|__   __/ __ \| |  | |  __ \ 
@@ -1359,6 +1366,11 @@
 			{
 				"windows"	"39"
 				"linux"		"40"
+			}
+			"CPropChargerBase::ChargerThink"	// CPropChargerBase::ChargerThink()
+			{
+				"windows"	"239"
+				"linux"		"289"
 			}
 		}
 	}
