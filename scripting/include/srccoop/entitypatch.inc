@@ -8,67 +8,126 @@
 
 // Patches common to multiple source games
 
-/**
- * Sets an index of a player or entity for which a player will be searched on demand.
- */
-void SetLocalPlayerEntity(int iEntIndex)
-{
-	SetLocalPlayerEntityEx(CBaseEntity(iEntIndex));
-}
+//------------------------------------------------------
+// Local Player override
+//------------------------------------------------------
 
 /**
- * Sets a player or entity for which a player will be searched on demand.
+ * Pushes a player or an entity, for which a player will be searched on demand, to the stack.
+ * Must be followed by PopLocalPlayerOverride - use AddLocalPlayerPlaceholder for pairing without adding an override.
  */
-void SetLocalPlayerEntityEx(CBaseEntity pEntity)
+void AddLocalPlayerOverride(CBaseEntity pEntity)
 {
-	if (g_pLocalPlayerEntity != NULL_CBASEENTITY)
+	if (pEntity == NULL_CBASEENTITY)
 	{
-		ThrowError("WARN: SetLocalPlayerEntity, but one has already been set (%d).", g_pLocalPlayerEntity.entindex);
+		g_iLocalPlayerStackSkips[g_iLocalPlayerStackPointer]++;
+		return;
 	}
-
-	g_pLocalPlayerEntity = pEntity;
+	if (++g_iLocalPlayerStackPointer >= sizeof(g_pLocalPlayerEntity))
+	{
+		g_iLocalPlayerStackPointer--;
+		ThrowError("LocalPlayer override stack overflow (max: %d)", sizeof(g_pLocalPlayerEntity) - 1);
+	}
+	g_pLocalPlayerEntity[g_iLocalPlayerStackPointer] = pEntity;
 }
 
-void ClearLocalPlayerEntity()
+void AddLocalPlayerOverrideEx(int iEntIndex)
 {
-	if (g_pLocalPlayerEntity == NULL_CBASEENTITY)
-	{
-		ThrowError("WARN: ClearLocalPlayerEntity, but none was set.");
-	}
-
-	g_pLocalPlayerEntity = NULL_CBASEENTITY;
+	AddLocalPlayerOverride(CBaseEntity(iEntIndex));
 }
 
-void SetMaxClientsOverride()
+void AddLocalPlayerPlaceholder()
 {
-	if (g_iMaxClientsOverride != -1)
+	AddLocalPlayerOverride(NULL_CBASEENTITY);
+}
+
+/* 
+ * Undo's current local player override entity by popping the stack.
+ * Must be preceded by a call to AddLocalPlayerOverride or AddLocalPlayerPlaceholder.
+ */
+void PopLocalPlayerOverride()
+{
+	if (g_iLocalPlayerStackSkips[g_iLocalPlayerStackPointer] > 0)
 	{
-		ThrowError("WARN: SetMaxClientsOverride, but one has already been set (%i).", g_iMaxClientsOverride);
+		g_iLocalPlayerStackSkips[g_iLocalPlayerStackPointer]--;
+		return;
 	}
-	
-	g_iMaxClientsOverride = gpGlobals.GetMaxPlayers();
+	if (g_iLocalPlayerStackPointer <= 0)
+	{
+		ThrowError("Tried to pop LocalPlayer override, but none was set.");
+	}
+	g_iLocalPlayerStackPointer--;
+}
+
+//------------------------------------------------------
+// MaxClients override
+//------------------------------------------------------
+
+/**
+ * Overrides MaxClients to 1 and increments internal override counter. 
+ * Must be followed by PopMaxClientsOverride - use AddMaxClientsPlaceholder for pairing without adding an override.
+ */
+void AddMaxClientsOverride()
+{
+	#define MAX_MAXPLAYERS_OVERRIDES 100
+	if (g_iMaxClientsOverrides >= MAX_MAXPLAYERS_OVERRIDES)
+	{
+		ThrowError("MaxClients override overflow (max: %d)", MAX_MAXPLAYERS_OVERRIDES);
+	}
 	gpGlobals.SetMaxPlayers(1);
+	g_iMaxClientsOverrides++;
 }
 
-void ClearMaxClientsOverride()
+void AddMaxClientsPlaceholder()
 {
-	if (g_iMaxClientsOverride == -1)
+	g_iMaxClientsOverrides++;
+}
+
+/* 
+ * Decrements internal MaxClients override counter and undo's the override when reaching 0.
+ * Must be preceded by a call to AddMaxClientsOverride or AddMaxClientsPlaceholder.
+ */
+void PopMaxClientsOverride()
+{
+	if (g_iMaxClientsOverrides <= 0)
 	{
-		ThrowError("WARN: ClearMaxClientsOverride, but none was set.");
+		ThrowError("Tried to pop MaxClients override, but none was set.");
 	}
-
-	gpGlobals.SetMaxPlayers(g_iMaxClientsOverride);
-	g_iMaxClientsOverride = -1;
+	if (!--g_iMaxClientsOverrides)
+	{
+		gpGlobals.SetMaxPlayers(MaxClients);
+	}
 }
 
-bool IsOverridingMaxClients()
+//------------------------------------------------------
+// Convenience methods
+//------------------------------------------------------
+
+/**
+ * Convenience method that adds both LocalPlayer and MaxClients overrides.
+ */
+void AddSinglePlayerOverride(CBaseEntity pLocalPlayerEntity)
 {
-	return g_iMaxClientsOverride != -1;
+	AddLocalPlayerOverride(pLocalPlayerEntity);
+	AddMaxClientsOverride();
 }
 
-bool IsOverridingLocalPlayerEntity()
+/**
+ * Convenience method that adds placeholder entries to both LocalPlayer and MaxClients overrides.
+ */
+void AddSinglePlayerPlaceholder()
 {
-	return g_pLocalPlayerEntity != NULL_CBASEENTITY;
+	AddLocalPlayerPlaceholder();
+	AddMaxClientsPlaceholder();
+}
+
+/**
+ * Convenience method that pops both LocalPlayer and MaxClients overrides.
+ */
+void PopSinglePlayerOverride()
+{
+	PopLocalPlayerOverride();
+	PopMaxClientsOverride();
 }
 
 //------------------------------------------------------
@@ -76,16 +135,17 @@ bool IsOverridingLocalPlayerEntity()
 //------------------------------------------------------
 public MRESReturn Hook_UTIL_GetLocalPlayer(Handle hReturn)
 {
-	if (g_pLocalPlayerEntity.IsValid())
+	CBaseEntity pOverrideEntity = g_pLocalPlayerEntity[g_iLocalPlayerStackPointer];
+	if (pOverrideEntity.IsValid())
 	{
 		CBasePlayer pPlayer;
-		if (g_pLocalPlayerEntity.IsClassPlayer())
+		if (pOverrideEntity.IsClassPlayer())
 		{
-			pPlayer = view_as<CBasePlayer>(g_pLocalPlayerEntity);
+			pPlayer = view_as<CBasePlayer>(pOverrideEntity);
 		}
 		else
 		{
-			pPlayer = GetNearestPlayerPreferAlive(g_pLocalPlayerEntity);
+			pPlayer = GetNearestPlayerPreferAlive(pOverrideEntity);
 			if (pPlayer == NULL_CBASEENTITY)
 			{
 				return MRES_Ignored;
@@ -145,13 +205,13 @@ public MRESReturn BaseNPCSetModelBlock(int _this, Handle hParams)
 public MRESReturn Hook_BaseNPCThink(int _this)
 {
 	// Set this entity into context
-	SetLocalPlayerEntity(_this);
+	AddLocalPlayerOverrideEx(_this);
 	return MRES_Ignored;
 }
 
 public MRESReturn Hook_BaseNPCThinkPost(int _this)
 {
-	ClearLocalPlayerEntity();
+	PopLocalPlayerOverride();
 	return MRES_Ignored;
 }
 
@@ -622,9 +682,9 @@ public MRESReturn Hook_EnvZoomAcceptInput(int _this, Handle hReturn, Handle hPar
 			bHookSkip = true;
 			if (iNewClient > 0)
 			{
-				SetLocalPlayerEntity(iNewClient);
+				AddLocalPlayerOverrideEx(iNewClient);
 				AcceptEntityInput(_this, szNewInput);
-				ClearLocalPlayerEntity();
+				PopLocalPlayerOverride();
 			}
 			else
 			{
@@ -632,9 +692,9 @@ public MRESReturn Hook_EnvZoomAcceptInput(int _this, Handle hReturn, Handle hPar
 				{
 					if (IsClientInGame(i))
 					{
-						SetLocalPlayerEntity(i);
+						AddLocalPlayerOverrideEx(i);
 						AcceptEntityInput(_this, szNewInput);
-						ClearLocalPlayerEntity();
+						PopLocalPlayerOverride();
 					}
 				}
 			}
@@ -892,6 +952,8 @@ public MRESReturn Hook_AIConditionsThink(int _this)
 {
 	LogDebug("Hook_AIConditionsThink");
 	CAI_ScriptConditions pThis = CAI_ScriptConditions(_this);
+	CBasePlayer pLocalPlayerOverride = NULL_CBASEENTITY;
+
 	if (pThis.IsEnabled())
 	{
 		int count;
@@ -933,20 +995,20 @@ public MRESReturn Hook_AIConditionsThink(int _this)
 			}
 		}
 
-		CBasePlayer pPlayer = GetNearestPlayerPreferAliveEx(vecMidpoint);
-		if (pPlayer == NULL_CBASEENTITY)
+		pLocalPlayerOverride = GetNearestPlayerPreferAliveEx(vecMidpoint);
+		if (pLocalPlayerOverride == NULL_CBASEENTITY)
 		{
+			AddLocalPlayerPlaceholder();
 			return MRES_Supercede;
 		}
-
-		SetLocalPlayerEntityEx(pPlayer);
 	}
+	AddLocalPlayerOverride(pLocalPlayerOverride);
 	return MRES_Ignored;
 }
 
 public MRESReturn Hook_AIConditionsThinkPost(int _this)
 {
-	ClearLocalPlayerEntity();
+	PopLocalPlayerOverride();
 	return MRES_Ignored;
 }
 
@@ -1161,22 +1223,18 @@ public MRESReturn Hook_BaseNPCRunTask(int _this, Handle hParams)
 		(eTask == TASK_FACE_PLAYER) ||
 		(eTask == view_as<sharedtasks_e>(100000)))	// TASK_FEAR_GET_PATH_TO_SAFETY_HINT
 	{
-		if (!IsOverridingLocalPlayerEntity())
-		{
-			// This should never happen as `CAI_BaseNPC::RunTask` is called from the hooked function `CAI_BaseNPC::Think`.
-			ThrowError("`CAI_BaseNPC::RunTask` called without overriding local player.");
-		}
-		SetMaxClientsOverride();
+		AddSinglePlayerOverride(pEntity);
+	}
+	else
+	{
+		AddSinglePlayerPlaceholder();
 	}
 	return MRES_Ignored;
 }
 
 public MRESReturn Hook_BaseNPCRunTaskPost(int _this, Handle hParams)
 {
-	if (IsOverridingMaxClients())
-	{
-		ClearMaxClientsOverride();
-	}
+	PopSinglePlayerOverride();
 	return MRES_Ignored;
 }
 
