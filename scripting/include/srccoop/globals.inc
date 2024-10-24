@@ -157,6 +157,10 @@ DynamicDetour hkIgnorePredictionCull;
 DynamicHook hkDispatchEffect;
 #endif
 
+#if defined ENTPATCH_BM_PROP_CHARGERS
+DynamicHook hkPropChargerThink;
+#endif
+
 #if defined SRCCOOP_HL2DM && defined PLAYERPATCH_SERVERSIDE_RAGDOLLS
 DynamicHook hkCreateRagdollEntity;
 #endif

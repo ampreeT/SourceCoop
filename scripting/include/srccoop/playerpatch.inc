@@ -58,7 +58,6 @@ public void Hook_PlayerPreThinkPost(int iClient)
 	if (pPlayer.IsAlive())
 	{
 		#if defined SRCCOOP_BLACKMESA
-
 		CBaseCombatWeapon pWeapon = pPlayer.GetActiveWeapon();
 		if (pWeapon.IsValid())
 		{
@@ -86,7 +85,6 @@ public void Hook_PlayerPreThinkPost(int iClient)
 				}
 			}
 		}
-
 		#endif // SRCCOOP_BLACKMESA
 	}
 	else // Dead
