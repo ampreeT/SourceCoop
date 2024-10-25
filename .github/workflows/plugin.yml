@@ -24,7 +24,7 @@ jobs:
         id: setup-sp
         uses: rumblefrog/setup-sp@master
         with:
-          version: '1.11.6960'
+          version: '1.12.7164'
           version-file: ./scripting/include/srccoop/public.inc
           define-name: SRCCOOP_VERSION
 

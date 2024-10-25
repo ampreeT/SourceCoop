@@ -207,34 +207,6 @@ stock int LoadStringFromAddress(Address addr, char[] buffer, int maxlen, bool &b
 }
 
 /**
- * DEPRECATE with SM 1.12 => LoadEntityFromHandleAddress
- * Retrieves an entity index from a raw entity handle address.
- * 
- * Note that SourceMod's entity conversion routine is an implementation detail that may change.
- * 
- * @param addr			Address to a memory location.
- * @return				Entity index, or -1 if not valid.
- */
-stock int LoadEntityHandleFromAddress(Address addr)
-{
-	return EntRefToEntIndex(Deref(addr) | (1 << 31));
-}
-
-/**
- * DEPRECATE with SM 1.12 => StoreEntityToHandleAddress
- * Stores an entity into a raw entity handle address.  Stores zero if the entity is not valid.
- * 
- * Note that SourceMod's entity conversion routine is an implementation detail that may change.
- * 
- * @param addr			Address to a memory location.
- * @param entity		Entity index.
- */
-stock void StoreEntityHandleToAddress(Address addr, int entity)
-{
-	StoreToAddress(addr, IsValidEntity(entity)? EntIndexToEntRef(entity) & ~(1 << 31) : 0, NumberType_Int32);
-}
-
-/**
  * Returns an entity index from its address by attempting to read the
  * CBaseEntity::m_RefEHandle member.  This assumes the address of a CBaseEntity is
  * passed in.
@@ -246,7 +218,7 @@ stock int GetEntityFromAddress(Address pEntity)
 {
 	static int offs_RefEHandle;
 	if (offs_RefEHandle)
-		return LoadEntityHandleFromAddress(pEntity + offs_RefEHandle);
+		return LoadEntityFromHandleAddress(pEntity + offs_RefEHandle);
 	
 	// if we don't have it already, attempt to lookup offset based on SDK information
 	// CWorld is derived from CBaseEntity so it should have both offsets
@@ -273,30 +245,6 @@ stock int GetEntityFromAddress(Address pEntity)
 	offs_RefEHandle = offs_angRotation + 0x0C;
 	return GetEntityFromAddress(pEntity);
 }
-
-//------------------------------------------------------
-// Cookie utils
-//------------------------------------------------------
-#if defined _clientprefs_included
-stock bool GetCookieBool(Cookie cookie, int client)
-{
-	static char szBuffer[2];
-	cookie.Get(client, szBuffer, sizeof(szBuffer));
-	return StringToInt(szBuffer) == 1;
-}
-
-stock void SetCookieBool(Cookie cookie, int client, bool val)
-{
-	cookie.Set(client, val? "1" : "0");
-}
-
-stock bool IsCookieSet(Cookie cookie, int client)
-{
-	static char szBuffer[2];
-	cookie.Get(client, szBuffer, sizeof(szBuffer));
-	return szBuffer[0] != '\0';
-}
-#endif
 
 //------------------------------------------------------
 // Text utils

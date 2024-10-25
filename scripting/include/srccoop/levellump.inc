@@ -276,7 +276,7 @@ methodmap CEntityListLump < ArrayList
 {
 	public CEntityListLump()
 	{
-		return view_as<CEntityListLump>(new ArrayList(sizeof(CEntityInfoLump)));
+		return view_as<CEntityListLump>(new ArrayList());
 	}
 
 	// cast

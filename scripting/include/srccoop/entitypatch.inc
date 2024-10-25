@@ -972,7 +972,7 @@ public MRESReturn Hook_AIConditionsThink(int _this)
 			if (!conditionsElement)
 				continue;
 			
-			CBaseEntity pActor = CBaseEntity(LoadEntityHandleFromAddress(conditionsElement));
+			CBaseEntity pActor = CBaseEntity(LoadEntityFromHandleAddress(conditionsElement));
 			if (!pActor.IsValid())
 				continue;
 			

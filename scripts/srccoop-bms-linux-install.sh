@@ -27,7 +27,7 @@ wget $(wget -qO- "https://www.sourcemm.net/downloads.php" | grep "<a class='quic
 tar -xf ".tmp.tar.gz" -C "./Black Mesa Dedicated Server/bms"
 rm ".tmp.tar.gz"
 
-# Install the latest version of Metamod Source.
+# Install the latest version of SourceMod.
 wget $(wget -qO- "https://www.sourcemod.net/downloads.php" | grep "<a class='quick-download download-link'" | grep -m1 "linux.tar.gz" | sed -n 's/.*href='\''//; s/'\''.*//p') -O ".tmp.tar.gz"
 tar -xf ".tmp.tar.gz" -C "./Black Mesa Dedicated Server/bms"
 rm ".tmp.tar.gz"

@@ -12,9 +12,6 @@
 
 #if !defined SRCCOOP_CUSTOM_COMPILE
 
-// Uncomment to disable debugging
-// #define NO_DEBUG
-
 #if defined SRCCOOP_HL2DM
 	
 	#define CHECK_ENGINE "HL2DM"; if (GetEngineVersion() != Engine_HL2DM)
@@ -144,9 +141,6 @@
 #include <dhooks>
 #include <topmenus>
 #include <sourcescramble>
-
-#pragma newdecls required
-#pragma semicolon 1
 
 #include <logdebug>
 
