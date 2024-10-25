@@ -161,6 +161,10 @@ DynamicDetour hkIgnorePredictionCull;
 DynamicHook hkDispatchEffect;
 #endif
 
+#if defined ENTPATCH_BM_PROP_CHARGERS
+DynamicHook hkPropChargerThink;
+#endif
+
 #if defined SRCCOOP_HL2DM && defined PLAYERPATCH_SERVERSIDE_RAGDOLLS
 DynamicHook hkCreateRagdollEntity;
 #endif
@@ -203,11 +207,14 @@ ArrayList g_pPostponedSpawns;
 // Represents the return value of the IsMultiplayer hook.
 bool g_bIsMultiplayerOverride = true;
 
-// Overrides `gpGlobals->maxclients`. The value is defaulted to `-1` to represent no override.
-int g_iMaxClientsOverride = -1;
+// Counts the # of overrides to `gpGlobals->maxclients`.
+int g_iMaxClientsOverrides = 0;
 
-// the entity which UTIL_GetLocalPlayer hook will return the closest player to, alternatively containing the player index itself
-CBaseEntity g_pLocalPlayerEntity = NULL_CBASEENTITY;
+// The entity which UTIL_GetLocalPlayer hook will return the closest player to, alternatively containing the player index itself.
+// Note: Real stack size is 1 less, because first entry starts at index 1.
+CBaseEntity g_pLocalPlayerEntity[32] = {NULL_CBASEENTITY, ...};
+int g_iLocalPlayerStackSkips[sizeof(g_pLocalPlayerEntity)];
+int g_iLocalPlayerStackPointer;
 
 // ----------------------------
 // Plugin API

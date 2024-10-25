@@ -107,6 +107,10 @@ void LoadGameData()
 	LoadDHookVirtual(pGameConfig, hkBaseNpcRunTask, "CAI_BaseNPC::RunTask");
 	#endif
 	
+	#if defined ENTPATCH_BM_PROP_CHARGERS
+	LoadDHookVirtual(pGameConfig, hkPropChargerThink, "CPropChargerBase::ChargerThink");
+	#endif
+	
 	#if defined SRCCOOP_HL2DM && defined PLAYERPATCH_SERVERSIDE_RAGDOLLS
 	LoadDHookVirtual(pGameConfig, hkCreateRagdollEntity, "CBasePlayer::CreateRagdollEntity");
 	#endif
@@ -884,10 +888,15 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 		#endif
 
 		#if defined ENTPATCH_BM_PROP_CHARGERS
-		if (strcmp(szClassname, "prop_hev_charger") == 0 || strcmp(szClassname, "prop_radiation_charger") == 0)
+		if (strcmp(szClassname, "prop_radiation_charger") == 0)
 		{
-			//DHookEntity(hkThink, false, iEntIndex, _, Hook_PropChargerThink);
-			//DHookEntity(hkThink, true, iEntIndex, _, Hook_PropChargerThinkPost);
+			DHookEntity(hkPropChargerThink, false, iEntIndex, _, Hook_PropRadiationChargerThink);
+			return;
+		}
+
+		if (strcmp(szClassname, "prop_hev_charger") == 0)
+		{
+			DHookEntity(hkPropChargerThink, false, iEntIndex, _, Hook_PropHevChargerThink);
 			return;
 		}
 		#endif
