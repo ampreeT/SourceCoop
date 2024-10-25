@@ -165,6 +165,10 @@ void LoadGameData()
 	#if defined ENTPATCH_BM_DISSOLVE
 	LoadDHookDetour(pGameConfig, hkDissolve, "CBaseAnimating::Dissolve", Hook_Dissolve);
 	#endif
+	
+	#if defined GAMEPATCH_UTIL_FINDCLIENTINPVSGUTS
+	LoadDHookDetour(pGameConfig, hkUtilFindClientInPVSGuts, "UTIL_FindClientInPVSGuts", Hook_UTIL_FindClientInPVSGuts);
+	#endif
 
 	#if defined GAMEPATCH_PREDICTED_EFFECTS
 	LoadDHookDetour(pGameConfig, hkIgnorePredictionCull, "CRecipientFilter::IgnorePredictionCull", Hook_IgnorePredictionCull);

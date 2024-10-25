@@ -859,6 +859,27 @@
 					}
 				}
 			}
+			"UTIL_FindClientInPVSGuts"
+			{
+				"signature"	"UTIL_FindClientInPVSGuts"
+				"callconv"	"cdecl"
+				"return"	"cbaseentity"
+				"arguments"
+				{
+					"pEdict"
+					{
+						"type"	"edict"
+					}
+					"pPVS"
+					{
+						"type"	"int"
+					}
+					"iPVSSize"
+					{
+						"type"	"int"
+					}
+				}
+			}
 		}
 	}
 	
@@ -1041,6 +1062,11 @@
 			{
 				"windows"	"\x55\x8B\xEC\x81\xEC\x08\x08\x00\x00\xA1\x2A\x2A\x2A\x2A\x33\xC5\x89\x45\xFC\x56" // str: "%s.cfg\n"
 				"linux"		"@_ZN16CBM_MP_GameRules8ActivateEv"
+			}
+			"UTIL_FindClientInPVSGuts"	// UTIL_FindClientInPVSGuts(edict_t*, unsigned char*, int)
+			{
+				"windows"	"\x55\x8B\xEC\x83\xEC\x18\x56\xE8\x2A\x2A\x2A\x2A\x8B\xF0\x85\xF6\x75"
+				"linux"		"@_ZL24UTIL_FindClientInPVSGutsP7edict_tPhj.constprop.66"
 			}
 		}
 
@@ -1381,6 +1407,21 @@
 				"windows"	"39"
 				"linux"		"40"
 			}
+			"CVEngineServer::GetClusterForOrigin"	// CVEngineServer::GetClusterForOrigin(Vector const&)
+			{
+				"windows"	"11"
+				"linux"		"11"
+			}
+			"CVEngineServer::GetPVSForCluster"	// CVEngineServer::GetPVSForCluster(int, int, unsigned char*)
+			{
+				"windows"	"12"
+				"linux"		"12"
+			}
+			"CVEngineServer::CheckOriginInPVS"	// CVEngineServer::CheckOriginInPVS(Vector const&, unsigned char const*, int)
+			{
+				"windows"	"13"
+				"linux"		"13"
+			}
 		}
 	}
 
@@ -1523,6 +1564,11 @@
 			{
 				"windows"	"\x8A\x41\x1D"
 				"linux"		"@_ZNK16CRecipientFilter20IgnorePredictionCullEv"
+			}
+			"UTIL_FindClientInPVSGuts"	// UTIL_FindClientInPVSGuts(edict_t*, unsigned char*, int)
+			{
+				"windows"	"\x55\x8B\xEC\x83\xEC\x18\x56\xE8\x2A\x2A\x2A\x2A\x8B\xF0\x85\xF6\x75"
+				"linux"		"@_ZL24UTIL_FindClientInPVSGutsP7edict_tPhj.constprop.91"
 			}
 		}
 
@@ -1741,6 +1787,21 @@
 			{
 				"windows"	"38"
 				"linux"		"39"
+			}
+			"CVEngineServer::GetClusterForOrigin"	// CVEngineServer::GetClusterForOrigin(Vector const&)
+			{
+				"windows"	"11"
+				"linux"		"11"
+			}
+			"CVEngineServer::GetPVSForCluster"	// CVEngineServer::GetPVSForCluster(int, int, unsigned char*)
+			{
+				"windows"	"12"
+				"linux"		"12"
+			}
+			"CVEngineServer::CheckOriginInPVS"	// CVEngineServer::CheckOriginInPVS(Vector const&, unsigned char const*, int)
+			{
+				"windows"	"13"
+				"linux"		"13"
 			}
 		}
 	}

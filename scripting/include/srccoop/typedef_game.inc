@@ -48,7 +48,7 @@
 // everything that blocks line of sight for AI plus NPCs
 #define MASK_BLOCKLOS_AND_NPCS		(MASK_BLOCKLOS|CONTENTS_MONSTER)
 
-
+#define MAX_MAP_CLUSTERS 65536
 
 //------------------------------------------------------
 // Spawnflags

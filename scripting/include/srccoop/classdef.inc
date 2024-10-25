@@ -4,12 +4,14 @@
 #define _srccoop_classdef_included
 
 #include <sdktools>
+#include <sourcescramble>
 
 #pragma newdecls required
 #pragma semicolon 1
 
 IServerGameClients g_ServerGameClients;
 CPlayerInfoManager g_pPlayerInfoManager;
+CVEngineServer g_pEngineServer;
 CGlobalVars gpGlobals;
 
 ConVar ai_los_mode;
@@ -46,6 +48,9 @@ Handle g_pSendViewModelMatchingSequence;
 Handle g_pGetGlobalVars;
 Handle g_pAppendCriteria;
 Handle g_pSetSuitUpdate;
+Handle g_pGetClusterForOrigin;
+Handle g_pGetPVSForCluster;
+Handle g_pCheckOriginInPVS;
 
 int g_iCSoundSize = -1;
 int g_iCPlayerState_frags = -1;
@@ -67,6 +72,9 @@ stock void InitClassdef(GameData pGameConfig)
 	
 	if (!(g_pPlayerInfoManager = view_as<CPlayerInfoManager>(GetInterface(pGameConfig, "server", "PlayerInfoManager"))))
 		SetFailState("Could not get interface for %s", "PlayerInfoManager");
+	
+	if (!(g_pEngineServer = view_as<CVEngineServer>(GetInterface(pGameConfig, "engine", "IVEngineServer"))))
+		SetFailState("Could not get interface for %s", "IVEngineServer");
 
 	char szSetCollisionBounds[] = "CBaseEntity::SetCollisionBounds";
 	StartPrepSDKCall(SDKCall_Entity);
@@ -396,6 +404,43 @@ stock void InitClassdef(GameData pGameConfig)
 		PrepSDKCall_AddParameter(SDKType_String, SDKPass_Pointer);
 		PrepSDKCall_AddParameter(SDKType_Float, SDKPass_Plain);
 		if (!(g_pAppendCriteria = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szAppendCriteria);
+	}
+	
+	char szGetClusterForOrigin[] = "CVEngineServer::GetClusterForOrigin";
+	StartPrepSDKCall(SDKCall_Raw);
+	if (!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Virtual, szGetClusterForOrigin))
+		LogMessage("Could not obtain gamedata offset %s", szGetClusterForOrigin);
+	else
+	{
+		PrepSDKCall_AddParameter(SDKType_Vector, SDKPass_ByRef);
+		PrepSDKCall_SetReturnInfo(SDKType_PlainOldData, SDKPass_Plain);
+		if (!(g_pGetClusterForOrigin = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szGetClusterForOrigin);
+	}
+	
+	char szGetPVSForCluster[] = "CVEngineServer::GetPVSForCluster";
+	StartPrepSDKCall(SDKCall_Raw);
+	if (!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Virtual, szGetPVSForCluster))
+		LogMessage("Could not obtain gamedata offset %s", szGetPVSForCluster);
+	else
+	{
+		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
+		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
+		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
+		PrepSDKCall_SetReturnInfo(SDKType_PlainOldData, SDKPass_Plain);
+		if (!(g_pGetPVSForCluster = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szGetPVSForCluster);
+	}
+	
+	char szCheckOriginInPVS[] = "CVEngineServer::CheckOriginInPVS";
+	StartPrepSDKCall(SDKCall_Raw);
+	if (!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Virtual, szCheckOriginInPVS))
+		LogMessage("Could not obtain gamedata offset %s", szCheckOriginInPVS);
+	else
+	{
+		PrepSDKCall_AddParameter(SDKType_Vector, SDKPass_ByRef);
+		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
+		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
+		PrepSDKCall_SetReturnInfo(SDKType_PlainOldData, SDKPass_Plain);
+		if (!(g_pCheckOriginInPVS = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szCheckOriginInPVS);
 	}
 
 	#if defined SRCCOOP_BLACKMESA
@@ -1923,9 +1968,46 @@ methodmap CAI_BaseNPC < CBaseCombatCharacter
 		Address pAddress = this.GetAddress();
 		int iOffsetIndex = iCondition / CHAR_BIT;
 		int iBitIndex = iCondition % CHAR_BIT;
-		Address pOffset = view_as<Address>(view_as<int>(pAddress) + iOffsetConditions + iOffsetIndex); 
-		int iConditionList = LoadFromAddress(pOffset, NumberType_Int8);	
+		Address pOffset = view_as<Address>(view_as<int>(pAddress) + iOffsetConditions + iOffsetIndex);
+		int iConditionList = LoadFromAddress(pOffset, NumberType_Int8);
 		return view_as<bool>(iConditionList & (1 << iBitIndex));
+	}
+	public void SetCondition(const int iCondition, const bool bSetCondition)
+	{
+		bool bOutOfBounds = (iCondition > 255) || (iCondition < 0);
+		if (bOutOfBounds)
+			ThrowError("Received out of bounds index %d; range is 0-255", iCondition);
+		
+		// m_Conditions is not a netprop/datamap
+		// sizeof(CAI_ScheduleBits) == 32 bytes
+		//	CAI_ScheduleBits	m_Conditions;
+		//	CAI_ScheduleBits	m_CustomInterruptConditions;
+		//	CAI_ScheduleBits	m_ConditionsPreIgnore;
+		//	CAI_ScheduleBits	m_InverseIgnoreConditions;
+		//	bool				m_bForceConditionsGather;
+		// m_Conditions = offsetof(this, m_bForceConditionsGather) - (sizeof(CAI_ScheduleBits) * 4)
+		
+		int iForceConditionsGatherOffset = FindDataMapInfo(this.GetEntIndex(), "m_bForceConditionsGather");		// m_bForceConditionsGather (datamap) - 128 = m_Conditions
+		if (iForceConditionsGatherOffset == -1)
+			ThrowError("Unable to retrieve offset %s", "m_bForceConditionsGather");
+		int iOffsetConditions = iForceConditionsGatherOffset - 128;
+		
+		Address pAddress = this.GetAddress();
+		int iOffsetIndex = iCondition / CHAR_BIT;
+		int iBitIndex = iCondition % CHAR_BIT;
+		Address pOffset = view_as<Address>(view_as<int>(pAddress) + iOffsetConditions + iOffsetIndex);
+		int iConditionList = LoadFromAddress(pOffset, NumberType_Int8);
+
+		if (bSetCondition)
+		{
+			iConditionList |= (1 << iBitIndex); 
+		}
+		else
+		{
+			iConditionList &= ~(1 << iBitIndex); 
+		}
+
+		StoreToAddress(pOffset, iConditionList, NumberType_Int8);
 	}
 	public int GetTaskInterrupt()
 	{
@@ -3263,6 +3345,29 @@ methodmap CPlayerInfoManager
 	public CGlobalVars GetGlobalVars()
 	{
 		return SDKCall(g_pGetGlobalVars, view_as<Address>(this));
+	}
+}
+
+methodmap CVEngineServer
+{
+	public CVEngineServer()
+	{
+		return g_pEngineServer;
+	}
+
+	public int GetClusterForOrigin(const float vec3Origin[3])
+	{
+		return SDKCall(g_pGetClusterForOrigin, view_as<Address>(this), vec3Origin);
+	}
+	public MemoryBlock GetPVSForCluster(const int iCluster)
+	{
+		MemoryBlock pPVS = new MemoryBlock(MAX_MAP_CLUSTERS / 8);
+		SDKCall(g_pGetPVSForCluster, view_as<Address>(this), iCluster, pPVS.Size, pPVS.Address);
+		return pPVS;
+	}
+	public bool CheckOriginInPVS(const float vec3Origin[3], const MemoryBlock pCheckPVS)
+	{
+		return SDKCall(g_pCheckOriginInPVS, view_as<Address>(this), vec3Origin, pCheckPVS.Address, pCheckPVS.Size) != 0;
 	}
 }
 
