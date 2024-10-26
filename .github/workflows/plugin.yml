@@ -35,8 +35,8 @@ jobs:
           do
             plugin="$(basename "${file%.*}")"
             echo -e "\nCompiling $plugin\n"
-            spcomp -v2 -i scripting/include -o plugins/"$plugin" "$file" NO_DEBUG=1 ${{ matrix.game.args }}
-            spcomp -v2 -i scripting/include -o plugins/disabled/srccoop_debug/"$plugin" "$file" ${{ matrix.game.args }}
+            spcomp -v2 -i scripting/include -o plugins/"$plugin".smx "$file" NO_DEBUG=1 ${{ matrix.game.args }}
+            spcomp -v2 -i scripting/include -o plugins/disabled/srccoop_debug/"$plugin".smx "$file" ${{ matrix.game.args }}
           done
 
       - name: Create package
