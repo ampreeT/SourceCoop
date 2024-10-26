@@ -412,7 +412,7 @@ public Action Hook_IntroCreditsMsg(UserMsg msg_id, BfRead msg, const int[] playe
 	return Plugin_Handled;
 }
 
-public Action IntroCreditsMsgRepeater(Handle timer, DataPack dp)
+public void IntroCreditsMsgRepeater(Handle timer, DataPack dp)
 {
 	Handle pNewMsg = StartMessageAll("IntroCredits", USERMSG_RELIABLE|USERMSG_BLOCKHOOKS);
 	if (pNewMsg != null)
@@ -435,7 +435,6 @@ public Action IntroCreditsMsgRepeater(Handle timer, DataPack dp)
 		}
 		EndMessage();
 	}
-	return Plugin_Handled;
 }
 
 //------------------------------------------------------
@@ -641,35 +640,35 @@ public void Hook_SpriteTeamSpawnPost(int iEntIndex)
 
 // Fixes map-placed tripmines not having the proper color with `mp_teamplay 1`.
 //
-public Action Timer_SetTripmineSpriteColor(Handle timer, CSpriteTeam pSpriteTeam)
+public void Timer_SetTripmineSpriteColor(Handle timer, CSpriteTeam pSpriteTeam)
 {
 	if (!pSpriteTeam.IsValid())
-		return Plugin_Continue;
+		return;
 
 	CBlackMesaBaseDetonator pTripmine = pSpriteTeam.GetTripmine();
 	if (!pTripmine.IsValid())
-		return Plugin_Continue;
+		return;
 	
 	CEnvBeamTeam pBeamTeam = pTripmine.GetBeam();
 	if (!pBeamTeam.IsValid())
-		return Plugin_Continue;
+		return;
 	
 	// Check if a player created this tripmine.
 	// TODO:
 	// This should assign a team color if a player disconnected before the tripmine is active.
 	CBlackMesaPlayer pOwner = pSpriteTeam.GetOwner();
 	if (pTripmine.GetTeam() != TEAM_UNASSIGNED || pOwner.IsValid())
-		return Plugin_Continue;
+		return;
 	
 	CSprite pSprite = CSprite.Create();
 	if (!pSprite.IsValid())
-		return Plugin_Continue;
+		return;
 	
 	CEnvBeam pBeam = CEnvBeam.Create();
 	if (!pBeam.IsValid())
 	{
 		pSprite.Kill();
-		return Plugin_Continue;
+		return;
 	}
 
 	int r, g, b;
@@ -733,8 +732,6 @@ public Action Timer_SetTripmineSpriteColor(Handle timer, CSpriteTeam pSpriteTeam
 	// Hide the original tripmine's entities.
 	pBeamTeam.SetRenderAlpha(0);
 	pSpriteTeam.SetRenderAlpha(0);
-
-	return Plugin_Continue;
 }
 
 //------------------------------------------------------

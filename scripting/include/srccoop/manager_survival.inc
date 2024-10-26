@@ -313,14 +313,13 @@ methodmap SurvivalManager {
 	}
 }
 
-public Action Timer_SurvivalRespawnPlayers(Handle timer)
+public void Timer_SurvivalRespawnPlayers(Handle timer)
 {
 	data.m_pRestartTimer = null;
 	SurvivalManager.RespawnPlayers("survival restart last checkpoint");
-	return Plugin_Handled;
 }
 
-public Action Timer_SurvivalRestartLevel(Handle timer)
+public void Timer_SurvivalRestartLevel(Handle timer)
 {
 	data.m_pRestartTimer = null;
 
@@ -329,8 +328,6 @@ public Action Timer_SurvivalRestartLevel(Handle timer)
 	
 	strcopy(g_szMapName, sizeof(g_szMapName), g_szPrevMapName);
 	ForceChangeLevel(szMapName, SC_SURVIVAL_RESTART_MAPCHANGE);
-	
-	return Plugin_Handled;
 }
 
 public void ConVarSurvivalModeChanged(ConVar hConVar, const char[] szOldValue, const char[] szNewValue)

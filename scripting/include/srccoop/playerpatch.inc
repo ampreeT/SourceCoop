@@ -914,12 +914,10 @@ bool FixWeaponPrediction(CBasePlayer pPlayer)
 	return true;
 }
 
-Action Timer_FixWeaponPrediction(Handle timer, CBasePlayer pPlayer)
+void Timer_FixWeaponPrediction(Handle timer, CBasePlayer pPlayer)
 {
 	if (pPlayer.IsValid() && pPlayer.IsAlive())
 		RestorePackedItems(pPlayer);
-
-	return Plugin_Handled;
 }
 
 //------------------------------------------------------

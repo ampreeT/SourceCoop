@@ -892,7 +892,7 @@ public void Hook_EnvSpriteSpawnPost(int iEntIndex)
 	CreateTimer(0.1, Timer_EnvSpritePostSpawn, CBaseEntity(iEntIndex), TIMER_FLAG_NO_MAPCHANGE);
 }
 
-public Action Timer_EnvSpritePostSpawn(Handle timer, CBaseEntity pEntity)
+public void Timer_EnvSpritePostSpawn(Handle timer, CBaseEntity pEntity)
 {
 	if (pEntity.IsValid())
 	{
@@ -904,7 +904,6 @@ public Action Timer_EnvSpritePostSpawn(Handle timer, CBaseEntity pEntity)
 			}
 		}
 	}
-	return Plugin_Handled;
 }
 
 //------------------------------------------------------

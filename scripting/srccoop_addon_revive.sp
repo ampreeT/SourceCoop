@@ -344,7 +344,7 @@ public void SC_OnPlayerRagdollCreated(CBasePlayer pPlayer, CBaseAnimating pRagdo
 	}
 }
 
-public Action Timer_SetRagdollEffects(Handle timer, CBasePlayer pPlayer)
+public void Timer_SetRagdollEffects(Handle timer, CBasePlayer pPlayer)
 {
 	if (pPlayer.IsInGame())
 	{
@@ -368,7 +368,6 @@ public Action Timer_SetRagdollEffects(Handle timer, CBasePlayer pPlayer)
 			}
 		}
 	}
-	return Plugin_Handled;
 }
 
 //------------------------------------------------------
