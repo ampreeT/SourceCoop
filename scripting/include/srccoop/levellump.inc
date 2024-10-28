@@ -6,9 +6,6 @@
 #pragma newdecls required
 #pragma semicolon 1
 
-// Output data seperator, varies per game
-static char g_szOutputSeparator[2];
-
 // Temporary brush entity model placeholders to be identified and fixed up at entity spawn 
 #define BRUSH_FIXUP_MDL "models/error.mdl" /* actual model that will be set on fixed up ents */
 #define BRUSH_FIXUP_IDENT "$BRUSHFIXUP$" /* identifier that the entities with customized brush models will have their "model" property start with */
@@ -38,7 +35,7 @@ enum struct CEntityOutputLump
 	bool LoadFromEntityKeyLump(const CEntityKeyLump pEntityKeyLump)
 	{
 		char buffers[5][MAX_VALUE];
-		if (sizeof(buffers) != ExplodeString(pEntityKeyLump.m_szValue, g_szOutputSeparator, buffers, sizeof(buffers), sizeof(buffers[])))
+		if (sizeof(buffers) != ExplodeString(pEntityKeyLump.m_szValue, OUTPUT_SEPARATOR, buffers, sizeof(buffers), sizeof(buffers[])))
 		{
 			return false;
 		}
@@ -59,10 +56,10 @@ enum struct CEntityOutputLump
 	void SaveToEntityKeyLump(CEntityKeyLump pEntityKeyLump)
 	{
 		FormatEx(pEntityKeyLump.m_szValue, sizeof(pEntityKeyLump.m_szValue), "%s%s%s%s%s%s%.2f%s%d",
-			this.m_szTargetEntity, g_szOutputSeparator,
-			this.m_szInputName, g_szOutputSeparator,
-			this.m_szParameter, g_szOutputSeparator,
-			this.m_flDelay, g_szOutputSeparator,
+			this.m_szTargetEntity, OUTPUT_SEPARATOR,
+			this.m_szInputName, OUTPUT_SEPARATOR,
+			this.m_szParameter, OUTPUT_SEPARATOR,
+			this.m_flDelay, OUTPUT_SEPARATOR,
 			this.m_iTimesToFire);
 	}
 	
@@ -452,9 +449,6 @@ enum struct CGlobalLevelLump
 		this.m_pClientCvarList = new CClientConsoleCommandList();
 		this.m_pOutputHookList = new COutputHookList();
 		this.m_EdtDefinesMap = new StringMap();
-		
-		g_szOutputSeparator[0] = OUTPUT_SEPARATOR;
-		g_szOutputSeparator[1] = 0;
 	}
 	
 	void Clear()

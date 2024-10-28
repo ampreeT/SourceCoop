@@ -15,7 +15,7 @@
 #if defined SRCCOOP_HL2DM
 	
 	#define CHECK_ENGINE "HL2DM"; if (GetEngineVersion() != Engine_HL2DM)
-	#define OUTPUT_SEPARATOR ','
+	#define OUTPUT_SEPARATOR ","
 	#define INTRO_TIMER_HUDTEXT
 
 	#define ENTPATCH_CUSTOM_NPC_MODELS
@@ -60,7 +60,7 @@
 		#define SRCCOOP_BLACKMESA
 	#endif
 	#define CHECK_ENGINE "Black Mesa"; if (GetEngineVersion() != Engine_BlackMesa)
-	#define OUTPUT_SEPARATOR '\27'
+	#define OUTPUT_SEPARATOR "\27"
 
 	#define ENTPATCH_CUSTOM_NPC_MODELS
 	#define ENTPATCH_UPDATE_ENEMY_MEMORY
