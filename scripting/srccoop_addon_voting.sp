@@ -197,10 +197,9 @@ public void MyCoopMenuHandler(TopMenu topmenu, TopMenuAction action, TopMenuObje
 // Skip intro voting
 //------------------------------------------------------
 
-public Action Timer_StartVoteSkipIntro(Handle timer)
+public void Timer_StartVoteSkipIntro(Handle timer)
 {
 	StartVoteSkipIntro(-1);
-	return Plugin_Handled;
 }
 
 public Action Command_VoteSkipIntro(int client, int args)
@@ -771,14 +770,13 @@ void StartMapVoteFinishedTimer(const char szMap[MAX_MAPNAME], const char szReaso
 	dp.WriteString(szReason);
 }
 
-public Action Timer_ChangeMap(Handle timer, DataPack dp)
+public void Timer_ChangeMap(Handle timer, DataPack dp)
 {
 	char szMap[MAX_MAPNAME], szReason[32];
 	dp.Reset();
 	dp.ReadString(szMap, sizeof(szMap));
 	dp.ReadString(szReason, sizeof(szReason));
 	ForceChangeLevel(szMap, szReason);
-	return Plugin_Handled;
 }
 
 int MenuTranslationHelper(Menu menu, MenuAction action, int param1, int param2, bool appendQuestionMark = true)

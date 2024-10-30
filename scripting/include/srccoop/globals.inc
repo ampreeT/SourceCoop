@@ -180,6 +180,7 @@ ArrayList g_pCoopModeMemPatchList;
 // ----------------------------
 IServerGameDLL g_ServerGameDLL;
 IServerTools g_ServerTools;
+CGlobalVars gpGlobals;
 
 // ----------------------------
 // Plugin variables
