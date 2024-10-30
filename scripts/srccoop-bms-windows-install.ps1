@@ -1,34 +1,42 @@
 $ErrorActionPreference = "Stop"
 
 # Install SteamCMD.
-New-Item -Name "SteamCMD" -ItemType Directory
+New-Item -Name "SteamCMD" -ItemType Directory -Force
 Invoke-WebRequest -Uri "https://steamcdn-a.akamaihd.net/client/installer/steamcmd.zip" -OutFile ".tmp.zip"
 Expand-Archive -LiteralPath ".tmp.zip" -DestinationPath "./SteamCMD"
 Remove-Item -Path ".tmp.zip" -Force
 
 # Install Black Mesa Dedicated Server.
 # TODO: Check error code of process and early exit on failure.
-New-Item -Name "Black Mesa Dedicated Server" -ItemType Directory
+New-Item -Name "Black Mesa Dedicated Server" -ItemType Directory -Force
 Start-Process -FilePath "./SteamCMD/steamcmd.exe" -ArgumentList '+force_install_dir "../Black Mesa Dedicated Server"', "+login anonymous", "+app_update 346680", "+quit" -Wait -NoNewWindow
 
 # Install the latest version of Metamod Source.
 Invoke-WebRequest -OutFile ".tmp.zip" -Uri (((Invoke-WebRequest -Uri "https://www.sourcemm.net/downloads.php").Links | Where-Object { $_.href -like "*-windows.zip" }).href | Select-Object -First 1)
-Expand-Archive -LiteralPath ".tmp.zip" -DestinationPath "./Black Mesa Dedicated Server/bms"
+Expand-Archive -LiteralPath ".tmp.zip" -DestinationPath "./Black Mesa Dedicated Server/bms" -Force
 Remove-Item -Path ".tmp.zip" -Force
 
-# Install the latest version of SourceMod.
-Invoke-WebRequest -OutFile ".tmp.zip" -Uri (((Invoke-WebRequest -Uri "https://www.sourcemod.net/downloads.php").Links | Where-Object { $_.href -like "*-windows.zip" }).href | Select-Object -First 1)
-Expand-Archive -LiteralPath ".tmp.zip" -DestinationPath "./Black Mesa Dedicated Server/bms"
+# Commented out temporarily due to needing SourceMod version 7163.
+# The newer SourceMod versions have a regression within their detour hooking utilities.
+## Install the latest version of SourceMod.
+#Invoke-WebRequest -OutFile ".tmp.zip" -Uri (((Invoke-WebRequest -Uri "https://www.sourcemod.net/downloads.php").Links | Where-Object { $_.href -like "*-windows.zip" }).href | Select-Object -First 1)
+#Expand-Archive -LiteralPath ".tmp.zip" -DestinationPath "./Black Mesa Dedicated Server/bms"
+#Remove-Item -Path ".tmp.zip" -Force
+
+# Install SourceMod version 7163.
+# The newer SourceMod versions have a regression within their detour hooking utilities.
+Invoke-WebRequest -OutFile ".tmp.zip" -Uri "https://sm.alliedmods.net/smdrop/1.12/sourcemod-1.12.0-git7163-windows.zip"
+Expand-Archive -LiteralPath ".tmp.zip" -DestinationPath "./Black Mesa Dedicated Server/bms" -Force
 Remove-Item -Path ".tmp.zip" -Force
 
 # Install the latest version of Accelerator.
 Invoke-WebRequest -OutFile ".tmp.zip" -Uri ("https://builds.limetech.io/" + ((Invoke-WebRequest -Uri "https://builds.limetech.io/?p=accelerator").Links | Where-Object { $_.href -like "*-windows.zip" } | Select-Object -First 1).href)
-Expand-Archive -LiteralPath ".tmp.zip" -DestinationPath "./Black Mesa Dedicated Server/bms"
+Expand-Archive -LiteralPath ".tmp.zip" -DestinationPath "./Black Mesa Dedicated Server/bms" -Force
 Remove-Item -Path ".tmp.zip" -Force
 
 # Install the latest release of SourceCoop.
 Invoke-WebRequest -OutFile ".tmp.zip" -Uri ((Invoke-WebRequest "https://api.github.com/repos/ampreeT/SourceCoop/releases/latest" | ConvertFrom-Json).assets | Where-Object { $_.name -like "*-bms.zip" } | Select-Object -First 1).browser_download_url
-Expand-Archive -LiteralPath ".tmp.zip" -DestinationPath "./Black Mesa Dedicated Server/bms"
+Expand-Archive -LiteralPath ".tmp.zip" -DestinationPath "./Black Mesa Dedicated Server/bms" -Force
 Remove-Item -Path ".tmp.zip" -Force
 
 ## OPTIONAL: Remove textures to save ~9 GB.
