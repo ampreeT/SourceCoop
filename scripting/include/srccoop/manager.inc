@@ -557,7 +557,7 @@ public Action StartTimerCallback(Handle pTimer)
 	return Plugin_Continue;
 }
 
-public Action ChangeLevelTimerCallback(Handle pTimer)
+public void ChangeLevelTimerCallback(Handle pTimer)
 {
 	if (!data.m_iTicksToEnd--)
 	{
@@ -573,7 +573,6 @@ public Action ChangeLevelTimerCallback(Handle pTimer)
 		data.m_pChangeLevelMgr.UpdateStatus(data.m_iTicksToEnd);
 		data.m_pChangeLevelTimer = CreateTimer(CoopManager.GetChangeLevelTimerInterval(), ChangeLevelTimerCallback, _, TIMER_FLAG_NO_MAPCHANGE);
 	}
-	return Plugin_Handled;
 }
 
 // end shortcut

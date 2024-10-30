@@ -1125,10 +1125,9 @@ public void Hook_CheckpointRadius(int iEntity)
 	}
 }
 
-public Action Timer_ActivateCheckpoint(Handle pTimer, int iSerial)
+public void Timer_ActivateCheckpoint(Handle pTimer, int iSerial)
 {
 	CCoopSpawnSystem.ActivateCheckpoint(CCoopSpawnSystem.FindCheckpointBySerial(iSerial));
-	return Plugin_Handled;
 }
 
 public void Hook_TouchPortal(int iEntity, int iOther)

@@ -11,8 +11,6 @@
 
 IServerGameClients g_ServerGameClients;
 CPlayerInfoManager g_pPlayerInfoManager;
-CVEngineServer g_pEngineServer;
-CGlobalVars gpGlobals;
 
 ConVar ai_los_mode;
 
@@ -457,9 +455,6 @@ stock void InitClassdef(GameData pGameConfig)
 	#if defined SRCCOOP_BLACKMESA
 	InitClassdefBM(pGameConfig);
 	#endif
-	
-	if (!(gpGlobals = g_pPlayerInfoManager.GetGlobalVars()))
-		SetFailState("Could not get gpGlobals from PlayerInfoManager");
 }
 
 #define NULL_CBASEENTITY view_as<any>(-1)
@@ -3412,7 +3407,7 @@ methodmap CGlobalVarsBase
 	public void SetMaxPlayers(const int iMaxPlayers)
 	{
 		assert(this.IsValid(), "Invalid state")
-		assert(IsInBounds(iMaxPlayers, 0, MaxClients), "Invalid maxplayers [%d]", iMaxPlayers)
+		assert1(IsInBounds(iMaxPlayers, 0, MaxClients), "Invalid maxplayers [%d]", iMaxPlayers)
 		
 		StoreToAddress(view_as<Address>(this) + 0x14, iMaxPlayers, NumberType_Int32);
 	}

@@ -29,15 +29,15 @@ enum struct ReviveConfig
 	char BAR_MODEL[PLATFORM_MAX_PATH];
 	char RAGDOLL_PARTICLE[128];
 
-	CONF_INIT(\
-		CONF_STR(SND_START)\
-		CONF_STR(SND_DENY)\
-		CONF_STR(SND_RESPAWN)\
-		CONF_INT(SND_RESPAWN_PITCH)\
-		CONF_INT(SNDLEVEL)\
-		CONF_CLR(BAR_COLOR)\
-		CONF_STR(BAR_MODEL)\
-		CONF_STR(RAGDOLL_PARTICLE)\
+	CONF_INIT(
+		CONF_STR(SND_START)
+		CONF_STR(SND_DENY)
+		CONF_STR(SND_RESPAWN)
+		CONF_INT(SND_RESPAWN_PITCH)
+		CONF_INT(SNDLEVEL)
+		CONF_CLR(BAR_COLOR)
+		CONF_STR(BAR_MODEL)
+		CONF_STR(RAGDOLL_PARTICLE)
 	)
 }
 
@@ -344,7 +344,7 @@ public void SC_OnPlayerRagdollCreated(CBasePlayer pPlayer, CBaseAnimating pRagdo
 	}
 }
 
-public Action Timer_SetRagdollEffects(Handle timer, CBasePlayer pPlayer)
+public void Timer_SetRagdollEffects(Handle timer, CBasePlayer pPlayer)
 {
 	if (pPlayer.IsInGame())
 	{
@@ -368,7 +368,6 @@ public Action Timer_SetRagdollEffects(Handle timer, CBasePlayer pPlayer)
 			}
 		}
 	}
-	return Plugin_Handled;
 }
 
 //------------------------------------------------------

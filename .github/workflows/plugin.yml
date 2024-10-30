@@ -24,7 +24,7 @@ jobs:
         id: setup-sp
         uses: rumblefrog/setup-sp@master
         with:
-          version: '1.11.6960'
+          version: '1.12.7163'
           version-file: ./scripting/include/srccoop/public.inc
           define-name: SRCCOOP_VERSION
 
@@ -35,8 +35,8 @@ jobs:
           do
             plugin="$(basename "${file%.*}")"
             echo -e "\nCompiling $plugin\n"
-            spcomp -v2 -i scripting/include -o plugins/"$plugin" "$file" NO_DEBUG=1 ${{ matrix.game.args }}
-            spcomp -v2 -i scripting/include -o plugins/disabled/srccoop_debug/"$plugin" "$file" ${{ matrix.game.args }}
+            spcomp -v2 -i scripting/include -o plugins/"$plugin".smx "$file" NO_DEBUG=1 ${{ matrix.game.args }}
+            spcomp -v2 -i scripting/include -o plugins/disabled/srccoop_debug/"$plugin".smx "$file" ${{ matrix.game.args }}
           done
 
       - name: Create package

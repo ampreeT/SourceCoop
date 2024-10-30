@@ -29,6 +29,9 @@ void LoadGameData()
 	if (!(g_ServerTools = IServerTools(GetInterface(pGameConfig, "server", "IServerTools"))))
 		SetFailState("Could not get interface for %s", "IServerTools");
 	
+	if (!(gpGlobals = g_pPlayerInfoManager.GetGlobalVars()))
+		SetFailState("Could not get gpGlobals from PlayerInfoManager");
+	
 	// Calls
 
 	#if defined PLAYERPATCH_SERVERSIDE_RAGDOLLS

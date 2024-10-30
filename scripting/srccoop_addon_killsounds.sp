@@ -54,20 +54,20 @@ public void MyMenuHandler(TopMenu topmenu, TopMenuAction action, TopMenuObject o
 {
 	if (action == TopMenuAction_DisplayOption)
 	{
-		Format(buffer, maxlength, "%T", GetCookieBool(pEnabledCookie, param) ? "disable killsounds" : "enable killsounds", param);
+		Format(buffer, maxlength, "%T", pEnabledCookie.GetInt(param, pConvarDefault.BoolValue) ? "disable killsounds" : "enable killsounds", param);
 	}
 	else if (action == TopMenuAction_SelectOption)
 	{
 		if (AreClientCookiesCached(param))
 		{
-			if (GetCookieBool(pEnabledCookie, param))
+			if (pEnabledCookie.GetInt(param, pConvarDefault.BoolValue))
 			{
-				SetCookieBool(pEnabledCookie, param, false);
+				pEnabledCookie.SetInt(param, false);
 				Msg(param, "%t", "killsounds disabled");
 			}
 			else
 			{
-				SetCookieBool(pEnabledCookie, param, true);
+				pEnabledCookie.SetInt(param, true);
 				Msg(param, "%t", "killsounds enabled");
 			}
 		}
@@ -80,15 +80,6 @@ public void OnConfigsExecuted()
 	PrecacheSound(szSoundPath, true);
 }
 
-public void OnClientCookiesCached(int client)
-{
-	if (!IsCookieSet(pEnabledCookie, client))
-	{
-		// new player - set the default
-		SetCookieBool(pEnabledCookie, client, pConvarDefault.BoolValue);
-	}
-}
-
 public void Event_EntityKilled(Event hEvent, const char[] szName, bool bDontBroadcast)
 {
 	CBaseEntity pKilled = CBaseEntity(hEvent.GetInt("entindex_killed"));
@@ -96,7 +87,7 @@ public void Event_EntityKilled(Event hEvent, const char[] szName, bool bDontBroa
 	
 	if (pAttacker.IsClassPlayer() && pKilled.IsClassNPC())
 	{
-		if (GetCookieBool(pEnabledCookie, pAttacker.entindex))
+		if (pEnabledCookie.GetInt(pAttacker.entindex, pConvarDefault.BoolValue))
 		{
 			EmitSoundToClient(pAttacker.entindex, szSoundPath, .level = SNDLEVEL_NONE, .volume = flSoundVol);
 		}
