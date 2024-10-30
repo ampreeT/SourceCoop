@@ -152,6 +152,10 @@ DynamicDetour hkPhysics_RunThinkFunctions;
 DynamicDetour hkDissolve;
 #endif
 
+#if defined GAMEPATCH_UTIL_FINDCLIENTINPVSGUTS
+DynamicDetour hkUtilFindClientInPVSGuts;
+#endif
+
 #if defined GAMEPATCH_PREDICTED_EFFECTS
 DynamicDetour hkIgnorePredictionCull;
 DynamicHook hkDispatchEffect;
