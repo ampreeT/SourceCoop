@@ -4,15 +4,22 @@
 {
 	"chapter" "Unforseen Consequences"
 	"nextmap" "bm_c1a1d"
+	"intro_type" "none"
 	"equipment"
 	{
-		"lookup"
-		{
-			"targetname" "/^(suit|weapons)$/"
-		}
+		"item" "item_suit"
+		"item" "item_weapon_crowbar"
+		"item" "item_weapon_glock"
+		"item" "item_battery"
+		"item" "item_battery"
 	}
 	"entity"
 	{
+		// delete world starting equipment
+		"delete"
+		{
+			"targetname" "suit"
+		}
 		// entity killer relays
 		"delete"
 		{
@@ -146,23 +153,30 @@
 		}
 		"elevatorfall"
 		{
-			"origin"	"-896 -3119 -1123"
-			"angles"	"0 180 0"
+			"origin"	"-770 -3040 -1120"
+			"angles"	"5 -150 0"
 			"triggerid"	"maint_light2_trigger"
 			"output"	"OnTrigger"
 			"portal"	"-864 -3098 -270"
 		}
 		"lobby"
 		{
-			"origin"	"-1856 -2240 -1108"
-			"angles"	"0 180 0"
+			"origin"	"-1770 -2180 -1140"
+			"angles"	"6 -175 0"
 			"triggerid"	"houndeye_spawn2"
 			"output"	"OnTrigger"
 		}
+		"sitting_scientist_saved"
+		{
+			"origin"	"-1130.0 -1840.0 -950"
+			"angles"	"7.5 -110.0 0.0"
+			"triggerid"	"sec_door_1"
+			"output"	"OnOpen"
+		}
 		"lobby2"
 		{
-			"origin"	"-2816 -2752 -1111"
-			"angles"	"0 90 0"
+			"origin"	"-2780.0 -2700.0 -1100.0"
+			"angles"	"5.0 160.0 0.0"
 			"triggerid"	"vort_door_trigger"
 			"output"	"OnTrigger"
 		}

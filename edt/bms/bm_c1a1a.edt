@@ -25,6 +25,10 @@
 				"delay_output" "OnMapSpawn"
 			}
 		}
+		"remove"
+		{
+			"targetname"	"relay_stop_cpr_scene"
+		}
 		// prepare changelevel touch trigger
 		"modify"
 		{
@@ -64,8 +68,8 @@
 			"origin"	"588 512 -475"
 			"angles"	"0 90 0"
 			"triggerid"	"td_1"
-			"output"	"OnFullyClosed"
-			"delay"		"0"
+			"output"	"OnClose"
+			"delay"		"1.0"
 			"portal"	"592 440 -475"
 		}
 		"watchroom"
@@ -73,8 +77,8 @@
 			"origin"	"1104 1008 -251"
 			"angles"	"0 0 0"
 			"triggerid"	"lab2_door5"
-			"output"	"OnFullyClosed"
-			"delay"		"0"
+			"output"	"OnClose"
+			"delay"		"1.0"
 			"portal"	"1048 1008 -251"
 		}
 	}

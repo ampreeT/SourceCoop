@@ -69,6 +69,7 @@
 enum IntroType
 {
 	INTRO_NONE = 0,
+	INTRO_WAIT,
 	INTRO_FADE,
 	INTRO_FREEZE
 }

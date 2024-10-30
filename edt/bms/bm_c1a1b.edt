@@ -4,10 +4,9 @@
 {
 	"chapter" "Unforseen Consequences"
 	"nextmap" "bm_c1a1c"
+	"intro_type" "wait"
 	"equipment"
 	{
-		"health" "95"
-		"item" "item_weapon_crowbar"
 		"lookup"
 		{
 			"targetname" "global_newgame_spawner_suit"
@@ -52,6 +51,11 @@
 				}
 			}
 		}
+		// delete trigger that replays barney scene
+		"delete"
+		{
+			"hammerid"	"3010159"
+		}
 	}
 	"checkpoint"
 	{
@@ -73,6 +77,8 @@
 			"angles"	"0 90 0"
 			"triggerid"	"beam_wall_relay"
 			"output"	"OnTrigger"
+			"delay"		"0.0"
+			"bringall"	"1"
 		}
 	}
 }
