@@ -457,11 +457,9 @@ public void OnClientPutInServer(int client)
 		#endif
 	}
 
-	CBasePlayer pPlayer = CBasePlayer(client);
 	CCoopSpawnSystem.OnClientPutInServer(client);
 	ItemInstancingManager.OnClientPutInServer(client);
 	PlayerPatch_OnClientPutInServer(client);
-	CoopManager.OnClientPutInServer(pPlayer);
 	
 	SDKHook(client, SDKHook_PreThinkPost, Hook_PlayerPreThinkPost);
 	SDKHook(client, SDKHook_PreThink, Hook_PlayerPreThink);
@@ -516,6 +514,7 @@ public void OnClientDisconnect(int client)
 public void OnClientDisconnect_Post(int client)
 {
 	SurvivalManager.OnClientDisconnectPost(client);
+	CoopManager.OnClientDisconnectPost(client);
 	g_szSteamIds[client] = "";
 	g_bPostTeamSelect[client] = false;
 	g_iAddButtons[client] = 0;
