@@ -72,9 +72,6 @@ stock void InitClassdef(GameData pGameConfig)
 	if (!(g_pPlayerInfoManager = view_as<CPlayerInfoManager>(GetInterface(pGameConfig, "server", "PlayerInfoManager"))))
 		SetFailState("Could not get interface for %s", "PlayerInfoManager");
 	
-	if (!(g_pEngineServer = view_as<CVEngineServer>(GetInterface(pGameConfig, "engine", "IVEngineServer"))))
-		SetFailState("Could not get interface for %s", "IVEngineServer");
-
 	char szSetCollisionBounds[] = "CBaseEntity::SetCollisionBounds";
 	StartPrepSDKCall(SDKCall_Entity);
 	if (!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Signature, szSetCollisionBounds))
@@ -416,7 +413,7 @@ stock void InitClassdef(GameData pGameConfig)
 	}
 	
 	char szGetClusterForOrigin[] = "CVEngineServer::GetClusterForOrigin";
-	StartPrepSDKCall(SDKCall_Raw);
+	StartPrepSDKCall(SDKCall_Engine);
 	if (!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Virtual, szGetClusterForOrigin))
 		LogMessage("Could not obtain gamedata offset %s", szGetClusterForOrigin);
 	else
@@ -427,7 +424,7 @@ stock void InitClassdef(GameData pGameConfig)
 	}
 	
 	char szGetPVSForCluster[] = "CVEngineServer::GetPVSForCluster";
-	StartPrepSDKCall(SDKCall_Raw);
+	StartPrepSDKCall(SDKCall_Engine);
 	if (!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Virtual, szGetPVSForCluster))
 		LogMessage("Could not obtain gamedata offset %s", szGetPVSForCluster);
 	else
@@ -440,7 +437,7 @@ stock void InitClassdef(GameData pGameConfig)
 	}
 	
 	char szCheckOriginInPVS[] = "CVEngineServer::CheckOriginInPVS";
-	StartPrepSDKCall(SDKCall_Raw);
+	StartPrepSDKCall(SDKCall_Engine);
 	if (!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Virtual, szCheckOriginInPVS))
 		LogMessage("Could not obtain gamedata offset %s", szCheckOriginInPVS);
 	else
@@ -3371,24 +3368,19 @@ methodmap CPlayerInfoManager
 
 methodmap CVEngineServer
 {
-	public CVEngineServer()
+	public static int GetClusterForOrigin(const float vec3Origin[3])
 	{
-		return g_pEngineServer;
+		return SDKCall(g_pGetClusterForOrigin, vec3Origin);
 	}
-
-	public int GetClusterForOrigin(const float vec3Origin[3])
-	{
-		return SDKCall(g_pGetClusterForOrigin, view_as<Address>(this), vec3Origin);
-	}
-	public MemoryBlock GetPVSForCluster(const int iCluster)
+	public static MemoryBlock GetPVSForCluster(const int iCluster)
 	{
 		MemoryBlock pPVS = new MemoryBlock(MAX_MAP_CLUSTERS / 8);
-		SDKCall(g_pGetPVSForCluster, view_as<Address>(this), iCluster, pPVS.Size, pPVS.Address);
+		SDKCall(g_pGetPVSForCluster, iCluster, pPVS.Size, pPVS.Address);
 		return pPVS;
 	}
-	public bool CheckOriginInPVS(const float vec3Origin[3], const MemoryBlock pCheckPVS)
+	public static bool CheckOriginInPVS(const float vec3Origin[3], const MemoryBlock pCheckPVS)
 	{
-		return SDKCall(g_pCheckOriginInPVS, view_as<Address>(this), vec3Origin, pCheckPVS.Address, pCheckPVS.Size) != 0;
+		return SDKCall(g_pCheckOriginInPVS, vec3Origin, pCheckPVS.Address, pCheckPVS.Size) != 0;
 	}
 }
 

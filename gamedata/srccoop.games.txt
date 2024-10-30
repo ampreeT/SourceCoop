@@ -6,11 +6,6 @@
 	{
 		"Keys"
 		{
-			"IVEngineServer"
-			{
-				"windows"	"VEngineServer023"
-				"linux"		"VEngineServer023"
-			}
 			"IServerGameDLL"
 			{
 				"windows"	"ServerGameDLL010"

@@ -1527,7 +1527,6 @@ public MRESReturn Hook_DispatchEffect(DHookParam hParams)
 //------------------------------------------------------
 public MRESReturn Hook_UTIL_FindClientInPVSGuts(DHookReturn hReturn, DHookParam hParams)
 {
-	CVEngineServer pEngineServer = CVEngineServer();
 	CBaseEntity pNPC = CBaseEntity(hParams.Get(1));
 
 	float vec3Origin[3];
@@ -1541,11 +1540,11 @@ public MRESReturn Hook_UTIL_FindClientInPVSGuts(DHookReturn hReturn, DHookParam 
 			float vec3PlayerPosition[3];
 			pPlayer.GetAbsOrigin(vec3PlayerPosition);
 
-			int iCluster = pEngineServer.GetClusterForOrigin(vec3PlayerPosition);
+			int iCluster = CVEngineServer.GetClusterForOrigin(vec3PlayerPosition);
 			if (iCluster != -1)
 			{
-				MemoryBlock pPVS = pEngineServer.GetPVSForCluster(iCluster);
-				bool bFound = pEngineServer.CheckOriginInPVS(vec3Origin, pPVS);
+				MemoryBlock pPVS = CVEngineServer.GetPVSForCluster(iCluster);
+				bool bFound = CVEngineServer.CheckOriginInPVS(vec3Origin, pPVS);
 				delete pPVS;
 
 				if (bFound)
