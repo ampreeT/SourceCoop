@@ -106,7 +106,7 @@ methodmap CoopManager
 				for (int i = 0; i < pOutputHookList.Length; i++)
 				{
 					CEntityOutputHook pOutputHook; pOutputHookList.GetArray(i, pOutputHook);
-					HookSingleEntityOutput(pEntity.GetEntIndex(), pOutputHook.m_szOutputName, OutputCallbackForDelay);
+					HookSingleEntityOutput(pEntity.GetEntIndex(), pOutputHook.m_szOutputName, Callback_OutputCallbackForDelay);
 					data.m_bDoesMapHaveDelayedOutput = true;
 				}
 			}
@@ -246,7 +246,7 @@ methodmap CoopManager
 					data.m_hStartTimer = null;
 				}
 				data.m_iSecondsToStart = 0;
-				Action_StartTimer(null);
+				Timer_DeincrementUntilMapStart(null);
 			}
 			else if (((GetGameTime() - data.m_flMapStartTime) <= g_flWaitPeriodSkipGraceTime) && (data.m_iSpawnedPlayerCountLastMap - data.m_iSpawnedPlayerCount) == 0)
 			{
@@ -259,14 +259,14 @@ methodmap CoopManager
 					}
 					data.m_iSecondsToStart = 3;
 					CoopManager.SetIntroTimeHud(data.m_iSecondsToStart);
-					data.m_hStartTimer = CreateTimer(1.0, Action_StartTimer, _, TIMER_FLAG_NO_MAPCHANGE | TIMER_REPEAT);
+					data.m_hStartTimer = CreateTimer(1.0, Timer_DeincrementUntilMapStart, _, TIMER_FLAG_NO_MAPCHANGE | TIMER_REPEAT);
 				}
 			}
 			else if (!CoopManager.IsInCountDownPeriod())
 			{
 				data.m_iSecondsToStart = g_pConvarWaitPeriod.IntValue;
 				CoopManager.SetIntroTimeHud(data.m_iSecondsToStart);
-				data.m_hStartTimer = CreateTimer(1.0, Action_StartTimer, _, TIMER_FLAG_NO_MAPCHANGE | TIMER_REPEAT);
+				data.m_hStartTimer = CreateTimer(1.0, Timer_DeincrementUntilMapStart, _, TIMER_FLAG_NO_MAPCHANGE | TIMER_REPEAT);
 			}
 		}
 	}
@@ -322,7 +322,7 @@ methodmap CoopManager
 		if (data.m_pChangeLevelTimer == null)
 		{
 			data.m_iTicksToEnd = g_pConvarEndWaitPeriod.IntValue;
-			data.m_pChangeLevelTimer = CreateTimer(CoopManager.GetChangeLevelTimerInterval(), ChangeLevelTimerCallback, _, TIMER_FLAG_NO_MAPCHANGE);
+			data.m_pChangeLevelTimer = CreateTimer(CoopManager.GetChangeLevelTimerInterval(), Timer_DeincrementChangeLevel, _, TIMER_FLAG_NO_MAPCHANGE);
 			EmitSoundToAll(Conf.SND_CHANGELEVEL, .volume = Conf.SND_CHANGELEVEL_VOL);
 		}
 		if (data.m_pChangeLevelMgr.SetPlayerVote(pChangelevel, pActivator, data.m_iClientChangeLvlIndicies))
@@ -515,7 +515,7 @@ methodmap CoopManager
 
 // Runs every 1 second.
 // 
-public Action Action_StartTimer(Handle hTimer)
+public Action Timer_DeincrementUntilMapStart(Handle hTimer)
 {
 	--data.m_iSecondsToStart;
 	if (data.m_iSecondsToStart <= 0)
@@ -572,7 +572,7 @@ public Action Action_StartTimer(Handle hTimer)
 	return Plugin_Continue;
 }
 
-public void ChangeLevelTimerCallback(Handle pTimer)
+public void Timer_DeincrementChangeLevel(Handle pTimer)
 {
 	if (!data.m_iTicksToEnd--)
 	{
@@ -586,20 +586,20 @@ public void ChangeLevelTimerCallback(Handle pTimer)
 	{
 		EmitSoundToAll(Conf.SND_CHANGELEVEL_TICK, .volume = Conf.SND_CHANGELEVEL_TICK_VOL);
 		data.m_pChangeLevelMgr.UpdateStatus(data.m_iTicksToEnd);
-		data.m_pChangeLevelTimer = CreateTimer(CoopManager.GetChangeLevelTimerInterval(), ChangeLevelTimerCallback, _, TIMER_FLAG_NO_MAPCHANGE);
+		data.m_pChangeLevelTimer = CreateTimer(CoopManager.GetChangeLevelTimerInterval(), Timer_DeincrementChangeLevel, _, TIMER_FLAG_NO_MAPCHANGE);
 	}
 }
 
-public Action OutputCallbackForDelay(const char[] output, int caller, int activator, float delay)
+public Action Callback_OutputCallbackForDelay(const char[] szOutput, int iCaller, int iActivator, float flDelay)
 {
 	if (data.m_bStarted)
 		return Plugin_Continue;
 	
 	FireOutputData pFireOutputData;
-	strcopy(pFireOutputData.m_szName, sizeof(pFireOutputData.m_szName), output);
-	pFireOutputData.m_pCaller = CBaseEntity(caller);
-	pFireOutputData.m_pActivator = CBaseEntity(activator);
-	pFireOutputData.m_flDelay = delay;
+	strcopy(pFireOutputData.m_szName, sizeof(pFireOutputData.m_szName), szOutput);
+	pFireOutputData.m_pCaller = CBaseEntity(iCaller);
+	pFireOutputData.m_pActivator = CBaseEntity(iActivator);
+	pFireOutputData.m_flDelay = flDelay;
 	CoopManager.AddDelayedOutput(pFireOutputData);
 	
 	if (pFireOutputData.m_pCaller.IsValid())
@@ -611,12 +611,12 @@ public Action OutputCallbackForDelay(const char[] output, int caller, int activa
 		}
 		else if (pFireOutputData.m_pCaller.IsClassname("logic_relay"))
 		{
-			int sf = pFireOutputData.m_pCaller.GetSpawnFlags();
-			if (sf & SF_REMOVE_ON_FIRE)
+			int iSpawnFlags = pFireOutputData.m_pCaller.GetSpawnFlags();
+			if (iSpawnFlags & SF_REMOVE_ON_FIRE)
 			{
-				pFireOutputData.m_pCaller.SetSpawnFlags(sf &~ SF_REMOVE_ON_FIRE);
-				UnhookSingleEntityOutput(caller, output, OutputCallbackForDelay);
-				HookSingleEntityOutput(caller, output, DeleteEntOnDelayedOutputFire);
+				pFireOutputData.m_pCaller.SetSpawnFlags(iSpawnFlags &~ SF_REMOVE_ON_FIRE);
+				UnhookSingleEntityOutput(iCaller, szOutput, Callback_OutputCallbackForDelay);
+				HookSingleEntityOutput(iCaller, szOutput, Callback_DeleteEntOnDelayedOutputFire);
 			}
 		}
 	}
@@ -624,11 +624,11 @@ public Action OutputCallbackForDelay(const char[] output, int caller, int activa
 	return Plugin_Stop;
 }
 
-public Action DeleteEntOnDelayedOutputFire(const char[] output, int caller, int activator, float delay)
+public Action Callback_DeleteEntOnDelayedOutputFire(const char[] szOutput, int iCaller, int iActivator, float flDelay)
 {
 	if (data.m_bStarted)
 	{
-		RemoveEntity(caller);
+		RemoveEntity(iCaller);
 		return Plugin_Continue;
 	}
 	else
