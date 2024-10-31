@@ -4,7 +4,7 @@
 {
 	"chapter" "Anomalous Materials"
 	"nextmap"		"bm_c1a1a"
-	"intro_type"	"wait"
+	"intro_type"	"none"
 	"equipment"
 	{
 		"lookup"

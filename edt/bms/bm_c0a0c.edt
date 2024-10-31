@@ -4,7 +4,7 @@
 {
 	"chapter" "Black Mesa Inbound"
 	"nextmap" "bm_c1a0a"
-	"intro_type" "wait"
+	"intro_type" "none"
 	
 	"voting_skip_to" "bm_c1a0a"
 	

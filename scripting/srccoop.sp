@@ -962,28 +962,7 @@ public void Hook_EntitySpawnPost(int iEntIndex)
 			}
 		}
 		#endif
-		
-		// find and hook output hooks for entity
-		if (!g_pCoopManagerData.m_bStarted)
-		{
-			ArrayList pOutputHookList = g_pLevelLump.GetOutputHooksForEntity(pEntity);
-			if (pOutputHookList.Length > 0)
-			{
-				if (pEntity.IsClassname("logic_auto"))
-				{
-					// do not let it get killed, so the output can fire later
-					int iSpawnFlags = pEntity.GetSpawnFlags();
-					if (iSpawnFlags & SF_AUTO_FIREONCE)
-						pEntity.SetSpawnFlags(iSpawnFlags &~ SF_AUTO_FIREONCE);
-				}
-				for (int i = 0; i < pOutputHookList.Length; i++)
-				{
-					CEntityOutputHook pOutputHook; pOutputHookList.GetArray(i, pOutputHook);
-					HookSingleEntityOutput(iEntIndex, pOutputHook.m_szOutputName, OutputCallbackForDelay);
-				}
-			}
-			pOutputHookList.Close();
-		}
+		CoopManager.EntitySpawnPost(pEntity);
 	}
 }
 
@@ -1014,54 +993,6 @@ public void SpawnPostponedItem(CBaseEntity pEntity)
 		pEntity.Spawn();
 		g_bIsMultiplayerOverride = true;
 		pEntity.SetCollisionGroup(COLLISION_GROUP_WEAPON);
-	}
-}
-
-public Action OutputCallbackForDelay(const char[] output, int caller, int activator, float delay)
-{
-	if (g_pCoopManagerData.m_bStarted)
-	{
-		return Plugin_Continue;
-	}
-	FireOutputData pFireOutputData;
-	strcopy(pFireOutputData.m_szName, sizeof(pFireOutputData.m_szName), output);
-	pFireOutputData.m_pCaller = CBaseEntity(caller);
-	pFireOutputData.m_pActivator = CBaseEntity(activator);
-	pFireOutputData.m_flDelay = delay;
-	CoopManager.AddDelayedOutput(pFireOutputData);
-	
-	if (pFireOutputData.m_pCaller.IsValid())
-	{
-		// stop from deleting itself
-		if (pFireOutputData.m_pCaller.IsClassname("trigger_once"))
-		{
-			RequestFrame(RequestStopThink, pFireOutputData.m_pCaller);
-		}
-		else if (pFireOutputData.m_pCaller.IsClassname("logic_relay"))
-		{
-			int sf = pFireOutputData.m_pCaller.GetSpawnFlags();
-			if (sf & SF_REMOVE_ON_FIRE)
-			{
-				pFireOutputData.m_pCaller.SetSpawnFlags(sf &~ SF_REMOVE_ON_FIRE);
-				UnhookSingleEntityOutput(caller, output, OutputCallbackForDelay);
-				HookSingleEntityOutput(caller, output, DeleteEntOnDelayedOutputFire);
-			}
-		}
-	}
-
-	return Plugin_Stop;
-}
-
-public Action DeleteEntOnDelayedOutputFire(const char[] output, int caller, int activator, float delay)
-{
-	if (g_pCoopManagerData.m_bStarted)
-	{
-		RemoveEntity(caller);
-		return Plugin_Continue;
-	}
-	else
-	{
-		return Plugin_Stop;
 	}
 }
 

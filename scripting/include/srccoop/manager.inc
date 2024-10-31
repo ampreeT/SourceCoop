@@ -17,6 +17,10 @@ enum struct CoopManagerData
 	int m_iEnabledFeatures;
 	bool m_bIsCoopMap;
 	bool m_bStarted;
+	bool m_bDoesMapHaveDelayedOutput;
+	int m_iSpawnedPlayerCountLastMap;
+	int m_iSpawnedPlayerCount;
+	float m_flMapStartTime;
 	float m_flStartTime;
 	int m_iSecondsToStart;
 	Handle m_hStartTimer;
@@ -32,12 +36,16 @@ CoopManagerData g_pCoopManagerData;
 // local shortcut for data:
 #define data g_pCoopManagerData
 
+// The grace period to wait for players in seconds to skip the wait period timer.
+float g_flWaitPeriodSkipGraceTime = 300.0;
+
 methodmap CoopManager
 {
 	public static void Initialize()
 	{
 		data.m_pDelayedOutputs = new ArrayList(sizeof(FireOutputData));
 		data.m_pChangeLevelMgr = new ChangeLevelManager();
+		data.m_flMapStartTime = -g_flWaitPeriodSkipGraceTime;
 		SurvivalManager.Initialize();
 	}
 
@@ -48,6 +56,10 @@ methodmap CoopManager
 		data.m_hStartTimer = null;
 		data.m_pChangeLevelTimer = null;
 		data.m_bStarted = false;
+		data.m_iSpawnedPlayerCountLastMap = data.m_iSpawnedPlayerCount;
+		data.m_iSpawnedPlayerCount = 0;
+		data.m_flMapStartTime = GetGameTime();
+		data.m_bDoesMapHaveDelayedOutput = false;
 		data.m_pChangeLevelMgr.Clear();
 		data.m_iEnabledFeatures = 0;
 		for (int i = 0; i <= MaxClients; i++)
@@ -74,6 +86,32 @@ methodmap CoopManager
 			return true;
 		}
 		return false;
+	}
+
+	public static void EntitySpawnPost(CBaseEntity pEntity)
+	{
+		// find and hook output hooks for entity
+		if (!data.m_bStarted)
+		{
+			ArrayList pOutputHookList = g_pLevelLump.GetOutputHooksForEntity(pEntity);
+			if (pOutputHookList.Length > 0)
+			{
+				if (pEntity.IsClassname("logic_auto"))
+				{
+					// do not let it get killed, so the output can fire later
+					int iSpawnFlags = pEntity.GetSpawnFlags();
+					if (iSpawnFlags & SF_AUTO_FIREONCE)
+						pEntity.SetSpawnFlags(iSpawnFlags &~ SF_AUTO_FIREONCE);
+				}
+				for (int i = 0; i < pOutputHookList.Length; i++)
+				{
+					CEntityOutputHook pOutputHook; pOutputHookList.GetArray(i, pOutputHook);
+					HookSingleEntityOutput(pEntity.GetEntIndex(), pOutputHook.m_szOutputName, OutputCallbackForDelay);
+					data.m_bDoesMapHaveDelayedOutput = true;
+				}
+			}
+			pOutputHookList.Close();
+		}
 	}
 
 	public static void OnMapStart()
@@ -183,6 +221,8 @@ methodmap CoopManager
 		g_pSpawnOptions.Reset();
 
 		ItemInstancingManager.OnPlayerSpawned(pPlayer);
+
+		data.m_iSpawnedPlayerCount = GetRealClientCount(true);
 		
 		if (!data.m_bStarted)
 		{
@@ -198,21 +238,35 @@ methodmap CoopManager
 					Conf.FROZEN_FADE_COLOR[0], Conf.FROZEN_FADE_COLOR[1], Conf.FROZEN_FADE_COLOR[2], Conf.FROZEN_FADE_COLOR[3]);
 			}
 
-			if (!CoopManager.IsInCountDownPeriod())
+			if ((g_pLevelLump.m_iIntroType == INTRO_NONE && !data.m_bDoesMapHaveDelayedOutput))
 			{
-				if (g_pLevelLump.m_iIntroType == INTRO_NONE && data.m_pDelayedOutputs.Length == 0)
+				if (data.m_hStartTimer)
 				{
-					data.m_iSecondsToStart = 0;
-					Action_StartTimer(null);
+					delete data.m_hStartTimer;
+					data.m_hStartTimer = null;
 				}
-				else
+				data.m_iSecondsToStart = 0;
+				Action_StartTimer(null);
+			}
+			else if (((GetGameTime() - data.m_flMapStartTime) <= g_flWaitPeriodSkipGraceTime) && (data.m_iSpawnedPlayerCountLastMap - data.m_iSpawnedPlayerCount) == 0)
+			{
+				if (!data.m_hStartTimer || data.m_iSecondsToStart > 3)
 				{
-					data.m_iSecondsToStart = g_pConvarWaitPeriod.IntValue;
-
+					if (data.m_hStartTimer)
+					{
+						delete data.m_hStartTimer;
+						data.m_hStartTimer = null;
+					}
+					data.m_iSecondsToStart = 3;
 					CoopManager.SetIntroTimeHud(data.m_iSecondsToStart);
-
 					data.m_hStartTimer = CreateTimer(1.0, Action_StartTimer, _, TIMER_FLAG_NO_MAPCHANGE | TIMER_REPEAT);
 				}
+			}
+			else if (!CoopManager.IsInCountDownPeriod())
+			{
+				data.m_iSecondsToStart = g_pConvarWaitPeriod.IntValue;
+				CoopManager.SetIntroTimeHud(data.m_iSecondsToStart);
+				data.m_hStartTimer = CreateTimer(1.0, Action_StartTimer, _, TIMER_FLAG_NO_MAPCHANGE | TIMER_REPEAT);
 			}
 		}
 	}
@@ -533,6 +587,53 @@ public void ChangeLevelTimerCallback(Handle pTimer)
 		EmitSoundToAll(Conf.SND_CHANGELEVEL_TICK, .volume = Conf.SND_CHANGELEVEL_TICK_VOL);
 		data.m_pChangeLevelMgr.UpdateStatus(data.m_iTicksToEnd);
 		data.m_pChangeLevelTimer = CreateTimer(CoopManager.GetChangeLevelTimerInterval(), ChangeLevelTimerCallback, _, TIMER_FLAG_NO_MAPCHANGE);
+	}
+}
+
+public Action OutputCallbackForDelay(const char[] output, int caller, int activator, float delay)
+{
+	if (data.m_bStarted)
+		return Plugin_Continue;
+	
+	FireOutputData pFireOutputData;
+	strcopy(pFireOutputData.m_szName, sizeof(pFireOutputData.m_szName), output);
+	pFireOutputData.m_pCaller = CBaseEntity(caller);
+	pFireOutputData.m_pActivator = CBaseEntity(activator);
+	pFireOutputData.m_flDelay = delay;
+	CoopManager.AddDelayedOutput(pFireOutputData);
+	
+	if (pFireOutputData.m_pCaller.IsValid())
+	{
+		// stop from deleting itself
+		if (pFireOutputData.m_pCaller.IsClassname("trigger_once"))
+		{
+			RequestFrame(RequestStopThink, pFireOutputData.m_pCaller);
+		}
+		else if (pFireOutputData.m_pCaller.IsClassname("logic_relay"))
+		{
+			int sf = pFireOutputData.m_pCaller.GetSpawnFlags();
+			if (sf & SF_REMOVE_ON_FIRE)
+			{
+				pFireOutputData.m_pCaller.SetSpawnFlags(sf &~ SF_REMOVE_ON_FIRE);
+				UnhookSingleEntityOutput(caller, output, OutputCallbackForDelay);
+				HookSingleEntityOutput(caller, output, DeleteEntOnDelayedOutputFire);
+			}
+		}
+	}
+
+	return Plugin_Stop;
+}
+
+public Action DeleteEntOnDelayedOutputFire(const char[] output, int caller, int activator, float delay)
+{
+	if (data.m_bStarted)
+	{
+		RemoveEntity(caller);
+		return Plugin_Continue;
+	}
+	else
+	{
+		return Plugin_Stop;
 	}
 }
 

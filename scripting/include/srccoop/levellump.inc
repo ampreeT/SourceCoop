@@ -579,11 +579,7 @@ enum struct CGlobalLevelLump
 						{
 							char szIntroType[16];
 							kv.GetString(NULL_STRING, szIntroType, sizeof(szIntroType));
-							if (strcmp(szIntroType, "wait", false) == 0)
-							{
-								this.m_iIntroType = INTRO_WAIT;
-							}
-							else if (strcmp(szIntroType, "fade", false) == 0)
+							if (strcmp(szIntroType, "fade", false) == 0)
 							{
 								this.m_iIntroType = INTRO_FADE;
 							}

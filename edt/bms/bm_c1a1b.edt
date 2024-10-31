@@ -4,7 +4,7 @@
 {
 	"chapter" "Unforseen Consequences"
 	"nextmap" "bm_c1a1c"
-	"intro_type" "wait"
+	"intro_type" "fade"
 	"equipment"
 	{
 		"lookup"
