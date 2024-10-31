@@ -240,11 +240,7 @@ methodmap CoopManager
 
 			if ((g_pLevelLump.m_iIntroType == INTRO_NONE && !data.m_bDoesMapHaveDelayedOutput))
 			{
-				if (data.m_hStartTimer)
-				{
-					delete data.m_hStartTimer;
-					data.m_hStartTimer = null;
-				}
+				delete data.m_hStartTimer;
 				data.m_iSecondsToStart = 0;
 				Timer_DeincrementUntilMapStart(null);
 			}
@@ -252,11 +248,7 @@ methodmap CoopManager
 			{
 				if (!data.m_hStartTimer || data.m_iSecondsToStart > 3)
 				{
-					if (data.m_hStartTimer)
-					{
-						delete data.m_hStartTimer;
-						data.m_hStartTimer = null;
-					}
+					delete data.m_hStartTimer;
 					data.m_iSecondsToStart = 3;
 					CoopManager.SetIntroTimeHud(data.m_iSecondsToStart);
 					data.m_hStartTimer = CreateTimer(1.0, Timer_DeincrementUntilMapStart, _, TIMER_FLAG_NO_MAPCHANGE | TIMER_REPEAT);
@@ -273,10 +265,9 @@ methodmap CoopManager
 	
 	public static void OnClientDisconnectPost(const int iClient)
 	{
-		if (data.m_hStartTimer && GetRealClientCount(true) <= 0)
+		if (!data.m_bStarted && GetRealClientCount(true) <= 0)
 		{
 			delete data.m_hStartTimer;
-			data.m_hStartTimer = null;
 			CoopManager.SetIntroTimeHud(INT_MAX);
 		}
 	}
