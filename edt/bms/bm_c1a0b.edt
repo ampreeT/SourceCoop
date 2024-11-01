@@ -128,7 +128,7 @@
 					"target" "__srccoop_servercommand"
 					"input" "Command"
 					"parameter" "changelevel bm_c1a0b"
-					"delay" "12"
+					"delay" "5"
 				}
 			}
 		}

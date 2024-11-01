@@ -20,11 +20,7 @@
 		// delete world starting equipment
 		"delete"
 		{
-			"targetname" "suit"
-		}
-		"delete"
-		{
-			"targetname" "weapons"
+			"targetname" "/^(suit|weapons)$/"
 		}
 		// turn prev. changelevel trig into invisible wall
 		"modify"

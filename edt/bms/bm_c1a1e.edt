@@ -21,11 +21,7 @@
 		// delete world starting equipment
 		"delete"
 		{
-			"targetname" "suit"
-		}
-		"delete"
-		{
-			"targetname" "weapons"
+			"targetname" "/^(suit|weapons)$/"
 		}
 		// dont lock elevator button
 		"modify"
