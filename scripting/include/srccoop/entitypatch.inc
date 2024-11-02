@@ -148,14 +148,21 @@ public MRESReturn Hook_UTIL_GetLocalPlayer(Handle hReturn)
 			pPlayer = GetNearestPlayerPreferAlive(pOverrideEntity);
 			if (pPlayer == NULL_CBASEENTITY)
 			{
-				return MRES_Ignored;
+				// BUGBUG Crash avoidance for Linux SM 1.12 - 7164+
+				// return MRES_Ignored;
+				DHookSetReturn(hReturn, -1);
+				return MRES_Supercede;
 			}
 		}
 		// LogDebug("Overriding UTIL_GetLocalPlayer");
 		DHookSetReturn(hReturn, pPlayer.GetEntIndex());
 		return MRES_Supercede;
 	}
-	return MRES_Ignored;
+	// BUGBUG Crash avoidance for Linux SM 1.12 - 7164+
+	// return MRES_Ignored;
+	DHookSetReturn(hReturn, -1);
+	return MRES_Supercede;
+	
 }
 
 //------------------------------------------------------
