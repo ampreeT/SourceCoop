@@ -18,7 +18,7 @@
 		// delete world starting equipment
 		"delete"
 		{
-			"targetname" "suit"
+			"targetname" "/^(suit|weapons)$/"
 		}
 		// entity killer relays
 		"delete"
