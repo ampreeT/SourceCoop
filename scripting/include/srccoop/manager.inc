@@ -17,7 +17,7 @@ enum struct CoopManagerData
 	int m_iEnabledFeatures;
 	bool m_bIsCoopMap;
 	bool m_bStarted;
-	bool m_bDoesMapHaveDelayedOutput;
+	bool m_bMapHasDelayedOutput;
 	int m_iSpawnedPlayerCountLastMap;
 	int m_iSpawnedPlayerCount;
 	float m_flMapStartTime;
@@ -59,7 +59,7 @@ methodmap CoopManager
 		data.m_iSpawnedPlayerCountLastMap = data.m_iSpawnedPlayerCount;
 		data.m_iSpawnedPlayerCount = 0;
 		data.m_flMapStartTime = GetGameTime();
-		data.m_bDoesMapHaveDelayedOutput = false;
+		data.m_bMapHasDelayedOutput = false;
 		data.m_pChangeLevelMgr.Clear();
 		data.m_iEnabledFeatures = 0;
 		for (int i = 0; i <= MaxClients; i++)
@@ -107,7 +107,7 @@ methodmap CoopManager
 				{
 					CEntityOutputHook pOutputHook; pOutputHookList.GetArray(i, pOutputHook);
 					HookSingleEntityOutput(pEntity.GetEntIndex(), pOutputHook.m_szOutputName, Callback_OutputCallbackForDelay);
-					data.m_bDoesMapHaveDelayedOutput = true;
+					data.m_bMapHasDelayedOutput = true;
 				}
 			}
 			pOutputHookList.Close();
@@ -238,7 +238,7 @@ methodmap CoopManager
 					Conf.FROZEN_FADE_COLOR[0], Conf.FROZEN_FADE_COLOR[1], Conf.FROZEN_FADE_COLOR[2], Conf.FROZEN_FADE_COLOR[3]);
 			}
 
-			if ((g_pLevelLump.m_iIntroType == INTRO_NONE && !data.m_bDoesMapHaveDelayedOutput))
+			if ((g_pLevelLump.m_iIntroType == INTRO_NONE && !data.m_bMapHasDelayedOutput))
 			{
 				delete data.m_hStartTimer;
 				data.m_iSecondsToStart = 0;
