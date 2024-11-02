@@ -2,7 +2,7 @@
 
 "config"
 {
-	"chapter" "Unforseen Consequences"
+	"chapter" "Unforeseen Consequences"
 	"nextmap" "bm_c1a2a"
 	"intro_type" "none"
 	"equipment"
@@ -70,11 +70,8 @@
 			{
 				"remove"
 				{
-					"remove"
-					{
-						"output" "OnTrigger"
-						"input" "Close"
-					}
+					"output" "OnTrigger"
+					"input" "Close"
 				}
 			}
 		}
