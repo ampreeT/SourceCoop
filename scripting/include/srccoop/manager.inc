@@ -154,25 +154,25 @@ methodmap CoopManager
 			{
 				if (IsClientInGame(i))
 				{
-					ShowHudText(i, 2, "%d", data.m_iSecondsToStart);
+					ShowHudText(i, 2, "%d", iSecondsToWait);
 				}
 			}
 			#endif
 			
-			if (data.m_iSecondsToStart > 0)
+			if (iSecondsToWait > 0)
 			{
 				EmitSoundToAll(Conf.SND_TICK, .volume = Conf.SND_TICK_VOL);
 			}
 
-			if (data.m_iSecondsToStart == 3)
+			if (iSecondsToWait == 3)
 			{
 				EmitSoundToAll(Conf.SND_3, .volume = Conf.SND_TICK_VOL);
 			}
-			else if (data.m_iSecondsToStart == 2)
+			else if (iSecondsToWait == 2)
 			{
 				EmitSoundToAll(Conf.SND_2, .volume = Conf.SND_TICK_VOL);
 			}
-			else if (data.m_iSecondsToStart == 1)
+			else if (iSecondsToWait == 1)
 			{
 				EmitSoundToAll(Conf.SND_1, .volume = Conf.SND_TICK_VOL);
 			}
@@ -242,7 +242,7 @@ methodmap CoopManager
 			{
 				delete data.m_hStartTimer;
 				data.m_iSecondsToStart = 0;
-				Timer_DeincrementUntilMapStart(null);
+				Timer_DecrementUntilMapStart(null);
 			}
 			else if (((GetGameTime() - data.m_flMapStartTime) <= g_flWaitPeriodSkipGraceTime) && (data.m_iSpawnedPlayerCountLastMap - data.m_iSpawnedPlayerCount) == 0)
 			{
@@ -251,14 +251,14 @@ methodmap CoopManager
 					delete data.m_hStartTimer;
 					data.m_iSecondsToStart = 3;
 					CoopManager.SetIntroTimeHud(data.m_iSecondsToStart);
-					data.m_hStartTimer = CreateTimer(1.0, Timer_DeincrementUntilMapStart, _, TIMER_FLAG_NO_MAPCHANGE | TIMER_REPEAT);
+					data.m_hStartTimer = CreateTimer(1.0, Timer_DecrementUntilMapStart, _, TIMER_FLAG_NO_MAPCHANGE | TIMER_REPEAT);
 				}
 			}
 			else if (!CoopManager.IsInCountDownPeriod())
 			{
 				data.m_iSecondsToStart = g_pConvarWaitPeriod.IntValue;
 				CoopManager.SetIntroTimeHud(data.m_iSecondsToStart);
-				data.m_hStartTimer = CreateTimer(1.0, Timer_DeincrementUntilMapStart, _, TIMER_FLAG_NO_MAPCHANGE | TIMER_REPEAT);
+				data.m_hStartTimer = CreateTimer(1.0, Timer_DecrementUntilMapStart, _, TIMER_FLAG_NO_MAPCHANGE | TIMER_REPEAT);
 			}
 		}
 	}
@@ -313,7 +313,7 @@ methodmap CoopManager
 		if (data.m_pChangeLevelTimer == null)
 		{
 			data.m_iTicksToEnd = g_pConvarEndWaitPeriod.IntValue;
-			data.m_pChangeLevelTimer = CreateTimer(CoopManager.GetChangeLevelTimerInterval(), Timer_DeincrementChangeLevel, _, TIMER_FLAG_NO_MAPCHANGE);
+			data.m_pChangeLevelTimer = CreateTimer(CoopManager.GetChangeLevelTimerInterval(), Timer_DecrementChangeLevel, _, TIMER_FLAG_NO_MAPCHANGE);
 			EmitSoundToAll(Conf.SND_CHANGELEVEL, .volume = Conf.SND_CHANGELEVEL_VOL);
 		}
 		if (data.m_pChangeLevelMgr.SetPlayerVote(pChangelevel, pActivator, data.m_iClientChangeLvlIndicies))
@@ -506,7 +506,7 @@ methodmap CoopManager
 
 // Runs every 1 second.
 // 
-public Action Timer_DeincrementUntilMapStart(Handle hTimer)
+public Action Timer_DecrementUntilMapStart(Handle hTimer)
 {
 	--data.m_iSecondsToStart;
 	if (data.m_iSecondsToStart <= 0)
@@ -563,7 +563,7 @@ public Action Timer_DeincrementUntilMapStart(Handle hTimer)
 	return Plugin_Continue;
 }
 
-public void Timer_DeincrementChangeLevel(Handle pTimer)
+public void Timer_DecrementChangeLevel(Handle pTimer)
 {
 	if (!data.m_iTicksToEnd--)
 	{
@@ -577,7 +577,7 @@ public void Timer_DeincrementChangeLevel(Handle pTimer)
 	{
 		EmitSoundToAll(Conf.SND_CHANGELEVEL_TICK, .volume = Conf.SND_CHANGELEVEL_TICK_VOL);
 		data.m_pChangeLevelMgr.UpdateStatus(data.m_iTicksToEnd);
-		data.m_pChangeLevelTimer = CreateTimer(CoopManager.GetChangeLevelTimerInterval(), Timer_DeincrementChangeLevel, _, TIMER_FLAG_NO_MAPCHANGE);
+		data.m_pChangeLevelTimer = CreateTimer(CoopManager.GetChangeLevelTimerInterval(), Timer_DecrementChangeLevel, _, TIMER_FLAG_NO_MAPCHANGE);
 	}
 }
 
