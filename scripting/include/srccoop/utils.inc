@@ -107,14 +107,14 @@ stock Address GetInterface(GameData pGameConfig, const char[] szLibrary, const c
 // DHooks utils
 //------------------------------------------------------
 #if defined _dhooks_included
-stock void LoadDHookDetour(GameData pGameConfig, DynamicDetour& pHandle, const char[] szFuncName, DHookCallback pCallbackPre = INVALID_FUNCTION, DHookCallback pCallbackPost = INVALID_FUNCTION)
+stock void LoadDHookDetour(GameData pGameConfig, DynamicDetour& pHandle, const char[] szFuncName, DHookCallback pCallbackPre = null, DHookCallback pCallbackPost = null)
 {
 	pHandle = DynamicDetour.FromConf(pGameConfig, szFuncName);
-	if (pHandle == null)
+	if (!pHandle)
 		SetFailState("Couldn't create hook %s", szFuncName);
-	if (pCallbackPre != INVALID_FUNCTION && !pHandle.Enable(Hook_Pre, pCallbackPre))
+	if (pCallbackPre && !pHandle.Enable(Hook_Pre, pCallbackPre))
 		SetFailState("Couldn't enable pre detour hook %s", szFuncName);
-	if (pCallbackPost != INVALID_FUNCTION && !pHandle.Enable(Hook_Post, pCallbackPost))
+	if (pCallbackPost && !pHandle.Enable(Hook_Post, pCallbackPost))
 		SetFailState("Couldn't enable post detour hook %s", szFuncName);
 }
 
