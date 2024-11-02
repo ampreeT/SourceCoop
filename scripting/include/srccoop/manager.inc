@@ -126,7 +126,7 @@ methodmap CoopManager
 		PrecacheSound(Conf.SND_CHANGELEVEL);
 		PrecacheSound(Conf.SND_CHANGELEVEL_TICK);
 
-		CoopManager.SetIntroTimeHud(INT_MAX);
+		CoopManager.SetIntroTimeOnHud(INT_MAX);
 
 		data.kv.Rewind();
 		CCoopSpawnSystem.ParseConfigFile(data.kv);
@@ -138,7 +138,7 @@ methodmap CoopManager
 		delete data.kv;
 	}
 
-	public static void SetIntroTimeHud(const int iSecondsToWait)
+	public static void SetIntroTimeOnHud(const int iSecondsToWait)
 	{
 		bool bShouldShow = iSecondsToWait > -1;
 		
@@ -250,14 +250,14 @@ methodmap CoopManager
 				{
 					delete data.m_hStartTimer;
 					data.m_iSecondsToStart = 3;
-					CoopManager.SetIntroTimeHud(data.m_iSecondsToStart);
+					CoopManager.SetIntroTimeOnHud(data.m_iSecondsToStart);
 					data.m_hStartTimer = CreateTimer(1.0, Timer_DecrementUntilMapStart, _, TIMER_FLAG_NO_MAPCHANGE | TIMER_REPEAT);
 				}
 			}
 			else if (!CoopManager.IsInCountDownPeriod())
 			{
 				data.m_iSecondsToStart = g_pConvarWaitPeriod.IntValue;
-				CoopManager.SetIntroTimeHud(data.m_iSecondsToStart);
+				CoopManager.SetIntroTimeOnHud(data.m_iSecondsToStart);
 				data.m_hStartTimer = CreateTimer(1.0, Timer_DecrementUntilMapStart, _, TIMER_FLAG_NO_MAPCHANGE | TIMER_REPEAT);
 			}
 		}
@@ -268,7 +268,7 @@ methodmap CoopManager
 		if (!data.m_bStarted && GetRealClientCount(true) <= 0)
 		{
 			delete data.m_hStartTimer;
-			CoopManager.SetIntroTimeHud(INT_MAX);
+			CoopManager.SetIntroTimeOnHud(INT_MAX);
 		}
 	}
 
@@ -513,7 +513,7 @@ public Action Timer_DecrementUntilMapStart(Handle hTimer)
 	{
 		MsgSrv("%t", "map start", g_szMapName);
 
-		CoopManager.SetIntroTimeHud(data.m_iSecondsToStart);
+		CoopManager.SetIntroTimeOnHud(data.m_iSecondsToStart);
 
 		data.m_bStarted = true;
 		data.m_flStartTime = GetGameTime();
@@ -558,7 +558,7 @@ public Action Timer_DecrementUntilMapStart(Handle hTimer)
 		return Plugin_Stop;
 	}
 
-	CoopManager.SetIntroTimeHud(data.m_iSecondsToStart);
+	CoopManager.SetIntroTimeOnHud(data.m_iSecondsToStart);
 
 	return Plugin_Continue;
 }
