@@ -77,7 +77,6 @@
 			"angles"	"0 90 0"
 			"triggerid"	"beam_wall_relay"
 			"output"	"OnTrigger"
-			"delay"		"0.0"
 			"bringall"	"1"
 		}
 	}

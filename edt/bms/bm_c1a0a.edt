@@ -115,7 +115,6 @@
 		{
 			"origin"	"925 4450 415"
 			"angles"	"12.5 -90.0 0.0"
-			"delay"		"0.0"
 			"triggerid"	"spawner_clipboard2"
 			"output"	"OnEntitySpawned"
 			"bringall"	"1"

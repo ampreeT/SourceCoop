@@ -175,7 +175,6 @@
 			"angles"	"5.0 -55 0"
 			"triggerid"	"td_2"
 			"output"	"OnClose"
-			"delay"		"0.0"
 			"bringall"	"1"
 		}
 		"chamber2"
