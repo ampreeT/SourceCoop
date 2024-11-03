@@ -45,7 +45,6 @@ methodmap CoopManager
 	{
 		data.m_pDelayedOutputs = new ArrayList(sizeof(FireOutputData));
 		data.m_pChangeLevelMgr = new ChangeLevelManager();
-		data.m_flMapStartTime = -g_flWaitPeriodSkipGraceTime;
 		SurvivalManager.Initialize();
 	}
 
@@ -58,7 +57,7 @@ methodmap CoopManager
 		data.m_bStarted = false;
 		data.m_iSpawnedPlayerCountLastMap = data.m_iSpawnedPlayerCount;
 		data.m_iSpawnedPlayerCount = 0;
-		data.m_flMapStartTime = GetGameTime();
+		MsgAll("%f", data.m_flMapStartTime);
 		data.m_bMapHasDelayedOutput = false;
 		data.m_pChangeLevelMgr.Clear();
 		data.m_iEnabledFeatures = 0;
@@ -159,10 +158,7 @@ methodmap CoopManager
 			}
 			#endif
 			
-			if (iSecondsToWait > 0)
-			{
-				EmitSoundToAll(Conf.SND_TICK, .volume = Conf.SND_TICK_VOL);
-			}
+			EmitSoundToAll(Conf.SND_TICK, .volume = Conf.SND_TICK_VOL);
 
 			if (iSecondsToWait == 3)
 			{
@@ -176,6 +172,22 @@ methodmap CoopManager
 			{
 				EmitSoundToAll(Conf.SND_1, .volume = Conf.SND_TICK_VOL);
 			}
+		}
+	}
+
+	public static void StartIntroTimer(const int iSecondsToStart)
+	{
+		delete data.m_hStartTimer;
+		if (iSecondsToStart > 0)
+		{
+			data.m_iSecondsToStart = iSecondsToStart;
+			CoopManager.SetIntroTimeOnHud(data.m_iSecondsToStart);
+			data.m_hStartTimer = CreateTimer(1.0, Timer_DecrementUntilMapStart, _, TIMER_FLAG_NO_MAPCHANGE | TIMER_REPEAT);
+		}
+		else
+		{
+			data.m_iSecondsToStart = 0;
+			Timer_DecrementUntilMapStart(null);
 		}
 	}
 
@@ -240,25 +252,18 @@ methodmap CoopManager
 
 			if ((g_pLevelLump.m_iIntroType == INTRO_NONE && !data.m_bMapHasDelayedOutput))
 			{
-				delete data.m_hStartTimer;
-				data.m_iSecondsToStart = 0;
-				Timer_DecrementUntilMapStart(null);
+				CoopManager.StartIntroTimer(0);
 			}
-			else if (((GetGameTime() - data.m_flMapStartTime) <= g_flWaitPeriodSkipGraceTime) && (data.m_iSpawnedPlayerCountLastMap - data.m_iSpawnedPlayerCount) == 0)
+			else if ((GetGameTime() <= g_flWaitPeriodSkipGraceTime) && (data.m_iSpawnedPlayerCountLastMap - data.m_iSpawnedPlayerCount) == 0)
 			{
-				if (!data.m_hStartTimer || data.m_iSecondsToStart > 3)
+				if (!CoopManager.IsInCountDownPeriod() || data.m_iSecondsToStart > 3)
 				{
-					delete data.m_hStartTimer;
-					data.m_iSecondsToStart = 3;
-					CoopManager.SetIntroTimeOnHud(data.m_iSecondsToStart);
-					data.m_hStartTimer = CreateTimer(1.0, Timer_DecrementUntilMapStart, _, TIMER_FLAG_NO_MAPCHANGE | TIMER_REPEAT);
+					CoopManager.StartIntroTimer(3);
 				}
 			}
 			else if (!CoopManager.IsInCountDownPeriod())
 			{
-				data.m_iSecondsToStart = g_pConvarWaitPeriod.IntValue;
-				CoopManager.SetIntroTimeOnHud(data.m_iSecondsToStart);
-				data.m_hStartTimer = CreateTimer(1.0, Timer_DecrementUntilMapStart, _, TIMER_FLAG_NO_MAPCHANGE | TIMER_REPEAT);
+				CoopManager.StartIntroTimer(g_pConvarWaitPeriod.IntValue);
 			}
 		}
 	}
@@ -509,7 +514,7 @@ methodmap CoopManager
 public Action Timer_DecrementUntilMapStart(Handle hTimer)
 {
 	--data.m_iSecondsToStart;
-	if (data.m_iSecondsToStart <= 0)
+	if (data.m_iSecondsToStart < 0)
 	{
 		MsgSrv("%t", "map start", g_szMapName);
 
