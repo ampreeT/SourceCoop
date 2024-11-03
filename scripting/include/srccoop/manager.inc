@@ -107,8 +107,8 @@ methodmap CoopManager
 				{
 					CEntityOutputHook pOutputHook; pOutputHookList.GetArray(i, pOutputHook);
 					HookSingleEntityOutput(pEntity.GetEntIndex(), pOutputHook.m_szOutputName, Callback_OutputCallbackForDelay);
-					data.m_bMapHasDelayedOutput = true;
 				}
+				data.m_bMapHasDelayedOutput = true;
 			}
 			pOutputHookList.Close();
 		}

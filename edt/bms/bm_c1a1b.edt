@@ -6,6 +6,7 @@
 	"nextmap" "bm_c1a1c"
 	"equipment"
 	{
+		"health" "95"
 		"lookup"
 		{
 			"targetname" "global_newgame_spawner_suit"
@@ -13,6 +14,19 @@
 	}
 	"entity"
 	{
+		"modify"
+		{
+			"classname" "logic_auto"
+			"hammerid"	"4478144"
+			"outputs"
+			{
+				"remove"
+				{
+					"target" "!player"
+					"input" "SetHealth"
+				}
+			}
+		}
 		// delay map start
 		"modify"
 		{
