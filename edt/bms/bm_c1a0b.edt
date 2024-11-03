@@ -5,6 +5,11 @@
 	"chapter" "Anomalous Materials"
 	"nextmap"		"bm_c1a1a"
 	"intro_type"	"none"
+	
+	"features"
+	{
+		"TRANSFER_PLAYER_STATE" "0"
+	}
 	"equipment"
 	{
 		"lookup"

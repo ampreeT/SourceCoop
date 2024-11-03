@@ -5,6 +5,7 @@
 	"chapter" "Unforeseen Consequences"
 	"nextmap"		"bm_c1a1b"
 	"intro_type"	"fade"
+	
 	"equipment"
 	{
 		"health" "70"
@@ -15,6 +16,19 @@
 	}
 	"entity"
 	{
+		"modify"
+		{
+			"classname" "logic_auto"
+			"hammerid"	"794799"
+			"outputs"
+			{
+				"remove"
+				{
+					"target" "!player"
+					"input" "SetHealth"
+				}
+			}
+		}
 		// delay map start
 		"modify"
 		{
