@@ -20,7 +20,6 @@ enum struct CoopManagerData
 	bool m_bMapHasDelayedOutput;
 	int m_iSpawnedPlayerCountLastMap;
 	int m_iSpawnedPlayerCount;
-	float m_flMapStartTime;
 	float m_flStartTime;
 	int m_iSecondsToStart;
 	Handle m_hStartTimer;
@@ -57,7 +56,6 @@ methodmap CoopManager
 		data.m_bStarted = false;
 		data.m_iSpawnedPlayerCountLastMap = data.m_iSpawnedPlayerCount;
 		data.m_iSpawnedPlayerCount = 0;
-		MsgAll("%f", data.m_flMapStartTime);
 		data.m_bMapHasDelayedOutput = false;
 		data.m_pChangeLevelMgr.Clear();
 		data.m_iEnabledFeatures = 0;
