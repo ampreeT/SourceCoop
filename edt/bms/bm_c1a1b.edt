@@ -4,7 +4,6 @@
 {
 	"chapter" "Unforeseen Consequences"
 	"nextmap" "bm_c1a1c"
-	"intro_type" "none"
 	"equipment"
 	{
 		"lookup"
