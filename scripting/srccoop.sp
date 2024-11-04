@@ -873,7 +873,7 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 				if (strcmp(szClassname, "item_suit") == 0)
 				{
 					DHookEntity(hkOnTryPickUp, true, iEntIndex, _, Hook_OnEquipmentTryPickUpPost);
-					HookSingleEntityOutput(iEntIndex, "OnPlayerPickup", Hook_SuitTouchPickup, true);
+					HookSingleEntityOutput(iEntIndex, "OnPlayerPickup", Hook_SuitTouchPickup);
 				}
 			}
 			return;

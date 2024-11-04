@@ -596,7 +596,8 @@ public MRESReturn Hook_MusicTrackAcceptInput(int _this, Handle hReturn, Handle h
 //------------------------------------------------------
 public Action Hook_SuitTouchPickup(const char[] szOutput, int iCaller, int iActivator, float flDelay)
 {
-	if (CBaseEntity(iCaller).HasSpawnFlag(SF_BOOTSEQUENCE))
+	CBaseEntity pCaller = CBaseEntity(iCaller);
+	if (pCaller.HasSpawnFlag(SF_BOOTSEQUENCE))
 	{
 		CBasePlayer pPlayer = CBasePlayer(iActivator);
 		if (pPlayer.IsValid())
