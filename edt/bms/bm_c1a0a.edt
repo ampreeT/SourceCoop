@@ -28,6 +28,12 @@
 				"delay_output" "OnTrigger"
 			}
 		}
+		// HEV checkpoint.
+		"add"
+		{
+			"classname"		"logic_auto"
+			"targetname"	"HEV_checkpoint"
+		}
 		// suit pickup - fire outputs only once
 		"modify"
 		{
@@ -42,6 +48,14 @@
 					{
 						"timestofire" "1"
 					}
+				}
+				"add"
+				{
+					"output" "OnPlayerPickup"
+					"target" "HEV_checkpoint"
+					"input" "FireUser1"
+					"delay" "0"
+					"timestofire" "1"
 				}
 			}
 		}
@@ -115,8 +129,8 @@
 		{
 			"origin"	"925 4450 415"
 			"angles"	"12.5 -90.0 0.0"
-			"triggerid"	"spawner_clipboard2"
-			"output"	"OnEntitySpawned"
+			"triggerid"	"HEV_checkpoint"
+			"output"	"OnUser1"
 			"bringall"	"1"
 		}
 		"elevatorroom"
