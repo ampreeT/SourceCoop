@@ -62,7 +62,53 @@
 				}
 			}
 		}
-		// prevents doors from closing when reaching houndeye fight near elevator
+		// prevent storage doors from closing.
+		"modify"
+		{
+			"hammerid"	"1869065"
+			"outputs"
+			{
+				"remove"
+				{
+					"output" "OnTrigger"
+				}
+			}
+		}
+		// remove trigger that opens `shortcut_door1b`.
+		"modify"
+		{
+			"targetname"	"shortcut_trigger_1"
+			"outputs"
+			{
+				"remove"
+				{
+					"output" "OnTrigger"
+				}
+			}
+		}
+		// set `shortcut_door1b` to always opened.
+		"modify"
+		{
+			"targetname"	"shortcut_door1b"
+			"set"
+			{
+				"spawnflags"	"0"
+				"spawnpos"		"2"
+			}
+		}
+		// prevents storage doors from closing when climbing the ladder and sounds being killed.
+		"modify"
+		{
+			"hammerid"	"1115814"
+			"outputs"
+			{
+				"remove"
+				{
+					"output" "OnTrigger"
+				}
+			}
+		}
+		// prevents storage doors from closing when reaching houndeye fight near elevator.
 		"modify"
 		{
 			"hammerid"	"1865911"

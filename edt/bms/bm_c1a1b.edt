@@ -79,8 +79,8 @@
 		}
 		"hall"
 		{
-			"origin"	"447 2043 485"
-			"angles"	"0 270 0"
+			"origin"	"450 2600 420"
+			"angles"	"-4.5 -90 0"
 			"triggerid"	"2390983"
 			"output"	"OnTrigger"
 		}

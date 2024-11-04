@@ -86,6 +86,13 @@
 			"delay"		"1.0"
 			"portal"	"592 440 -475"
 		}
+		"eli_kliener_scene"
+		{
+			"origin"	"1130 1770 -270"
+			"angles"	"4.5 -150 0"
+			"triggerid"	"trig_eli_scene"
+			"output"	"OnTrigger"
+		}
 		"watchroom"
 		{
 			"origin"	"1104 1008 -251"
