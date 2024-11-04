@@ -12,13 +12,15 @@
 	}
 	"equipment"
 	{
-		"lookup"
-		{
-			"targetname" "suit"
-		}
+		"item" "item_suit"
 	}
 	"entity"
 	{
+		// delete world starting equipment
+		"delete"
+		{
+			"targetname"	"suit"
+		}
 		// make all npcs invulnerable
 		"modify"
 		{

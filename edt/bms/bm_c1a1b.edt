@@ -7,13 +7,15 @@
 	"equipment"
 	{
 		"health" "95"
-		"lookup"
-		{
-			"targetname" "global_newgame_spawner_suit"
-		}
+		"item" "item_suit"
 	}
 	"entity"
 	{
+		// delete world starting equipment
+		"delete"
+		{
+			"targetname"	"global_newgame_spawner_suit"
+		}
 		"modify"
 		{
 			"classname" "logic_auto"
