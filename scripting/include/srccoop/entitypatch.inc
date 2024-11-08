@@ -1534,6 +1534,12 @@ public MRESReturn Hook_DispatchEffect(DHookParam hParams)
 //------------------------------------------------------
 public MRESReturn Hook_UTIL_FindClientInPVSGuts(DHookReturn hReturn, DHookParam hParams)
 {
+	// Naive solution with fast execution.
+	// The original implementation below this implementation causes issues with NPCs doing nothing.
+	DHookSetReturn(hReturn, GetNearestPlayerPreferAlive(CBaseEntity(hParams.Get(1))).GetEntIndex());
+	return MRES_Supercede;
+
+	/*
 	CBaseEntity pNPC = CBaseEntity(hParams.Get(1));
 
 	float vec3Origin[3];
@@ -1564,4 +1570,5 @@ public MRESReturn Hook_UTIL_FindClientInPVSGuts(DHookReturn hReturn, DHookParam 
 	}
 	DHookSetReturn(hReturn, -1);
 	return MRES_Supercede;
+	*/
 }
