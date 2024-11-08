@@ -66,6 +66,7 @@ public void OnPluginStart()
 {
 	LoadTranslations("common.phrases");
 	
+	InitSourceCoopAddon();
 	GameData pConfig = LoadSourceCoopConfig();
 	Conf.Initialize(pConfig);
 	pConfig.Close();
