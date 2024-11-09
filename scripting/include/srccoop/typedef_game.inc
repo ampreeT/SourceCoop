@@ -74,6 +74,9 @@
 // item_suit spawnflags
 #define SF_BOOTSEQUENCE ( 1 << 17 )
 
+// env_zoom spawnflags
+#define SF_ENV_ZOOM_OVERRIDE (1<<0)
+
 // Phys prop spawnflags
 #define SF_PHYSPROP_START_ASLEEP				0x000001
 #define SF_PHYSPROP_DONT_TAKE_PHYSICS_DAMAGE	0x000002		// this prop can't be damaged by physics collisions
@@ -3191,8 +3194,6 @@ enum NPC_STATE
 #define	HIDEHUD_VEHICLE_CROSSHAIR	( 1<<9 )	// Hide vehicle crosshair
 #define HIDEHUD_INVEHICLE			( 1<<10 )
 #define HIDEHUD_BONUS_PROGRESS		( 1<<11 )	// Hide bonus progress display (for bonus map challenges)
-
-#define ENV_ZOOM_OVERRIDE (1<<0)
 
 //=========================================================
 // These are the shared tasks

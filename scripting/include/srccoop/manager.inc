@@ -11,7 +11,7 @@
 //------------------------------------------------------
 
 enum struct CoopManagerData
-{	
+{
 	KeyValues kv;
 	ChangeLevelManager m_pChangeLevelMgr;
 	int m_iEnabledFeatures;

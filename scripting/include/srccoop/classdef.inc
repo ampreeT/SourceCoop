@@ -1125,6 +1125,10 @@ methodmap CBaseAnimating < CBaseEntity
 	{
 		return view_as<CBaseAnimating>(CBaseEntity(iEntIndex));
 	}
+	public static CBaseAnimating Create(const char[] szClassname)
+	{
+		return CBaseAnimating(CreateEntityByName(szClassname));
+	}
 
 	public bool IsValid()
 	{
@@ -3350,7 +3354,7 @@ stock bool CanOverrideEnvZoomOwner(CBaseEntity pZoomOwner)
 	if (!pZoomOwner.GetClassname(szClassname, sizeof(szClassname)) || strcmp(szClassname, "env_zoom") != 0)
 		return false;
 	
-	return pZoomOwner.HasSpawnFlag(ENV_ZOOM_OVERRIDE);
+	return pZoomOwner.HasSpawnFlag(SF_ENV_ZOOM_OVERRIDE);
 }
 
 methodmap CPlayerInfoManager
