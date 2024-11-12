@@ -20,7 +20,6 @@ enum struct CoopManagerData
 	bool m_bMapHasDelayedOutput;
 	int m_iSpawnedPlayerCountLastMap;
 	int m_iSpawnedPlayerCount;
-	float m_flStartTime;
 	int m_iSecondsToStart;
 	Handle m_hStartTimer;
 	ArrayList m_pDelayedOutputs;
@@ -34,9 +33,6 @@ CoopManagerData g_pCoopManagerData;
 
 // local shortcut for data:
 #define data g_pCoopManagerData
-
-// The grace period to wait for players in seconds to skip the wait period timer.
-float g_flWaitPeriodSkipGraceTime = 300.0;
 
 methodmap CoopManager
 {
@@ -248,11 +244,11 @@ methodmap CoopManager
 					Conf.FROZEN_FADE_COLOR[0], Conf.FROZEN_FADE_COLOR[1], Conf.FROZEN_FADE_COLOR[2], Conf.FROZEN_FADE_COLOR[3]);
 			}
 
-			if ((g_pLevelLump.m_iIntroType == INTRO_NONE && !data.m_bMapHasDelayedOutput))
+			if ((g_pLevelLump.m_iIntroType == INTRO_NONE && !data.m_bMapHasDelayedOutput) || data.m_iSpawnedPlayerCountLastMap == 1)
 			{
 				CoopManager.StartIntroTimer(0);
 			}
-			else if ((GetGameTime() <= g_flWaitPeriodSkipGraceTime) && (data.m_iSpawnedPlayerCountLastMap - data.m_iSpawnedPlayerCount) == 0)
+			else if ((data.m_iSpawnedPlayerCountLastMap - data.m_iSpawnedPlayerCount) == 0)
 			{
 				if (!CoopManager.IsInCountDownPeriod() || data.m_iSecondsToStart > 3)
 				{
@@ -519,7 +515,6 @@ public Action Timer_DecrementUntilMapStart(Handle hTimer)
 		CoopManager.SetIntroTimeOnHud(data.m_iSecondsToStart);
 
 		data.m_bStarted = true;
-		data.m_flStartTime = GetGameTime();
 
 		if (g_pLevelLump.m_iIntroType == INTRO_FADE || g_pLevelLump.m_iIntroType == INTRO_FREEZE)
 		{
