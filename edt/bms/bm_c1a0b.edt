@@ -5,15 +5,22 @@
 	"chapter" "Anomalous Materials"
 	"nextmap"		"bm_c1a1a"
 	"intro_type"	"none"
+	
+	"features"
+	{
+		"TRANSFER_PLAYER_STATE" "0"
+	}
 	"equipment"
 	{
-		"lookup"
-		{
-			"targetname" "suit"
-		}
+		"item" "item_suit"
 	}
 	"entity"
 	{
+		// delete world starting equipment
+		"delete"
+		{
+			"targetname"	"suit"
+		}
 		// make all npcs invulnerable
 		"modify"
 		{
@@ -155,8 +162,8 @@
 		{
 			"origin"	"-3360 1344 -407"
 			"angles"	"0 180 0"
-			"triggerid"	"trigger_delete_old"
-			"output"	"OnTrigger"
+			"triggerid"	"lab2_door4"
+			"output"	"OnClose"
 			"delay"		"1.0"
 			"portal"	"-3278 1340 -379"
 		}
@@ -166,23 +173,25 @@
 			"angles"	"0 180 0"
 			"triggerid"	"lab2_door5"
 			"output"	"OnClose"
+			"delay"		"1.0"
 			"portal"	"-3760 1340 -379"
 		}
 		"chamber1"
 		{
 			"origin"	"-4280 773 -631"
-			"angles"	"0 270 0"
+			"angles"	"5.0 -55 0"
 			"triggerid"	"td_2"
-			"output"	"OnFullyClosed"
-			"portal"	"-4280 848 -604"
+			"output"	"OnClose"
+			"bringall"	"1"
 		}
 		"chamber2"
 		{
 			"origin"	"-4028 604 -631"
-			"angles"	"0 0 0"
+			"angles"	"-2.5 -7.5 0"
 			"triggerid"	"chamber_airlockbot"
 			"output"	"OnFullyClosed"
-			"portal"	"-4112 604 -603"
+			"delay"		"0.5"
+			"bringall"	"1"
 		}
 	}
 }

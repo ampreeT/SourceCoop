@@ -2,17 +2,27 @@
 
 "config"
 {
-	"chapter" "Unforseen Consequences"
+	"chapter" "Unforeseen Consequences"
 	"nextmap" "bm_c1a2a"
+	"intro_type" "none"
 	"equipment"
 	{
-		"lookup"
-		{
-			"targetname" "/^(suit|weapons)$/"
-		}
+		"item" "item_suit"
+		"item" "item_weapon_crowbar"
+		"item" "item_weapon_glock"
+		"item" "item_ammo_glock"
+		"item" "item_ammo_glock"
+		"item" "item_battery"
+		"item" "item_battery"
+		"item" "item_weapon_frag"
 	}
 	"entity"
 	{
+		// delete world starting equipment
+		"delete"
+		{
+			"targetname" "/^(suit|weapons)$/"
+		}
 		// dont lock elevator button
 		"modify"
 		{
@@ -52,40 +62,114 @@
 				}
 			}
 		}
+		// prevent storage doors from closing.
+		"modify"
+		{
+			"hammerid"	"1869065"
+			"outputs"
+			{
+				"remove"
+				{
+					"output" "OnTrigger"
+				}
+			}
+		}
+		// remove trigger that opens `shortcut_door1b`.
+		"modify"
+		{
+			"targetname"	"shortcut_trigger_1"
+			"outputs"
+			{
+				"remove"
+				{
+					"output" "OnTrigger"
+				}
+			}
+		}
+		// set `shortcut_door1b` to always opened.
+		"modify"
+		{
+			"targetname"	"shortcut_door1b"
+			"set"
+			{
+				"spawnflags"	"0"
+				"spawnpos"		"2"
+			}
+		}
+		// prevents storage doors from closing when climbing the ladder and sounds being killed.
+		"modify"
+		{
+			"hammerid"	"1115814"
+			"outputs"
+			{
+				"remove"
+				{
+					"output" "OnTrigger"
+				}
+			}
+		}
+		// prevents storage doors from closing when reaching houndeye fight near elevator.
+		"modify"
+		{
+			"hammerid"	"1865911"
+			"outputs"
+			{
+				"remove"
+				{
+					"output" "OnTrigger"
+					"input" "Close"
+				}
+			}
+		}
 	}
 	"checkpoint"
 	{
 		"spawn"
 		{
-			"origin"	"-2992 -5168 -3639"
-			"angles"	"0 0 0"
+			"origin"	"-2900 -5100 -3640"
+			"angles"	"5.0 -25.0 0"
 		}
-		"across"
+		"door-across-water"
 		{
-			"origin"	"-3024 -6776 -3959"
-			"angles"	"0 270 0"
+			"origin"	"-1220 -6900 -3960"
+			"angles"	"9.0 145.0 0.0"
+			"triggerid"	"storage_door5"
+			"output"	"OnOpen"
+			"portal"	"-2700 -5200 -3605"
+		}
+		"2nd-door-across-water"
+		{
+			"origin"	"-3000.0 -6980.0 -3960.0"
+			"angles"	"4.0 -92.0 0.0"
 			"triggerid"	"storage_door4"
 			"output"	"OnOpen"
-			"portal"	"-3024 -6026 -3931"
 		}
 		"jumppuzzle"
 		{
-			"origin"	"-3240 -7420 -3639"
-			"angles"	"0 180 0"
+			"origin"	"-3215 -7080 -3390"
+			"angles"	"5.0 -150.0 0.0"
 			"triggerid"	"storage_door7"
 			"output"	"OnOpen"
 		}
 		"jumppuzzle2"
 		{
-			"origin"	"-3769 -7659 -3388"
-			"angles"	"0 270 0"
+			"origin"	"-3769 -7659 -3420"
+			"angles"	"30.0 -104.0 0.0"
 			"triggerid"	"3662944"
 			"output"	"OnTrigger"
+			"portal"	"-3900 -7260 -3350"
 		}
-		"across-upper"
+		"across-jump-puzzle"
 		{
-			"origin"	"-2529 -7611 -3612"
-			"angles"	"0 0 0"
+			"origin"	"-3600 -9130 -3885"
+			"angles"	"14 5.5 0"
+			"triggerid"	"storage_door8"
+			"output"	"OnOpen"
+		}
+		"across-jump-puzzle-upper"
+		{
+			"origin"	"-2540 -7850 -3645"
+			"angles"	"12 82 0"
 			"triggerid"	"storage_door3"
 			"output"	"OnOpen"
 		}

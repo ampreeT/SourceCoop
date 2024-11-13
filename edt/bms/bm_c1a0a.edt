@@ -28,6 +28,12 @@
 				"delay_output" "OnTrigger"
 			}
 		}
+		// HEV checkpoint.
+		"add"
+		{
+			"classname"		"logic_auto"
+			"targetname"	"HEV_checkpoint"
+		}
 		// suit pickup - fire outputs only once
 		"modify"
 		{
@@ -42,6 +48,14 @@
 					{
 						"timestofire" "1"
 					}
+				}
+				"add"
+				{
+					"output" "OnPlayerPickup"
+					"target" "HEV_checkpoint"
+					"input" "FireUser1"
+					"delay" "0"
+					"timestofire" "1"
 				}
 			}
 		}
@@ -97,26 +111,35 @@
 		{
 			"origin"	"272 28 520"
 			"angles"	"0.0 90.0 0.0"
-			"delay"		"1.5"
+			"delay"		"0.35"
 			"triggerid"	"LCS_AM_Airlock_trigger"
 			"output"	"OnTrigger"
-			"portal"	"280 -208 549"
+			"bringall"	"1"
 		}
 		"door2"
 		{
 			"origin"	"272 416 520"
-			"angles"	"0.0 90.0 0.0"
-			"delay"		"0"
+			"angles"	"7.5 80.0 0.0"
+			"delay"		"0.35"
 			"triggerid"	"door_02_btm"
-			"output"	"OnFullyClosed"
-			"portal"	"272 272 549"
+			"output"	"OnClose"
+			"bringall"	"1"
+		}
+		"hev_pickup"
+		{
+			"origin"	"925 4450 415"
+			"angles"	"12.5 -90.0 0.0"
+			"triggerid"	"HEV_checkpoint"
+			"output"	"OnUser1"
+			"bringall"	"1"
 		}
 		"elevatorroom"
 		{
-			"origin"	"-1329 2497 297"
-			"angles"	"0 270 0"
+			"origin"	"-1325 2750 335"
+			"angles"	"7.5 270.0 0.0"
 			"triggerid"	"lab1_door1a"
-			"output"	"OnFullyClosed"
+			"output"	"OnClose"
+			"delay"		"1.00"
 			"portal"	"-1328 2908 357"
 		}
 	}

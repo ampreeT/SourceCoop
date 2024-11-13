@@ -2,17 +2,26 @@
 
 "config"
 {
-	"chapter" "Unforseen Consequences"
+	"chapter" "Unforeseen Consequences"
 	"nextmap" "bm_c1a1e"
+	"intro_type" "none"
 	"equipment"
 	{
-		"lookup"
-		{
-			"targetname" "/^(suit|weapons)$/"
-		}
+		"item" "item_suit"
+		"item" "item_weapon_crowbar"
+		"item" "item_weapon_glock"
+		"item" "item_ammo_glock"
+		"item" "item_battery"
+		"item" "item_battery"
+		"item" "item_weapon_frag"
 	}
 	"entity"
 	{
+		// delete world starting equipment
+		"delete"
+		{
+			"targetname" "/^(suit|weapons)$/"
+		}
 		// turn prev. changelevel trig into invisible wall
 		"modify"
 		{
@@ -33,11 +42,6 @@
 			{
 				"remove" {}
 			}
-		}
-		// remove lift blocker
-		"delete"
-		{
-			"targetname" "c1a1c_lift_block"
 		}
 		// block going past changelevel
 		"add"
@@ -64,6 +68,58 @@
 				}
 			}
 		}
+		// fix headcrabs prematurely spawning if the lift power is on and a player falls before the elevator is started
+		"modify"
+		{
+			"targetname"	"c1a1c_freight_relay"
+			"outputs"
+			{
+				"remove"
+				{
+					"target" "headcrab_lift_vent_spawn_trigger"
+					"input" "Enable"
+				}
+			}
+		}
+		"modify"
+		{
+			"targetname"	"c1a1c_freight_relay"
+			"outputs"
+			{
+				"remove"
+				{
+					"target" "lift_trigger_1"
+					"input" "Enable"
+				}
+			}
+		}
+		"modify"
+		{
+			"targetname"	"c1a1c_lift_button"
+			
+			"outputs"
+			{
+				"add"
+				{
+					"target" "headcrab_lift_vent_spawn_trigger"
+					"output" "OnPressed"
+					"input"	"Enable"
+					"timestofire" "1"
+				}
+				"add"
+				{
+					"target" "lift_trigger_1"
+					"output" "OnPressed"
+					"input"	"Enable"
+					"timestofire" "1"
+				}
+			}
+		}
+		// remove headcrab spawner since it is stuck inside of a changelevel trigger
+		"remove"
+		{
+			"targetname"	"h_maker"
+		}
 	}
 	"checkpoint"
 	{
@@ -82,12 +138,18 @@
 		"lift"
 		{
 			"followid"	"c1a1c_lift_1"
-			"origin"	"0 0 64"
-			"angles"	"0 270 0"
+			"origin"	"0 -64 64"
+			"angles"	"15 -270 0"
 			"triggerid"	"c1a1c_lift_1"
 			"output"	"OnStart"
-			"portal"	"-5120 -1648 -1075"
-			"delay"		"5.0"
+			"bringall"	"1"
+		}
+		"lift_after"
+		{
+			"origin"	"-4450.0 -3670.0 -3380"
+			"angles"	"12.0 115.0 0.0"
+			"triggerid" "lt_05"
+			"output"	"OnPass"
 		}
 	}
 }

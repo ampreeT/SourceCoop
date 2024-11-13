@@ -17,13 +17,14 @@ enum struct CoopManagerData
 	int m_iEnabledFeatures;
 	bool m_bIsCoopMap;
 	bool m_bStarted;
-	float m_flStartTime;
-	bool m_bPlayerSpawned;
+	bool m_bMapHasDelayedOutput;
+	int m_iSpawnedPlayerCountLastMap;
+	int m_iSpawnedPlayerCount;
 	int m_iSecondsToStart;
-	bool m_bGetReadyTimer;
-	Handle m_pStartTimer;
+	float m_flStartTime;
+	Handle m_hStartTimer;
 	ArrayList m_pDelayedOutputs;
-	int m_iClientChangeLvlIndicies[MAXPLAYERS+1];
+	int m_iClientChangeLvlIndicies[MAXPLAYERS + 1];
 	Handle m_pChangeLevelTimer;
 	int m_iTicksToEnd;
 	CoopConfigLocation m_mapConfigLoc;
@@ -36,7 +37,6 @@ CoopManagerData g_pCoopManagerData;
 
 methodmap CoopManager
 {
-
 	public static void Initialize()
 	{
 		data.m_pDelayedOutputs = new ArrayList(sizeof(FireOutputData));
@@ -48,11 +48,12 @@ methodmap CoopManager
 	{
 		delete data.kv;
 		data.m_pDelayedOutputs.Clear();
-		data.m_pStartTimer = null;
+		data.m_hStartTimer = null;
 		data.m_pChangeLevelTimer = null;
-		data.m_bGetReadyTimer = false;
 		data.m_bStarted = false;
-		data.m_bPlayerSpawned = false;
+		data.m_iSpawnedPlayerCountLastMap = data.m_iSpawnedPlayerCount;
+		data.m_iSpawnedPlayerCount = 0;
+		data.m_bMapHasDelayedOutput = false;
 		data.m_pChangeLevelMgr.Clear();
 		data.m_iEnabledFeatures = 0;
 		for (int i = 0; i <= MaxClients; i++)
@@ -81,6 +82,32 @@ methodmap CoopManager
 		return false;
 	}
 
+	public static void EntitySpawnPost(CBaseEntity pEntity)
+	{
+		// find and hook output hooks for entity
+		if (!data.m_bStarted)
+		{
+			ArrayList pOutputHookList = g_pLevelLump.GetOutputHooksForEntity(pEntity);
+			if (pOutputHookList.Length > 0)
+			{
+				if (pEntity.IsClassname("logic_auto"))
+				{
+					// do not let it get killed, so the output can fire later
+					int iSpawnFlags = pEntity.GetSpawnFlags();
+					if (iSpawnFlags & SF_AUTO_FIREONCE)
+						pEntity.SetSpawnFlags(iSpawnFlags &~ SF_AUTO_FIREONCE);
+				}
+				for (int i = 0; i < pOutputHookList.Length; i++)
+				{
+					CEntityOutputHook pOutputHook; pOutputHookList.GetArray(i, pOutputHook);
+					HookSingleEntityOutput(pEntity.GetEntIndex(), pOutputHook.m_szOutputName, Callback_OutputCallbackForDelay);
+				}
+				data.m_bMapHasDelayedOutput = true;
+			}
+			pOutputHookList.Close();
+		}
+	}
+
 	public static void OnMapStart()
 	{
 		if (!data.kv)
@@ -93,9 +120,7 @@ methodmap CoopManager
 		PrecacheSound(Conf.SND_CHANGELEVEL);
 		PrecacheSound(Conf.SND_CHANGELEVEL_TICK);
 
-		#if defined SRCCOOP_BLACKMESA
-		CBM_MP_GameRules.SetStateEndTime(STATE_WARMUP, GetGameTime() + 60 * 60 * 24 * 7);
-		#endif
+		CoopManager.SetIntroTimeOnHud(INT_MAX);
 
 		data.kv.Rewind();
 		CCoopSpawnSystem.ParseConfigFile(data.kv);
@@ -107,12 +132,57 @@ methodmap CoopManager
 		delete data.kv;
 	}
 
-	public static void OnClientPutInServer(CBasePlayer pPlayer)
+	public static void SetIntroTimeOnHud(const int iSecondsToWait)
 	{
-		if (CoopManager.IsCoopModeEnabled())
+		bool bShouldShow = iSecondsToWait > -1;
+		
+		#if defined SRCCOOP_BLACKMESA
+		CBM_MP_GameRules.SetStateEndTime(STATE_WARMUP, bShouldShow ? (GetGameTime() + iSecondsToWait + 1.0) : 0.0);
+		#endif
+
+		if (bShouldShow)
 		{
-			CoopManager.CheckStart();
-			CCoopSpawnSystem.TeleportPlayerOnSpawn(pPlayer);
+			#if defined INTRO_TIMER_HUDTEXT
+			SetHudTextParams(-1.0, 0.05, 1.0, 200, 200, 200, 255, 0, 0.5, 0.1, 0.1);
+			for (int i = 1; i <= MaxClients; i++)
+			{
+				if (IsClientInGame(i))
+				{
+					ShowHudText(i, 2, "%d", iSecondsToWait);
+				}
+			}
+			#endif
+			
+			EmitSoundToAll(Conf.SND_TICK, .volume = Conf.SND_TICK_VOL);
+
+			if (iSecondsToWait == 3)
+			{
+				EmitSoundToAll(Conf.SND_3, .volume = Conf.SND_TICK_VOL);
+			}
+			else if (iSecondsToWait == 2)
+			{
+				EmitSoundToAll(Conf.SND_2, .volume = Conf.SND_TICK_VOL);
+			}
+			else if (iSecondsToWait == 1)
+			{
+				EmitSoundToAll(Conf.SND_1, .volume = Conf.SND_TICK_VOL);
+			}
+		}
+	}
+
+	public static void StartIntroTimer(const int iSecondsToStart)
+	{
+		delete data.m_hStartTimer;
+		if (iSecondsToStart > 0)
+		{
+			data.m_iSecondsToStart = iSecondsToStart;
+			CoopManager.SetIntroTimeOnHud(data.m_iSecondsToStart);
+			data.m_hStartTimer = CreateTimer(1.0, Timer_DecrementUntilMapStart, _, TIMER_FLAG_NO_MAPCHANGE | TIMER_REPEAT);
+		}
+		else
+		{
+			data.m_iSecondsToStart = 0;
+			Timer_DecrementUntilMapStart(null);
 		}
 	}
 
@@ -158,8 +228,9 @@ methodmap CoopManager
 		g_pSpawnOptions.Reset();
 
 		ItemInstancingManager.OnPlayerSpawned(pPlayer);
+
+		data.m_iSpawnedPlayerCount = GetRealClientCount(true);
 		
-		data.m_bPlayerSpawned = true;
 		if (!data.m_bStarted)
 		{
 			if (g_pLevelLump.m_iIntroType == INTRO_FADE)
@@ -170,123 +241,37 @@ methodmap CoopManager
 			else if (g_pLevelLump.m_iIntroType == INTRO_FREEZE)
 			{
 				pPlayer.SetFlags(pPlayer.GetFlags() | FL_ATCONTROLS);
-				Client_ScreenFade(pPlayer.GetEntIndex(), Conf.FROZEN_FADE_DUR_IN, FFADE_OUT|FFADE_STAYOUT, _,
+				Client_ScreenFade(pPlayer.GetEntIndex(), Conf.FROZEN_FADE_DUR_IN, FFADE_OUT | FFADE_STAYOUT, _,
 					Conf.FROZEN_FADE_COLOR[0], Conf.FROZEN_FADE_COLOR[1], Conf.FROZEN_FADE_COLOR[2], Conf.FROZEN_FADE_COLOR[3]);
 			}
-			CoopManager.CheckStart();
-		}
-	}
 
-	public static void CheckStart()
-	{
-		if (!data.m_bStarted && data.m_bPlayerSpawned)
-		{
-			// are we allowed to start or waiting for players?
-			if (CoopManager.IsAllowedToStart())
+			if ((g_pLevelLump.m_iIntroType == INTRO_NONE && !data.m_bMapHasDelayedOutput) || data.m_iSpawnedPlayerCountLastMap == 1)
 			{
-				// is initial timer already running?
-				if (CoopManager.IsInCountDownPeriod())
-				{
-					// can start, but do a 3 sec readyup timer as we cancel the initial player wait timer
-					if (!data.m_bGetReadyTimer)
-					{
-						delete data.m_pStartTimer;
-						CoopManager.StartCountdown(true);
-					}
-				}
-				else
-				{
-					// we can just start if no previous timer is running
-					CoopManager.Start();
-				}
+				CoopManager.StartIntroTimer(0);
 			}
 			else if (!CoopManager.IsInCountDownPeriod())
 			{
-				// not allowed to start now and no timer is running, start the timer.
-				CoopManager.StartCountdown(false);
+				CoopManager.StartIntroTimer(g_pConvarWaitPeriod.IntValue);
+			}
+			else if ((data.m_iSpawnedPlayerCountLastMap - data.m_iSpawnedPlayerCount) == 0 && data.m_iSecondsToStart > 3)
+			{
+				CoopManager.StartIntroTimer(3);
 			}
 		}
 	}
-
-	public static void StartCountdown(bool bGetReadyTimer)
+	
+	public static void OnClientDisconnectPost(const int iClient)
 	{
-		if ((data.m_bGetReadyTimer = bGetReadyTimer))
+		if (!data.m_bStarted && GetRealClientCount(true) <= 0)
 		{
-			data.m_iSecondsToStart = 3;
-			EmitSoundToAll(Conf.SND_3, .volume = Conf.SND_TICK_VOL);
+			delete data.m_hStartTimer;
+			CoopManager.SetIntroTimeOnHud(INT_MAX);
 		}
-		else
-		{
-			data.m_iSecondsToStart = g_pConvarWaitPeriod.IntValue;
-		}
-
-		#if defined SRCCOOP_BLACKMESA
-		CBM_MP_GameRules.SetStateEndTime(STATE_WARMUP, GetGameTime() + data.m_iSecondsToStart + 1.0);
-		#endif
-
-		data.m_pStartTimer = CreateTimer(1.0, StartTimerCallback, _, TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT);
 	}
 
 	public static bool IsInCountDownPeriod()
 	{
-		return data.m_pStartTimer != null;
-	}
-
-	public static bool IsAllowedToStart()
-	{
-		return (g_pLevelLump.m_iIntroType == INTRO_NONE && data.m_pDelayedOutputs.Length == 0) || (GetRealClientCount(false) - GetRealClientCount(true)) == 0;
-	}
-
-	public static void Start()
-	{
-		if (!GetRealClientCount(true))
-		{
-			return;
-		}
-		
-		#if defined SRCCOOP_BLACKMESA
-		CBM_MP_GameRules.SetStateEndTime(STATE_WARMUP, 0.0);
-		#endif
-		
-		data.m_bStarted = true;
-		data.m_flStartTime = GetGameTime();
-		MsgSrv("%t", "map start", g_szMapName);
-
-		if (g_pLevelLump.m_iIntroType == INTRO_FADE || g_pLevelLump.m_iIntroType == INTRO_FREEZE)
-		{
-			for (int i = 1; i <= MaxClients; i++)
-			{
-				if (IsClientInGame(i) && !IsFakeClient(i))
-				{
-					CBasePlayer pClient = CBasePlayer(i);
-					pClient.SetFlags(pClient.GetFlags() & ~FL_ATCONTROLS);
-					if (g_pLevelLump.m_iIntroType == INTRO_FREEZE)
-					{
-						Client_ScreenFade(pClient.GetEntIndex(), Conf.FROZEN_FADE_DUR_OUT, FFADE_PURGE|FFADE_IN, 1,
-							Conf.FROZEN_FADE_COLOR[0], Conf.FROZEN_FADE_COLOR[1], Conf.FROZEN_FADE_COLOR[2], Conf.FROZEN_FADE_COLOR[3]);
-					}
-				}
-			}
-		}
-
-		// Fire delayed outputs
-		for (int i = 0; i < data.m_pDelayedOutputs.Length; i++)
-		{
-			FireOutputData pFireOutputData; data.m_pDelayedOutputs.GetArray(i, pFireOutputData);
-			if (pFireOutputData.m_pCaller.IsValid())
-			{
-				FireEntityOutput(pFireOutputData.m_pCaller.GetEntIndex(), pFireOutputData.m_szName, pFireOutputData.m_pActivator.GetEntIndex(), pFireOutputData.m_flDelay);
-
-				if (pFireOutputData.m_pCaller.IsClassname("trigger_once"))
-				{
-					pFireOutputData.m_pCaller.SetNextThinkTick(GetGameTickCount()+1); // allow to kill itself
-				}
-			}
-		}
-		
-		// Notify plugins via forward
-		Call_StartForward(g_CoopMapStartFwd);
-		Call_Finish();
+		return data.m_hStartTimer != null;
 	}
 
 	public static void AddDelayedOutput(const FireOutputData pFireOutputData)
@@ -325,7 +310,7 @@ methodmap CoopManager
 		if (data.m_pChangeLevelTimer == null)
 		{
 			data.m_iTicksToEnd = g_pConvarEndWaitPeriod.IntValue;
-			data.m_pChangeLevelTimer = CreateTimer(CoopManager.GetChangeLevelTimerInterval(), ChangeLevelTimerCallback, _, TIMER_FLAG_NO_MAPCHANGE);
+			data.m_pChangeLevelTimer = CreateTimer(CoopManager.GetChangeLevelTimerInterval(), Timer_DecrementChangeLevel, _, TIMER_FLAG_NO_MAPCHANGE);
 			EmitSoundToAll(Conf.SND_CHANGELEVEL, .volume = Conf.SND_CHANGELEVEL_VOL);
 		}
 		if (data.m_pChangeLevelMgr.SetPlayerVote(pChangelevel, pActivator, data.m_iClientChangeLvlIndicies))
@@ -415,6 +400,7 @@ methodmap CoopManager
 		{
 			return;
 		}
+
 		ForceChangeLevel(szNextMap, szReason);
 	}
 
@@ -515,49 +501,64 @@ methodmap CoopManager
 	
 }
 
-public Action StartTimerCallback(Handle pTimer)
+// Runs every 1 second.
+// 
+public Action Timer_DecrementUntilMapStart(Handle hTimer)
 {
-	if (!--data.m_iSecondsToStart)
+	--data.m_iSecondsToStart;
+	CoopManager.SetIntroTimeOnHud(data.m_iSecondsToStart);
+
+	if (data.m_iSecondsToStart < 0)
 	{
-		data.m_pStartTimer = null;
-		CoopManager.Start();
+		MsgSrv("%t", "map start", g_szMapName);
+
+		data.m_bStarted = true;
+		data.m_flStartTime = GetGameTime();
+
+		if (g_pLevelLump.m_iIntroType == INTRO_FADE || g_pLevelLump.m_iIntroType == INTRO_FREEZE)
+		{
+			for (int i = 1; i <= MaxClients; i++)
+			{
+				if (IsClientInGame(i) && !IsFakeClient(i))
+				{
+					CBasePlayer pClient = CBasePlayer(i);
+					pClient.SetFlags(pClient.GetFlags() & ~FL_ATCONTROLS);
+					if (g_pLevelLump.m_iIntroType == INTRO_FREEZE)
+					{
+						Client_ScreenFade(pClient.GetEntIndex(), Conf.FROZEN_FADE_DUR_OUT, FFADE_PURGE | FFADE_IN, 1,
+							Conf.FROZEN_FADE_COLOR[0], Conf.FROZEN_FADE_COLOR[1], Conf.FROZEN_FADE_COLOR[2], Conf.FROZEN_FADE_COLOR[3]);
+					}
+				}
+			}
+		}
+
+		// Fire delayed outputs
+		for (int i = 0; i < data.m_pDelayedOutputs.Length; i++)
+		{
+			FireOutputData pFireOutputData; data.m_pDelayedOutputs.GetArray(i, pFireOutputData);
+			if (pFireOutputData.m_pCaller.IsValid())
+			{
+				FireEntityOutput(pFireOutputData.m_pCaller.GetEntIndex(), pFireOutputData.m_szName, pFireOutputData.m_pActivator.GetEntIndex(), pFireOutputData.m_flDelay);
+
+				if (pFireOutputData.m_pCaller.IsClassname("trigger_once"))
+				{
+					pFireOutputData.m_pCaller.SetNextThinkTick(GetGameTickCount() + 1); // allow to kill itself
+				}
+			}
+		}
+		
+		// Notify plugins via forward
+		Call_StartForward(g_CoopMapStartFwd);
+		Call_Finish();
+
+		data.m_hStartTimer = null;
 		return Plugin_Stop;
 	}
-	
-	if (data.m_iSecondsToStart == 3)
-	{
-		EmitSoundToAll(Conf.SND_3, .volume = Conf.SND_TICK_VOL);
-	}
-	else if (data.m_iSecondsToStart == 2)
-	{
-		EmitSoundToAll(Conf.SND_2, .volume = Conf.SND_TICK_VOL);
-	}
-	else if (data.m_iSecondsToStart == 1)
-	{
-		EmitSoundToAll(Conf.SND_1, .volume = Conf.SND_TICK_VOL);
-	}
-	else
-	{
-		EmitSoundToAll(Conf.SND_TICK, .volume = Conf.SND_TICK_VOL);
-	}
 
-	#if defined INTRO_TIMER_HUDTEXT
-	
-	SetHudTextParams(-1.0, 0.05, 1.0, 200, 200, 200, 255, 0, 0.5, 0.1, 0.1);
-	for (int i = 1; i <= MaxClients; i++)
-	{
-		if (IsClientInGame(i))
-		{
-			ShowHudText(i, 2, "%d", data.m_iSecondsToStart);
-		}
-	}
-
-	#endif
-	
 	return Plugin_Continue;
 }
 
-public void ChangeLevelTimerCallback(Handle pTimer)
+public void Timer_DecrementChangeLevel(Handle pTimer)
 {
 	if (!data.m_iTicksToEnd--)
 	{
@@ -571,7 +572,54 @@ public void ChangeLevelTimerCallback(Handle pTimer)
 	{
 		EmitSoundToAll(Conf.SND_CHANGELEVEL_TICK, .volume = Conf.SND_CHANGELEVEL_TICK_VOL);
 		data.m_pChangeLevelMgr.UpdateStatus(data.m_iTicksToEnd);
-		data.m_pChangeLevelTimer = CreateTimer(CoopManager.GetChangeLevelTimerInterval(), ChangeLevelTimerCallback, _, TIMER_FLAG_NO_MAPCHANGE);
+		data.m_pChangeLevelTimer = CreateTimer(CoopManager.GetChangeLevelTimerInterval(), Timer_DecrementChangeLevel, _, TIMER_FLAG_NO_MAPCHANGE);
+	}
+}
+
+public Action Callback_OutputCallbackForDelay(const char[] szOutput, int iCaller, int iActivator, float flDelay)
+{
+	if (data.m_bStarted)
+		return Plugin_Continue;
+	
+	FireOutputData pFireOutputData;
+	strcopy(pFireOutputData.m_szName, sizeof(pFireOutputData.m_szName), szOutput);
+	pFireOutputData.m_pCaller = CBaseEntity(iCaller);
+	pFireOutputData.m_pActivator = CBaseEntity(iActivator);
+	pFireOutputData.m_flDelay = flDelay;
+	CoopManager.AddDelayedOutput(pFireOutputData);
+	
+	if (pFireOutputData.m_pCaller.IsValid())
+	{
+		// stop from deleting itself
+		if (pFireOutputData.m_pCaller.IsClassname("trigger_once"))
+		{
+			RequestFrame(RequestStopThink, pFireOutputData.m_pCaller);
+		}
+		else if (pFireOutputData.m_pCaller.IsClassname("logic_relay"))
+		{
+			int iSpawnFlags = pFireOutputData.m_pCaller.GetSpawnFlags();
+			if (iSpawnFlags & SF_REMOVE_ON_FIRE)
+			{
+				pFireOutputData.m_pCaller.SetSpawnFlags(iSpawnFlags &~ SF_REMOVE_ON_FIRE);
+				UnhookSingleEntityOutput(iCaller, szOutput, Callback_OutputCallbackForDelay);
+				HookSingleEntityOutput(iCaller, szOutput, Callback_DeleteEntOnDelayedOutputFire);
+			}
+		}
+	}
+
+	return Plugin_Stop;
+}
+
+public Action Callback_DeleteEntOnDelayedOutputFire(const char[] szOutput, int iCaller, int iActivator, float flDelay)
+{
+	if (data.m_bStarted)
+	{
+		RemoveEntity(iCaller);
+		return Plugin_Continue;
+	}
+	else
+	{
+		return Plugin_Stop;
 	}
 }
 
