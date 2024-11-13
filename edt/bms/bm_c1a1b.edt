@@ -66,6 +66,19 @@
 				}
 			}
 		}
+		// block players from going past the changelevel trigger
+		"add"
+		{
+			"classname" "func_brush"
+			"rendermode" "10" // dont render
+			"functions"
+			{
+				"copy_model"
+				{
+					"hammerid" "3389674"
+				}
+			}
+		}
 		// delete trigger that replays barney scene
 		"delete"
 		{
@@ -86,12 +99,12 @@
 			"triggerid"	"2390983"
 			"output"	"OnTrigger"
 		}
-		"lab"
+		"lab_crowbar"
 		{
 			"origin"	"220 1364 493"
 			"angles"	"0 90 0"
-			"triggerid"	"beam_wall_relay"
-			"output"	"OnTrigger"
+			"triggerid"	"3361788"
+			"output"	"OnPressed"
 			"bringall"	"1"
 		}
 	}
