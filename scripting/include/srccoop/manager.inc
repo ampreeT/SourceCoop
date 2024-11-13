@@ -249,16 +249,13 @@ methodmap CoopManager
 			{
 				CoopManager.StartIntroTimer(0);
 			}
-			else if ((data.m_iSpawnedPlayerCountLastMap - data.m_iSpawnedPlayerCount) == 0)
-			{
-				if (!CoopManager.IsInCountDownPeriod() || data.m_iSecondsToStart > 3)
-				{
-					CoopManager.StartIntroTimer(3);
-				}
-			}
 			else if (!CoopManager.IsInCountDownPeriod())
 			{
 				CoopManager.StartIntroTimer(g_pConvarWaitPeriod.IntValue);
+			}
+			else if ((data.m_iSpawnedPlayerCountLastMap - data.m_iSpawnedPlayerCount) == 0 && data.m_iSecondsToStart > 3)
+			{
+				CoopManager.StartIntroTimer(3);
 			}
 		}
 	}
