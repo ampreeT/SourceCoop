@@ -21,6 +21,7 @@ enum struct CoopManagerData
 	int m_iSpawnedPlayerCountLastMap;
 	int m_iSpawnedPlayerCount;
 	int m_iSecondsToStart;
+	float m_flStartTime;
 	Handle m_hStartTimer;
 	ArrayList m_pDelayedOutputs;
 	int m_iClientChangeLvlIndicies[MAXPLAYERS + 1];
@@ -508,13 +509,14 @@ methodmap CoopManager
 public Action Timer_DecrementUntilMapStart(Handle hTimer)
 {
 	--data.m_iSecondsToStart;
+	CoopManager.SetIntroTimeOnHud(data.m_iSecondsToStart);
+
 	if (data.m_iSecondsToStart < 0)
 	{
 		MsgSrv("%t", "map start", g_szMapName);
 
-		CoopManager.SetIntroTimeOnHud(data.m_iSecondsToStart);
-
 		data.m_bStarted = true;
+		data.m_flStartTime = GetGameTime();
 
 		if (g_pLevelLump.m_iIntroType == INTRO_FADE || g_pLevelLump.m_iIntroType == INTRO_FREEZE)
 		{
@@ -555,8 +557,6 @@ public Action Timer_DecrementUntilMapStart(Handle hTimer)
 		data.m_hStartTimer = null;
 		return Plugin_Stop;
 	}
-
-	CoopManager.SetIntroTimeOnHud(data.m_iSecondsToStart);
 
 	return Plugin_Continue;
 }
