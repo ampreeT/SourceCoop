@@ -52,10 +52,6 @@ methodmap CoopManager
 		data.m_pChangeLevelTimer = null;
 		data.m_bStarted = false;
 		data.m_iSpawnedPlayerCountLastMap = data.m_iSpawnedPlayerCount;
-		if (!data.m_iSpawnedPlayerCountLastMap)
-		{
-			data.m_iSpawnedPlayerCountLastMap = 1;
-		}
 		data.m_iSpawnedPlayerCount = 0;
 		data.m_iSecondsToStart = cellmax;
 		data.m_bMapHasDelayedOutput = false;
