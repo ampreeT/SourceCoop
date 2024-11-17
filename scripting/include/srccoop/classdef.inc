@@ -1336,6 +1336,27 @@ methodmap CSceneEntity < CPointEntity
 	}
 }
 
+methodmap CAI_ScriptedSequence < CBaseEntity
+{
+	public CAI_ScriptedSequence(const int iEntIndex = -1)
+	{
+		return view_as<CAI_ScriptedSequence>(CBaseEntity(iEntIndex));
+	}
+	public static CAI_ScriptedSequence Create()
+	{
+		return CAI_ScriptedSequence(CreateEntityByName("scripted_sequence"));
+	}
+
+	public CBaseEntity GetTargetEnt()
+	{
+		return CBaseEntity(GetEntPropEnt(this.entindex, Prop_Data, "m_hTargetEnt"));
+	}
+	public void SetTargetEnt(CBaseEntity pTarget)
+	{
+		SetEntPropEnt(this.entindex, Prop_Data, "m_hTargetEnt", pTarget.entindex);
+	}
+}
+
 methodmap CSoundEnt < CPointEntity
 {
 	public CSoundEnt(const int iEntIndex = -1)
@@ -2059,6 +2080,14 @@ methodmap CAI_BaseNPC < CBaseCombatCharacter
 	public void SetPlayerAvoidState(const bool bPlayerAvoidState)
 	{
 		SetEntProp(this.GetEntIndex(), Prop_Data, "m_bPlayerAvoidState", bPlayerAvoidState);
+	}
+	public CAI_ScriptedSequence GetCine()
+	{
+		return CAI_ScriptedSequence(GetEntPropEnt(this.entindex, Prop_Data, "m_hCine"));
+	}
+	public void SetCine(CAI_ScriptedSequence pCine)
+	{
+		SetEntPropEnt(this.entindex, Prop_Data, "m_hCine", pCine.entindex);
 	}
 }
 
