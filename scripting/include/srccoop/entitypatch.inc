@@ -1576,6 +1576,11 @@ public MRESReturn Hook_UTIL_FindClientInPVSGuts(DHookReturn hReturn, DHookParam 
 	*/
 }
 
+//------------------------------------------------------
+// CAI_ScriptedSequence::StartScript
+// Attempts to fix null reference on m_hTargetEnt inside CAI_ScriptedSequence::ScriptThink
+// by preventing CAI_ScriptedSequence::StartScript from nullifying its own target entity.
+//------------------------------------------------------
 public MRESReturn Hook_ScriptedSequenceStartScript(int _this)
 {
 	CAI_ScriptedSequence pThis = CAI_ScriptedSequence(_this);
