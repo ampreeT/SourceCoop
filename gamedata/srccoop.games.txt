@@ -865,7 +865,7 @@
 			{
 				"signature"	"UTIL_FindClientInPVSGuts"
 				"callconv"	"cdecl"
-				"return"	"cbaseentity"
+				"return"	"edict"
 				"arguments"
 				{
 					"pEdict"
