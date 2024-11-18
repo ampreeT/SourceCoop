@@ -11,7 +11,8 @@
 // ----------------------------
 ConVar g_pConvarCoopTeam;
 ConVar g_pConvarCoopRespawnTime;
-ConVar g_pConvarWaitPeriod;
+ConVar g_pConvarStartWaitPeriod;
+ConVar g_pConvarStartWaitMode;
 ConVar g_pConvarEndWaitPeriod;
 ConVar g_pConvarEndWaitFactor;
 ConVar g_pConvarHomeMap;

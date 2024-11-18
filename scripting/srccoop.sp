@@ -265,7 +265,8 @@ public void OnPluginStart()
 	g_pConvarDisableTeamSelect = CreateConVar("sourcecoop_disable_teamselect", "1", "Whether to skip the team select screen and spawn in instantly.", _, true, 0.0, true, 1.0);
 	#endif
 	g_pConvarCoopRespawnTime = CreateConVar("sourcecoop_respawntime", "2.0", "Sets player respawn time in seconds.", _, true, 0.1);
-	g_pConvarWaitPeriod = CreateConVar("sourcecoop_start_wait_period", "15.0", "The max number of seconds to wait since first player spawned in to start the map. The timer is skipped when all players enter the game.", _, true, 0.0);
+	g_pConvarStartWaitPeriod = CreateConVar("sourcecoop_start_wait_period", "15.0", "The max number of seconds to wait since first player spawned in to start the map. ", _, true, 0.0);
+	g_pConvarStartWaitMode = CreateConVar("sourcecoop_start_wait_mode", "2", "\n0 = The timer is not skipped (exceptions are maps without an intro_type or delayed outputs set).\n1 = The timer is skipped when all players enter the game.\n2 = The timer is skipped when player count matches the previous map's player count.", _, true, 0.0, true, 2.0);
 	g_pConvarEndWaitPeriod = CreateConVar("sourcecoop_end_wait_period", "60.0", "The max number of seconds to wait since first player triggered a changelevel. The timer speed increases each time a new player finishes the level.", _, true, 0.0);
 	g_pConvarEndWaitFactor = CreateConVar("sourcecoop_end_wait_factor", "1.0", "Controls how much the number of finished players increases the changelevel timer speed. 1.0 means full, 0 means none (timer will run full length).", _, true, 0.0, true, 1.0);
 	g_pConvarHomeMap = CreateConVar("sourcecoop_homemap", "", "The map to return to after finishing a campaign/map.");
@@ -513,12 +514,6 @@ public void OnClientDisconnect(int client)
 
 public void OnClientDisconnect_Post(int client)
 {
-	SurvivalManager.OnClientDisconnectPost(client);
-	CoopManager.OnClientDisconnectPost(client);
-	g_szSteamIds[client] = "";
-	g_bPostTeamSelect[client] = false;
-	g_iAddButtons[client] = 0;
-
 	if (g_iPlayerCount)
 	{
 		g_iPlayerCount = GetRealClientCount(true);
@@ -531,6 +526,11 @@ public void OnClientDisconnect_Post(int client)
 		}
 		#endif
 	}
+	SurvivalManager.OnClientDisconnectPost(client);
+	CoopManager.OnClientDisconnectPost(client);
+	g_szSteamIds[client] = "";
+	g_bPostTeamSelect[client] = false;
+	g_iAddButtons[client] = 0;
 }
 
 public Action UserMessage_TextMsg(UserMsg pMsg, BfRead bf, const int[] pPlayers, int iPlayerCount, bool bReliable, bool bInitialize)

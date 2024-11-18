@@ -53,6 +53,7 @@ methodmap CoopManager
 		data.m_bStarted = false;
 		data.m_iSpawnedPlayerCountLastMap = data.m_iSpawnedPlayerCount;
 		data.m_iSpawnedPlayerCount = 0;
+		data.m_iSecondsToStart = cellmax;
 		data.m_bMapHasDelayedOutput = false;
 		data.m_pChangeLevelMgr.Clear();
 		data.m_iEnabledFeatures = 0;
@@ -88,7 +89,7 @@ methodmap CoopManager
 		if (!data.m_bStarted)
 		{
 			ArrayList pOutputHookList = g_pLevelLump.GetOutputHooksForEntity(pEntity);
-			if (pOutputHookList.Length > 0)
+			if (pOutputHookList.Length)
 			{
 				if (pEntity.IsClassname("logic_auto"))
 				{
@@ -245,33 +246,56 @@ methodmap CoopManager
 					Conf.FROZEN_FADE_COLOR[0], Conf.FROZEN_FADE_COLOR[1], Conf.FROZEN_FADE_COLOR[2], Conf.FROZEN_FADE_COLOR[3]);
 			}
 
-			if ((g_pLevelLump.m_iIntroType == INTRO_NONE && !data.m_bMapHasDelayedOutput) || data.m_iSpawnedPlayerCountLastMap == 1)
+			if (g_pLevelLump.m_iIntroType == INTRO_NONE && !data.m_bMapHasDelayedOutput)
 			{
 				CoopManager.StartIntroTimer(0);
+				return;
 			}
-			else if (!CoopManager.IsInCountDownPeriod())
+			
+			switch (g_pConvarStartWaitMode.IntValue)
 			{
-				CoopManager.StartIntroTimer(g_pConvarWaitPeriod.IntValue);
-			}
-			else if ((data.m_iSpawnedPlayerCountLastMap - data.m_iSpawnedPlayerCount) == 0 && data.m_iSecondsToStart > 3)
-			{
-				CoopManager.StartIntroTimer(3);
+				case 0: // no skip
+				{
+					if (!data.m_hStartTimer)
+					{
+						CoopManager.StartIntroTimer(g_pConvarStartWaitPeriod.IntValue);
+					}
+				}
+
+				case 1: // skip when matched in-game vs connected count
+				{
+					if (GetRealClientCount(false) - g_iPlayerCount <= 0 && data.m_iSecondsToStart > 3)
+					{
+						CoopManager.StartIntroTimer(3);
+					}
+					else if (!data.m_hStartTimer)
+					{
+						CoopManager.StartIntroTimer(g_pConvarStartWaitPeriod.IntValue);
+					}
+				}
+
+				case 2: // skip when matched last map's player count
+				{
+					if ((data.m_iSpawnedPlayerCountLastMap - data.m_iSpawnedPlayerCount) <= 0 && data.m_iSecondsToStart > 3)
+					{
+						CoopManager.StartIntroTimer(3);
+					}
+					else if (!data.m_hStartTimer)
+					{
+						CoopManager.StartIntroTimer(g_pConvarStartWaitPeriod.IntValue);
+					}
+				}
 			}
 		}
 	}
 	
 	public static void OnClientDisconnectPost(const int iClient)
 	{
-		if (!data.m_bStarted && GetRealClientCount(true) <= 0)
+		if (!data.m_bStarted && !g_iPlayerCount)
 		{
 			delete data.m_hStartTimer;
 			CoopManager.SetIntroTimeOnHud(INT_MAX);
 		}
-	}
-
-	public static bool IsInCountDownPeriod()
-	{
-		return data.m_hStartTimer != null;
 	}
 
 	public static void AddDelayedOutput(const FireOutputData pFireOutputData)
