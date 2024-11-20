@@ -1296,7 +1296,7 @@
 			}
 			"CAI_BaseNPC::ShouldPlayerAvoid" // CAI_BaseNPC::ShouldPlayerAvoid()
 			{
-				"windows"	"371"
+				"windows"	"373" // vtable dumper will get this wrong! This is just before "CAI_BaseNPC::SetPlayerAvoidState", which we have a sig for.
 				"linux"		"372"
 			}
 			"CBasePlayer::RemoveAllItems" // CBlackMesaPlayer::RemoveAllItems(bool)
