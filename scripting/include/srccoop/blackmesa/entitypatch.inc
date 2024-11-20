@@ -754,6 +754,24 @@ public void Timer_SetTripmineSpriteColor(Handle timer, CSpriteTeam pSpriteTeam)
 }
 
 //------------------------------------------------------
+// grenade_frag
+// Fixes grenades physics being different in multiplayer and not being able to be picked up.
+//------------------------------------------------------
+public void Hook_GrenadeFragSpawn(const int iEntIndex)
+{
+	g_bIsMultiplayerOverride = false;
+}
+
+//------------------------------------------------------
+// grenade_frag
+// See `Hook_GrenadeFragSpawn` for details.
+//------------------------------------------------------
+public void Hook_GrenadeFragSpawnPost(const int iEntIndex)
+{
+	g_bIsMultiplayerOverride = true;
+}
+
+//------------------------------------------------------
 // weapon_357/weapon_crossbow
 // New constructed logic of toggling ironsights.
 //------------------------------------------------------

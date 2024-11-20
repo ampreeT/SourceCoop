@@ -676,10 +676,18 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 	else // !isNPC
 	{
 		#if defined ENTPATCH_BM_SP_WEAPONS
+		if (strcmp(szClassname, "grenade_frag") == 0)
+		{
+			SDKHook(iEntIndex, SDKHook_Spawn, Hook_GrenadeFragSpawn);
+			SDKHook(iEntIndex, SDKHook_SpawnPost, Hook_GrenadeFragSpawnPost);
+			return;
+		}
+
 		if (strcmp(szClassname, "weapon_357") == 0)
 		{
 			DHookEntity(hkBaseCombatWeaponDeploy, false, iEntIndex, _, Hook_IronsightDeployPost_SaveSettings);
 			DHookEntity(hkBaseCombatWeaponGetPrimaryAttackActivity, false, iEntIndex, _, Hook_IronsightGetPrimaryAttackActivity);
+			return;
 		}
 
 		if (strcmp(szClassname, "grenade_bolt") == 0)
