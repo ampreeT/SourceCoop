@@ -35,9 +35,33 @@
 		{
 			"classname" "logic_auto"
 			"hammerid" "1864584"
+			// remove keyboard animation
+			"outputs"
+			{
+				"remove"
+				{
+					"output"	"OnMapSpawn"
+					"target"	"SCI32_Generator_ss1"
+					"input"		"BeginSequence"
+				}
+			}
 			"functions"
 			{
 				"delay_output" "OnMapSpawn"
+			}
+		}
+		// play keyboard animation immediately
+		"add"
+		{
+			"classname"		"logic_auto"
+			"outputs"
+			{
+				"add"
+				{
+					"output"	"OnMapSpawn"
+					"target"	"SCI32_Generator_ss1"
+					"input"		"BeginSequence"
+				}
 			}
 		}
 		// remove trigger which calls spawn elevator up and closes doors

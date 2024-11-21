@@ -4,23 +4,90 @@
 {
 	"chapter" "\"We Got Hostiles!\""
 	"nextmap" "bm_c1a3c"
+	"intro_type"	"none"
 	"equipment"
 	{
-		"lookup"
-		{
-			"targetname" "/^(suit|weapons|ammo)$/"
-		}
+		"item"	"item_suit"
+		"item"	"item_weapon_crowbar"
+		"item"	"item_weapon_glock"
+		"item"	"item_ammo_glock"
+		"item"	"item_ammo_glock"
+		"item"	"item_ammo_glock"
+		"item"	"item_weapon_shotgun"
+		"item"	"item_ammo_shotgun"
+		"item"	"item_ammo_shotgun"
+		"item"	"item_ammo_shotgun"
+		"item"	"item_weapon_mp5"
+		"item"	"item_battery"
+		"item"	"item_battery"
+		"item"	"item_battery"
+		"item"	"item_weapon_frag"
+		"item"	"item_weapon_frag"
 	}
 	"entity"
 	{
+		// delete world starting equipment
+		"delete"
+		{
+			"targetname" "/^(suit|weapons|ammo)$/"
+		}
 		// delay map start
 		"modify"
 		{
 			"classname" "logic_auto"
 			"OnMapSpawn" "/^Scene01_DontShootStart/"
+			"outputs"
+			{
+				// stop elevator noises from playing
+				"remove"
+				{
+					"output"	"OnMapSpawn"
+					"target"	"c1a3b_c1a3a_elevator_sound2"
+				}
+				// set delay to `0`.
+				"modify"
+				{
+					"output"	"OnMapSpawn"
+					"target"	"Scene01_DontShoot"
+					"set"
+					{
+						"delay"	"0"
+					}
+				}
+			}
 			"functions"
 			{
 				"delay_output" "OnMapSpawn"
+			}
+		}
+		"modify"
+		{
+			"classname"		"func_tracktrain"
+			"targetname"	"AToBElev"
+			"set"
+			{
+				"target"	"p2"
+			}
+		}
+		"modify"
+		{
+			"classname"		"path_track"
+			"targetname"	"p2"
+			"functions"
+			{
+				"delay_output" "OnPass"
+			}
+		}
+		"modify"
+		{
+			"classname"		"func_button"
+			"targetname"	"eb"
+			"outputs"
+			{
+				"remove"
+				{
+					"output"	"OnPressed"
+				}
 			}
 		}
 		// conveyor sounds
@@ -46,7 +113,8 @@
 			"targetname" "c1a3b-c1a3c-elevator"
 			"set"
 			{
-				"lip" "-580"
+				"lip"			"-580"
+				"forceclosed"	"1"		// prevents the elevator from going down when blocked
 			}
 			"outputs"
 			{
@@ -99,8 +167,9 @@
 	{
 		"spawn"
 		{
-			"origin"	"1862 995 -119"
+			"origin"	"0 0 20"
 			"angles"	"0 270 0"
+			"followid"	"AToBElev"
 		}
 		"bridge"
 		{
