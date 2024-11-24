@@ -6,13 +6,26 @@
 	"nextmap" "bm_c1a3a"
 	"equipment"
 	{
-		"lookup"
-		{
-			"targetname" "items_at_start"
-		}
+		"item"	"item_suit"
+		"item"	"item_weapon_crowbar"
+		"item"	"item_weapon_glock"
+		"item"	"item_ammo_glock"
+		"item"	"item_ammo_glock"
+		"item"	"item_ammo_glock"
+		"item"	"item_weapon_shotgun"
+		"item"	"item_ammo_shotgun"
+		"item"	"item_ammo_shotgun"
+		"item"	"item_battery"
+		"item"	"item_battery"
+		"item"	"item_weapon_frag"
 	}
 	"entity"
 	{
+		// delete world starting equipment
+		"delete"
+		{
+			"targetname" "items_at_start"
+		}
 		// turn prev. changelevel trig into invisible wall
 		"modify"
 		{

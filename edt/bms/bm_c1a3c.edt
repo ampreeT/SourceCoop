@@ -4,15 +4,57 @@
 {
 	"chapter" "\"We Got Hostiles!\""
 	"nextmap" "bm_c1a3a"
+	"intro_type"	"none"
 	"equipment"
 	{
-		"lookup"
-		{
-			"targetname" "/^(suit|weapons|ammo)$/"
-		}
+		"item"	"item_suit"
+		"item"	"item_weapon_crowbar"
+		"item"	"item_weapon_glock"
+		"item"	"item_ammo_glock"
+		"item"	"item_ammo_glock"
+		"item"	"item_ammo_glock"
+		"item"	"item_weapon_shotgun"
+		"item"	"item_ammo_shotgun"
+		"item"	"item_ammo_shotgun"
+		"item"	"item_ammo_shotgun"
+		"item"	"item_weapon_mp5"
+		"item"	"item_battery"
+		"item"	"item_battery"
+		"item"	"item_battery"
+		"item"	"item_weapon_frag"
+		"item"	"item_weapon_frag"
 	}
 	"entity"
 	{
+		// delete world starting equipment
+		"delete"
+		{
+			"targetname" "/^(suit|weapons|ammo)$/"
+		}
+		// open elevator doors at map start
+		"add"
+		{
+			"classname"		"logic_auto"
+			"outputs"
+			{
+				"add"
+				{
+					"output"	"OnMapSpawn"
+					"target"	"c1a3b-c1a3c-elevator_doorleft"
+					"input"		"Open"
+				}
+				"add"
+				{
+					"output"	"OnMapSpawn"
+					"target"	"c1a3b-c1a3c-elevator_doorright"
+					"input"		"Open"
+				}
+			}
+			"functions"
+			{
+				"delay_output" "OnMapSpawn"
+			}
+		}
 		// delay map start
 		"modify"
 		{
@@ -40,6 +82,28 @@
 			"functions"
 			{
 				"delay_output" "OnMapSpawn"
+			}
+		}
+		// set elevator position
+		"modify"
+		{
+			"targetname"	"c1a3b-c1a3c-elevator"
+			"set"
+			{
+				"spawnpos"	"1"
+			}
+		}
+		// disable elevator button
+		"modify"
+		{
+			"classname"		"func_button"
+			"targetname"	"top_button"
+			"outputs"
+			{
+				"remove"
+				{
+					"output"	"OnPressed"
+				}
 			}
 		}
 		// blocker
@@ -93,13 +157,19 @@
 				}
 			}
 		}
+		// remove music fade when reaching far enough into the vents
+		"remove"
+		{
+			"targetname"	"trigger_fade_music"
+		}
 	}
 	"checkpoint"
 	{
 		"spawn"
 		{
-			"origin"	"416 1112 -1351"
-			"angles"	"0 150 0"
+			"origin"	"0 0 20"
+			"angles"	"0 90 0"
+			"followid"	"c1a3b-c1a3c-elevator"
 		}
 		"bunkerairstrike"
 		{
