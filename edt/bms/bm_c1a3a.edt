@@ -9,25 +9,29 @@
 
 	"equipment"
 	{
-		"lookup"
-		{
-			"targetname" "/^(suit|weapons|ammo)$/"
-		}
-		#if
-		{
-			// add extra items when returning from c1a3c
-			"globalstate" "c1a3c_c1a3a"
-			#then
-			{
-				"item" "item_weapon_mp5"
-				"item" "item_weapon_mp5"
-				"item" "item_grenade_mp5"
-				"item" "item_weapon_frag"
-			}
-		}
+		"item"	"item_suit"
+		"item"	"item_weapon_crowbar"
+		"item"	"item_weapon_glock"
+		"item"	"item_ammo_glock"
+		"item"	"item_ammo_glock"
+		"item"	"item_ammo_glock"
+		"item"	"item_weapon_shotgun"
+		"item"	"item_ammo_shotgun"
+		"item"	"item_ammo_shotgun"
+		"item"	"item_ammo_shotgun"
+		"item"	"item_battery"
+		"item"	"item_battery"
+		"item"	"item_battery"
+		"item"	"item_weapon_frag"
+		"item"	"item_weapon_frag"
 	}
 	"entity"
 	{
+		// delete world starting equipment
+		"delete"
+		{
+			"targetname" "/^(suit|weapons|ammo)$/"
+		}
 		// delay map start
 		"modify"
 		{
@@ -75,7 +79,7 @@
 		// Part 2
 		// ********************
 		
-		// turn backtracking changelevel trig into invisible wall
+		// turn backtracking changelevel trigger into invisible wall
 		"modify"
 		{
 			"classname" "trigger_changelevel"
@@ -95,11 +99,40 @@
 				"minhealthdmg" "999999"
 			}
 		}
+		// block going past changelevel area
+		"add"
+		{
+			"classname" "func_brush"
+			"rendermode" "10" // dont render
+			"functions"
+			{
+				"copy_model"
+				{
+					"hammerid" "452166"
+				}
+			}
+		}
 		#if
 		{
 			"globalstate" "c1a3c_c1a3a"
 			#then
 			{
+				// delete sentry in the room with the marines
+				"remove"
+				{
+					"classname"		"npc_sentry_ground"
+					"targetname"	"sentry_01"
+				}
+				// remove vent in scientist room
+				"remove"
+				{
+					"targetname"	"OpenSiloDoors_vent"
+				}
+				// remove the coffee cup that the zombie destroys
+				"remove"
+				{
+					"targetname"	"rustyreallyhatesthiscup"
+				}
 				// delete relay on map start, which the map deletes on player spawn, which is too late for us
 				"remove"
 				{
@@ -127,8 +160,8 @@
 				}
 				"gotlunch"
 				{
-					"origin"	"-1536 -1178 -119"
-					"angles"	"0 90 0"
+					"origin"	"-1582 -1286 -119"
+					"angles"	"21 80 0"
 					"triggerid" "bm_c1a3a_headcrab_killer"
 					"output"	"OnTrigger"
 				}

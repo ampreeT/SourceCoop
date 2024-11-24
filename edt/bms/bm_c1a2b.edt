@@ -6,13 +6,58 @@
 	"nextmap" "bm_c1a2c"
 	"equipment"
 	{
-		"lookup"
-		{
-			"targetname" "items_at_start"
-		}
+		"item"	"item_suit"
+		"item"	"item_weapon_crowbar"
+		"item"	"item_weapon_glock"
+		"item"	"item_ammo_glock"
+		"item"	"item_ammo_glock"
+		"item"	"item_ammo_glock"
+		"item"	"item_weapon_shotgun"
+		"item"	"item_ammo_shotgun"
+		"item"	"item_ammo_shotgun"
+		"item"	"item_battery"
+		"item"	"item_battery"
+		"item"	"item_weapon_frag"
 	}
 	"entity"
 	{
+		// delete world starting equipment
+		"delete"
+		{
+			"targetname" "items_at_start"
+		}
+		// delay headcrab spawn to the start of the game
+		"modify"
+		{
+			"targetname" "StairwayHeadcrabSpawn"
+			"set"
+			{
+				"StartDisabled" "1"
+			}
+		}
+		"add"
+		{
+			"classname"		"logic_auto"
+			"targetname"	"StairwayHeadcrabSpawn_delay"
+			"outputs"
+			{
+				"add"
+				{
+					"output"	"OnMapSpawn"
+					"target"	"StairwayHeadcrabSpawn"
+					"input"		"Enable"
+				}
+			}
+		}
+		// delay map start
+		"modify"
+		{
+			"classname" "logic_auto"
+			"functions"
+			{
+				"delay_output" "OnMapSpawn"
+			}
+		}
 		// turn prev. changelevel trig into invisible wall
 		"modify"
 		{
@@ -22,15 +67,6 @@
 			{
 				"classname" "func_brush"
 				"rendermode" "10" // dont render
-			}
-		}
-		// hc: dont spawn immediately
-		"modify"
-		{
-			"targetname" "StairwayHeadcrabSpawn"
-			"set"
-			{
-				"StartDisabled" "1"
 			}
 		}
 		// block going past changelevel
@@ -60,153 +96,124 @@
 				}
 			}
 		}
-		// Set up NPC persistance
-		"add"
-		{
-			"classname" "env_global"
-			"targetname" "grd01_following_c1a2b_global"
-			"globalstate" "grd01_following_c1a2b"
-		}
-		"add"
-		{
-			"classname" "env_global"
-			"targetname" "sci04_following_c1a2b_global"
-			"globalstate" "sci04_following_c1a2b"
-		}
-		"add"
-		{
-			"classname" "env_global"
-			"targetname" "grd02_following_c1a2b_global"
-			"globalstate" "grd02_following_c1a2b"
-		}
-		"modify"
-		{
-			"targetname" "GRD02"
-			"outputs"
-			{
-				"add"
-				{
-					"target" "grd02_following_c1a2b_global"
-					"output" "OnDeath"
-					"input"	"TurnOff"
-				}
-			}
-		}
-		"modify"
-		{
-			"targetname" "SCI04"
-			"outputs"
-			{
-				"add"
-				{
-					"target" "sci04_following_c1a2b_global"
-					"output" "OnDeath"
-					"input"	"TurnOff"
-				}
-			}
-		}
-		"modify"
-		{
-			"targetname" "BDetect_Grd01_Storage"
-			"outputs"
-			{
-				"add"
-				{
-					"target" "grd01_following_c1a2b_global"
-					"output" "OnTrigger"
-					"input"	"TurnOn"
-					"timestofire" "1"
-				}
-			}
-		}
-		"modify"
-		{
-			"targetname" "BDetect_Grd02"
-			"outputs"
-			{
-				"add"
-				{
-					"target" "grd02_following_c1a2b_global"
-					"output" "OnTrigger"
-					"input"	"TurnOn"
-					"timestofire" "1"
-				}
-			}
-		}
-		"modify"
-		{
-			"targetname" "BDetect_Sci04"
-			"outputs"
-			{
-				"add"
-				{
-					"target" "sci04_following_c1a2b_global"
-					"output" "OnTrigger"
-					"input"	"TurnOn"
-					"timestofire" "1"
-				}
-			}
-		}
-		// NPC from last map persistance
-		"#if"
-		{
-			"globalstate" "grd01_following_c1a2a"
-			"#then"
-			{
-				"create"
-				{
-					"classname" "npc_human_security"
-					"targetname" "Grd01_Storage"
-					"origin" "-2304 705 45"
-					"additionalequipment" "weapon_glock"
-					"AlwaysTransition" "No"
-					"angles" "0 150.5 0"
-					"CanSpeakWhileScripting" "No"
-					"expressiontype" "2"
-					"GameEndAlly" "No"
-					"physdamagescale" "1.0"
-					"renderamt" "255"
-					"rendercolor" "255 255 255"
-					"spawnflags" "131588"
-					"outputs"
-					{
-						"add"
-						{
-							"target" "grd01_following_c1a2b_global"
-							"output" "OnDeath"
-							"input"	"TurnOff"
-						}
-					}
-				}
-				"create"
-				{
-					"classname" "ai_goal_follow"
-					"targetname" "Grd01_Storage_follow"
-					"actor" "Grd01_Storage"
-					"MaximumState" "1"
-				}
-				"modify"
-				{
-					"hammerid" "2595446"
-					"outputs"
-					{
-						"add"
-						{
-							"target" "Grd01_Storage_follow"
-							"output" "OnTrigger"
-							"input" "Activate"
-						}
-					}
-				}
-			}
-		}
+		//// NPC persistence `GRD02`
+		//"modify"
+		//{
+		//	"targetname" "GRD02"
+		//	"outputs"
+		//	{
+		//		"add"
+		//		{
+		//			"target" "GRD02_transition"
+		//			"output" "OnDeath"
+		//			"input"	"TurnOff"
+		//		}
+		//	}
+		//}
+		//"add"
+		//{
+		//	"classname"		"env_global"
+		//	"targetname"	"GRD02_transition"
+		//	"globalstate"	"GRD02_transition"
+		//	"initialstate"	"1"
+		//	"spawnflags"	"1"
+		//}
+		//// NPC persistence `SCI04`
+		//"modify"
+		//{
+		//	"targetname" "SCI04"
+		//	"outputs"
+		//	{
+		//		"add"
+		//		{
+		//			"target" "SCI04_transition"
+		//			"output" "OnDeath"
+		//			"input"	"TurnOff"
+		//		}
+		//	}
+		//}
+		//"add"
+		//{
+		//	"classname"		"env_global"
+		//	"targetname"	"SCI04_transition"
+		//	"globalstate"	"SCI04_transition"
+		//	"initialstate"	"1"
+		//	"spawnflags"	"1"
+		//}
+		//// NPC persistence `Grd01_Storage`
+		//"#if"
+		//{
+		//	"globalstate" "Grd01_Storage_transition"
+		//	"#then"
+		//	{
+		//		"add"
+		//		{
+		//			"classname"	"logic_auto"
+		//			"functions"
+		//			{
+		//				"delay_output" "OnMapSpawn"
+		//			}
+		//			"outputs"
+		//			{
+		//				"add"
+		//				{
+		//					"output" "OnMapSpawn"
+		//					"target" "Grd01_Storage_follow"
+		//					"input" "Activate"
+		//					"delay" "0"
+		//				}
+		//			}
+		//		}
+		//		"add"
+		//		{
+		//			"classname" "ai_goal_follow"
+		//			"targetname" "Grd01_Storage_follow"
+		//			"actor" "Grd01_Storage"
+		//			"goal"	"!player"
+		//			"MaximumState" "1"
+		//		}
+		//		"add"
+		//		{
+		//			"classname"		"env_global"
+		//			"targetname"	"Grd01_Storage_transition"
+		//			"globalstate"	"Grd01_Storage_transition"
+		//			"initialstate"	"1"
+		//			"spawnflags"	"1"
+		//		}
+		//		"add"
+		//		{
+		//			"classname" "npc_human_security"
+		//			"targetname" "Grd01_Storage"
+		//			"origin" "-2304 705 45"
+		//			"additionalequipment" "weapon_glock"
+		//			"AlwaysTransition" "No"
+		//			"angles" "0 150.5 0"
+		//			"CanSpeakWhileScripting" "No"
+		//			"expressiontype" "2"
+		//			"GameEndAlly" "No"
+		//			"physdamagescale" "1.0"
+		//			"renderamt" "255"
+		//			"rendercolor" "255 255 255"
+		//			"spawnflags" "131588"
+		//			"outputs"
+		//			{
+		//				"add"
+		//				{
+		//					"target" "Grd01_Storage_transition"
+		//					"output" "OnDeath"
+		//					"input"	"TurnOff"
+		//				}
+		//			}
+		//		}
+		//	}
+		//}
 	}
 	"checkpoint"
 	{
 		"spawn"
 		{
-			"origin"	"-2328 457 121"
-			"angles"	"0 267 0"
+			"origin"	"-2280 690 20"
+			"angles"	"-17.5 -107.5 0"
 		}
 	}
 }

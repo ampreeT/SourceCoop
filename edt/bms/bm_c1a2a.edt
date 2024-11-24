@@ -7,13 +7,47 @@
 	"intro_type" "none"
 	"equipment"
 	{
-		"lookup"
-		{
-			"targetname" "items_at_start"
-		}
+		"item"	"item_suit"
+		"item"	"item_weapon_crowbar"
+		"item"	"item_weapon_glock"
+		"item"	"item_ammo_glock"
+		"item"	"item_ammo_glock"
+		"item"	"item_ammo_glock"
+		"item"	"item_battery"
+		"item"	"item_battery"
+		"item"	"item_weapon_frag"
 	}
 	"entity"
 	{
+		// delete world starting equipment
+		"delete"
+		{
+			"targetname" "items_at_start"
+		}
+		// delay backup timer vent explosion to game start
+		"modify"
+		{
+			"classname"		"logic_timer"
+			"targetname"	"backup_timer"
+			"set"
+			{
+				"StartDisabled"	"1"
+			}
+		}
+		"add"
+		{
+			"classname"		"logic_auto"
+			"targetname"	"backup_timer_delay"
+			"outputs"
+			{
+				"add"
+				{
+					"output"	"OnMapSpawn"
+					"target"	"backup_timer"
+					"input"		"Enable"
+				}
+			}
+		}
 		// delay map start
 		"modify"
 		{
@@ -140,6 +174,13 @@
 		{
 			"origin"	"160 -112 16"
 			"angles"	"0 90 0"
+		}
+		"shotgun_pickup"
+		{
+			"origin"	"-2390 -1650 10"
+			"angles"	"5 55 0"
+			"triggerid"	"relay_headcrabscare"
+			"output"	"OnTrigger"
 		}
 	}
 }
