@@ -704,12 +704,14 @@ methodmap CCoopSpawnSystem
 				{
 					if (kv.GetDataType(NULL_STRING) != KvData_None)
 					{
+						continue;
 					}
-					else if (strcmp(szType, "checkpoint", false) == 0)
+					LogDebug("Post-load processing \"%s\" block", szType);
+					if (StrContains(szType, "checkpoint", false) == 0)
 					{
 						CCoopSpawnSystem.ParseCheckpoint(kv);
 					}
-					else if (strcmp(szType, "equipment", false) == 0)
+					else if (StrContains(szType, "equipment", false) == 0)
 					{
 						CCoopSpawnSystem.ParseEquipment(kv);
 					}
