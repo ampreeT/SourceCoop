@@ -157,6 +157,10 @@ DynamicDetour hkDissolve;
 DynamicDetour hkUtilFindClientInPVSGuts;
 #endif
 
+#if defined ENTPATCH_SCRIPTED_SEQUENCE
+DynamicDetour hkScriptedSequenceStartScript;
+#endif
+
 #if defined GAMEPATCH_PREDICTED_EFFECTS
 DynamicDetour hkIgnorePredictionCull;
 DynamicHook hkDispatchEffect;
