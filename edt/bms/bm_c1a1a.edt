@@ -18,16 +18,6 @@
 		{
 			"targetname"	"global_newgame_spawner_suit"
 		}
-		// don't know why this is not in the level
-		"add"
-		{
-			"classname"				"env_message"
-			"targetname"			"intro_title_custom"
-			"spawnflags"			"0"
-			"messagevolume"			"10"
-			"messageattenuation"	"0"
-			"message"				"CHAPTER3_TITLE"
-		}
 		"modify"
 		{
 			"classname" "logic_auto"
@@ -38,13 +28,6 @@
 				{
 					"target" "!player"
 					"input" "SetHealth"
-				}
-				"add"
-				{
-					"output"	"OnMapSpawn"
-					"target"	"intro_title_custom"
-					"input"		"ShowMessage"
-					"delay"		"0.75"
 				}
 			}
 		}

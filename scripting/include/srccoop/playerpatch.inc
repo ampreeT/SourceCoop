@@ -157,10 +157,10 @@ public Action OnPlayerRunCmd(int iClient, int &iButtons, int &iImpulse, float fV
 	if (mouse[0] || mouse[1])
 		g_bPostTeamSelect[iClient] = true;
 
-	// Spectator fixes
-	// Credit: harper
-
-	Obs_Mode iObsMode = view_as<Obs_Mode> (GetEntProp(iClient, Prop_Send, "m_iObserverMode"));
+	CBasePlayer pClient = CBasePlayer(iClient);
+	
+	// Spectator fixes; Credits: harper
+	Obs_Mode iObsMode = view_as<Obs_Mode>(GetEntProp(iClient, Prop_Send, "m_iObserverMode"));
 	if (iObsMode > OBS_MODE_DEATHCAM)
 	{
 		// hide bugged ctrl menu
@@ -168,7 +168,6 @@ public Action OnPlayerRunCmd(int iClient, int &iButtons, int &iImpulse, float fV
 			ShowVGUIPanel(iClient, "specmenu", _, false);
 
 		CBasePlayer pTarget = CBasePlayer(GetEntPropEnt(iClient, Prop_Send, "m_hObserverTarget"));
-		CBasePlayer pClient = CBasePlayer(iClient);
 
 		// Make sure target is not an info_observer_menu
 		// force free-look where appropriate - this removes the extra (pointless) third person spec mode
@@ -177,6 +176,8 @@ public Action OnPlayerRunCmd(int iClient, int &iButtons, int &iImpulse, float fV
 			SetEntProp(iClient, Prop_Data, "m_iObserverMode", OBS_MODE_ROAMING);
 		}
 	}
+
+	CoopManager.OnPlayerRunCmd(pClient);
 
 	if (g_iAddButtons[iClient])
 	{

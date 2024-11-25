@@ -713,6 +713,12 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 		}
 		#endif
 
+		if (strcmp(szClassname, "env_message", false) == 0)
+		{
+			CoopManager.CheckAndAssignChapterTitle();
+			return;
+		}
+
 		#if defined ENTPATCH_TRIGGER_CHANGELEVEL
 		if (strcmp(szClassname, "trigger_changelevel") == 0)
 		{
