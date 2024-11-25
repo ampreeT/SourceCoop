@@ -209,7 +209,7 @@ methodmap CoopManager
 			CBaseCombatWeapon pWeapon = pPlayer.GetActiveWeapon();
 			if (pWeapon != NULL_CBASEENTITY)
 			{
-				PreventWeaponFiring(pWeapon, 1.5);
+				PreventWeaponFiring(pWeapon, 0.25);
 			}
 		}
 	}
