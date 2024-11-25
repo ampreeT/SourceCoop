@@ -65,6 +65,7 @@
 #define SF_PLAYER_EQUIP_STRIP_WEAPONS 2
 #define SF_PLAYER_EQUIP_STRIP_SUIT 4
 
+#define SF_MESSAGE_ONCE			0x0001		// Fade in, not out
 #define SF_MESSAGE_ALL 0x0002
 
 // Pickupables spawnflags
