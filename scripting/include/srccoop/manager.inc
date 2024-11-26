@@ -17,6 +17,7 @@ enum struct CoopManagerData
 	int m_iEnabledFeatures;
 	bool m_bIsCoopMap;
 	bool m_bStarted;
+	char m_szChapterTitle[64];
 	bool m_bMapHasDelayedOutput;
 	int m_iSpawnedPlayerCountLastMap;
 	int m_iSpawnedPlayerCount;
@@ -51,6 +52,7 @@ methodmap CoopManager
 		data.m_hStartTimer = null;
 		data.m_pChangeLevelTimer = null;
 		data.m_bStarted = false;
+		data.m_szChapterTitle = "";
 		data.m_iSpawnedPlayerCountLastMap = data.m_iSpawnedPlayerCount;
 		data.m_iSpawnedPlayerCount = 0;
 		data.m_iSecondsToStart = cellmax;
@@ -81,6 +83,19 @@ methodmap CoopManager
 			return true;
 		}
 		return false;
+	}
+
+	public static void CheckAndAssignChapterTitle()
+	{
+		// We need to get the chapter title from `CWorld` when a `env_message` is created
+		// as the chapter title gets unassigned after the message is created.
+		// https://github.com/ValveSoftware/source-sdk-2013/blob/0d8dceea4310fde5706b3ce1c70609d72a38efdf/mp/src/game/server/world.cpp#L681
+		char szChapterTitle[64];
+		CWorld().GetChapterTitle(szChapterTitle, sizeof(szChapterTitle));
+		if (strlen(szChapterTitle) > 0)
+		{
+			strcopy(data.m_szChapterTitle, sizeof(data.m_szChapterTitle), szChapterTitle);
+		}
 	}
 
 	public static void EntitySpawnPost(CBaseEntity pEntity)
@@ -186,6 +201,18 @@ methodmap CoopManager
 			Timer_DecrementUntilMapStart(null);
 		}
 	}
+	
+	public static void OnPlayerRunCmd(CBasePlayer pPlayer)
+	{
+		if (!data.m_bStarted)
+		{
+			CBaseCombatWeapon pWeapon = pPlayer.GetActiveWeapon();
+			if (pWeapon != NULL_CBASEENTITY)
+			{
+				PreventWeaponFiring(pWeapon, 0.25);
+			}
+		}
+	}
 
 	public static void OnPlayerSpawned(CBasePlayer pPlayer)
 	{
@@ -236,12 +263,12 @@ methodmap CoopManager
 		{
 			if (g_pLevelLump.m_iIntroType == INTRO_FADE)
 			{
+				pPlayer.AddFlags(FL_ATCONTROLS | FL_FROZEN);	// Freeze controls and angles.
 				Client_ScreenFade(pPlayer.GetEntIndex(), 0, FFADE_STAYOUT);
-				pPlayer.SetFlags(pPlayer.GetFlags() | FL_ATCONTROLS);
 			}
 			else if (g_pLevelLump.m_iIntroType == INTRO_FREEZE)
 			{
-				pPlayer.SetFlags(pPlayer.GetFlags() | FL_ATCONTROLS);
+				pPlayer.AddFlags(FL_ATCONTROLS);				// Freeze controls.
 				Client_ScreenFade(pPlayer.GetEntIndex(), Conf.FROZEN_FADE_DUR_IN, FFADE_OUT | FFADE_STAYOUT, _,
 					Conf.FROZEN_FADE_COLOR[0], Conf.FROZEN_FADE_COLOR[1], Conf.FROZEN_FADE_COLOR[2], Conf.FROZEN_FADE_COLOR[3]);
 			}
@@ -539,6 +566,11 @@ public Action Timer_DecrementUntilMapStart(Handle hTimer)
 		data.m_bStarted = true;
 		data.m_flStartTime = GetGameTime();
 
+		if (strlen(data.m_szChapterTitle) > 0)
+		{
+			CreateTimer(1.0, Timer_ShowChapterTitle, _, TIMER_FLAG_NO_MAPCHANGE);
+		}
+
 		if (g_pLevelLump.m_iIntroType == INTRO_FADE || g_pLevelLump.m_iIntroType == INTRO_FREEZE)
 		{
 			for (int i = 1; i <= MaxClients; i++)
@@ -546,7 +578,10 @@ public Action Timer_DecrementUntilMapStart(Handle hTimer)
 				if (IsClientInGame(i) && !IsFakeClient(i))
 				{
 					CBasePlayer pClient = CBasePlayer(i);
-					pClient.SetFlags(pClient.GetFlags() & ~FL_ATCONTROLS);
+					// TODO: Look into this.
+					// `FL_FROZEN` is being removed even without the below line in Black Mesa (i doubt this affects other games).
+					// `CBM_MP_GameRules.SetStateEndTime` might be the culprit and might have side effects for other behaviors too.
+					pClient.RemoveFlags(FL_ATCONTROLS | FL_FROZEN);
 					if (g_pLevelLump.m_iIntroType == INTRO_FREEZE)
 					{
 						Client_ScreenFade(pClient.GetEntIndex(), Conf.FROZEN_FADE_DUR_OUT, FFADE_PURGE | FFADE_IN, 1,
@@ -644,6 +679,17 @@ public Action Callback_DeleteEntOnDelayedOutputFire(const char[] szOutput, int i
 	else
 	{
 		return Plugin_Stop;
+	}
+}
+
+public void Timer_ShowChapterTitle(Handle hTimer)
+{
+	CMessage pMessage = CMessage.Create();
+	if (pMessage != NULL_CBASEENTITY)
+	{
+		pMessage.SetMessage(data.m_szChapterTitle);
+		pMessage.SetSpawnFlags(SF_MESSAGE_ONCE | SF_MESSAGE_ALL);
+		pMessage.ShowMessage();
 	}
 }
 

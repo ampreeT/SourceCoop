@@ -638,6 +638,14 @@ methodmap CBaseEntity
 	{
 		SetEntityFlags(this.GetEntIndex(), iFlags);
 	}
+	public void AddFlags(const int iFlags)
+	{
+		this.SetFlags(this.GetFlags() | iFlags);
+	}
+	public void RemoveFlags(const int iFlags)
+	{
+		this.SetFlags(this.GetFlags() & ~iFlags);
+	}
 	public int GetEFlags()
 	{
 		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_iEFlags");
@@ -1306,6 +1314,48 @@ methodmap CPointEntity < CBaseEntity
 	}
 }
 
+methodmap CWorld < CBaseEntity
+{
+	public CWorld()
+	{
+		return view_as<CWorld>(CBaseEntity(0));
+	}
+
+	public bool IsValid()
+	{
+		return true;
+	}
+	public bool GetChapterTitle(char[] szBuffer, const int iMaxLength)
+	{
+		return GetEntPropString(this.GetEntIndex(), Prop_Data, "m_iszChapterTitle", szBuffer, iMaxLength) != 0;
+	}
+}
+
+methodmap CMessage < CPointEntity
+{
+	public CMessage(const int iEntIndex = -1)
+	{
+		return view_as<CMessage>(CPointEntity(iEntIndex));
+	}
+	public static CMessage Create()
+	{
+		return CMessage(CreateEntityByName("env_message"));
+	}
+
+	public bool GetMessage(char[] szBuffer, const int iMaxLength)
+	{
+		return GetEntPropString(this.GetEntIndex(), Prop_Data, "m_iszMessage", szBuffer, iMaxLength) != 0;
+	}
+	public void SetMessage(const char[] szMessage)
+	{
+		SetEntPropString(this.GetEntIndex(), Prop_Data, "m_iszMessage", szMessage);
+	}
+	public void ShowMessage()
+	{
+		this.AcceptInputStr("ShowMessage");
+	}
+}
+
 methodmap CSceneEntity < CPointEntity
 {
 	public CSceneEntity(const int iEntIndex = -1)
@@ -1333,6 +1383,27 @@ methodmap CSceneEntity < CPointEntity
 	public void SetForceClientTime(const float flForceClientTime)
 	{
 		SetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flForceClientTime", flForceClientTime);
+	}
+}
+
+methodmap CAI_ScriptedSequence < CBaseEntity
+{
+	public CAI_ScriptedSequence(const int iEntIndex = -1)
+	{
+		return view_as<CAI_ScriptedSequence>(CBaseEntity(iEntIndex));
+	}
+	public static CAI_ScriptedSequence Create()
+	{
+		return CAI_ScriptedSequence(CreateEntityByName("scripted_sequence"));
+	}
+
+	public CBaseEntity GetTargetEnt()
+	{
+		return CBaseEntity(GetEntPropEnt(this.entindex, Prop_Data, "m_hTargetEnt"));
+	}
+	public void SetTargetEnt(CBaseEntity pTarget)
+	{
+		SetEntPropEnt(this.entindex, Prop_Data, "m_hTargetEnt", pTarget.entindex);
 	}
 }
 
@@ -2060,6 +2131,14 @@ methodmap CAI_BaseNPC < CBaseCombatCharacter
 	{
 		SetEntProp(this.GetEntIndex(), Prop_Data, "m_bPlayerAvoidState", bPlayerAvoidState);
 	}
+	public CAI_ScriptedSequence GetCine()
+	{
+		return CAI_ScriptedSequence(GetEntPropEnt(this.entindex, Prop_Data, "m_hCine"));
+	}
+	public void SetCine(CAI_ScriptedSequence pCine)
+	{
+		SetEntPropEnt(this.entindex, Prop_Data, "m_hCine", pCine.entindex);
+	}
 }
 
 methodmap CProtoSniper < CAI_BaseNPC
@@ -2262,7 +2341,7 @@ methodmap CBasePlayer < CBaseCombatCharacter
 	public void StartDucking() // (taken from point_teleport code)
 	{
 		this.SetButtons(this.GetButtons() | IN_DUCK);
-		this.SetFlags(this.GetFlags() | FL_DUCKING);
+		this.AddFlags(FL_DUCKING);
 		int iClient = this.GetEntIndex();
 		SetEntProp(iClient, Prop_Send, "m_bDucked", true);
 		SetEntProp(iClient, Prop_Send, "m_bDucking", true);
@@ -2275,7 +2354,7 @@ methodmap CBasePlayer < CBaseCombatCharacter
 	public void StopDucking()
 	{
 		this.SetButtons(this.GetButtons() & ~IN_DUCK);
-		this.SetFlags(this.GetFlags() & ~FL_DUCKING);
+		this.RemoveFlags(FL_DUCKING);
 		int iClient = this.GetEntIndex();
 		SetEntProp(iClient, Prop_Send, "m_bDucked", false);
 		SetEntProp(iClient, Prop_Send, "m_bDucking", false);

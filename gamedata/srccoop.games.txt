@@ -900,6 +900,13 @@
 					}
 				}
 			}
+			"CAI_ScriptedSequence::StartScript"
+			{
+				"signature"	"CAI_ScriptedSequence::StartScript"
+				"callconv"	"thiscall"
+				"return"	"void"
+				"this"		"entity"
+			}
 		}
 	}
 	
@@ -1099,6 +1106,11 @@
 			{
 				"windows"	"\x55\x8B\xEC\x81\xEC\x4C\x04\x00\x00\xA1\x2A\x2A\x2A\x2A\x33\xC5\x89\x45\x2A\x80\x7D\x2A\x00"
 				"linux"		"@_ZN14CParamsManager13InitInstancesEPKcb"
+			}
+			"CAI_ScriptedSequence::StartScript"	// void CAI_ScriptedSequence::StartScript()
+			{
+				"windows"	"\x55\x8B\xEC\x83\xEC\x10\x53\x8B\xD9\x8B\x8B\x9C\x03\x00\x00"
+				"linux"		"@_ZN20CAI_ScriptedSequence11StartScriptEv"
 			}
 		}
 

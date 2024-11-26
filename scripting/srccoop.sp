@@ -178,6 +178,10 @@ void LoadGameData()
 	LoadDHookDetour(pGameConfig, hkUtilFindClientInPVSGuts, "UTIL_FindClientInPVSGuts", Hook_UTIL_FindClientInPVSGuts);
 	#endif
 
+	#if defined ENTPATCH_SCRIPTED_SEQUENCE
+	LoadDHookDetour(pGameConfig, hkScriptedSequenceStartScript, "CAI_ScriptedSequence::StartScript", Hook_ScriptedSequenceStartScript);
+	#endif
+
 	#if defined GAMEPATCH_PREDICTED_EFFECTS
 	LoadDHookDetour(pGameConfig, hkIgnorePredictionCull, "CRecipientFilter::IgnorePredictionCull", Hook_IgnorePredictionCull);
 	LoadDHookVirtual(pGameConfig, hkDispatchEffect, "CTempEntsSystem::DispatchEffect");
@@ -718,6 +722,12 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 			return;
 		}
 		#endif
+
+		if (strcmp(szClassname, "env_message", false) == 0)
+		{
+			CoopManager.CheckAndAssignChapterTitle();
+			return;
+		}
 
 		#if defined ENTPATCH_TRIGGER_CHANGELEVEL
 		if (strcmp(szClassname, "trigger_changelevel") == 0)
