@@ -882,12 +882,37 @@
 					}
 				}
 			}
+			"CParamsManager::InitInstances"
+			{
+				"signature"	"CParamsManager::InitInstances"
+				"callconv"	"thiscall"
+				"return"	"void"
+				"this"		"address"
+				"arguments"
+				{
+					"pszFolderPath"
+					{
+						"type"	"charptr"
+					}
+					"bReinitializeInstances"
+					{
+						"type"	"bool"
+					}
+				}
+			}
 		}
 	}
 	
 	"bms"
 	{
-		
+		"Keys"
+		{
+			"CParamsManager::m_bIsMultiplayer"	// real name is unknown
+			{
+				"windows"	"72"
+				"linux"		"72"
+			}
+		}
 		//   ____  __  __  _____     _____ _____ _____ _   _       _______ _    _ _____  ______  _____ 
 		//  |  _ \|  \/  |/ ____|   / ____|_   _/ ____| \ | |   /\|__   __| |  | |  __ \|  ____|/ ____|
 		//  | |_) | \  / | (___    | (___   | || |  __|  \| |  /  \  | |  | |  | | |__) | |__  | (___  
@@ -1069,6 +1094,11 @@
 			{
 				"windows"	"\x55\x8B\xEC\x83\xEC\x18\x56\xE8\x2A\x2A\x2A\x2A\x8B\xF0\x85\xF6\x75"
 				"linux"		"@_ZL24UTIL_FindClientInPVSGutsP7edict_tPhj.constprop.66"
+			}
+			"CParamsManager::InitInstances"	// CParamsManager::InitInstances(CParamsManager *,char *,bool)
+			{
+				"windows"	"\x55\x8B\xEC\x81\xEC\x4C\x04\x00\x00\xA1\x2A\x2A\x2A\x2A\x33\xC5\x89\x45\x2A\x80\x7D\x2A\x00"
+				"linux"		"@_ZN14CParamsManager13InitInstancesEPKcb"
 			}
 		}
 
