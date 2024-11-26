@@ -135,6 +135,7 @@ void LoadGameData()
 	LoadDHookVirtual(pGameConfig, hkCrossbowFireBolt, "CWeapon_Crossbow::FireBolt");
 	LoadDHookDetour(pGameConfig, hkToggleIronsights, "CBlackMesaBaseWeaponIronSights::ToggleIronSights", Hook_ToggleIronsights);
 	LoadDHookDetour(pGameConfig, hkTauFireBeam, "CWeapon_Tau::FireBeam", Hook_TauFireBeam, Hook_TauFireBeamPost);
+	LoadDHookDetour(pGameConfig, hkParamsManagerInitInstances, "CParamsManager::InitInstances", Hook_CParamsManager_InitInstances);
 	#endif
 	
 	#if defined PLAYERPATCH_SUIT_SOUNDS
@@ -371,6 +372,11 @@ public MRESReturn Hook_OnLevelInit(DHookReturn hReturn, DHookParam hParams)
 
 	bool bCoopMode = CoopManager.OnLevelInit(szMapEntities);
 	ToggleGlobalPatches(bCoopMode);
+
+	// This ends up calling our hook for `CParamsManager::InitInstances`.
+	#if defined ENTPATCH_BM_SP_WEAPONS
+	ServerCommand("params_reload_server");
+	#endif
 
 	if (bCoopMode)
 	{

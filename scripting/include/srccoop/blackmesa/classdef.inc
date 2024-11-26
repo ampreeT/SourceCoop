@@ -6,8 +6,13 @@
 #pragma newdecls required
 #pragma semicolon 1
 
+static int g_iOffset_CParamsManger_bIsMultiplayer = -1;
+
 stock void InitClassdefBM(GameData pGameConfig)
 {
+	g_iOffset_CParamsManger_bIsMultiplayer = GetGamedataInt(pGameConfig, "CParamsManager::m_bIsMultiplayer");
+	if (g_iOffset_CParamsManger_bIsMultiplayer < 0)
+		SetFailState("Could not obtain member variable offset `CParamsManager::m_bIsMultiplayer`");
 	/*
 	char szPickupObject[] = "CBlackMesaPlayer::PickupObject";
 	StartPrepSDKCall(SDKCall_Player);
@@ -249,5 +254,26 @@ methodmap CPropChargerBase < CBaseAnimating
 	public void SetChargerRange(const float flChargerRange)
 	{
 		SetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flChargerRange", flChargerRange);
+	}
+}
+
+methodmap CParamsManager
+{
+	public CParamsManager(const Address pAddress)
+	{
+		return view_as<CParamsManager>(pAddress);
+	}
+
+	public Address GetAddress()
+	{
+		return view_as<Address>(this);
+	}
+	public bool IsMultiplayer()
+	{
+		return LoadFromAddress(this.GetAddress() + g_iOffset_CParamsManger_bIsMultiplayer, NumberType_Int32);
+	}
+	public void SetMultiplayer(const bool bIsMultiplayer)
+	{
+		StoreToAddress(this.GetAddress() + g_iOffset_CParamsManger_bIsMultiplayer, bIsMultiplayer, NumberType_Int32);
 	}
 }

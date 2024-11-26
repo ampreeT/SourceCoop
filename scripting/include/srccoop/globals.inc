@@ -115,6 +115,7 @@ DynamicHook hkBaseCombatWeaponGetDrawActivity;
 DynamicHook hkCrossbowFireBolt;
 DynamicDetour hkToggleIronsights;
 DynamicDetour hkTauFireBeam;
+DynamicDetour hkParamsManagerInitInstances;
 #endif
 
 #if defined PLAYERPATCH_SUIT_SOUNDS
