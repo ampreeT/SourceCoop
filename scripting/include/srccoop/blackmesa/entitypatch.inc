@@ -1123,12 +1123,12 @@ public MRESReturn Hook_Dissolve(int _this, DHookReturn hReturn, DHookParam hPara
 
 // Switches between using singleplayer and multiplayer weapon values.
 // This will get triggered by the command `params_reload_server`.
-public MRESReturn Hook_CParamsManager_InitInstances(int _this, Handle hReturn, Handle hParams)
+public MRESReturn Hook_CParamsManager_InitInstances(Address _this, Handle hReturn, Handle hParams)
 {
 	// TODO:
 	// Currently, this is getting only called during level init, but
 	// we also need to call this if the feature is turned on/off mid-round.
-	CParamsManager pParamsManager = CParamsManager(view_as<Address>(_this));
+	CParamsManager pParamsManager = CParamsManager(_this);
 	pParamsManager.SetMultiplayer(!CoopManager.IsFeatureEnabled(FT_SP_WEAPONS));
 	return MRES_Ignored;
 }
