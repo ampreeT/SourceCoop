@@ -955,7 +955,6 @@ public MRESReturn Hook_CanSelectSchedule(Handle hReturn)
 //------------------------------------------------------
 // CAI_ScriptConditions - ai_script_conditions
 // Sets the nearest player to this entity's actor(s)/target into context for UTIL_GetLocalPlayer override to use.
-// Works in tandem with AI_GetSinglePlayer() mempatch.
 //------------------------------------------------------
 public MRESReturn Hook_AIConditionsThink(int _this)
 {
@@ -1007,17 +1006,17 @@ public MRESReturn Hook_AIConditionsThink(int _this)
 		pLocalPlayerOverride = GetNearestPlayerPreferAliveEx(vecMidpoint);
 		if (pLocalPlayerOverride == NULL_CBASEENTITY)
 		{
-			AddLocalPlayerPlaceholder();
+			AddSinglePlayerPlaceholder();
 			return MRES_Supercede;
 		}
 	}
-	AddLocalPlayerOverride(pLocalPlayerOverride);
+	AddSinglePlayerOverride(pLocalPlayerOverride);
 	return MRES_Ignored;
 }
 
 public MRESReturn Hook_AIConditionsThinkPost(int _this)
 {
-	PopLocalPlayerOverride();
+	PopSinglePlayerOverride();
 	return MRES_Ignored;
 }
 
