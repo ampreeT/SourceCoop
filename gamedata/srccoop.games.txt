@@ -600,6 +600,13 @@
 				"return"	"void"
 				"this"		"entity"
 			}
+			"CBasePlayer::Weapon_ShootPosition"
+			{
+				"offset"	"CBasePlayer::Weapon_ShootPosition"
+				"hooktype"	"entity"
+				"return"	"vector"
+				"this"		"entity"
+			}
 
 			//   _____  ______ _______ ____  _    _ _____  
 			//  |  __ \|  ____|__   __/ __ \| |  | |  __ \ 
@@ -1449,6 +1456,11 @@
 				"windows"	"239"
 				"linux"		"289"
 			}
+			"CBasePlayer::Weapon_ShootPosition"	// CBasePlayer::Weapon_ShootPosition()
+			{
+				"windows"	"285"
+				"linux"		"286"
+			}
 		}
 	}
 
@@ -1807,6 +1819,11 @@
 			{
 				"windows"	"13"
 				"linux"		"13"
+			}
+			"CBasePlayer::Weapon_ShootPosition"	// CBasePlayer::Weapon_ShootPosition()
+			{
+				"windows"	"265"
+				"linux"		"266"
 			}
 		}
 	}

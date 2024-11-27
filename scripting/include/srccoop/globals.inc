@@ -106,6 +106,10 @@ DynamicHook hkForceRespawn;
 DynamicHook hkStartObserverMode;
 #endif
 
+#if defined PLAYERPATCH_HITREG
+DynamicHook hkPlayerWeaponShootPosition;
+#endif
+
 #if defined ENTPATCH_BM_SP_WEAPONS
 DynamicHook hkBaseCombatWeaponItemPostFrame;
 DynamicHook hkBaseCombatWeaponDeploy;
