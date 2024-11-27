@@ -50,7 +50,10 @@ DynamicHook hkThink;
 DynamicHook hkUpdateOnRemove;
 DynamicHook hkEvent_Killed;
 DynamicHook hkKeyValue_char;
+
+#if defined SRCCOOP_BLACKMESA
 DynamicDetour hkGiveDefaultItems;
+#endif
 
 #if defined GAMEPATCH_ALLOW_FLASHLIGHT
 DynamicHook hkFAllowFlashlight;

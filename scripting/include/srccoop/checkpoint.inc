@@ -670,6 +670,13 @@ methodmap CCoopSpawnSystem
 	
 	public static void SpawnPlayerEquipment(CBasePlayer pPlayer)
 	{
+		#if defined SRCCOOP_HL2DM
+		if (!data.m_bDefaultGameEquipment)
+		{
+			pPlayer.RemoveAllItems();
+		}
+		#endif
+
 		CCoopEquipment pSavedEquipment;
 		if (data.m_iCurrentCheckpoint == 0 && EquipmentManager.GetEquipment(pPlayer, pSavedEquipment))
 		{
