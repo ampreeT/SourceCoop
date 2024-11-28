@@ -1227,7 +1227,7 @@
 			}
 			"CAI_BaseNPC::RunTask"	// CAI_BaseNPC::RunTask(Task_t const*)
 			{
-				"windows"	"370"	// vtable dumper will get this wrong!! XREF: "No RunTask entry for %s\n"
+				"windows"	"370"	// Vtable dumper may get this wrong!! XREF: "No RunTask entry for %s\n"
 				"linux"		"369"
 			}
 			"CAI_BaseNPC::IsPlayerAlly" // CAI_BaseNPC::IsPlayerAlly(CBasePlayer*)
@@ -1317,7 +1317,7 @@
 			}
 			"CAI_BaseNPC::ShouldPlayerAvoid" // CAI_BaseNPC::ShouldPlayerAvoid()
 			{
-				"windows"	"373" // vtable dumper will get this wrong! This is just before "CAI_BaseNPC::SetPlayerAvoidState", which we have a sig for.
+				"windows"	"373" // Vtable dumper may get this wrong! This is just before "CAI_BaseNPC::SetPlayerAvoidState", which we have a sig for.
 				"linux"		"372"
 			}
 			"CBasePlayer::RemoveAllItems" // CBlackMesaPlayer::RemoveAllItems(bool)
@@ -1673,7 +1673,7 @@
 			}
 			"CAI_BaseNPC::ShouldPlayerAvoid" // CAI_BaseNPC::ShouldPlayerAvoid()
 			{
-				"windows"	"355" // ToDo verify. Vtable dumper will get this wrong! This is just before "CAI_BaseNPC::SetPlayerAvoidState", which we have a sig for.
+				"windows"	"355" // Vtable dumper may get this wrong! This is just before "CAI_BaseNPC::SetPlayerAvoidState", which we have a sig for.
 				"linux"		"354"
 			}
 			"CBasePlayer::RemoveAllItems" // CBasePlayer::RemoveAllItems(bool)
@@ -1703,7 +1703,7 @@
 			}
 			"CAI_BaseNPC::RunTask" // CAI_BaseNPC::RunTask(Task_t const*)
 			{
-				"windows"	"352" // ToDo: verify. Vtable dumper will get this wrong!! XREF: "No RunTask entry for %s\n"
+				"windows"	"352" // Vtable dumper may get this wrong!! XREF: "No RunTask entry for %s\n"
 				"linux"		"351"
 			}
 			"CSceneEntity::FindNamedEntity" // CSceneEntity::FindNamedEntity(char const*, CBaseEntity*, bool, bool)
