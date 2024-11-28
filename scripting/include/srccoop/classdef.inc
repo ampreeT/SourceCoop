@@ -24,7 +24,7 @@ Handle g_pGlobalEntitySetCounter;
 Handle g_pGlobalEntityAdd;
 Handle g_pGameShutdown;
 Handle g_pGetTempEntsSystem;
-Handle g_pSetCollisionBounds;
+Handle g_pSetMinMaxSize;
 Handle g_pQueryHearSound;
 Handle g_pGetSoundInterests;
 Handle g_pHearingSensitivity;
@@ -72,15 +72,16 @@ stock void InitClassdef(GameData pGameConfig)
 	if (!(g_pPlayerInfoManager = view_as<CPlayerInfoManager>(GetInterface(pGameConfig, "server", "PlayerInfoManager"))))
 		SetFailState("Could not get interface for %s", "PlayerInfoManager");
 	
-	char szSetCollisionBounds[] = "CBaseEntity::SetCollisionBounds";
-	StartPrepSDKCall(SDKCall_Entity);
-	if (!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Signature, szSetCollisionBounds))
-		LogMessage("Could not obtain gamedata signature %s", szSetCollisionBounds);
+	char szSetMinMaxSize[] = "SetMinMaxSize";
+	StartPrepSDKCall(SDKCall_Static);
+	if (!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Signature, szSetMinMaxSize))
+		LogMessage("Could not obtain gamedata signature %s", szSetMinMaxSize);
 	else
 	{
+		PrepSDKCall_AddParameter(SDKType_CBaseEntity, SDKPass_Pointer);
 		PrepSDKCall_AddParameter(SDKType_Vector, SDKPass_ByRef);
 		PrepSDKCall_AddParameter(SDKType_Vector, SDKPass_ByRef);
-		if (!(g_pSetCollisionBounds = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szSetCollisionBounds);
+		if (!(g_pSetMinMaxSize = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szSetMinMaxSize);
 	}
 
 	char szSetNextThink[] = "CBaseEntity::SetNextThink";
@@ -780,7 +781,7 @@ methodmap CBaseEntity
 	}
 	public void SetCollisionBounds(const float vecMins[3], const float vecMaxs[3])
 	{
-		SDKCall(g_pSetCollisionBounds, this.GetEntIndex(), vecMins, vecMaxs);
+		SDKCall(g_pSetMinMaxSize, this.GetEntIndex(), vecMins, vecMaxs);
 	}
 	public void WorldSpaceCenter(float vecCenter[3])
 	{

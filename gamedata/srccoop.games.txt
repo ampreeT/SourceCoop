@@ -936,15 +936,16 @@
 		
 		"Signatures"
 		{
-			"CBasePlayer::SetSuitUpdate" // CBasePlayer::SetSuitUpdate(CBasePlayer*, const char*, int, int)
+			"CBasePlayer::SetSuitUpdate" // CBasePlayer::SetSuitUpdate(const char*, int, int)
 			{
 				"windows"		"\x55\x8B\xEC\x56\x8B\xF1\x57\x83\xCF\xFF"
 				"linux"			"@_ZN11CBasePlayer13SetSuitUpdateEPKcii"
 			}
-			"CBaseEntity::SetCollisionBounds" //  void CBaseEntity::SetCollisionBounds(Vector  const&,Vector  const&)
+			// Note: This is used over CBaseEntity::SetCollisionBounds as it's more likely to be unique and references a string.
+			"SetMinMaxSize" // void SetMinMaxSize(CBaseEntity *, Vector const&, Vector const&)
 			{
-				"windows"		"\x55\x8B\xEC\x81\xC1\x4C\x01\x00\x00"
-				"linux"			"@_ZN11CBaseEntity18SetCollisionBoundsERK6VectorS2_"
+				"windows"	"\x55\x8B\xEC\x8B\x55\x0C\x33\xC9" // str: "%s: backwards mins/maxs"
+				"linux"		"@_ZL13SetMinMaxSizeP11CBaseEntityRK6VectorS3_"
 			}
 			"UTIL_GetLocalPlayer" // CBasePlayer UTIL_GetLocalPlayer(void)
 			{
@@ -1233,7 +1234,7 @@
 			}
 			"CAI_BaseNPC::RunTask"	// CAI_BaseNPC::RunTask(Task_t const*)
 			{
-				"windows"	"370"	// vtable dumper will get this wrong!! XREF: "No RunTask entry for %s\n"
+				"windows"	"370"	// Vtable dumper may get this wrong!! XREF: "No RunTask entry for %s\n"
 				"linux"		"369"
 			}
 			"CAI_BaseNPC::IsPlayerAlly" // CAI_BaseNPC::IsPlayerAlly(CBasePlayer*)
@@ -1323,7 +1324,7 @@
 			}
 			"CAI_BaseNPC::ShouldPlayerAvoid" // CAI_BaseNPC::ShouldPlayerAvoid()
 			{
-				"windows"	"373" // vtable dumper will get this wrong! This is just before "CAI_BaseNPC::SetPlayerAvoidState", which we have a sig for.
+				"windows"	"373" // Vtable dumper may get this wrong! This is just before "CAI_BaseNPC::SetPlayerAvoidState", which we have a sig for.
 				"linux"		"372"
 			}
 			"CBasePlayer::RemoveAllItems" // CBlackMesaPlayer::RemoveAllItems(bool)
@@ -1466,6 +1467,40 @@
 
 	"hl2mp"
 	{
+		"Keys"
+		{
+			"IServerGameDLL"
+			{
+				"windows"	"ServerGameDLL012"
+				"linux"		"ServerGameDLL012"
+			}
+		}
+
+		"Functions"
+		{
+			"CBasePlayer::ChangeTeam"
+			{
+				"arguments"
+				{
+					"iTeamNum"
+					{
+						"type"	"int"
+					}
+					"bAutoTeam"
+					{
+						"type"	"bool"
+					}
+					"bSilent"
+					{
+						"type"	"bool"
+					}
+					"bAutoBalance"
+					{
+						"type"	"bool"
+					}
+				}
+			}
+		}
 		
 		//   _    _ _      ___  __  __ _____      _____ _____ _____ _   _       _______ _    _ _____  ______  _____ 
 		//  | |  | | |    |__ \|  \/  |  __ \    / ____|_   _/ ____| \ | |   /\|__   __| |  | |  __ \|  ____|/ ____|
@@ -1476,34 +1511,35 @@
 		
 		"Signatures"
 		{
-			"CBasePlayer::SetSuitUpdate" // CBasePlayer::SetSuitUpdate(CBasePlayer*, const char*, int, int)
+			"CBasePlayer::SetSuitUpdate" // CBasePlayer::SetSuitUpdate(const char*, int, int)
 			{
 				"windows"		"\x55\x8B\xEC\x56\x8B\xF1\x57\x83\xCF\xFF"
 				"linux"			"@_ZN11CBasePlayer13SetSuitUpdateEPKcii"
 			}
-			"CBaseEntity::SetCollisionBounds" // void CBaseEntity::SetCollisionBounds(Vector  const&,Vector  const&)
+			// Note: This is used over CBaseEntity::SetCollisionBounds as it's more likely to be unique and references a string.
+			"SetMinMaxSize" // void SetMinMaxSize(CBaseEntity *, Vector const&, Vector const&)
 			{
-				"windows"	"\x55\x8B\xEC\x81\xC1\x4C\x01\x00\x00"
-				"linux"		"@_ZN11CBaseEntity18SetCollisionBoundsERK6VectorS2_"
+				"windows"	"\x55\x8B\xEC\x8B\x55\x0C\x33\xC9" // str: "%s: backwards mins/maxs"
+				"linux"		"@_ZL13SetMinMaxSizeP11CBaseEntityRK6VectorS3_"
 			}
 			"CBaseEntity::SetNextThink" // void SetNextThink( float nextThinkTime, const char *szContext = NULL );
 			{
-				"windows"	"\x55\x8B\xEC\xF3\x0F\x10\x45\x08\x0F\x2E\x05\x2A\x2A\x2A\x2A" // str: "Doing partial rebuild of Node Graph..."
+				"windows"	"\x55\x8B\xEC\x51\xF3\x0F\x10\x45\x08\x0F\x2E\x05\x2A\x2A\x2A\x2A" // str: "Doing partial rebuild of Node Graph..."
 				"linux"		"@_ZN11CBaseEntity12SetNextThinkEfPKc"
 			}
 			"CreateServerRagdoll" // CBaseEntity CreateServerRagdoll(CBaseAnimating *, int, const CTakeDamageInfo *, int, bool)
 			{
-				"windows"	"\x53\x8B\xDC\x83\xEC\x08\x83\xE4\xF0\x83\xC4\x04\x55\x8B\x6B\x04\x89\x6C\x24\x04\x8B\xEC\xB8\x68\x32\x00\x00"
+				"windows"	"\x53\x8B\xDC\x83\xEC\x08\x83\xE4\xF0\x83\xC4\x04\x55\x8B\x6B\x04\x89\x6C\x24\x04\x8B\xEC\xB8\x2A\x2A\x00\x00\xE8\x2A\x2A\x2A\x2A\x8B\x2A\x2A\x56\x57"
 				"linux" 	"@_Z19CreateServerRagdollP14CBaseAnimatingiRK15CTakeDamageInfoib"
 			}
 			"UTIL_GetLocalPlayer" // CBasePlayer UTIL_GetLocalPlayer(void)
 			{
-				"windows"	"\xA1\x2A\x2A\x2A\x2A\x8B\x40\x14\x83\xF8\x01\x7E\x2A\x33\xC0"
+				"windows"	"\xA1\x2A\x2A\x2A\x2A\x8B\x40\x14\x83\xF8\x01\x7E\x2A\x33\xC0" // xref str: "devshots_nextmap"
 				"linux" 	"@_Z19UTIL_GetLocalPlayerv"
 			}
 			"CAI_GoalEntity::ResolveNames" // void CAI_GoalEntity::ResolveNames()
 			{
-				"windows"	"\x55\x8B\xEC\x83\xEC\x08\x53\x56\x57\x8D\xB9\x54\x03\x00\x00"
+				"windows"	"\x55\x8B\xEC\x83\xEC\x08\x53\x56\x57\x8B\xF9\x33\xDB\x89\x7D\xF8\xC7\x87\x98\x03\x00\x00\x00\x00\x00\x00" // xref str: "Active: %s"
 				"linux" 	"@_ZN14CAI_GoalEntity12ResolveNamesEv"
 			}
 			"CAI_LeadBehavior::CanSelectSchedule" // bool CAI_LeadBehavior::CanSelectSchedule()
@@ -1513,12 +1549,13 @@
 			}
 			"Pickup_ForcePlayerToDropThisObject" // void Pickup_ForcePlayerToDropThisObject(CBaseEntity *)
 			{
-				"windows"	"\x55\x8B\xEC\x56\x8B\x75\x08\x85\xF6\x74\x2A\x8B\x8E\xE4\x01\x00\x00"
+				"windows"	"\x55\x8B\xEC\x56\x8B\x75\x08\x85\xF6\x74\x2A\x8B\x2A\x2A\x2A\x2A\x2A\x85\xC9\x74" // xref str: "NPC_AntlionGuard.HitHard"
 				"linux" 	"@_Z34Pickup_ForcePlayerToDropThisObjectP11CBaseEntity"
 			}
 			"CBaseAnimating::GetSequenceLinearMotion" // void CBaseAnimating::GetSequenceLinearMotion(int,Vector *)
 			{
-				"windows"	"\x55\x8B\xEC\x56\x8B\xF1\x80\xBE\x31\x03\x00\x00\x00\x75\x2A\x83\xBE\x50\x04\x00\x00\x00\x75\x2A\xE8\x2A\x2A\x2A\x2A\x85\xC0\x74\x2A\x8B\xCE\xE8\x2A\x2A\x2A\x2A\x8B\x8E\x50\x04\x00\x00\x85\xC9\x74\x2A\x83\x39\x00\x75\x2A\x33\xC9\xFF\x75\x0C"
+				// called from CAI_BaseNPC::SetPlayerAvoidState
+				"windows"	"\x55\x8B\xEC\x56\x8B\xF1\x80\xBE\x59\x03\x00\x00\x00\x75\x2A\x83\xBE\x88\x04\x00\x00\x00\x75\x2A\xE8\x2A\x2A\x2A\x2A\x85\xC0\x74\x2A\x8B\xCE\xE8\x2A\x2A\x2A\x2A\x8B\x8E\x88\x04\x00\x00\x85\xC9\x74\x2A\x83\x39\x00\x75\x2A\x33\xC9\xFF\x75\x0C"
 				"linux" 	"@_ZN14CBaseAnimating23GetSequenceLinearMotionEiP6Vector"
 			}
 			"CAI_BaseNPC::SetPlayerAvoidState" // void CAI_BaseNPC::SetPlayerAvoidState()
@@ -1528,22 +1565,22 @@
 			}
 			"CAI_BaseNPC::UpdateSleepState"	// void CAI_BaseNPC::UpdateSleepState( bool bInPVS )
 			{
-				"windows"	"\x55\x8B\xEC\x56\x8B\xF1\x83\xBE\x3C\x09\x00\x00\x00\x2A\x2A\x2A\x2A\x2A\x2A\xA1\x50"	// str: "CAI_BaseNPC::UpdateSleepState called with NULL pLocalPlayer\n"
+				"windows"	"\x55\x8B\xEC\x57\x8B\xF9\x83\xBF\x74\x09\x00\x00\x00"	// str: "CAI_BaseNPC::UpdateSleepState called with NULL pLocalPlayer\n"
 				"linux"		"@_ZN11CAI_BaseNPC16UpdateSleepStateEb"
 			}
 			"GlobalEntity_GetIndex" // int GlobalEntity_GetIndex( const char *pGlobalname );
 			{
-				"windows"	"\x55\x8B\xEC\x51\xFF\x75\x08\x8D\x45\xFC"
+				"windows"	"\x55\x8B\xEC\x51\xFF\x75\x08\x8D\x45\xFC" // xref str: "suit_no_sprint"
 				"linux" 	"@_Z21GlobalEntity_GetIndexPKc"
 			}
 			"GlobalEntity_GetState" // GLOBALESTATE GlobalEntity_GetState( int globalIndex );
 			{
-				"windows"	"\x55\x8B\xEC\x8B\x45\x08\x85\xC0\x78\x2A\x3B\x05\x2A\x2A\x2A\x2A\x7D\x2A\x8D\x0C\x40\xA1\x2A\x2A\x2A\x2A\x8B\x44\x88\x04"
+				"windows"	"\x55\x8B\xEC\x8B\x45\x08\x85\xC0\x78\x2A\x3B\x05\x2A\x2A\x2A\x2A\x7D\x2A\x8D\x0C\x40\xA1\x2A\x2A\x2A\x2A\x8B\x44\x88\x04" // xref str: "suit_no_sprint"
 				"linux" 	"@_Z21GlobalEntity_GetStatei"
 			}
 			"GlobalEntity_GetName" // const char *GlobalEntity_GetName( int globalIndex );
 			{
-				"windows"	"\x55\x8B\xEC\x8B\x45\x08\x85\xC0\x78\x2A\x3B\x05\x2A\x2A\x2A\x2A\x7D\x2A\x51\x8D\x0C\x40\x8B\xD4\xA1\x2A\x2A\x2A\x2A\x66\x8B\x04\x88"
+				"windows"	"\x55\x8B\xEC\x8B\x45\x08\x85\xC0\x78\x2A\x3B\x05\x2A\x2A\x2A\x2A\x7D\x2A\x8D\x0C\x40\xA1\x2A\x2A\x2A\x2A\x51\x8D\x04\x88\x8B\xCC\x66\x8B\x00" // xref str: "healthfrac"
 				"linux"		"@_Z20GlobalEntity_GetNamei"
 			}
 			"GlobalEntity_GetCounter" // int GlobalEntity_GetCounter( int globalIndex );
@@ -1553,7 +1590,8 @@
 			}
 			"GlobalEntity_GetMap" // const char *GlobalEntity_GetMap( int globalIndex );
 			{
-				"windows"	"\x55\x8B\xEC\x8B\x45\x08\x85\xC0\x78\x2A\x3B\x05\x2A\x2A\x2A\x2A\x7D\x2A\x51\x8D\x0C\x40\x8B\xD4\xA1\x2A\x2A\x2A\x2A\x66\x8B\x44\x88\x02"
+				// this func is physically located right before GlobalEntity_GetName
+				"windows"	"\x55\x8B\xEC\x8B\x45\x08\x85\xC0\x78\x2A\x3B\x05\x2A\x2A\x2A\x2A\x7D\x2A\x8D\x0C\x40\xA1\x2A\x2A\x2A\x2A\x51\x8D\x04\x88\x8B\xCC\x66\x8B\x40\x02"
 				"linux"		"@_Z19GlobalEntity_GetMapi"
 			}
 			"GlobalEntity_SetState" // void GlobalEntity_SetState( int globalIndex, GLOBALESTATE state )
@@ -1568,8 +1606,8 @@
 			}
 			"GlobalEntity_Add" // int GlobalEntity_Add( string_t const char *pGlobalname, const char *pMapName, GLOBALESTATE state )
 			{
-				// Fn is too short; 3 instances of this sig; str: "is_pc"
-				"windows"	"\x55\x8B\xEC\xFF\x75\x10\xB9\x2A\x2A\x2A\x2A\xFF\x75\x0C\xFF\x75\x08\xE8\x2A\x2A\x2A\x2A\x5D\xC3"
+				// xref str: "is_pc"
+				"windows"	"\x55\x8B\xEC\x83\xEC\x0C\x53\x56\x57\xFF\x75\x08"
 				"linux"		"@_Z16GlobalEntity_AddPKcS0_12GLOBALESTATE"
 			}
 			"Physics_RunThinkFunctions"
@@ -1580,28 +1618,23 @@
 			}
 			"CAI_ExpresserHost_NPC_DoModifyOrAppendCriteria"
 			{
-				"windows"	"\x55\x8B\xEC\x83\xEC\x0C\x53\x56\x8B\x75\x08\x57\xFF\xB6\x50\x09\x00\x00\x2A\x2A\x2A\x2A\x2A\x8B\x7D\x0C\x83\xC4"
+				"windows"	"\x55\x8B\xEC\x83\xEC\x0C\x53\x56\x8B\x75\x08\x57\xFF\xB6\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x8B\x2A\x2A\x83\xC4\x04" // str: "timesincecombat"
 				"linux"		"@_Z46CAI_ExpresserHost_NPC_DoModifyOrAppendCriteriaP11CAI_BaseNPCR14AI_CriteriaSet"
 			}
 			"AI_CriteriaSet::AppendCriteria"
 			{
-				"windows"	"\x55\x8B\xEC\x83\xEC\x48\x53\x56\x8B\x75\x08\xBB\xFF\xFF\x00\x00\x57\x8B\xF9\x66\x89\x5D"
+				"windows"	"\x55\x8B\xEC\x83\xEC\x48\x56\x8B\x75\x08\x57\x56\x8B\xF9\xE8" // xref str: "playerspeed"
 				"linux"		"@_ZN14AI_CriteriaSet14AppendCriteriaEPKcS1_f"
-			}
-			"*Player::GiveDefaultItems"
-			{
-				"windows"	"\x56\x57\x8B\xF9\x6A\x01\x8B\x07"
-				"linux"		"@_ZN13CHL2MP_Player16GiveDefaultItemsEv"
 			}
 			"CRecipientFilter::IgnorePredictionCull"
 			{
-				"windows"	"\x8A\x41\x1D"
+				"windows"	"\x8A\x41\x1D\xC3"
 				"linux"		"@_ZNK16CRecipientFilter20IgnorePredictionCullEv"
 			}
 			"UTIL_FindClientInPVSGuts"	// UTIL_FindClientInPVSGuts(edict_t*, unsigned char*, int)
 			{
-				"windows"	"\x55\x8B\xEC\x83\xEC\x18\x56\xE8\x2A\x2A\x2A\x2A\x8B\xF0\x85\xF6\x75"
-				"linux"		"@_ZL24UTIL_FindClientInPVSGutsP7edict_tPhj.constprop.91"
+				"windows"	"\x55\x8B\xEC\x83\xEC\x18\x56\xE8\x2A\x2A\x2A\x2A\x8B\xF0\x85\xF6\x0F\x84\x2A\x2A\x2A\x2A\x8B\x4E\x0C"
+				"linux"		"@_ZL24UTIL_FindClientInPVSGutsP7edict_tPhj_constprop_0"
 			}
 		}
 
@@ -1627,43 +1660,43 @@
 		{
 			"CBasePlayer::CreateRagdollEntity" // void CBasePlayer::CreateRagdollEntity()
 			{
-				"windows"	"424"
-				"linux"		"425"
+				"windows"	"431"
+				"linux"		"432"
 			}
-			"CBasePlayer::ChangeTeam" // CBasePlayer::ChangeTeam(int, bool, bool)
+			"CBasePlayer::ChangeTeam" // CBasePlayer::ChangeTeam(int, bool, bool, bool)
 			{
-				"windows"	"419"
-				"linux"		"420"
+				"windows"	"426"
+				"linux"		"427"
 			}
 			"CBasePlayer::Spawn" // CBasePlayer::Spawn()
 			{
-				"windows"	"22"
-				"linux" 	"23"
+				"windows"	"24"
+				"linux" 	"25"
 			}
 			"CBaseCombatWeapon::SendWeaponAnim" // CBaseCombatWeapon::SendWeaponAnim(int)
 			{
-				"windows"	"236"
-				"linux"		"237"
+				"windows"	"242"
+				"linux"		"243"
 			}
 			"CBaseEntity::ShouldCollide" // CBaseEntity::ShouldCollide
 			{
-				"windows"	"16"
-				"linux"		"17"
+				"windows"	"17"
+				"linux"		"18"
 			}
 			"CAI_BaseNPC::ShouldPlayerAvoid" // CAI_BaseNPC::ShouldPlayerAvoid()
 			{
-				"windows"	"347"
-				"linux"		"348"
+				"windows"	"355" // Vtable dumper may get this wrong! This is just before "CAI_BaseNPC::SetPlayerAvoidState", which we have a sig for.
+				"linux"		"354"
 			}
 			"CBasePlayer::RemoveAllItems" // CBasePlayer::RemoveAllItems(bool)
 			{
-				"windows"	"342"
-				"linux"		"343"
+				"windows"	"348"
+				"linux"		"349"
 			}
 			"CBaseEntity::IsNPC" // CBaseEntity::IsNPC() const
 			{
-				"windows"	"70"
-				"linux"		"71"
+				"windows"	"72"
+				"linux"		"73"
 			}
 			"CServerGameDLL::LevelInit" // CServerGameDLL::LevelInit(char const*, char const*, char const*, char const*, bool, bool)
 			{
@@ -1680,120 +1713,120 @@
 				"windows"	"34"
 				"linux"		"35"
 			}
-			"CAI_BaseNPC::RunTask"	// CAI_BaseNPC::RunTask(Task_t const*)
+			"CAI_BaseNPC::RunTask" // CAI_BaseNPC::RunTask(Task_t const*)
 			{
-				"windows"	"346"	// vtable dumper will get this wrong!! XREF: "No RunTask entry for %s\n"
-				"linux"		"345"
+				"windows"	"352" // Vtable dumper may get this wrong!! XREF: "No RunTask entry for %s\n"
+				"linux"		"351"
 			}
 			"CSceneEntity::FindNamedEntity" // CSceneEntity::FindNamedEntity(char const*, CBaseEntity*, bool, bool)
 			{
-				"windows"	"233"
-				"linux"		"238"
+				"windows"	"239"
+				"linux"		"244"
 			}
 			"CSceneEntity::FindNamedEntityClosest" // CSceneEntity::FindNamedEntityClosest(char const*, CBaseEntity*, bool, bool, char const*)
 			{
-				"windows"	"234"
-				"linux"		"239"
+				"windows"	"240"
+				"linux"		"245"
 			}
 			"CBaseEntity::SetModel" // CBaseEntity::SetModel(char const*)
 			{
-				"windows"	"24"
-				"linux"		"25"
+				"windows"	"26"
+				"linux"		"27"
 			}
 			"CBaseEntity::AcceptInput" // CBaseEntity::AcceptInput(char const*, CBaseEntity*, CBaseEntity*, variant_t, int)
 			{
-				"windows"	"36"
-				"linux"		"37"
+				"windows"	"38"
+				"linux"		"39"
 			}
 			"CBaseEntity::Think" // CBaseEntity::Think
 			{
-				"windows"	"47"
-				"linux"		"48"
+				"windows"	"49"
+				"linux"		"50"
 			}
 			"CBaseEntity::Event_Killed" // CBaseEntity::Event_Killed(CTakeDamageInfo const&)
 			{
-				"windows"	"66"
-				"linux"		"67"
+				"windows"	"68"
+				"linux"		"69"
 			}
 			"CBaseEntity::KeyValue_char" // CBaseEntity::KeyValue(char const*, char const*)
 			{
-				"windows"	"31"
-				"linux"		"30"
+				"windows"	"33"
+				"linux"		"32"
 			}
 			"CAI_BaseNPC::QueryHearSound"	// bool CAI_BaseNPC::QueryHearSound(CSound*)
-			{
-				"windows"	"387"
-				"linux"		"388"
-			}
-			"CAI_BaseNPC::GetSoundInterests"	// int CAI_BaseNPC::GetSoundInterests( void )
 			{
 				"windows"	"393"
 				"linux"		"394"
 			}
+			"CAI_BaseNPC::GetSoundInterests"	// int CAI_BaseNPC::GetSoundInterests( void )
+			{
+				"windows"	"399"
+				"linux"		"400"
+			}
 			"CAI_BaseNPC::HearingSensitivity"	// float CAI_BaseNPC::HearingSensitivity()
 			{
-				"windows"	"397"
-				"linux"		"398"
+				"windows"	"403"
+				"linux"		"404"
 			}
 			"CAI_BaseNPC::UpdateEnemyMemory" // CAI_BaseNPC::UpdateEnemyMemory(CBaseEntity*, Vector const&, CBaseEntity*)
 			{
-				"windows"	"496"
-				"linux"		"500"
+				"windows"	"502"
+				"linux"		"506"
 			}
 			"CBaseEntity::Blocked" // bool CBaseEntity::Blocked(CBaseEntity*)
 			{
-				"windows"	"102"
-				"linux"		"103"
+				"windows"	"104"
+				"linux"		"105"
 			}
 			"CBaseCombatCharacter::Weapon_Switch" // CBaseCombatCharacter::Weapon_Switch( CBaseCombatWeapon *pWeapon, int viewmodelindex /*=0*/ )
 			{
-				"windows"	"264"
-				"linux"		"265"
+				"windows"	"270"
+				"linux"		"271"
 			}
 			"CBaseEntity::UpdateOnRemove" // void CBaseEntity::UpdateOnRemove( void )
 			{
-				"windows"	"105"
-				"linux"		"106"
+				"windows"	"107"
+				"linux"		"108"
 			}
 			"CBaseEntity::WorldSpaceCenter" // const Vector& CBaseEntity::WorldSpaceCenter( ) const
 			{
-				"windows"	"149"
-				"linux"		"150"
+				"windows"	"152"
+				"linux"		"153"
 			}
 			"CBasePlayer::CreateViewModel" // CBasePlayer::CreateViewModel(int)
 			{
-				"windows"	"321"
-				"linux"		"322"
+				"windows"	"327"
+				"linux"		"328"
 			}
 			"CBaseCombatWeapon::Deploy"	// CBaseCombatWeapon::Deploy()
 			{
-				"windows"	"248"
-				"linux"		"249"
+				"windows"	"254"
+				"linux"		"255"
 			}
 			"CBaseCombatWeapon::ItemPostFrame"	// CBaseCombatWeapon::ItemPostFrame()
 			{
-				"windows"	"259"
-				"linux"		"260"
+				"windows"	"265"
+				"linux"		"266"
 			}
 			"CBaseCombatWeapon::PrimaryAttack"	// CBaseCombatWeapon::PrimaryAttack()
 			{
-				"windows"	"273"
-				"linux"		"274"
+				"windows"	"279"
+				"linux"		"280"
 			}
 			"CBaseCombatWeapon::GetPrimaryAttackActivity"	// CBaseCombatWeapon::GetPrimaryAttackActivity()
 			{
-				"windows"	"275"
-				"linux"		"276"
+				"windows"	"281"
+				"linux"		"282"
 			}
 			"CBaseCombatWeapon::GetDrawActivity"	// CBaseCombatWeapon::GetDrawActivity() const
 			{
-				"windows"	"277"
-				"linux"		"278"
+				"windows"	"283"
+				"linux"		"284"
 			}
 			"CBaseViewModel::SendViewModelMatchingSequence"	// CBaseViewModel::SendViewModelMatchingSequence(int)
 			{
-				"windows"	"216"
-				"linux"		"217"
+				"windows"	"222"
+				"linux"		"223"
 			}
 			"CPlayerInfoManager::GetGlobalVars"	// CPlayerInfoManager::GetGlobalVars()
 			{
