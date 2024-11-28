@@ -1822,8 +1822,8 @@
 			}
 			"CBasePlayer::Weapon_ShootPosition"	// CBasePlayer::Weapon_ShootPosition()
 			{
-				"windows"	"265"
-				"linux"		"266"
+				"windows"	"271"
+				"linux"		"272"
 			}
 		}
 	}
