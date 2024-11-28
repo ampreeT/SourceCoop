@@ -125,6 +125,10 @@ void LoadGameData()
 	#if defined PLAYERPATCH_OVERRIDE_DEATH_OBSMODE
 	LoadDHookVirtual(pGameConfig, hkStartObserverMode, "CBasePlayer::StartObserverMode");
 	#endif
+	
+	#if defined PLAYERPATCH_HITREG
+	LoadDHookVirtual(pGameConfig, hkPlayerWeaponShootPosition, "CBasePlayer::Weapon_ShootPosition");
+	#endif
 
 	#if defined ENTPATCH_BM_SP_WEAPONS
 	LoadDHookVirtual(pGameConfig, hkBaseCombatWeaponDeploy, "CBaseCombatWeapon::Deploy");
@@ -473,6 +477,9 @@ public void OnClientPutInServer(int client)
 	SDKHook(client, SDKHook_TraceAttack, Hook_PlayerTraceAttack);
 	SDKHook(client, SDKHook_OnTakeDamage, Hook_PlayerTakeDamage);
 	SDKHook(client, SDKHook_WeaponEquipPost, Hook_PlayerWeaponEquipPost);
+	#if defined PLAYERPATCH_HITREG
+	DHookEntity(hkPlayerWeaponShootPosition, true, client, _, Hook_PlayerWeaponShootPosition_Post);
+	#endif
 	DHookEntity(hkChangeTeam, false, client, _, Hook_PlayerChangeTeam);
 	DHookEntity(hkChangeTeam, true, client, _, Hook_PlayerChangeTeamPost);
 	DHookEntity(hkShouldCollide, false, client, _, Hook_PlayerShouldCollide);

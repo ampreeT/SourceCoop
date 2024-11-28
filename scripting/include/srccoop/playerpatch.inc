@@ -6,6 +6,8 @@
 #pragma newdecls required
 #pragma semicolon 1
 
+static float g_vec3PlayerShootPosition[MAXPLAYERS + 1][3];
+
 //------------------------------------------------------
 // Allow flashlight
 //------------------------------------------------------
@@ -151,13 +153,14 @@ public MRESReturn Hook_PlayerStartObserverMode(int iClient, DHookReturn hReturn,
 //------------------------------------------------------
 public Action OnPlayerRunCmd(int iClient, int &iButtons, int &iImpulse, float fVel[3], float fAngles[3], int &iWeapon, int& subtype, int& cmdnum, int& tickcount, int& seed, int mouse[2])
 {
+	CBasePlayer pClient = CBasePlayer(iClient);
+	pClient.GetEyePosition(g_vec3PlayerShootPosition[iClient]);
+
 	if (IsFakeClient(iClient) || !CoopManager.IsCoopModeEnabled())
 		return Plugin_Continue;
 
 	if (mouse[0] || mouse[1])
 		g_bPostTeamSelect[iClient] = true;
-
-	CBasePlayer pClient = CBasePlayer(iClient);
 	
 	// Spectator fixes; Credits: harper
 	Obs_Mode iObsMode = view_as<Obs_Mode>(GetEntProp(iClient, Prop_Send, "m_iObserverMode"));
@@ -610,6 +613,23 @@ public Action Hook_PlayerTakeDamage(int victim, int &attacker, int &inflictor, f
 	}
 	
 	return Plugin_Continue;
+}
+
+// Fixes hit registration being off by 1 tick.
+// Credits to Xutax_Kamay (https://forums.alliedmods.net/showthread.php?t=315405)
+public MRESReturn Hook_PlayerWeaponShootPosition_Post(int iClient, Handle hReturn)
+{
+	CBasePlayer pPlayer = CBasePlayer(iClient);
+	// Objects that are carried will call this hook and lag further behind the desired position.
+	if (pPlayer.GetCarriedObject() == NULL_CBASEENTITY)
+	{
+		DHookSetReturnVector(hReturn, g_vec3PlayerShootPosition[iClient]);
+		return MRES_Supercede;
+	}
+	else
+	{
+		return MRES_Ignored;
+	}
 }
 
 //------------------------------------------------------
