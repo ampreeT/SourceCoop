@@ -623,7 +623,7 @@ public MRESReturn Hook_PlayerWeaponShootPosition_Post(int iClient, Handle hRetur
 	// Objects that are carried will call this hook and lag further behind the desired position.
 	if (pPlayer.GetCarriedObject() == NULL_CBASEENTITY)
 	{
-		DHookSetReturnVector(hParams, g_vec3PlayerShootPosition[iClient]);
+		DHookSetReturnVector(hReturn, g_vec3PlayerShootPosition[iClient]);
 		return MRES_Supercede;
 	}
 	else
