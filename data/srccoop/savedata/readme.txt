@@ -1,0 +1,1 @@
+Save data from sc_save command is placed in this folder.
