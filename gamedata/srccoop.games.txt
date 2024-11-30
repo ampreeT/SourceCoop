@@ -945,7 +945,7 @@
 			"SetMinMaxSize" // void SetMinMaxSize(CBaseEntity *, Vector const&, Vector const&)
 			{
 				"windows"	"\x55\x8B\xEC\x8B\x55\x0C\x33\xC9" // str: "%s: backwards mins/maxs"
-				"linux"		"@_ZL13SetMinMaxSizeP11CBaseEntityRK6VectorS3_"
+				"linux"		"@_Z12UTIL_SetSizeP11CBaseEntityRK6VectorS3_" // Linux uses parent "UTIL_SetSize" to avoid a crash!
 			}
 			"UTIL_GetLocalPlayer" // CBasePlayer UTIL_GetLocalPlayer(void)
 			{
