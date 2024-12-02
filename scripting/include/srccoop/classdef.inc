@@ -2496,12 +2496,20 @@ methodmap CBasePlayer < CBaseCombatCharacter
 	}
 	public CBaseEntity GetCarriedObject()
 	{
+		// TODO: HL2DM Needs to call GetPlayerHeldEntity !
+		#if defined SRCCOOP_BLACKMESA
 		CBaseEntity pUseEntity = this.GetUseEntity();
 		if (pUseEntity.IsValid() && pUseEntity.IsClassname("player_pickup"))
 		{
 			return CBaseEntity(GetEntPropEnt(pUseEntity.GetEntIndex(), Prop_Data, "m_attachedEntity"));
 		}
+		#endif
 		return NULL_CBASEENTITY;
+	}
+	public bool IsCarryingObject()
+	{
+		CBaseEntity pUseEntity = this.GetUseEntity();
+		return (pUseEntity.IsValid() && pUseEntity.IsClassname("player_pickup"));
 	}
 	public void ForceDropOfCarriedPhysObjects()
 	{

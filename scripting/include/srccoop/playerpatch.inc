@@ -63,7 +63,7 @@ public void Hook_PlayerPreThinkPost(int iClient)
 		CBaseCombatWeapon pWeapon = pPlayer.GetActiveWeapon();
 		if (pWeapon.IsValid())
 		{
-			if (pPlayer.GetCarriedObject().IsValid())
+			if (pPlayer.IsCarryingObject())
 			{
 				// fix clientside prediction errors when dropping objects
 				PreventWeaponFiring(pWeapon, 1.0);
@@ -621,15 +621,11 @@ public MRESReturn Hook_PlayerWeaponShootPosition_Post(int iClient, Handle hRetur
 {
 	CBasePlayer pPlayer = CBasePlayer(iClient);
 	// Objects that are carried will call this hook and lag further behind the desired position.
-	if (pPlayer.GetCarriedObject() == NULL_CBASEENTITY)
-	{
-		DHookSetReturnVector(hReturn, g_vec3PlayerShootPosition[iClient]);
-		return MRES_Supercede;
-	}
-	else
-	{
+	if (pPlayer.IsCarryingObject())
 		return MRES_Ignored;
-	}
+
+	DHookSetReturnVector(hReturn, g_vec3PlayerShootPosition[iClient]);
+	return MRES_Supercede;
 }
 
 //------------------------------------------------------
