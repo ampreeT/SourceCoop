@@ -62,7 +62,10 @@ void LoadGameData()
 	LoadDHookVirtual(pGameConfig, hkUpdateOnRemove, "CBaseEntity::UpdateOnRemove");
 	LoadDHookVirtual(pGameConfig, hkEvent_Killed, "CBaseEntity::Event_Killed");
 	LoadDHookVirtual(pGameConfig, hkKeyValue_char, "CBaseEntity::KeyValue_char");
+	
+	#if defined SRCCOOP_BLACKMESA
 	LoadDHookDetour(pGameConfig, hkGiveDefaultItems, "*Player::GiveDefaultItems", Hook_GiveDefaultItems);
+	#endif
 
 	#if defined ENTPATCH_PLAYER_ALLY
 	LoadDHookVirtual(pGameConfig, hkIsPlayerAlly, "CAI_BaseNPC::IsPlayerAlly");
