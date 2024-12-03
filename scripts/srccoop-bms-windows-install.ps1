@@ -3,13 +3,13 @@ $ErrorActionPreference = "Stop"
 # Install SteamCMD.
 New-Item -Name "SteamCMD" -ItemType Directory -Force
 Invoke-WebRequest -Uri "https://steamcdn-a.akamaihd.net/client/installer/steamcmd.zip" -OutFile ".tmp.zip"
-Expand-Archive -LiteralPath ".tmp.zip" -DestinationPath "./SteamCMD"
+Expand-Archive -LiteralPath ".tmp.zip" -DestinationPath "./SteamCMD" -Force
 Remove-Item -Path ".tmp.zip" -Force
 
 # Install Black Mesa Dedicated Server.
 # TODO: Check error code of process and early exit on failure.
 New-Item -Name "Black Mesa Dedicated Server" -ItemType Directory -Force
-Start-Process -FilePath "./SteamCMD/steamcmd.exe" -ArgumentList '+force_install_dir "../Black Mesa Dedicated Server"', "+login anonymous", "+app_update 346680", "+quit" -Wait -NoNewWindow
+Start-Process -FilePath "./SteamCMD/steamcmd.exe" -ArgumentList '+force_install_dir "../Black Mesa Dedicated Server"', "+login anonymous", "+app_update 346680 validate", "+quit" -Wait -NoNewWindow
 
 # Install the latest version of Metamod Source.
 Invoke-WebRequest -OutFile ".tmp.zip" -Uri (((Invoke-WebRequest -Uri "https://www.sourcemm.net/downloads.php").Links | Where-Object { $_.href -like "*-windows.zip" }).href | Select-Object -First 1)
