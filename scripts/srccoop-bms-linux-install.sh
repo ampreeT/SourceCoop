@@ -20,7 +20,7 @@ rm ".tmp.tar.gz"
 # Install Black Mesa Dedicated Server.
 # TODO: Check error code of process and early exit on failure.
 mkdir -p "./Black Mesa Dedicated Server"
-echo -e "force_install_dir \"../Black Mesa Dedicated Server\"\nlogin anonymous\napp_update 346680\nquit" | ./SteamCMD/steamcmd.sh
+echo -e "force_install_dir \"../Black Mesa Dedicated Server\"\nlogin anonymous\napp_update 346680 validate\nquit" | ./SteamCMD/steamcmd.sh
 
 # Install the latest version of Metamod Source.
 wget $(wget -qO- "https://www.sourcemm.net/downloads.php" | grep "<a class='quick-download download-link'" | grep -m1 "linux.tar.gz" | sed -n 's/.*href='\''//; s/'\''.*//p') -O ".tmp.tar.gz"
