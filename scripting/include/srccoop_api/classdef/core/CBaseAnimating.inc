@@ -24,6 +24,14 @@ methodmap CBaseAnimating < CBaseEntity
 	{
 		SetEntProp(this.GetEntIndex(), Prop_Send, "m_nSkin", iSkin);
 	}
+	public int GetBody()
+	{
+		return GetEntProp(this.GetEntIndex(), Prop_Send, "m_nBody");
+	}
+	public int SetBody(const int iBody)
+	{
+		SetEntProp(this.GetEntIndex(), Prop_Send, "m_nBody", iBody);
+	}
 	public float GetModelScale()
 	{
 		return GetEntPropFloat(this.GetEntIndex(), Prop_Send, "m_flModelScale");
