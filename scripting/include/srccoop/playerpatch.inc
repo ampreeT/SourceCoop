@@ -1001,3 +1001,11 @@ void QueryConVarSafeSet(QueryCookie cookie, int client, ConVarQueryResult result
 		LogMessage("Issuing client commands is not allowed. Please remove \"%s\" from client_console in the map's edt file.", cvarName);
 	}
 }
+
+public bool TraceEntityFilter_IgnorePlayers(int iEntIndex, int iMask, any pData)
+{
+	CBasePlayer pPlayer = CBasePlayer(iEntIndex);
+	if (pPlayer.IsValid())
+		return false;
+	return (iEntIndex != pData);
+}

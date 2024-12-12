@@ -10,6 +10,14 @@
 // Coop manager
 //------------------------------------------------------
 
+enum struct FireOutputData
+{
+	char m_szName[32];
+	CBaseEntity m_pCaller;
+	CBaseEntity m_pActivator;
+	float m_flDelay;
+}
+
 enum struct CoopManagerData
 {
 	KeyValues kv;

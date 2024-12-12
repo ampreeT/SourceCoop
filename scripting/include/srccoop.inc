@@ -151,13 +151,12 @@
 
 #include <srccoop/util/assert>
 #include <srccoop/typedef>
-#include <srccoop/typedef_game>
-#include <srccoop/public>
-#include <srccoop/classdef>
 #if defined SRCCOOP_BLACKMESA
 #include <srccoop/blackmesa/typedef>
-#include <srccoop/blackmesa/classdef>
 #endif
+#include <srccoop/typedef_game>
+#include <srccoop/public>
+#include <srccoop_api/classdef>
 #include <srccoop/utils>
 #include <srccoop/config>
 #include <srccoop/features>
