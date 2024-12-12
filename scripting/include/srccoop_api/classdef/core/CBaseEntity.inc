@@ -478,7 +478,7 @@ methodmap CBaseEntity
 	}
 	public void SetEffects(const int iEffects)
 	{
-		SetEntProp(this.GetEntIndex(), Prop_Data, "m_fEffects", iEffects); 
+		SetEntProp(this.GetEntIndex(), Prop_Data, "m_fEffects", iEffects);
 	}
 	public void AddEffects(const int iEffects)
 	{

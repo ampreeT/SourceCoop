@@ -131,7 +131,8 @@ public void IdleAnims_Hook_PlayerPreThinkPost(const int iClient)
 
 					SDKHook(g_pIdle[iPlayerIndex].m_pModel.GetEntIndex(), SDKHook_SetTransmit, IdleAnims_Hook_SetTransmit);
 					hkUpdateOnRemove.HookEntity(Hook_Pre, g_pIdle[iPlayerIndex].m_pModel.entindex, IdleAnims_Hook_IdleKilled);
-
+					pPlayer.SetFadeMaxDist(0.000001);
+					
 					bHasModel = true;
 				}
 			}
@@ -243,23 +244,19 @@ public void IdleAnims_Hook_PlayerPreThinkPost(const int iClient)
 			}
 		}
 	}
-	
-	pPlayer.AddEffects(EF_NODRAW);
-	if (pPlayer.GetRenderMode() != g_pIdle[iPlayerIndex].m_pModel.GetRenderMode())
-		g_pIdle[iPlayerIndex].m_pModel.SetRenderMode(pPlayer.GetRenderMode());
-	if (pPlayer.GetSkin() != g_pIdle[iPlayerIndex].m_pModel.GetSkin())
-		g_pIdle[iPlayerIndex].m_pModel.SetSkin(pPlayer.GetSkin());
-	if (pPlayer.GetBody() != g_pIdle[iPlayerIndex].m_pModel.GetBody())
-		g_pIdle[iPlayerIndex].m_pModel.SetBody(pPlayer.GetBody());
+
+	g_pIdle[iPlayerIndex].m_pModel.SetRenderMode(pPlayer.GetRenderMode());
+	g_pIdle[iPlayerIndex].m_pModel.SetRenderFx(pPlayer.GetRenderFx());
+	g_pIdle[iPlayerIndex].m_pModel.SetSkin(pPlayer.GetSkin());
+	g_pIdle[iPlayerIndex].m_pModel.SetBody(pPlayer.GetBody());
+	int r, g, b, a;
+	pPlayer.GetRenderColor(r, g, b, a);
+	g_pIdle[iPlayerIndex].m_pModel.SetRenderColor(r, g, b, a);
 	
 	// TODO:
 	// Set other black mesa specific variables
 	// "cheek_depth", "cheek_fat_max", "cheek_fat_min", ect.
 	// Should m_AnimOverlay be modifed too?
-	
-	int r, g, b, a;
-	pPlayer.GetRenderColor(r, g, b, a);
-	g_pIdle[iPlayerIndex].m_pModel.SetRenderColor(r, g, b, a);
 	
 	for (int i = 0; i < 24; ++i)
 	{
@@ -273,7 +270,7 @@ static MRESReturn IdleAnims_Hook_IdleKilled(int iIdle)
 	CBasePlayer pPlayer = view_as<CBasePlayer>(pIdle.GetParent());
 	if (pPlayer.IsValid())
 	{
-		pPlayer.RemoveEffects(EF_NODRAW);
+		pPlayer.SetFadeMaxDist(0.0);
 		g_pIdle[pPlayer.entindex].m_pModel = NULL_CBASEENTITY;
 	}
 	return MRES_Ignored;
