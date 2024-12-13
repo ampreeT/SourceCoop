@@ -112,7 +112,7 @@ public void IdleAnims_Hook_PlayerPreThinkPost(const int iClient)
 			char szModelName[MAX_MODELNAME];
 			if (pPlayer.GetModelName(szModelName, sizeof(szModelName)))
 			{
-				g_pIdle[iPlayerIndex].m_pModel = CDynamicProp.Create(szModelName);
+				g_pIdle[iPlayerIndex].m_pModel = CDynamicProp.CreateAndSpawn(szModelName);
 				if (g_pIdle[iPlayerIndex].m_pModel != NULL_CBASEENTITY)
 				{
 					float vec3Pos[3];
@@ -130,7 +130,9 @@ public void IdleAnims_Hook_PlayerPreThinkPost(const int iClient)
 					g_pIdle[iPlayerIndex].m_eIdleType = IdleNoWeapon;
 
 					SDKHook(g_pIdle[iPlayerIndex].m_pModel.GetEntIndex(), SDKHook_SetTransmit, IdleAnims_Hook_SetTransmit);
-
+					hkUpdateOnRemove.HookEntity(Hook_Pre, g_pIdle[iPlayerIndex].m_pModel.entindex, IdleAnims_Hook_IdleKilled);
+					pPlayer.SetFadeMaxDist(0.000001);
+					
 					bHasModel = true;
 				}
 			}
@@ -141,133 +143,135 @@ public void IdleAnims_Hook_PlayerPreThinkPost(const int iClient)
 		if (bHasModel)
 		{
 			g_pIdle[iPlayerIndex].m_pModel.Kill();
-			g_pIdle[iPlayerIndex].m_pModel = NULL_CBASEENTITY;
 			bHasModel = false;
 		}
 	}
 
-	if (bHasModel)
-	{
-		bool bHasGroundEntity = pPlayer.GetGroundEntity() != NULL_CBASEENTITY;
-		float vec3Velocity[3];
-		pPlayer.GetAbsVelocity(vec3Velocity);
+	if (!bHasModel)
+		return;
 
-		if (pPlayer.GetLadder().IsValid())
+	bool bHasGroundEntity = pPlayer.GetGroundEntity() != NULL_CBASEENTITY;
+	float vec3Velocity[3];
+	pPlayer.GetAbsVelocity(vec3Velocity);
+
+	if (pPlayer.GetLadder().IsValid())
+	{
+		if (g_pIdle[iPlayerIndex].m_eIdleType != LadderNoWeapon)
 		{
-			if (g_pIdle[iPlayerIndex].m_eIdleType != LadderNoWeapon)
-			{
-				g_pIdle[iPlayerIndex].m_pModel.SetAnimation("ladder_noweapon");
-				g_pIdle[iPlayerIndex].m_eIdleType = LadderNoWeapon;
-			}
+			g_pIdle[iPlayerIndex].m_pModel.SetAnimation("ladder_noweapon");
+			g_pIdle[iPlayerIndex].m_eIdleType = LadderNoWeapon;
 		}
-		else if (pPlayer.GetWaterLevel() == WL_Eyes)
+	}
+	else if (pPlayer.GetWaterLevel() == WL_Eyes)
+	{
+		if (vec3Velocity[0] == 0.0 && vec3Velocity[1] == 0.0)
 		{
-			if (vec3Velocity[0] == 0.0 && vec3Velocity[1] == 0.0)
+			if (g_pIdle[iPlayerIndex].m_eIdleType != SwimIdleNoWeapon)
 			{
-				if (g_pIdle[iPlayerIndex].m_eIdleType != SwimIdleNoWeapon)
-				{
-					g_pIdle[iPlayerIndex].m_pModel.SetAnimation("swimidle_noweapon");
-					g_pIdle[iPlayerIndex].m_eIdleType = SwimIdleNoWeapon;
-				}
+				g_pIdle[iPlayerIndex].m_pModel.SetAnimation("swimidle_noweapon");
+				g_pIdle[iPlayerIndex].m_eIdleType = SwimIdleNoWeapon;
 			}
-			else
-			{
-				if (g_pIdle[iPlayerIndex].m_eIdleType != SwimNoWeapon)
-				{
-					// No idea on why the idle animation has to be played first, but
-					// the animation would not play properly without it.
-					g_pIdle[iPlayerIndex].m_pModel.SetAnimation("swimidle_noweapon");
-					g_pIdle[iPlayerIndex].m_pModel.SetAnimation("swim_noweapon");
-					g_pIdle[iPlayerIndex].m_eIdleType = SwimNoWeapon;
-				}
-			}
-		}
-		else if ((!bHasGroundEntity && g_pIdle[iPlayerIndex].m_eIdleType == JumpStartNoWeapon) ||
-				 (bHasGroundEntity && !pPlayer.WasPressingButton(IN_JUMP) && pPlayer.IsPressingButton(IN_JUMP)))
-		{
-			if (g_pIdle[iPlayerIndex].m_eIdleType != JumpStartNoWeapon)
-			{
-				g_pIdle[iPlayerIndex].m_pModel.SetAnimation("jump_start_noweapon");
-				g_pIdle[iPlayerIndex].m_eIdleType = JumpStartNoWeapon;
-			}
-			// TODO:
-			// Implement the following anims:
-			// - jump_float_noweapon
-			// - jump_land_noweapon
 		}
 		else
 		{
-			if (vec3Velocity[0] == 0.0 && vec3Velocity[1] == 0.0)
+			if (g_pIdle[iPlayerIndex].m_eIdleType != SwimNoWeapon)
 			{
-				if (pPlayer.IsDucked())
+				// No idea on why the idle animation has to be played first, but
+				// the animation would not play properly without it.
+				g_pIdle[iPlayerIndex].m_pModel.SetAnimation("swimidle_noweapon");
+				g_pIdle[iPlayerIndex].m_pModel.SetAnimation("swim_noweapon");
+				g_pIdle[iPlayerIndex].m_eIdleType = SwimNoWeapon;
+			}
+		}
+	}
+	else if ((!bHasGroundEntity && g_pIdle[iPlayerIndex].m_eIdleType == JumpStartNoWeapon) ||
+				(bHasGroundEntity && !pPlayer.WasPressingButton(IN_JUMP) && pPlayer.IsPressingButton(IN_JUMP)))
+	{
+		if (g_pIdle[iPlayerIndex].m_eIdleType != JumpStartNoWeapon)
+		{
+			g_pIdle[iPlayerIndex].m_pModel.SetAnimation("jump_start_noweapon");
+			g_pIdle[iPlayerIndex].m_eIdleType = JumpStartNoWeapon;
+		}
+		// TODO:
+		// Implement the following anims:
+		// - jump_float_noweapon
+		// - jump_land_noweapon
+	}
+	else
+	{
+		if (vec3Velocity[0] == 0.0 && vec3Velocity[1] == 0.0)
+		{
+			if (pPlayer.IsDucked())
+			{
+				if (g_pIdle[iPlayerIndex].m_eIdleType != CIdleNoWeapon)
 				{
-					if (g_pIdle[iPlayerIndex].m_eIdleType != CIdleNoWeapon)
-					{
-						g_pIdle[iPlayerIndex].m_pModel.SetAnimation("cidle_noweapon");
-						g_pIdle[iPlayerIndex].m_eIdleType = CIdleNoWeapon;
-					}
-				}
-				else
-				{
-					if (g_pIdle[iPlayerIndex].m_eIdleType != IdleNoWeapon)
-					{
-						g_pIdle[iPlayerIndex].m_pModel.SetAnimation("idle_noweapon");
-						g_pIdle[iPlayerIndex].m_eIdleType = IdleNoWeapon;
-					}
+					g_pIdle[iPlayerIndex].m_pModel.SetAnimation("cidle_noweapon");
+					g_pIdle[iPlayerIndex].m_eIdleType = CIdleNoWeapon;
 				}
 			}
 			else
 			{
-				if (pPlayer.IsDucked())
+				if (g_pIdle[iPlayerIndex].m_eIdleType != IdleNoWeapon)
 				{
-					if (g_pIdle[iPlayerIndex].m_eIdleType != CWalkNoWeapon)
-					{
-						// No idea on why the idle animation has to be played first, but
-						// the animation would not play properly without it.
-						g_pIdle[iPlayerIndex].m_pModel.SetAnimation("cidle_noweapon");
-						g_pIdle[iPlayerIndex].m_pModel.SetAnimation("cwalk_noweapon");
-						g_pIdle[iPlayerIndex].m_eIdleType = CWalkNoWeapon;
-					}
-				}
-				else
-				{
-					if (g_pIdle[iPlayerIndex].m_eIdleType != RunNoWeapon)
-					{
-						// No idea on why the idle animation has to be played first, but
-						// the animation would not play properly without it.
-						g_pIdle[iPlayerIndex].m_pModel.SetAnimation("idle_noweapon");
-						g_pIdle[iPlayerIndex].m_pModel.SetAnimation("run_noweapon");
-						g_pIdle[iPlayerIndex].m_eIdleType = RunNoWeapon;
-					}
+					g_pIdle[iPlayerIndex].m_pModel.SetAnimation("idle_noweapon");
+					g_pIdle[iPlayerIndex].m_eIdleType = IdleNoWeapon;
 				}
 			}
 		}
-		
-		// TODO: What is the best way to hide the player?
-		if (pPlayer.GetRenderFx() != RENDERFX_FADE_FAST)
-			pPlayer.SetRenderFx(RENDERFX_FADE_FAST);
-		if (pPlayer.GetRenderMode() != g_pIdle[iPlayerIndex].m_pModel.GetRenderMode())
-			g_pIdle[iPlayerIndex].m_pModel.SetRenderMode(pPlayer.GetRenderMode());
-		if (pPlayer.GetSkin() != g_pIdle[iPlayerIndex].m_pModel.GetSkin())
-			g_pIdle[iPlayerIndex].m_pModel.SetSkin(pPlayer.GetSkin());
-		// TODO:
-		// Set bodygroup and other black mesa specific variables
-		// "cheek_depth", "cheek_fat_max", "cheek_fat_min", ect.
-		// Should m_AnimOverlay be modifed too?
-		
-		int r, g, b, a;
-		pPlayer.GetRenderColor(r, g, b, a);
-		g_pIdle[iPlayerIndex].m_pModel.SetRenderColor(r, g, b, a);
-		
-		for (int i = 0; i < 24; ++i)
+		else
 		{
-			g_pIdle[iPlayerIndex].m_pModel.SetPoseParameter(i, pPlayer.GetPoseParameter(i));
+			if (pPlayer.IsDucked())
+			{
+				if (g_pIdle[iPlayerIndex].m_eIdleType != CWalkNoWeapon)
+				{
+					// No idea on why the idle animation has to be played first, but
+					// the animation would not play properly without it.
+					g_pIdle[iPlayerIndex].m_pModel.SetAnimation("cidle_noweapon");
+					g_pIdle[iPlayerIndex].m_pModel.SetAnimation("cwalk_noweapon");
+					g_pIdle[iPlayerIndex].m_eIdleType = CWalkNoWeapon;
+				}
+			}
+			else
+			{
+				if (g_pIdle[iPlayerIndex].m_eIdleType != RunNoWeapon)
+				{
+					// No idea on why the idle animation has to be played first, but
+					// the animation would not play properly without it.
+					g_pIdle[iPlayerIndex].m_pModel.SetAnimation("idle_noweapon");
+					g_pIdle[iPlayerIndex].m_pModel.SetAnimation("run_noweapon");
+					g_pIdle[iPlayerIndex].m_eIdleType = RunNoWeapon;
+				}
+			}
 		}
 	}
-	else
+
+	g_pIdle[iPlayerIndex].m_pModel.SetRenderMode(pPlayer.GetRenderMode());
+	g_pIdle[iPlayerIndex].m_pModel.SetRenderFx(pPlayer.GetRenderFx());
+	g_pIdle[iPlayerIndex].m_pModel.SetSkin(pPlayer.GetSkin());
+	g_pIdle[iPlayerIndex].m_pModel.SetBody(pPlayer.GetBody());
+	int r, g, b, a;
+	pPlayer.GetRenderColor(r, g, b, a);
+	g_pIdle[iPlayerIndex].m_pModel.SetRenderColor(r, g, b, a);
+	
+	// TODO:
+	// Set other black mesa specific variables
+	// "cheek_depth", "cheek_fat_max", "cheek_fat_min", ect.
+	// Should m_AnimOverlay be modifed too?
+	
+	for (int i = 0; i < 24; ++i)
 	{
-		// TODO: What is the best way to hide the player?
-		if (pPlayer.GetRenderFx() != RENDERFX_NONE)
-			pPlayer.SetRenderFx(RENDERFX_NONE);
+		g_pIdle[iPlayerIndex].m_pModel.SetPoseParameter(i, pPlayer.GetPoseParameter(i));
 	}
+}
+
+static MRESReturn IdleAnims_Hook_IdleKilled(int iIdle)
+{
+	CBaseEntity pIdle = CBaseEntity(iIdle);
+	CBasePlayer pPlayer = view_as<CBasePlayer>(pIdle.GetParent());
+	if (pPlayer.IsValid())
+	{
+		pPlayer.SetFadeMaxDist(0.0);
+		g_pIdle[pPlayer.entindex].m_pModel = NULL_CBASEENTITY;
+	}
+	return MRES_Ignored;
 }

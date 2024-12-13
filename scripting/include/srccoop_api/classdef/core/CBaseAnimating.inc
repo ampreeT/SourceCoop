@@ -24,6 +24,43 @@ methodmap CBaseAnimating < CBaseEntity
 	{
 		SetEntProp(this.GetEntIndex(), Prop_Send, "m_nSkin", iSkin);
 	}
+	public int GetBody()
+	{
+		return GetEntProp(this.GetEntIndex(), Prop_Send, "m_nBody");
+	}
+	public int SetBody(const int iBody)
+	{
+		SetEntProp(this.GetEntIndex(), Prop_Send, "m_nBody", iBody);
+	}
+	public float GetFadeMinDist()
+	{
+		return GetEntPropFloat(this.GetEntIndex(), Prop_Send, "m_fadeMinDist");
+	}
+	public void SetFadeMinDist(const float flFadeMinDist)
+	{
+		SetEntPropFloat(this.GetEntIndex(), Prop_Send, "m_fadeMinDist", flFadeMinDist);
+	}
+	public float GetFadeMaxDist()
+	{
+		return GetEntPropFloat(this.GetEntIndex(), Prop_Send, "m_fadeMaxDist");
+	}
+	public void SetFadeMaxDist(const float flFadeMaxDist)
+	{
+		SetEntPropFloat(this.GetEntIndex(), Prop_Send, "m_fadeMaxDist", flFadeMaxDist);
+	}
+	public void SetFadeDistance(const float flFadeMinDist, const float flFadeMaxDist)
+	{
+		this.SetFadeMinDist(flFadeMinDist);
+		this.SetFadeMaxDist(flFadeMaxDist);
+	}
+	public float GetFadeScale()
+	{
+		return GetEntPropFloat(this.GetEntIndex(), Prop_Send, "m_flFadeScale");
+	}
+	public void SetFadeScale(const float flFadeScale)
+	{
+		SetEntPropFloat(this.GetEntIndex(), Prop_Send, "m_flFadeScale", flFadeScale);
+	}
 	public float GetModelScale()
 	{
 		return GetEntPropFloat(this.GetEntIndex(), Prop_Send, "m_flModelScale");

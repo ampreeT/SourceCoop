@@ -7,22 +7,22 @@ methodmap CDynamicProp < CBreakableProp
 	{
 		return view_as<CDynamicProp>(CBreakableProp(iEntIndex));
 	}
-	public static CDynamicProp Create(const char[] szModelName)
+	public static CDynamicProp Create()
 	{
-		CDynamicProp pDynamicProp = CDynamicProp(CreateEntityByName("prop_dynamic"));
-		if (pDynamicProp.IsValid())
+		return CDynamicProp(CreateEntityByName("prop_dynamic"));
+	}
+	public static CDynamicProp CreateAndSpawn(const char[] szModelName)
+	{
+		CDynamicProp pDynamicProp = CDynamicProp.Create();
+		if (pDynamicProp != NULL_CBASEENTITY)
 		{
-			int iModelIndex = PrecacheModel(szModelName);
-			if (iModelIndex)
-			{
-				pDynamicProp.SetModel(szModelName);
-				pDynamicProp.SetModelIndex(iModelIndex);
-				pDynamicProp.Activate();
-				pDynamicProp.Spawn();
-			}
+			pDynamicProp.SetKeyValueStr("model", szModelName);
+			pDynamicProp.Spawn();
+			pDynamicProp.Activate();
 		}
 		return pDynamicProp;
 	}
+	
 	public void SetAnimation(const char[] szSequenceName)
 	{
 		this.AcceptInputStr("SetAnimation", szSequenceName);

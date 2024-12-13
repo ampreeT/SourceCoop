@@ -92,9 +92,9 @@ methodmap CBaseEntity
 	{
 		return AcceptEntityInput(this.GetEntIndex(), szInput, pActivator.GetEntIndex(), pCaller.GetEntIndex(), iOutputID);
 	}
-	public bool AcceptInputStr(const char[] szInput, const char[] szBuffer = "", CBaseEntity pActivator = NULL_CBASEENTITY, CBaseEntity pCaller = NULL_CBASEENTITY, const int iOutputID = 0)
+	public bool AcceptInputStr(const char[] szInput, const char[] szParameter = "", CBaseEntity pActivator = NULL_CBASEENTITY, CBaseEntity pCaller = NULL_CBASEENTITY, const int iOutputID = 0)
 	{
-		SetVariantString(szBuffer);
+		SetVariantString(szParameter);
 		return this.AcceptInput(szInput, pActivator, pCaller, iOutputID);
 	}
 	public bool AcceptInputInt(const char[] szInput, const int iValue, CBaseEntity pActivator = NULL_CBASEENTITY, CBaseEntity pCaller = NULL_CBASEENTITY, const int iOutputID = 0)
@@ -478,7 +478,7 @@ methodmap CBaseEntity
 	}
 	public void SetEffects(const int iEffects)
 	{
-		SetEntProp(this.GetEntIndex(), Prop_Data, "m_fEffects", iEffects); 
+		SetEntProp(this.GetEntIndex(), Prop_Data, "m_fEffects", iEffects);
 	}
 	public void AddEffects(const int iEffects)
 	{
