@@ -40,9 +40,20 @@ public void Hook_PlayerPreThink(int iClient)
 	if (!CoopManager.IsCoopModeEnabled())
 		return;
 	
-	if (IsPlayerAlive(iClient))
+	CBasePlayer pPlayer = CBasePlayer(iClient);
+	if (pPlayer.IsAlive())
 	{
 		g_bIsMultiplayerOverride = false;
+		
+		// TODO: Check ConVar `sv_always_run`.
+		if (pPlayer.IsPressingButton(IN_SPEED) && !pPlayer.IsDucking())
+		{
+			pPlayer.SetMaxSpeed(320.0);
+		}
+		else
+		{
+			pPlayer.SetMaxSpeed(190.0);
+		}
 	}
 }
 
@@ -381,6 +392,16 @@ public MRESReturn Hook_PlayerSpawnPost(int iClient, Handle hReturn, Handle hPara
 			pPlayer.SetMaxSpeed(190.0);
 			pPlayer.SetIsSprinting(false);
 			pPlayer.SetSolidFlags(pPlayer.GetSolidFlags() & ~FSOLID_NOT_SOLID);
+
+			// Client movement prediction fix.
+			// `sv_speed_sprint` in MP is used for base movement speed.
+			// `sv_speed_walk` in MP is used for sprinting (IN_SPEED).
+			// If `sv_speed_walk` is set to `0.0`, then `sv_speed_mp` is used instead which is set to `320.0` by default.
+			// TODO: Check ConVar `sv_always_run`.
+			ConVar hSprintSpeed = FindConVar("sv_speed_sprint");
+			ConVar hWalkSpeed = FindConVar("sv_speed_walk");
+			hSprintSpeed.ReplicateToClient(pPlayer.GetEntIndex(), "190.0");
+			hWalkSpeed.ReplicateToClient(pPlayer.GetEntIndex(), "0.0");
 			#endif
 
 			// Stop HEV sounds
