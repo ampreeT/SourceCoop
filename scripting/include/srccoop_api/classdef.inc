@@ -11,34 +11,42 @@
 #include <sourcescramble>
 #include <srccoop_api/color>
 
-// Obtains a bitflag from a entity.
-//
-stock bool IsSpawnFlagSetOnEntity(const int iEntIndex, const int iBitIndex)
+stock bool GetBitFromInt(const int i, const int iBitIndex)
 {
 	if (iBitIndex < 0 || iBitIndex > 31)
 		ThrowError("Received out of bounds index %d; range is `0..32`", iBitIndex);
 	
-	return (GetEntProp(iEntIndex, Prop_Data, "m_spawnflags") & (1 << iBitIndex)) != 0;
+	return (i & (1 << iBitIndex)) != 0;
+}
+
+stock void SetBitOnInt(int& i, const int iBitIndex, const bool bSetBit)
+{
+	if (iBitIndex < 0 || iBitIndex > 31)
+		ThrowError("Received out of bounds index %d; range is `0..32`", iBitIndex);
+	
+	if (bSetBit)
+	{
+		i |= (1 << iBitIndex);
+	}
+	else
+	{
+		i &= ~(1 << iBitIndex);
+	}
+}
+
+// Obtains a bitflag from a entity.
+//
+stock bool IsSpawnFlagSetOnEntity(const int iEntIndex, const int iBitIndex)
+{
+	return GetBitFromInt(GetEntProp(iEntIndex, Prop_Data, "m_spawnflags"), iBitIndex);
 }
 
 // Sets a bitflag on a entity.
 //
 stock void SetSpawnFlagOnEntity(const int iEntIndex, const int iBitIndex, const bool bSetSpawnFlag)
 {
-	if (iBitIndex < 0 || iBitIndex > 31)
-		ThrowError("Received out of bounds index %d; range is `0..32`", iBitIndex);
-	
 	int iSpawnFlags = GetEntProp(iEntIndex, Prop_Data, "m_spawnflags");
-
-	if (bSetSpawnFlag)
-	{
-		iSpawnFlags |= (1 << iBitIndex);
-	}
-	else
-	{
-		iSpawnFlags &= ~(1 << iBitIndex);
-	}
-	
+	SetBitOnInt(iSpawnFlags, iBitIndex, bSetSpawnFlag);
 	SetEntProp(iEntIndex, Prop_Data, "m_spawnflags", iSpawnFlags);
 }
 

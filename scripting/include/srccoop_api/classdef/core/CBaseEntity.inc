@@ -220,23 +220,23 @@ methodmap CBaseEntity
 	{
 		this.GetEyePosition(vec3Buffer);
 	}
-	public int GetFlags()	// TODO: Turn this into a enum.
+	public int GetFlags()	// TODO: Remove this function and turn each bitflag into a individual function.
 	{
 		return GetEntityFlags(this.GetEntIndex());
 	}
-	public bool HasFlags(const int iFlags)	// TODO: Turn this into a enum.
+	public bool HasFlags(const int iFlags)	// TODO: Remove this function and turn each bitflag into a individual function.
 	{
 		return (this.GetFlags() & iFlags) == iFlags;
 	}
-	public void SetFlags(const int iFlags)	// TODO: Turn this into a enum.
+	public void SetFlags(const int iFlags)	// TODO: Remove this function and turn each bitflag into a individual function.
 	{
 		SetEntityFlags(this.GetEntIndex(), iFlags);
 	}
-	public void AddFlags(const int iFlags)	// TODO: Turn this into a enum.
+	public void AddFlags(const int iFlags)	// TODO: Remove this function and turn each bitflag into a individual function.
 	{
 		this.SetFlags(this.GetFlags() | iFlags);
 	}
-	public void RemoveFlags(const int iFlags)	// TODO: Turn this into a enum.
+	public void RemoveFlags(const int iFlags)	// TODO: Remove this function and turn each bitflag into a individual function.
 	{
 		this.SetFlags(this.GetFlags() & ~iFlags);
 	}
@@ -244,41 +244,21 @@ methodmap CBaseEntity
 	{
 		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_iEFlags");
 	}
-	public bool HasEFlags(const int iEFlags)	// TODO: Turn this into a enum.
+	public bool HasEFlags(const int iEFlags)	// TODO: Remove this function and turn each bitflag into a individual function.
 	{
 		return (this.GetEFlags() & iEFlags) == iEFlags;
 	}
-	public void SetEFlags(const int iEFlags)	// TODO: Turn this into a enum.
+	public void SetEFlags(const int iEFlags)	// TODO: Remove this function and turn each bitflag into a individual function.
 	{
 		SetEntProp(this.GetEntIndex(), Prop_Data, "m_iEFlags", iEFlags);
 	}
-	public void AddEFlags(const int iEFlags)	// TODO: Turn this into a enum.
+	public void AddEFlags(const int iEFlags)	// TODO: Remove this function and turn each bitflag into a individual function.
 	{
 		this.SetEFlags(this.GetEFlags() | iEFlags);
 	}
-	public void RemoveEFlags(const int iEFlags)	// TODO: Turn this into a enum.
+	public void RemoveEFlags(const int iEFlags)	// TODO: Remove this function and turn each bitflag into a individual function.
 	{
 		this.SetEFlags(this.GetEFlags() & ~iEFlags);
-	}
-	public int GetEdictFlags()	// TODO: Turn this into a enum.
-	{
-		return GetEdictFlags(this.GetEntIndex());
-	}
-	public bool HasEdictFlags(const int iEdictFlags)	// TODO: Turn this into a enum.
-	{
-		return (this.GetEdictFlags() & iEdictFlags) == iEdictFlags;
-	}
-	public void SetEdictFlags(const int iEdictFlags)	// TODO: Turn this into a enum.
-	{
-		SetEdictFlags(this.GetEntIndex(), iEdictFlags);
-	}
-	public void AddEdictFlags(const int iEdictFlags)	// TODO: Turn this into a enum.
-	{
-		this.SetEdictFlags(this.GetEdictFlags() | iEdictFlags);
-	}
-	public void RemoveEdictFlags(const int iEdictFlags)	// TODO: Turn this into a enum.
-	{
-		this.SetEdictFlags(this.GetEdictFlags() & ~iEdictFlags);
 	}
 	public void Teleport(const float vec3Origin[3] = NULL_VECTOR, const float vec3Angles[3] = NULL_VECTOR, const float vec3Velocity[3] = NULL_VECTOR)
 	{
@@ -428,7 +408,7 @@ methodmap CBaseEntity
 	{
 		SetEntityCollisionGroup(this.GetEntIndex(), view_as<int>(eCollisionGroup));
 	}
-	public SolidType_t GetSolidType()	// TODO: Turn this into a enum.
+	public SolidType_t GetSolidType()
 	{
 		return view_as<SolidType_t>(GetEntProp(this.GetEntIndex(), Prop_Data, "m_nSolidType"));
 	}
@@ -436,11 +416,11 @@ methodmap CBaseEntity
 	{
 		SetEntProp(this.GetEntIndex(), Prop_Data, "m_nSolidType", eSolidType);
 	}
-	public int GetSolidFlags()	// TODO: Turn this into a enum.
+	public int GetSolidFlags()	// TODO: Remove this function and turn each bitflag into a individual function.
 	{
 		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_usSolidFlags");
 	}
-	public void SetSolidFlags(const int iSolidFlags)	// TODO: Turn this into a enum.
+	public void SetSolidFlags(const int iSolidFlags)	// TODO: Remove this function and turn each bitflag into a individual function.
 	{
 		SetEntProp(this.GetEntIndex(), Prop_Data, "m_usSolidFlags", iSolidFlags);
 	}
@@ -538,23 +518,23 @@ methodmap CBaseEntity
 		RGBA col4 = this.GetRenderColor();
 		this.SetRenderColor(RGBA(col4.r, col4.g, col4.b, a));
 	}
-	public EntityEffectFlags GetEffects()
+	public EntityEffectFlags GetEffects()		// TODO: Remove this function and turn each bitflag into a individual function.
 	{
 		return view_as<EntityEffectFlags>(GetEntProp(this.GetEntIndex(), Prop_Data, "m_fEffects"));
 	}
-	public bool HasEffects(const EntityEffectFlags eEffects)
+	public bool HasEffects(const EntityEffectFlags eEffects)	// TODO: Remove this function and turn each bitflag into a individual function.
 	{
 		return (this.GetEffects() & eEffects) == eEffects;
 	}
-	public void SetEffects(const EntityEffectFlags eEffects)
+	public void SetEffects(const EntityEffectFlags eEffects)	// TODO: Remove this function and turn each bitflag into a individual function.
 	{
 		SetEntProp(this.GetEntIndex(), Prop_Data, "m_fEffects", eEffects);
 	}
-	public void AddEffects(const EntityEffectFlags eEffects)
+	public void AddEffects(const EntityEffectFlags eEffects)	// TODO: Remove this function and turn each bitflag into a individual function.
 	{
 		this.SetEffects(this.GetEffects() | eEffects);
 	}
-	public void RemoveEffects(const EntityEffectFlags eEffects)
+	public void RemoveEffects(const EntityEffectFlags eEffects)	// TODO: Remove this function and turn each bitflag into a individual function.
 	{
 		this.SetEffects(this.GetEffects() & ~eEffects);
 	}
@@ -723,6 +703,85 @@ methodmap CBaseEntity
 	{
 		ThrowError("Missing implementation.");
 	}
+	public bool IsEdictChanged()
+	{
+		return IsEdictFlagSetOnEntity(this.GetEntIndex(), 0);		// FL_EDICT_CHANGED (1 << 0)
+	}
+	public void SetEdictChanged(const bool bEdictChanged)
+	{
+		// Game DLL sets this when the entity state changes
+		// Mutually exclusive with FL_EDICT_PARTIAL_CHANGE.
+		SetEdictFlagOnEntity(this.GetEntIndex(), 0, bEdictChanged);	// FL_EDICT_CHANGED (1 << 0)
+	}
+	public bool IsEdictFree()
+	{
+		return IsEdictFlagSetOnEntity(this.GetEntIndex(), 1);		// FL_EDICT_FREE (1 << 1)
+	}
+	public void SetEdictFree(const bool bEdictFree)
+	{
+		// this edict if free for reuse
+		SetEdictFlagOnEntity(this.GetEntIndex(), 1, bEdictFree);	// FL_EDICT_FREE (1 << 1)
+	}
+	public bool IsEdictFull()
+	{
+	    return IsEdictFlagSetOnEntity(this.GetEntIndex(), 2);		// FL_EDICT_FULL (1 << 2)
+	}
+	public void SetEdictFull(const bool bEdictFull)
+	{
+	    // this is a full server entity
+	    SetEdictFlagOnEntity(this.GetEntIndex(), 2, bEdictFull);	// FL_EDICT_FULL (1 << 2)
+	}
+	public bool IsEdictAlwaysTransmitting()
+	{
+	    return IsEdictFlagSetOnEntity(this.GetEntIndex(), 3);				// FL_EDICT_ALWAYS (1 << 3)
+	}
+	public void SetEdictAlwaysTransmit(const bool bEdictAlwaysTransmite)
+	{
+	    // always transmit this entity
+	    SetEdictFlagOnEntity(this.GetEntIndex(), 3, bEdictAlwaysTransmite);	// FL_EDICT_ALWAYS (1 << 3)
+	}
+	public bool IsEdictDontSend()
+	{
+	    return IsEdictFlagSetOnEntity(this.GetEntIndex(), 4);				// FL_EDICT_DONTSEND (1 << 4)
+	}
+	public void SetEdictDontSend(const bool bEdictDontSend)
+	{
+	    // don't transmit this entity
+	    SetEdictFlagOnEntity(this.GetEntIndex(), 4, bEdictDontSend);		// FL_EDICT_DONTSEND (1 << 4)
+	}
+	public bool IsEdictAlwaysTransmittingPVSCheck()
+	{
+	    return IsEdictFlagSetOnEntity(this.GetEntIndex(), 5);						// FL_EDICT_PVSCHECK (1 << 5)
+	}
+	public void SetEdictAlwaysTransmitPVSCheck(const bool bEdictAlwaysTransmitePVSCheck)
+	{
+	    // always transmit entity, but cull against PVS
+	    SetEdictFlagOnEntity(this.GetEntIndex(), 5, bEdictAlwaysTransmitePVSCheck);	// FL_EDICT_PVSCHECK (1 << 5)
+	}
+	public bool IsEdictPendingDormantCheck()
+	{
+	    return IsEdictFlagSetOnEntity(this.GetEntIndex(), 6);						// FL_EDICT_PENDING_DORMANT_CHECK (1 << 6)
+	}
+	public void SetEdictPendingDormantCheck(const bool bEdictPendingDormantCheck)
+	{
+	    SetEdictFlagOnEntity(this.GetEntIndex(), 6, bEdictPendingDormantCheck);		// FL_EDICT_PENDING_DORMANT_CHECK (1 << 6)
+	}
+	public bool IsEdictDirtyPVSInformation()
+	{
+	    return IsEdictFlagSetOnEntity(this.GetEntIndex(), 7);					// FL_EDICT_DIRTY_PVS_INFORMATION (1 << 7)
+	}
+	public void SetEdictDirtyPVSInformation(const bool bEdictDirtyPVSInformation)
+	{
+	    SetEdictFlagOnEntity(this.GetEntIndex(), 7, bEdictDirtyPVSInformation);	// FL_EDICT_DIRTY_PVS_INFORMATION (1 << 7)
+	}
+	public bool IsFullEdictChanged()
+	{
+	    return IsEdictFlagSetOnEntity(this.GetEntIndex(), 8);			// FL_FULL_EDICT_CHANGED (1 << 8)
+	}
+	public void SetFullEdictChanged(const bool bFullEdictChanged)
+	{
+	    SetEdictFlagOnEntity(this.GetEntIndex(), 8, bFullEdictChanged);	// FL_FULL_EDICT_CHANGED (1 << 8)
+	}
 }
 
 static bool TraceEntityFilter_FVisibleAiLosEnabled(int iEntIndex, int iMask, int iThisEntIndex)
@@ -741,4 +800,16 @@ static bool TraceEntityFilter_FVisible(int iEntIndex, int iMask, int iThisEntInd
 	// Review how to extend the filter to the original implementation.
 	return iEntIndex != iThisEntIndex;
 	//return CBaseEntity(iEntity).GetCollisionGroup() != COLLISION_GROUP_NONE;
+}
+
+static bool IsEdictFlagSetOnEntity(const int iEntIndex, const int iBitIndex)
+{
+	return GetBitFromInt(GetEdictFlags(iEntIndex), iBitIndex);
+}
+
+static void SetEdictFlagOnEntity(const int iEntIndex, const int iBitIndex, const bool bSetEdict)
+{
+	int iEdictFlags = GetEdictFlags(iEntIndex);
+	SetBitOnInt(iEdictFlags, iBitIndex, bSetEdict);
+	SetEdictFlags(iEntIndex, iEdictFlags);
 }
