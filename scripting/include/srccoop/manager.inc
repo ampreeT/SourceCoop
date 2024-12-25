@@ -82,7 +82,7 @@ methodmap CoopManager
 			if (CoopManager.IsNewMapSeries())
 			{
 				// reset global states
-				g_ServerGameDLL.GameShutdown();
+				IServerGameDLL.Get().GameShutdown();
 				EquipmentManager.ClearAll();
 			}
 			g_pLevelLump.ParseMapEntities(szMapEntities);

@@ -1,13 +1,10 @@
 #pragma newdecls required
 #pragma semicolon 1
 
+static CGlobalVars gpGlobals;
+
 methodmap CGlobalVarsBase
 {
-	public bool IsValid()
-	{
-		return view_as<int>(this) != 0;
-	}
-
 	public Address GetAddress()
 	{
 		return view_as<Address>(this);
@@ -19,7 +16,7 @@ methodmap CGlobalVarsBase
 	}
 	public void SetMaxPlayers(const int iMaxPlayers)
 	{
-		assert(this.IsValid(), "Invalid state")
+		assert(this, "Invalid state")
 		assert1(IsInBounds(iMaxPlayers, 0, MaxClients), "Invalid maxplayers [%d]", iMaxPlayers)
 		
 		StoreToAddress(this.GetAddress() + 0x14, iMaxPlayers, NumberType_Int32);
@@ -28,5 +25,13 @@ methodmap CGlobalVarsBase
 
 methodmap CGlobalVars < CGlobalVarsBase
 {
-	
+	public static void InitClassdef(const GameData hGameConfig)
+	{
+		if (!(gpGlobals = CPlayerInfoManager.Get().GetGlobalVars()))
+			SetFailState("Could not get `gpGlobals` from `PlayerInfoManager`");
+	}
+	public static CGlobalVarsBase Get()
+	{
+		return gpGlobals;
+	}
 }

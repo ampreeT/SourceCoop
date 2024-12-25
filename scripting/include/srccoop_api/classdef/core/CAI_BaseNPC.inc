@@ -1,8 +1,70 @@
 #pragma newdecls required
 #pragma semicolon 1
 
+static Handle g_pQueryHearSound;
+static Handle g_pGetSoundInterests;
+static Handle g_pHearingSensitivity;
+static Handle g_pUpdateEnemyMemory;
+static Handle g_pShouldPlayerAvoid;
+
 methodmap CAI_BaseNPC < CBaseCombatCharacter
 {
+	public static void InitClassdef(const GameData hGameConfig)
+	{
+		char szQueryHearSound[] = "CAI_BaseNPC::QueryHearSound";
+		StartPrepSDKCall(SDKCall_Entity);
+		if (!PrepSDKCall_SetFromConf(hGameConfig, SDKConf_Virtual, szQueryHearSound))
+			LogMessage("Could not obtain gamedata offset %s", szQueryHearSound);
+		else
+		{
+			PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
+			PrepSDKCall_SetReturnInfo(SDKType_Bool, SDKPass_Plain);
+			if (!(g_pQueryHearSound = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szQueryHearSound);
+		}
+
+		char szGetSoundInterests[] = "CAI_BaseNPC::GetSoundInterests";
+		StartPrepSDKCall(SDKCall_Entity);
+		if (!PrepSDKCall_SetFromConf(hGameConfig, SDKConf_Virtual, szGetSoundInterests))
+			LogMessage("Could not obtain gamedata offset %s", szGetSoundInterests);
+		else
+		{
+			PrepSDKCall_SetReturnInfo(SDKType_PlainOldData, SDKPass_Plain);
+			if (!(g_pGetSoundInterests = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szGetSoundInterests);
+		}
+
+		char szHearingSensitivity[] = "CAI_BaseNPC::HearingSensitivity";
+		StartPrepSDKCall(SDKCall_Entity);
+		if (!PrepSDKCall_SetFromConf(hGameConfig, SDKConf_Virtual, szHearingSensitivity))
+			LogMessage("Could not obtain gamedata offset %s", szHearingSensitivity);
+		else
+		{
+			PrepSDKCall_SetReturnInfo(SDKType_Float, SDKPass_Plain);
+			if (!(g_pHearingSensitivity = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szHearingSensitivity);
+		}
+
+		char szUpdateEnemyMemory[] = "CAI_BaseNPC::UpdateEnemyMemory";
+		StartPrepSDKCall(SDKCall_Entity);
+		if (!PrepSDKCall_SetFromConf(hGameConfig, SDKConf_Virtual, szUpdateEnemyMemory))
+			LogMessage("Could not obtain gamedata offset %s", szUpdateEnemyMemory);
+		else
+		{
+			PrepSDKCall_AddParameter(SDKType_CBaseEntity, SDKPass_Pointer);
+			PrepSDKCall_AddParameter(SDKType_Vector, SDKPass_ByRef);
+			PrepSDKCall_AddParameter(SDKType_CBaseEntity, SDKPass_Pointer);
+			PrepSDKCall_SetReturnInfo(SDKType_Bool, SDKPass_Plain);
+			if (!(g_pUpdateEnemyMemory = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szUpdateEnemyMemory);
+		}
+
+		char szShouldPlayerAvoid[] = "CAI_BaseNPC::ShouldPlayerAvoid";
+		StartPrepSDKCall(SDKCall_Entity);
+		if (!PrepSDKCall_SetFromConf(hGameConfig, SDKConf_Virtual, szShouldPlayerAvoid))
+			LogMessage("Could not obtain gamedata offset %s", szShouldPlayerAvoid);
+		else
+		{
+			PrepSDKCall_SetReturnInfo(SDKType_Bool, SDKPass_Plain);
+			if (!(g_pShouldPlayerAvoid = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szShouldPlayerAvoid);
+		}
+	}
 	public CAI_BaseNPC(const int iEntIndex = -1)
 	{
 		return view_as<CAI_BaseNPC>(CBaseCombatCharacter(iEntIndex));

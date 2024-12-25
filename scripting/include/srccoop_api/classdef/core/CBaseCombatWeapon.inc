@@ -1,8 +1,23 @@
 #pragma newdecls required
 #pragma semicolon 1
 
+static Handle g_pSendWeaponAnim;
+
 methodmap CBaseCombatWeapon < CBaseAnimating
 {
+	public static void InitClassdef(const GameData hGameConfig)
+	{
+		char szSendWeaponAnim[] = "CBaseCombatWeapon::SendWeaponAnim";
+		StartPrepSDKCall(SDKCall_Entity);
+		if (!PrepSDKCall_SetFromConf(hGameConfig, SDKConf_Virtual, szSendWeaponAnim))
+			LogMessage("Could not obtain gamedata offset %s", szSendWeaponAnim);
+		else
+		{
+			PrepSDKCall_SetReturnInfo(SDKType_Bool, SDKPass_Plain);
+			PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
+			if (!(g_pSendWeaponAnim = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szSendWeaponAnim);
+		}
+	}
 	public CBaseCombatWeapon(const int iEntIndex = -1)
 	{
 		return view_as<CBaseCombatWeapon>(CBaseAnimating(iEntIndex));

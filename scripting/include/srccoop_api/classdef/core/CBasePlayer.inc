@@ -1,8 +1,46 @@
 #pragma newdecls required
 #pragma semicolon 1
 
+static Handle g_pRemoveAllItems;
+static Handle g_pCreateViewModel;
+static Handle g_pSetSuitUpdate;
+
 methodmap CBasePlayer < CBaseCombatCharacter
 {
+	public static void InitClassdef(const GameData hGameConfig)
+	{
+		char szRemoveAllItems[] = "CBasePlayer::RemoveAllItems";
+		StartPrepSDKCall(SDKCall_Player);
+		if (!PrepSDKCall_SetFromConf(hGameConfig, SDKConf_Virtual, szRemoveAllItems))
+			LogMessage("Could not obtain gamedata offset %s", szRemoveAllItems);
+		else
+		{
+			PrepSDKCall_AddParameter(SDKType_Bool, SDKPass_Plain);
+			if (!(g_pRemoveAllItems = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szRemoveAllItems);
+		}
+
+		char szCreateViewModel[] = "CBasePlayer::CreateViewModel";
+		StartPrepSDKCall(SDKCall_Player);
+		if (!PrepSDKCall_SetFromConf(hGameConfig, SDKConf_Virtual, szCreateViewModel))
+			LogMessage("Could not obtain gamedata offset %s", szCreateViewModel);
+		else
+		{
+			PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
+			if (!(g_pCreateViewModel = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szCreateViewModel);
+		}
+
+		char szSetSuitUpdate[] = "CBasePlayer::SetSuitUpdate";
+		StartPrepSDKCall(SDKCall_Player);
+		if (!PrepSDKCall_SetFromConf(hGameConfig, SDKConf_Signature, szSetSuitUpdate))
+			LogMessage("Could not obtain gamedata signature %s", szSetSuitUpdate);
+		else
+		{
+			PrepSDKCall_AddParameter(SDKType_String, SDKPass_Pointer, VDECODE_FLAG_ALLOWNULL);
+			PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
+			PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
+			if (!(g_pSetSuitUpdate = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szSetSuitUpdate);
+		}
+	}
 	public CBasePlayer(const int iEntIndex = -1)
 	{
 		return view_as<CBasePlayer>(CBaseCombatCharacter(iEntIndex));
@@ -355,7 +393,7 @@ methodmap CBasePlayer < CBaseCombatCharacter
 	public void SetScore(const int iScore)
 	{
 		SetEntProp(this.GetEntIndex(), Prop_Data, "m_iFrags", iScore);
-		IServerGameClients().GetPlayerState(this).SetScore(iScore);
+		IServerGameClients.Get().GetPlayerState(this).SetScore(iScore);
 	}
 	/**
 	 * Modifies the player's score by the provided points

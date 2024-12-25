@@ -1,8 +1,16 @@
 #pragma newdecls required
 #pragma semicolon 1
 
+static int g_iCSoundSize = -1;
+
 methodmap CSoundEnt < CPointEntity
 {
+	public static void InitClassdef(const GameData hGameConfig)
+	{
+		g_iCSoundSize = GetGamedataInt(hGameConfig, "CSoundSize");	// TODO: Change this to `hGameConfig.GetOffset`.
+		if (g_iCSoundSize < 0)
+			SetFailState("Could not obtain CSound struct size");
+	}
 	public CSoundEnt(const int iEntIndex = -1)
 	{
 		return view_as<CSoundEnt>(CPointEntity(iEntIndex));

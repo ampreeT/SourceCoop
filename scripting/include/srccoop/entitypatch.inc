@@ -74,7 +74,7 @@ void AddMaxClientsOverride()
 	{
 		ThrowError("MaxClients override overflow (max: %d)", MAX_MAXPLAYERS_OVERRIDES);
 	}
-	gpGlobals.SetMaxPlayers(1);
+	CGlobalVars.Get().SetMaxPlayers(1);
 	g_iMaxClientsOverrides++;
 }
 
@@ -95,7 +95,7 @@ void PopMaxClientsOverride()
 	}
 	if (!--g_iMaxClientsOverrides)
 	{
-		gpGlobals.SetMaxPlayers(MaxClients);
+		CGlobalVars.Get().SetMaxPlayers(MaxClients);
 	}
 }
 

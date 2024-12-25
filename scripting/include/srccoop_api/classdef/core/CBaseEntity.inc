@@ -1,10 +1,75 @@
 #pragma newdecls required
 #pragma semicolon 1
 
+static ConVar ai_los_mode;
+
+static Handle g_pSetNextThink;
+static Handle g_pSetNextThinkNullString;
+static Handle g_pWorldSpaceCenter;
+static Handle g_pIsNPC;
+static Handle g_pSetMinMaxSize;
+
 #define NULL_CBASEENTITY view_as<any>(-1)
 
 methodmap CBaseEntity
 {
+	public static void InitClassdef(const GameData hGameConfig)
+	{
+		ai_los_mode = FindConVar("ai_los_mode");
+		
+		char szSetNextThink[] = "CBaseEntity::SetNextThink";
+		StartPrepSDKCall(SDKCall_Entity);
+		if (!PrepSDKCall_SetFromConf(hGameConfig, SDKConf_Signature, szSetNextThink))
+			LogMessage("Could not obtain gamedata signature %s", szSetNextThink);
+		else
+		{
+			PrepSDKCall_AddParameter(SDKType_Float, SDKPass_Plain);
+			PrepSDKCall_AddParameter(SDKType_String, SDKPass_Pointer, VDECODE_FLAG_ALLOWNULL);
+			if (!(g_pSetNextThink = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szSetNextThink);
+		}
+		
+		StartPrepSDKCall(SDKCall_Entity);
+		if (!PrepSDKCall_SetFromConf(hGameConfig, SDKConf_Signature, szSetNextThink))
+			LogMessage("Could not obtain gamedata signature %s", szSetNextThink);
+		else
+		{
+			PrepSDKCall_AddParameter(SDKType_Float, SDKPass_Plain);
+			PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
+			if (!(g_pSetNextThinkNullString = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szSetNextThink);
+		}
+		
+		char szWorldSpaceCenter[] = "CBaseEntity::WorldSpaceCenter";
+		StartPrepSDKCall(SDKCall_Entity);
+		if (!PrepSDKCall_SetFromConf(hGameConfig, SDKConf_Virtual, szWorldSpaceCenter))
+			LogMessage("Could not obtain gamedata offset %s", szWorldSpaceCenter);
+		else
+		{
+			PrepSDKCall_SetReturnInfo(SDKType_Vector, SDKPass_ByRef);
+			if (!(g_pWorldSpaceCenter = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szWorldSpaceCenter);
+		}
+		
+		char szIsNpc[] = "CBaseEntity::IsNPC";
+		StartPrepSDKCall(SDKCall_Entity);
+		if (!PrepSDKCall_SetFromConf(hGameConfig, SDKConf_Virtual, szIsNpc))
+			LogMessage("Could not obtain gamedata offset %s", szIsNpc);
+		else
+		{
+			PrepSDKCall_SetReturnInfo(SDKType_Bool, SDKPass_Plain);
+			if (!(g_pIsNPC = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szIsNpc);
+		}
+		
+		char szSetMinMaxSize[] = "SetMinMaxSize";
+		StartPrepSDKCall(SDKCall_Static);
+		if (!PrepSDKCall_SetFromConf(hGameConfig, SDKConf_Signature, szSetMinMaxSize))
+			LogMessage("Could not obtain gamedata signature %s", szSetMinMaxSize);
+		else
+		{
+			PrepSDKCall_AddParameter(SDKType_CBaseEntity, SDKPass_Pointer);
+			PrepSDKCall_AddParameter(SDKType_Vector, SDKPass_ByRef);
+			PrepSDKCall_AddParameter(SDKType_Vector, SDKPass_ByRef);
+			if (!(g_pSetMinMaxSize = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szSetMinMaxSize);
+		}
+	}
 	public CBaseEntity(const int iEntIndex = -1)
 	{
 		return view_as<CBaseEntity>(iEntIndex > -1 ? EntIndexToEntRef(iEntIndex) : iEntIndex);
@@ -327,7 +392,7 @@ methodmap CBaseEntity
 	{
 		SDKCall(g_pSetMinMaxSize, this.GetEntIndex(), vec3Mins, vec3Maxs);
 	}
-	public void WorldSpaceCenter(float vec3Center[3])	// TODO: Should this be const?
+	public void WorldSpaceCenter(float vec3Center[3])	// TODO: Should the first parameter be const?
 	{
 		SDKCall(g_pWorldSpaceCenter, this.GetEntIndex(), vec3Center);
 	}

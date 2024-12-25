@@ -1,8 +1,24 @@
 #pragma newdecls required
 #pragma semicolon 1
 
+static Handle g_pWeaponSwitch;
+
 methodmap CBaseCombatCharacter < CBaseFlex
 {
+	public static void InitClassdef(const GameData hGameConfig)
+	{
+		char szWeaponSwitch[] = "CBaseCombatCharacter::Weapon_Switch";
+		StartPrepSDKCall(SDKCall_Entity);
+		if (!PrepSDKCall_SetFromConf(hGameConfig, SDKConf_Virtual, szWeaponSwitch))
+			LogMessage("Could not obtain gamedata offset %s", szWeaponSwitch);
+		else
+		{
+			PrepSDKCall_SetReturnInfo(SDKType_Bool, SDKPass_Plain);
+			PrepSDKCall_AddParameter(SDKType_CBaseEntity, SDKPass_Pointer);
+			PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
+			if (!(g_pWeaponSwitch = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szWeaponSwitch);
+		}
+	}
 	public CBaseCombatCharacter(const int iEntIndex = -1)
 	{
 		return view_as<CBaseCombatCharacter>(CBaseFlex(iEntIndex));
