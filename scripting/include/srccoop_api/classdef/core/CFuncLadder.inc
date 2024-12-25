@@ -12,27 +12,23 @@ methodmap CFuncLadder < CBaseEntity
 		return CFuncLadder(CreateEntityByName("func_ladder"));
 	}
 
-	public bool IsValid()
-	{
-		return view_as<CBaseEntity>(this).IsValid() && this.GetEntIndex() > 0;
-	}
 	public bool IsEnabled()
 	{
 		return !GetEntProp(this.GetEntIndex(), Prop_Data, "m_bDisabled");
 	}
-	public void GetTopPosition(float vecBuffer[3])
+	public void GetTopPosition(float vec3Buffer[3])
 	{
-		GetEntPropVector(this.GetEntIndex(), Prop_Data, "m_vecPlayerMountPositionTop", vecBuffer);
+		GetEntPropVector(this.GetEntIndex(), Prop_Data, "m_vecPlayerMountPositionTop", vec3Buffer);
 		float vecLocalOrigin[3];
 		this.GetOrigin(vecLocalOrigin);
-		AddVectors(vecBuffer, vecLocalOrigin, vecBuffer);
+		AddVectors(vec3Buffer, vecLocalOrigin, vec3Buffer);
 		
 		CBaseEntity pParent = this.GetParent();
-		if (pParent.IsValid())
+		if (pParent != NULL_CBASEENTITY)
 		{
 			// Technically this should be using m_rgflCoordinateFrame which is a const matrix3x4_t, but if we just add AbsOrigin, it *should* be accurate enough...
 			pParent.GetAbsOrigin(vecLocalOrigin);
-			AddVectors(vecBuffer, vecLocalOrigin, vecBuffer);
+			AddVectors(vec3Buffer, vecLocalOrigin, vec3Buffer);
 		}
 	}
 	public void GetBottomPosition(float vecBuffer[3])
@@ -43,7 +39,7 @@ methodmap CFuncLadder < CBaseEntity
 		AddVectors(vecBuffer, vecLocalOrigin, vecBuffer);
 		
 		CBaseEntity pParent = this.GetParent();
-		if (pParent.IsValid())
+		if (pParent != NULL_CBASEENTITY)
 		{
 			pParent.GetAbsOrigin(vecLocalOrigin);
 			AddVectors(vecBuffer, vecLocalOrigin, vecBuffer);

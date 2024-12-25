@@ -14,14 +14,13 @@ methodmap CBaseCombatCharacter < CBaseFlex
 	}
 	public bool IsAlive()
 	{
-		// Any value above 0 indicates dead or other death information
-		return !this.GetLifeState();
+		return this.GetLifeState() == LIFE_ALIVE;
 	}
 	public CBaseCombatWeapon GetActiveWeapon()
 	{
 		return CBaseCombatWeapon(GetEntPropEnt(this.GetEntIndex(), Prop_Send, "m_hActiveWeapon"));
 	}
-	public void SetActiveWeapon(CBaseCombatWeapon pWeapon)
+	public void SetActiveWeapon(const CBaseCombatWeapon pWeapon)
 	{
 		SetEntPropEnt(this.GetEntIndex(), Prop_Send, "m_hActiveWeapon", pWeapon.GetEntIndex());
 	}
@@ -31,27 +30,27 @@ methodmap CBaseCombatCharacter < CBaseFlex
 	}
 	public CBaseCombatWeapon GetWeapon(const char[] szWeaponName, const int iStartIndex = 0)
 	{
-		for (int i = iStartIndex; i < MAX_WEAPONS; i++)
+		for (int i = iStartIndex; i < MAX_WEAPONS; ++i)
 		{
 			CBaseCombatWeapon pWeapon = this.GetWeaponFromIndex(i);
-			if (pWeapon.IsValid() && pWeapon.IsClassname(szWeaponName))
+			if (pWeapon != NULL_CBASEENTITY && pWeapon.IsClassname(szWeaponName))
 			{
 				return pWeapon;
 			}
 		}
 		return NULL_CBASEENTITY;
 	}
-	public bool WeaponSwitch(CBaseCombatWeapon pWeapon, const int iViewmodelindex = 0)
+	public bool WeaponSwitch(const CBaseCombatWeapon pWeapon, const int iViewmodelindex = 0)
 	{
 		return SDKCall(g_pWeaponSwitch, this.GetEntIndex(), pWeapon.GetEntIndex(), iViewmodelindex);
 	}
 	// Deprecated, WeaponSwitch() prefered instead
 	public bool SetActiveWeaponByClass(const char[] szWeaponName)
 	{
-		for (int i = 0; i < MAX_WEAPONS; i++)
+		for (int i = 0; i < MAX_WEAPONS; ++i)
 		{
 			CBaseCombatWeapon pWeapon = this.GetWeaponFromIndex(i);
-			if (pWeapon.IsValid() && pWeapon.IsClassname(szWeaponName))
+			if (pWeapon != NULL_CBASEENTITY && pWeapon.IsClassname(szWeaponName))
 			{
 				this.SetActiveWeapon(pWeapon);
 				return true;
@@ -63,7 +62,7 @@ methodmap CBaseCombatCharacter < CBaseFlex
 	{
 		return CBaseCombatWeapon(GetEntPropEnt(this.GetEntIndex(), Prop_Data, "m_hLastWeapon"));
 	}
-	public void SetLastWeapon(CBaseCombatWeapon pWeapon)
+	public void SetLastWeapon(const CBaseCombatWeapon pWeapon)
 	{
 		SetEntPropEnt(this.GetEntIndex(), Prop_Data, "m_hLastWeapon", pWeapon.GetEntIndex());
 	}
@@ -90,5 +89,15 @@ methodmap CBaseCombatCharacter < CBaseFlex
 	public void SetNextAttack(const float flNextAttack)
 	{
 		SetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flNextAttack", flNextAttack);
-	}	
+	}
+	public CBasePlayer AsPlayer()
+	{
+		bool bIsPlayer = this != NULL_CBASEENTITY && this.IsPlayer();
+		return bIsPlayer ? view_as<CBasePlayer>(this) : NULL_CBASEENTITY;
+	}
+	public CAI_BaseNPC AsNPC()
+	{
+		bool bIsNPC = this != NULL_CBASEENTITY && this.IsNPC();
+		return bIsNPC ? view_as<CAI_BaseNPC>(this) : NULL_CBASEENTITY;
+	}
 }

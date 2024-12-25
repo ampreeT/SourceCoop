@@ -12,89 +12,85 @@ methodmap CPlayerResource < CBaseEntity
 		return CPlayerResource(GetPlayerResourceEntity());
 	}
 
-	public bool IsValid()
-	{
-		return view_as<CBaseEntity>(this).IsValid() && this.GetEntIndex() > 0;
-	}
-	public int GetPing(CBasePlayer pPlayer)
+	public int GetPing(const CBasePlayer pPlayer)
 	{
 		return GetEntProp(this.entindex, Prop_Send, "m_iPing", _, pPlayer.entindex);
 	}
-	public void SetPing(CBasePlayer pPlayer, int iPing)
+	public void SetPing(const CBasePlayer pPlayer, const int iPing)
 	{
 		SetEntProp(this.entindex, Prop_Send, "m_iPing", iPing, _, pPlayer.entindex);
 	}
-	public int GetScore(CBasePlayer pPlayer)
+	public int GetScore(const CBasePlayer pPlayer)
 	{
 		return GetEntProp(this.entindex, Prop_Send, "m_iScore", _, pPlayer.entindex);
 	}
-	public void SetScore(CBasePlayer pPlayer, int iScore)
+	public void SetScore(const CBasePlayer pPlayer, const int iScore)
 	{
 		SetEntProp(this.entindex, Prop_Send, "m_iScore", iScore, _, pPlayer.entindex);
 	}
-	public int GetDeaths(CBasePlayer pPlayer)
+	public int GetDeaths(const CBasePlayer pPlayer)
 	{
 		return GetEntProp(this.entindex, Prop_Send, "m_iDeaths", _, pPlayer.entindex);
 	}
-	public void SetDeaths(CBasePlayer pPlayer, int iDeaths)
+	public void SetDeaths(const CBasePlayer pPlayer, const int iDeaths)
 	{
 		SetEntProp(this.entindex, Prop_Send, "m_iDeaths", iDeaths, _, pPlayer.entindex);
 	}
-	public bool IsConnected(CBasePlayer pPlayer)
+	public bool IsConnected(const CBasePlayer pPlayer)
 	{
 		return view_as<bool>(GetEntProp(this.entindex, Prop_Send, "m_bConnected", _, pPlayer.entindex));
 	}
-	public void SetConnected(CBasePlayer pPlayer, bool bConnected)
+	public void SetConnected(const CBasePlayer pPlayer, const bool bConnected)
 	{
 		SetEntProp(this.entindex, Prop_Send, "m_bConnected", bConnected, _, pPlayer.entindex);
 	}
-	public int GetTeam(CBasePlayer pPlayer)
+	public int GetTeam(const CBasePlayer pPlayer)
 	{
 		return GetEntProp(this.entindex, Prop_Send, "m_iTeam", _, pPlayer.entindex);
 	}
-	public void SetTeam(CBasePlayer pPlayer, int iTeam)
+	public void SetTeam(const CBasePlayer pPlayer, const int iTeam)
 	{
 		SetEntProp(this.entindex, Prop_Send, "m_iTeam", iTeam, _, pPlayer.entindex);
 	}
-	public bool IsAlive(CBasePlayer pPlayer)
+	public bool IsAlive(const CBasePlayer pPlayer)
 	{
-		return view_as<bool>(GetEntProp(this.entindex, Prop_Send, "m_bAlive", _, pPlayer.entindex));
+		return GetEntProp(this.entindex, Prop_Send, "m_bAlive", _, pPlayer.entindex) != 0;
 	}
-	public void SetAlive(CBasePlayer pPlayer, bool bAlive)
+	public void SetAlive(const CBasePlayer pPlayer, const bool bAlive)
 	{
 		SetEntProp(this.entindex, Prop_Send, "m_bAlive", bAlive, _, pPlayer.entindex);
 	}
-	public int GetHealth(CBasePlayer pPlayer)
+	public int GetHealth(const CBasePlayer pPlayer)
 	{
 		return GetEntProp(this.entindex, Prop_Send, "m_iHealth", _, pPlayer.entindex);
 	}
-	public void SetHealth(CBasePlayer pPlayer, int iHealth)
+	public void SetHealth(const CBasePlayer pPlayer, const int iHealth)
 	{
 		SetEntProp(this.entindex, Prop_Send, "m_iHealth", iHealth, _, pPlayer.entindex);
 	}
 
 	#if defined SRCCOOP_BLACKMESA
-	public int GetAccountId(CBasePlayer pPlayer)
+	public int GetAccountId(const CBasePlayer pPlayer)
 	{
 		return GetEntProp(this.entindex, Prop_Send, "m_iAccountID", _, pPlayer.entindex);
 	}
-	public void SetAccountId(CBasePlayer pPlayer, int iAccountID)
+	public void SetAccountId(const CBasePlayer pPlayer, const int iAccountID)
 	{
 		SetEntProp(this.entindex, Prop_Send, "m_iAccountID", iAccountID, _, pPlayer.entindex);
 	}
-	public bool IsValidPlayer(CBasePlayer pPlayer)
+	public bool IsValidPlayer(const CBasePlayer pPlayer)
 	{
-		return view_as<bool>(GetEntProp(this.entindex, Prop_Send, "m_bValid", _, pPlayer.entindex));
+		return GetEntProp(this.entindex, Prop_Send, "m_bValid", _, pPlayer.entindex) != 0;
 	}
-	public void SetValidPlayer(CBasePlayer pPlayer, bool bValid)
+	public void SetValidPlayer(const CBasePlayer pPlayer, const bool bValid)
 	{
 		SetEntProp(this.entindex, Prop_Send, "m_bValid", bValid, _, pPlayer.entindex);
 	}
-	public int GetFrags(CBasePlayer pPlayer)
+	public int GetFrags(const CBasePlayer pPlayer)
 	{
 		return GetEntProp(this.entindex, Prop_Send, "m_iFrags", _, pPlayer.entindex);
 	}
-	public void SetFrags(CBasePlayer pPlayer, int iFrags)
+	public void SetFrags(const CBasePlayer pPlayer, const int iFrags)
 	{
 		SetEntProp(this.entindex, Prop_Send, "m_iFrags", iFrags, _, pPlayer.entindex);
 	}

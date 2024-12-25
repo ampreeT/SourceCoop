@@ -13,6 +13,7 @@
 #define MAX_AMMO_TYPES 32
 #define MAX_VIEWMODELS 2
 #define MAX_MAPNAME 32
+#define MAX_NETNAME 32
 #define MAX_CLASSNAME 48
 #define MAX_MODELNAME 256
 
@@ -57,26 +58,8 @@
 
 #define SF_INFOPLAYERSTART_MASTER 1
 
-#define SF_AUTO_FIREONCE 0x01
-#define SF_REMOVE_ON_FIRE 0x001 // Relay will remove itself after being triggered.
-
-#define SF_CHANGELEVEL_NOTOUCH 0x0002
-
 #define SF_PLAYER_EQUIP_STRIP_WEAPONS 2
 #define SF_PLAYER_EQUIP_STRIP_SUIT 4
-
-#define SF_MESSAGE_ONCE			0x0001		// Fade in, not out
-#define SF_MESSAGE_ALL 0x0002
-
-// Pickupables spawnflags
-#define SF_ITEM_NORESPAWN ( 1 << 30 )	// if set, item wont respawn in MP
-#define SF_ITEM_HARDRESPAWN ( 1 << 2 )	// if set in BM, item respawns at regular interval
-
-// item_suit spawnflags
-#define SF_BOOTSEQUENCE ( 1 << 17 )
-
-// env_zoom spawnflags
-#define SF_ENV_ZOOM_OVERRIDE (1<<0)
 
 // Phys prop spawnflags
 #define SF_PHYSPROP_START_ASLEEP				0x000001
@@ -113,50 +96,10 @@
 #define SF_PHYSBOX_PREVENT_PLAYER_TOUCH_ENABLE 0x800000		// If set, the player will not cause the object to enable its motion when bumped into
 
 
-// Trigger spawnflags
-enum
-{
-	SF_TRIGGER_ALLOW_CLIENTS				= 0x01,		// Players can fire this trigger
-	SF_TRIGGER_ALLOW_NPCS					= 0x02,		// NPCS can fire this trigger
-	SF_TRIGGER_ALLOW_PUSHABLES				= 0x04,		// Pushables can fire this trigger
-	SF_TRIGGER_ALLOW_PHYSICS				= 0x08,		// Physics objects can fire this trigger
-	SF_TRIGGER_ONLY_PLAYER_ALLY_NPCS		= 0x10,		// *if* NPCs can fire this trigger, this flag means only player allies do so
-	SF_TRIGGER_ONLY_CLIENTS_IN_VEHICLES		= 0x20,		// *if* Players can fire this trigger, this flag means only players inside vehicles can 
-	SF_TRIGGER_ALLOW_ALL					= 0x40,		// Everything can fire this trigger EXCEPT DEBRIS!
-	SF_TRIGGER_ONLY_CLIENTS_OUT_OF_VEHICLES	= 0x200,	// *if* Players can fire this trigger, this flag means only players outside vehicles can 
-	SF_TRIG_PUSH_ONCE						= 0x80,		// trigger_push removes itself after firing once
-	SF_TRIG_PUSH_AFFECT_PLAYER_ON_LADDER	= 0x100,	// if pushed object is player on a ladder, then this disengages them from the ladder (HL2only)
-	SF_TRIG_TOUCH_DEBRIS 					= 0x400,	// Will touch physics debris objects
-	SF_TRIGGER_ONLY_NPCS_IN_VEHICLES		= 0x800,	// *if* NPCs can fire this trigger, only NPCs in vehicles do so (respects player ally flag too)
-	SF_TRIGGER_DISALLOW_BOTS                = 0x1000,   // Bots are not allowed to fire this trigger
-}
-
-// Sprite spawnflags
-#define SF_SPRITE_STARTON		0x0001
-#define SF_SPRITE_ONCE			0x0002
-#define SF_SPRITE_TEMPORARY		0x8000
-
-// NPC spawnflags
-#define SF_NPC_WAIT_TILL_SEEN			( 1 << 0  )	// spawnflag that makes npcs wait until player can see them before attacking.
-#define SF_NPC_GAG						( 1 << 1  )	// no idle noises from this npc
-#define SF_NPC_FALL_TO_GROUND			( 1 << 2  )	// used my NPC_Maker
-#define SF_NPC_DROP_HEALTHKIT			( 1 << 3  )	// Drop a healthkit upon death
-#define SF_NPC_START_EFFICIENT			( 1 << 4  ) // Set into efficiency mode from spawn
-//										( 1 << 5  )
-//										( 1 << 6  )
-#define SF_NPC_WAIT_FOR_SCRIPT			( 1 << 7  )	// spawnflag that makes npcs wait to check for attacking until the script is done or they've been attacked
-#define SF_NPC_LONG_RANGE				( 1 << 8  )	// makes npcs look far and relaxes weapon range limit 
-#define SF_NPC_FADE_CORPSE				( 1 << 9  )	// Fade out corpse after death
-#define SF_NPC_ALWAYSTHINK				( 1 << 10 )	// Simulate even when player isn't in PVS.
-#define SF_NPC_TEMPLATE					( 1 << 11 )	// This NPC will be used as a template by an npc_maker -- do not spawn.
-#define SF_NPC_ALTCOLLISION				( 1 << 12 )
-#define SF_NPC_NO_WEAPON_DROP			( 1 << 13 )	// This NPC will not actually drop a weapon that can be picked up
-#define SF_NPC_NO_PLAYER_PUSHAWAY		( 1 << 14 )	
-
 //------------------------------------------------------
 // Effects flags
 //------------------------------------------------------
-enum
+enum EntityEffectFlags
 {
 	EF_BONEMERGE			= 0x001,	// Performs bone merge on client side
 	EF_BRIGHTLIGHT 			= 0x002,	// DLIGHT centered at entity origin
@@ -683,7 +626,7 @@ enum MoveCollide_t
 	MOVECOLLIDE_MAX_BITS = 3
 }
 
-enum
+enum Collision_Group_t
 {
     COLLISION_GROUP_NONE  = 0,
     COLLISION_GROUP_DEBRIS,            // Collides with nothing but world and static stuff

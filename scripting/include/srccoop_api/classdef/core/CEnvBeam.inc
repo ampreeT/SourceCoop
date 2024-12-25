@@ -5,7 +5,7 @@ methodmap CEnvBeam < CBeam
 {
 	public CEnvBeam(const int iEntIndex = -1)
 	{
-		return view_as<CEnvBeam>(CBaseEntity(iEntIndex));
+		return view_as<CEnvBeam>(CBeam(iEntIndex));
 	}
 	public static CEnvBeam Create()
 	{
@@ -22,7 +22,7 @@ methodmap CEnvBeam < CBeam
 	}
 	public bool GetStartEntity(char[] szBuffer, const int iMaxLength)
 	{
-		return view_as<bool>(GetEntPropString(this.GetEntIndex(), Prop_Data, "m_iszStartEntity", szBuffer, iMaxLength)); 
+		return GetEntPropString(this.GetEntIndex(), Prop_Data, "m_iszStartEntity", szBuffer, iMaxLength) != 0; 
 	}
 	public int SetStartEntity(const char[] szTargetname)
 	{
@@ -38,7 +38,7 @@ methodmap CEnvBeam < CBeam
 	}
 	public bool GetTextureName(char[] szBuffer, const int iMaxLength)
 	{
-		return view_as<bool>(GetEntPropString(this.GetEntIndex(), Prop_Data, "m_iszSpriteName", szBuffer, iMaxLength));
+		return GetEntPropString(this.GetEntIndex(), Prop_Data, "m_iszSpriteName", szBuffer, iMaxLength) != 0;
 	}
 	public int SetTextureName(const char[] szTexturePath)
 	{
@@ -59,5 +59,13 @@ methodmap CEnvBeam < CBeam
 	public void SetTextureScrollRate(const int iTextureScrollRate)
 	{
 		SetEntProp(this.GetEntIndex(), Prop_Send, "m_speed", iTextureScrollRate);
+	}
+	public bool WillStartOn()
+	{
+		return IsSpawnFlagSetOnEntity(this.GetEntIndex(), 0);   // SF_BEAM_STARTON 0x0001
+	}
+	public void SetStartOn(const bool bStartOn)
+	{
+		SetSpawnFlagOnEntity(this.GetEntIndex(), 0, bStartOn);	// SF_BEAM_STARTON 0x0001
 	}
 }

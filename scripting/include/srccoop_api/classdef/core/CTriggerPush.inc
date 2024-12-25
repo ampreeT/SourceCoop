@@ -16,9 +16,9 @@ methodmap CTriggerPush < CBaseTrigger
 	{
 		SetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flSpeed", flSpeed);
 	}
-	public void GetPushDirection(float vecBuffer[3])
+	public void GetPushDirection(float vec3Buffer[3])
 	{
-		GetEntPropVector(this.GetEntIndex(), Prop_Data, "m_vecPushDir", vecBuffer);
+		GetEntPropVector(this.GetEntIndex(), Prop_Data, "m_vecPushDir", vec3Buffer);
 	}
 	public void SetPushDirection(const float vec3Direction[3])
 	{

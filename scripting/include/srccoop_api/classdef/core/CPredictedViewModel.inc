@@ -18,6 +18,6 @@ methodmap CPredictedViewModel < CBaseViewModel
 	}
 	public CBaseCombatWeapon GetOwningWeapon()
 	{
-		return view_as<CBaseCombatWeapon>(GetEntPropEnt(this.GetEntIndex(), Prop_Data, "m_hWeapon"));
+		return CBaseCombatWeapon(GetEntPropEnt(this.GetEntIndex(), Prop_Data, "m_hWeapon"));
 	}
 }

@@ -16,4 +16,12 @@ methodmap CChangelevel < CBaseTrigger
 	{
 		GetEntPropString(this.GetEntIndex(), Prop_Data, "m_szMapName", szBuffer, iMaxLength);
 	}
+	public bool IsTouchEnabled()
+	{
+		return !IsSpawnFlagSetOnEntity(this.GetEntIndex(), 1);			// SF_CHANGELEVEL_NOTOUCH 0x0002
+	}
+	public void SetTouchEnabled(const bool bTouchEnabled)
+	{
+		SetSpawnFlagOnEntity(this.GetEntIndex(), 1, !bTouchEnabled);	// SF_CHANGELEVEL_NOTOUCH 0x0002
+	}
 }

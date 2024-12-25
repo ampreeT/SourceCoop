@@ -12,10 +12,6 @@ methodmap CSprite < CBaseEntity
 		return CSprite(CreateEntityByName("env_sprite"));
 	}
 
-	public bool IsValid()
-	{
-		return view_as<CBaseEntity>(this).IsValid() && this.GetEntIndex() > 0;
-	}
 	public float GetScale()
 	{
 		return GetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flSpriteScale");
@@ -48,7 +44,7 @@ methodmap CSprite < CBaseEntity
 	{
 		SetEntPropFloat(this.GetEntIndex(), Prop_Send, "m_flFrame", flFrame);
 	}
-	public float Frames()
+	public float GetMaxFrame()
 	{
 		return GetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flMaxFrame");
 	}
@@ -60,9 +56,9 @@ methodmap CSprite < CBaseEntity
 	{
 		SetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flGlowProxySize", flGlowProxySize);
 	}
-	public void SetAttachment(CBaseEntity pEntity, const int iAttachment)
+	public void SetAttachment(const CBaseEntity pEntity, const int iAttachment)
 	{
-		if (pEntity.IsValid())
+		if (pEntity != NULL_CBASEENTITY)
 		{
 			SetEntPropEnt(this.GetEntIndex(), Prop_Data, "m_hAttachedToEntity", pEntity.GetEntIndex());
 			SetEntProp(this.GetEntIndex(), Prop_Data, "m_nAttachment", iAttachment);
@@ -79,6 +75,14 @@ methodmap CSprite < CBaseEntity
 	}
 	public bool IsOn()
 	{
-		return !(this.GetEffects() & EF_NODRAW);
+		return !this.HasEffects(EF_NODRAW);
+	}
+	public bool WillStartOn()
+	{
+		return IsSpawnFlagSetOnEntity(this.GetEntIndex(), 0);   // SF_SPRITE_STARTON 0x0001
+	}
+	public void SetStartOn(const bool bStartOn)
+	{
+		SetSpawnFlagOnEntity(this.GetEntIndex(), 0, bStartOn);	// SF_SPRITE_STARTON 0x0001
 	}
 }

@@ -12,13 +12,9 @@ methodmap CAI_ScriptConditions < CBaseEntity
 		return CAI_ScriptConditions(CreateEntityByName("ai_script_conditions"));
 	}
 
-	public bool IsValid()
-	{
-		return view_as<CBaseEntity>(this).IsValid() && this.GetEntIndex() > 0;
-	}
 	public bool IsEnabled()
 	{
-		return !view_as<bool>(GetEntProp(this.GetEntIndex(), Prop_Data, "m_fDisabled"));
+		return !GetEntProp(this.GetEntIndex(), Prop_Data, "m_fDisabled");
 	}
 	public void SetEnabled(const bool bEnabled)
 	{
@@ -28,7 +24,7 @@ methodmap CAI_ScriptConditions < CBaseEntity
 	{
 		return CBaseEntity(GetEntPropEnt(this.entindex, Prop_Data, "m_hTarget"));
 	}
-	public void SetTargetEnt(CBaseEntity pTarget)
+	public void SetTargetEnt(const CBaseEntity pTarget)
 	{
 		SetEntPropEnt(this.entindex, Prop_Data, "m_hTarget", pTarget.entindex);
 	}

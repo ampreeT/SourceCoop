@@ -303,6 +303,7 @@ public void OnPluginStart()
 	g_pSpawnOptions.Reset();
 	EquipmentManager.Initialize();
 	DnManager.Initialize();
+	IdleAnims_Initialize();
 	InitializeMenus();
 	
 	g_CoopMapStartFwd = new GlobalForward("SC_OnCoopMapStart", ET_Ignore);
@@ -597,7 +598,7 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 	SDKHook(iEntIndex, SDKHook_Spawn, Hook_FixupBrushModels);
 	SDKHook(iEntIndex, SDKHook_SpawnPost, Hook_EntitySpawnPost);
 	
-	bool bIsNPC = pEntity.IsClassNPC();
+	bool bIsNPC = pEntity.IsNPC();
 
 	if (bIsNPC)
 	{
@@ -876,7 +877,7 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 		#endif
 
 		#if defined ENTPATCH_WEAPON_MODELS
-		if (pEntity.IsClassWeapon())
+		if (pEntity.IsWeapon())
 		{
 			DHookEntity(hkSetModel, false, iEntIndex, _, Hook_WeaponSetModel);
 			return;
@@ -1062,7 +1063,7 @@ public MRESReturn Hook_OnEquipmentTryPickUpPost(int _this, Handle hReturn, Handl
 		if (bPickedUp)
 		{
 			CBasePlayer pPlayer = CBasePlayer(DHookGetParam(hParams, 1));
-			if (pPlayer.IsClassPlayer())
+			if (pPlayer.IsPlayer())
 			{
 				CBaseEntity pItem = CBaseEntity(_this);
 				char szClass[MAX_CLASSNAME];

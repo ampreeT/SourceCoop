@@ -5,7 +5,7 @@ methodmap CSceneEntity < CPointEntity
 {
 	public CSceneEntity(const int iEntIndex = -1)
 	{
-		return view_as<CSceneEntity>(CBaseEntity(iEntIndex));
+		return view_as<CSceneEntity>(CPointEntity(iEntIndex));
 	}
 	public static CSceneEntity Create()
 	{

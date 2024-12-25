@@ -10,7 +10,7 @@ methodmap CParticleSystem < CBaseEntity
 	public static CParticleSystem Create(const char[] szEffectName, bool bStartActive = true)
 	{
 		CParticleSystem pParticle = CParticleSystem(CreateEntityByName("info_particle_system"));
-		if (pParticle.IsValid())
+		if (pParticle != NULL_CBASEENTITY)
 		{
 			pParticle.SetEffectName(szEffectName);
 			if (bStartActive)
@@ -21,17 +21,13 @@ methodmap CParticleSystem < CBaseEntity
 		return pParticle;
 	}
 	
-	public bool IsValid()
-	{
-		return view_as<CBaseEntity>(this).IsValid() && this.GetEntIndex() > 0;
-	}
 	public bool IsActive()
 	{
-		return view_as<bool>(GetEntProp(this.GetEntIndex(), Prop_Data, "m_bActive"));
+		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_bActive") != 0;
 	}
 	public bool GetStartActive()
 	{
-		return view_as<bool>(GetEntProp(this.GetEntIndex(), Prop_Data, "m_bStartActive"));
+		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_bStartActive") != 0;
 	}
 	public void SetStartActive(const bool bStartsActive)
 	{
@@ -39,7 +35,7 @@ methodmap CParticleSystem < CBaseEntity
 	}
 	public bool IsWeatherEffect()
 	{
-		return view_as<bool>(GetEntProp(this.GetEntIndex(), Prop_Data, "m_bWeatherEffect"));
+		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_bWeatherEffect") != 0;
 	}
 	public void SetWeatherEffect(const bool bWeatherEffect)
 	{
@@ -47,7 +43,7 @@ methodmap CParticleSystem < CBaseEntity
 	}
 	public bool GetOrientationFollowsViewer()
 	{
-		return view_as<bool>(GetEntProp(this.GetEntIndex(), Prop_Data, "m_bOrientationFollowsViewer"));
+		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_bOrientationFollowsViewer") != 0;
 	}
 	public void SetOrientationFollowsViewer(const bool bOrientationFollowsViewer)
 	{
@@ -63,7 +59,7 @@ methodmap CParticleSystem < CBaseEntity
 	}
 	public bool GetEffectName(char[] szBuffer, const int iMaxLength)
 	{
-		return view_as<bool>(GetEntPropString(this.GetEntIndex(), Prop_Data, "m_iszEffectName", szBuffer, iMaxLength));
+		return GetEntPropString(this.GetEntIndex(), Prop_Data, "m_iszEffectName", szBuffer, iMaxLength) != 0;
 	}
 	public int SetEffectName(const char[] szEffectName)
 	{

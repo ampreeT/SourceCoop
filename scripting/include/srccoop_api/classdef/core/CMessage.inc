@@ -24,4 +24,20 @@ methodmap CMessage < CPointEntity
 	{
 		this.AcceptInputStr("ShowMessage");
 	}
+	public bool WillShowOnce()
+	{
+		return IsSpawnFlagSetOnEntity(this.GetEntIndex(), 0);	// SF_MESSAGE_ONCE 0x0001
+	}
+	public void SetShowOnce(const bool bShowOnce)
+	{
+		SetSpawnFlagOnEntity(this.GetEntIndex(), 0, bShowOnce);	// SF_MESSAGE_ONCE 0x0001
+	}
+	public bool WillShowAllPlayers()
+	{
+		return IsSpawnFlagSetOnEntity(this.GetEntIndex(), 1);			// SF_MESSAGE_ALL 0x0002
+	}
+	public void SetShowAllPlayers(const bool bShowAllPlayers)
+	{
+		SetSpawnFlagOnEntity(this.GetEntIndex(), 1, bShowAllPlayers);	// SF_MESSAGE_ALL 0x0002
+	}
 }

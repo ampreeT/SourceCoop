@@ -790,7 +790,7 @@ stock bool CanTeleportPlayer_Offset(float vecOrigin[3], float yaw, float distanc
 public bool CanTeleportPlayer_TraceFilter(int entity, int mask, any data)
 {
 	CBaseEntity pEntity = CBaseEntity(entity);
-	if (pEntity.IsClassPlayer() || pEntity.IsPickupItem())
+	if (pEntity.IsPlayer() || pEntity.IsPickupItem())
 	{
 		return false;
 	}

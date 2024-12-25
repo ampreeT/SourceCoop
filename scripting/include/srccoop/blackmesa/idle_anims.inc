@@ -8,7 +8,7 @@
 
 enum IdleAnimType
 {
-	None = 0,
+	None = 0,	// TODO: Will this having a naming conflict with other enums? If so, rename.
 	IdleNoWeapon,
 	SwimIdleNoWeapon,
 	SwimNoWeapon,
@@ -26,6 +26,14 @@ enum struct IdleAnimEntry
 }
 
 public IdleAnimEntry g_pIdle[MAXPLAYERS + 1];
+
+public void IdleAnims_Initialize()
+{
+	for (int i = 0; i < sizeof(g_pIdle); ++i)
+	{
+		g_pIdle[i].m_pModel = NULL_CBASEENTITY;
+	}
+}
 
 public MRESReturn IdleAnims_Hook_PlayerSetModel_Post(const int iPlayerIndex, DHookParam hParams)
 {
@@ -81,11 +89,11 @@ public Action IdleAnims_Hook_SetTransmit(const int iEntity, const int iClient)
 	if (pParentPlayer == NULL_CBASEENTITY)
 		return Plugin_Handled;
 	
-	Obs_Mode iObserverMode = pPlayer.GetObserverMode();
+	Obs_Mode eObserverMode = pPlayer.GetObserverMode();
 
-	if (iObserverMode != OBS_MODE_NONE)
+	if (eObserverMode != OBS_MODE_NONE)
 	{
-		if (iObserverMode == OBS_MODE_IN_EYE)
+		if (eObserverMode == OBS_MODE_IN_EYE)
 		{
 			return Plugin_Handled;
 		}
@@ -249,9 +257,7 @@ public void IdleAnims_Hook_PlayerPreThinkPost(const int iClient)
 	g_pIdle[iPlayerIndex].m_pModel.SetRenderFx(pPlayer.GetRenderFx());
 	g_pIdle[iPlayerIndex].m_pModel.SetSkin(pPlayer.GetSkin());
 	g_pIdle[iPlayerIndex].m_pModel.SetBody(pPlayer.GetBody());
-	int r, g, b, a;
-	pPlayer.GetRenderColor(r, g, b, a);
-	g_pIdle[iPlayerIndex].m_pModel.SetRenderColor(r, g, b, a);
+	g_pIdle[iPlayerIndex].m_pModel.SetRenderColor(pPlayer.GetRenderColor());
 	
 	// TODO:
 	// Set other black mesa specific variables

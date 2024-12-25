@@ -5,7 +5,7 @@ methodmap CSoundEnt < CPointEntity
 {
 	public CSoundEnt(const int iEntIndex = -1)
 	{
-		return view_as<CSoundEnt>(CBaseEntity(iEntIndex));
+		return view_as<CSoundEnt>(CPointEntity(iEntIndex));
 	}
 	public static CSoundEnt Get()
 	{
@@ -68,7 +68,7 @@ enum struct CSound
 		if (!this.IsValid())
 			ThrowError("Attempted to use invalid CSound index %i.", this.GetSoundIndex());
 		
-		return CBaseEntity(LoadFromAddress(GetSoundPoolPropAddress(this.GetSoundEnt(), this.GetSoundIndex(), "m_hOwner"), NumberType_Int32)  | (1 << 31));
+		return CBaseEntity(LoadFromAddress(GetSoundPoolPropAddress(this.GetSoundEnt(), this.GetSoundIndex(), "m_hOwner"), NumberType_Int32) | (1 << 31));
 	}
 	void Next()
 	{
@@ -93,7 +93,7 @@ enum struct CSound
 		if (iType == SOUND_BULLET_IMPACT || iType == SOUND_PHYSICS_DANGER)
 		{
 			CBaseEntity pOwner = this.GetOwner();
-			if (pOwner.IsValid())
+			if (pOwner != NULL_CBASEENTITY)
 			{
 				pOwner.GetAbsOrigin(vecBuffer);
 			}
@@ -107,7 +107,7 @@ enum struct CSound
 		if (iType & SOUND_CONTEXT_REACT_TO_SOURCE)
 		{
 			CBaseEntity pOwner = this.GetOwner();
-			if (pOwner.IsValid())
+			if (pOwner != NULL_CBASEENTITY)
 			{
 				pOwner.GetAbsOrigin(vecBuffer);
 				return;
@@ -117,7 +117,7 @@ enum struct CSound
 		if ((iType & SOUND_DANGER) && (iType & SOUND_CONTEXT_FROM_SNIPER))
 		{
 			CBaseEntity pOwner = this.GetOwner();
-			if (pOwner.IsValid())
+			if (pOwner != NULL_CBASEENTITY)
 			{
 				pOwner.GetAbsOrigin(vecBuffer);
 				return;
@@ -130,7 +130,7 @@ enum struct CSound
 
 // This function grabs the member offset within a CSound element from the base of the sound entity.
 //
-Address GetSoundPoolPropAddress(CSoundEnt pSoundEnt, const int iSoundIndex, const char[] szProperty)
+static Address GetSoundPoolPropAddress(CSoundEnt pSoundEnt, const int iSoundIndex, const char[] szProperty)
 {
 	// Obtain the start offset `CSoundEnt::m_SoundPool`
 	int iOffsetPoolStart = FindDataMapInfo(pSoundEnt.GetEntIndex(), "m_SoundPool");

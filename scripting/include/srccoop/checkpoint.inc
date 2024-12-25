@@ -1087,7 +1087,7 @@ public void Hook_OutputCheckpoint(const char[] szName, int iCaller, int iActivat
 public void Hook_TouchCheckpoint(int iEntity, int iOther)
 {
 	CBasePlayer pOther = CBasePlayer(iOther);
-	if (pOther.IsClassPlayer())
+	if (pOther.IsPlayer())
 	{
 		CBaseEntity pTouched = CBaseEntity(iEntity);
 		int iIndex = data.m_iCurrentCheckpoint + 1;
@@ -1142,7 +1142,7 @@ public void Timer_ActivateCheckpoint(Handle pTimer, int iSerial)
 public void Hook_TouchPortal(int iEntity, int iOther)
 {
 	CBasePlayer pOther = CBasePlayer(iOther);
-	if (pOther.IsClassPlayer())
+	if (pOther.IsPlayer())
 	{
 		CCoopSpawnEntry pCheckpoint;
 		if (CCoopSpawnSystem.GetCurrentCheckpoint(pCheckpoint) && pCheckpoint.TeleportPlayer(pOther))

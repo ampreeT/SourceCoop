@@ -10,7 +10,7 @@ methodmap CBlackMesaPlayer < CBasePlayer
 	
 	public bool HasJumpModule()
 	{
-		return view_as<bool>(GetEntProp(this.GetEntIndex(), Prop_Send, "m_bHasJumpModule"));
+		return GetEntProp(this.GetEntIndex(), Prop_Send, "m_bHasJumpModule") != 0;
 	}
 	public void SetJumpModule(const bool bShouldHaveJumpModule)
 	{

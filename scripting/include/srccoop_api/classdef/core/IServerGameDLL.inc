@@ -8,6 +8,10 @@ methodmap IServerGameDLL
 		return view_as<IServerGameDLL>(pAddress);
 	}
 	
+	public Address GetAddress()
+	{
+		return view_as<Address>(this);
+	}
 	public void GameShutdown()
 	{
 		SDKCall(g_pGameShutdown, this); // GameShutdown() just resets global states

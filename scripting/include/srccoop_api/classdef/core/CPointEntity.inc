@@ -7,9 +7,4 @@ methodmap CPointEntity < CBaseEntity
 	{
 		return view_as<CPointEntity>(CBaseEntity(iEntIndex));
 	}
-
-	public bool IsValid()
-	{
-		return view_as<CBaseEntity>(this).IsValid() && this.GetEntIndex() > 0;
-	}
 }

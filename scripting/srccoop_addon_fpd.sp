@@ -229,12 +229,12 @@ public void SC_OnPlayerRagdollCreated(CBasePlayer pPlayer, CBaseAnimating pRagdo
 	}
 }
 
-public CBaseEntity CreateCameraDeath(CBasePlayer pPlayer)
+public CInfoTarget CreateCameraDeath(const CBasePlayer pPlayer)
 {
-	CBaseEntity pCamera = CBaseEntity.Create("info_target");
+	CInfoTarget pCamera = CInfoTarget.Create();
 	pCamera.SetClassname("camera_death");
-	pCamera.SetSpawnFlags(1);
 	pCamera.Spawn();
+	pCamera.SetForceTransmitToAllClients(true);
 	pPlayer.SetViewEntity(pCamera);
 	return pCamera;
 }

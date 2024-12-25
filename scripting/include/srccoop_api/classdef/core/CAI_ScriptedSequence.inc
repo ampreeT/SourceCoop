@@ -16,7 +16,7 @@ methodmap CAI_ScriptedSequence < CBaseEntity
 	{
 		return CBaseEntity(GetEntPropEnt(this.entindex, Prop_Data, "m_hTargetEnt"));
 	}
-	public void SetTargetEnt(CBaseEntity pTarget)
+	public void SetTargetEnt(const CBaseEntity pTarget)
 	{
 		SetEntPropEnt(this.entindex, Prop_Data, "m_hTargetEnt", pTarget.entindex);
 	}

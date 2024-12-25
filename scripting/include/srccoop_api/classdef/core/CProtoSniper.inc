@@ -14,18 +14,18 @@ methodmap CProtoSniper < CAI_BaseNPC
 	
 	public bool IsSweepHighestPriority()
 	{
-		return view_as<bool>(GetEntProp(this.GetEntIndex(), Prop_Data, "m_bSweepHighestPriority"));
+		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_bSweepHighestPriority") != 0;
 	}
-	public CBaseEntity GetSweepTarget()
+	public CSniperTarget GetSweepTarget()
 	{
-		return CBaseEntity(GetEntPropEnt(this.GetEntIndex(), Prop_Data, "m_hSweepTarget"));
+		return CSniperTarget(GetEntPropEnt(this.GetEntIndex(), Prop_Data, "m_hSweepTarget"));
 	}
 	public bool IsWeaponLoaded()
 	{
-		return view_as<bool>(GetEntProp(this.GetEntIndex(), Prop_Data, "m_fWeaponLoaded"));
+		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_fWeaponLoaded") != 0;
 	}
 	public bool IsEnabled()
 	{
-		return view_as<bool>(GetEntProp(this.GetEntIndex(), Prop_Data, "m_fEnabled"));
+		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_fEnabled") != 0;
 	}
 }

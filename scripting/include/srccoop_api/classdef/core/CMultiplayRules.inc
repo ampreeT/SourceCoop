@@ -10,7 +10,7 @@ methodmap CMultiplayRules
 			case Engine_BlackMesa:
 				return GetTeamCount() >= 4;
 			case Engine_HL2DM:
-				return view_as<bool>(GameRules_GetProp("m_bTeamPlayEnabled"));
+				return GameRules_GetProp("m_bTeamPlayEnabled") != 0;
 		}
 	}
 }

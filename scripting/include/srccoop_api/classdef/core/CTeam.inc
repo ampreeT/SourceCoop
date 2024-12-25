@@ -21,10 +21,6 @@ methodmap CTeam < CBaseEntity
 		return NULL_CBASEENTITY;
 	}
 
-	public bool IsValid()
-	{
-		return view_as<CBaseEntity>(this).IsValid() && this.GetEntIndex() > 0;
-	}
 	public int GetTeam()
 	{
 		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_iTeamNum");

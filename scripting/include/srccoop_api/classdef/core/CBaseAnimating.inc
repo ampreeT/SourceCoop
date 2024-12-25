@@ -12,10 +12,6 @@ methodmap CBaseAnimating < CBaseEntity
 		return CBaseAnimating(CreateEntityByName(szClassname));
 	}
 
-	public bool IsValid()
-	{
-		return view_as<CBaseEntity>(this).IsValid() && this.GetEntIndex() > 0;
-	}
 	public int GetSkin()
 	{
 		return GetEntProp(this.GetEntIndex(), Prop_Send, "m_nSkin");
@@ -77,9 +73,9 @@ methodmap CBaseAnimating < CBaseEntity
 	{
 		SetEntProp(this.GetEntIndex(), Prop_Send, "m_nSequence", iSequence);
 	}
-	public void GetSequenceLinearMotion(const int iSequence, float vecBuffer[3])
+	public void GetSequenceLinearMotion(const int iSequence, float vec3Buffer[3])
 	{
-		SDKCall(g_pGetSequenceLinearMotion, this, iSequence, vecBuffer);
+		SDKCall(g_pGetSequenceLinearMotion, this, iSequence, vec3Buffer);
 	}
 	public float GetPlaybackRate()
 	{
@@ -101,9 +97,9 @@ methodmap CBaseAnimating < CBaseEntity
 	{
 		return LookupEntityAttachment(this.GetEntIndex(), szName);
 	}
-	public bool GetAttachment(const int iAttachment, float vecOrigin[3], float vecAngles[3])
+	public bool GetAttachment(const int iAttachment, float vec3Origin[3], float vec3Angles[3])
 	{
-		return GetEntityAttachment(this.GetEntIndex(), iAttachment, vecOrigin, vecAngles);
+		return GetEntityAttachment(this.GetEntIndex(), iAttachment, vec3Origin, vec3Angles);
 	}
 	public int GetForceBone()
 	{
@@ -138,12 +134,12 @@ methodmap CBaseAnimating < CBaseEntity
 	{
 		SetEntProp(this.GetEntIndex(), Prop_Data, "m_bSequenceFinished", bFinished);
 	}
-	public float GetAnimTime()
+	public float GetAnimationTime()
 	{
 		return GetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flAnimTime");
 	}
-	public void SetAnimTime(const float flAnimTime)
+	public void SetAnimationTime(const float flAnimationTime)
 	{
-		SetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flAnimTime", flAnimTime);
+		SetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flAnimTime", flAnimationTime);
 	}
 }

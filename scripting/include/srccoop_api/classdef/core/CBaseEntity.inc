@@ -32,11 +32,7 @@ methodmap CBaseEntity
 	}
 	public bool IsValid()
 	{
-		if (this == NULL_CBASEENTITY)
-		{
-			return false;
-		}
-		return IsValidEntity(view_as<int>(this));
+		return (this != NULL_CBASEENTITY) && IsValidEntity(view_as<int>(this));
 	}
 	public bool HasEdict()
 	{
@@ -60,7 +56,7 @@ methodmap CBaseEntity
 	}
 	public bool GetTargetname(char[] szBuffer, const int iMaxLength)
 	{
-		return view_as<bool>(GetEntPropString(this.GetEntIndex(), Prop_Data, "m_iName", szBuffer, iMaxLength));
+		return GetEntPropString(this.GetEntIndex(), Prop_Data, "m_iName", szBuffer, iMaxLength) != 0;
 	}
 	public int SetTargetname(const char[] szTargetname)
 	{
@@ -68,7 +64,7 @@ methodmap CBaseEntity
 	}
 	public bool GetTarget(char[] szBuffer, const int iMaxLength)
 	{
-		return view_as<bool>(GetEntPropString(this.GetEntIndex(), Prop_Data, "m_target", szBuffer, iMaxLength));
+		return GetEntPropString(this.GetEntIndex(), Prop_Data, "m_target", szBuffer, iMaxLength) != 0;
 	}
 	public int SetTarget(const char[] szTarget)
 	{
@@ -88,28 +84,28 @@ methodmap CBaseEntity
 	{
 		ActivateEntity(this.GetEntIndex());
 	}
-	public bool AcceptInput(const char[] szInput, CBaseEntity pActivator = NULL_CBASEENTITY, CBaseEntity pCaller = NULL_CBASEENTITY, const int iOutputID = 0)
+	public bool AcceptInput(const char[] szInput, const CBaseEntity pActivator = NULL_CBASEENTITY, const CBaseEntity pCaller = NULL_CBASEENTITY, const int iOutputID = 0)
 	{
 		return AcceptEntityInput(this.GetEntIndex(), szInput, pActivator.GetEntIndex(), pCaller.GetEntIndex(), iOutputID);
 	}
-	public bool AcceptInputStr(const char[] szInput, const char[] szParameter = "", CBaseEntity pActivator = NULL_CBASEENTITY, CBaseEntity pCaller = NULL_CBASEENTITY, const int iOutputID = 0)
+	public bool AcceptInputStr(const char[] szInput, const char[] szParameter = "", const CBaseEntity pActivator = NULL_CBASEENTITY, const CBaseEntity pCaller = NULL_CBASEENTITY, const int iOutputID = 0)
 	{
 		SetVariantString(szParameter);
 		return this.AcceptInput(szInput, pActivator, pCaller, iOutputID);
 	}
-	public bool AcceptInputInt(const char[] szInput, const int iValue, CBaseEntity pActivator = NULL_CBASEENTITY, CBaseEntity pCaller = NULL_CBASEENTITY, const int iOutputID = 0)
+	public bool AcceptInputInt(const char[] szInput, const int iValue, const CBaseEntity pActivator = NULL_CBASEENTITY, const CBaseEntity pCaller = NULL_CBASEENTITY, const int iOutputID = 0)
 	{
 		SetVariantInt(iValue);
 		return this.AcceptInput(szInput, pActivator, pCaller, iOutputID);
 	}
-	public bool AcceptInputVector(const char[] szInput, const float vecValue[3], CBaseEntity pActivator = NULL_CBASEENTITY, CBaseEntity pCaller = NULL_CBASEENTITY, const int iOutputID = 0)
+	public bool AcceptInputVector(const char[] szInput, const float vec3Value[3], const CBaseEntity pActivator = NULL_CBASEENTITY, const CBaseEntity pCaller = NULL_CBASEENTITY, const int iOutputID = 0)
 	{
 		// ToDo: Should this use SetVariantPosVector3D or SetVariantVector3D?
 		char szBuffer[256];
-		Format(szBuffer, sizeof(szBuffer), "%f %f %f", vecValue[0], vecValue[1], vecValue[2]);
+		Format(szBuffer, sizeof(szBuffer), "%f %f %f", vec3Value[0], vec3Value[1], vec3Value[2]);
 		return this.AcceptInputStr(szInput, szBuffer, pActivator, pCaller, iOutputID);
 	}
-	public bool OutputAdd(const char[] szOutput, const char[] szTarget, const char[] szTargetInput, const char[] szParameter = "", float flDelay = 0.0, int iTimesToFire = -1)
+	public bool OutputAdd(const char[] szOutput, const char[] szTarget, const char[] szTargetInput, const char[] szParameter = "", const float flDelay = 0.0, const int iTimesToFire = -1)
 	{
 		 char szBuffer[256];
 		 Format(szBuffer, sizeof(szBuffer), "%s %s:%s:%s:%f:%d", szOutput, szTarget, szTargetInput, szParameter, flDelay, iTimesToFire);
@@ -119,7 +115,7 @@ methodmap CBaseEntity
 	{
 		return DispatchKeyValue(this.GetEntIndex(), szKeyValue, szValue);
 	}
-	public bool SetKeyValueFl(const char[] szKeyValue, const float flValue)
+	public bool SetKeyValueFloat(const char[] szKeyValue, const float flValue)
 	{
 		return DispatchKeyValueFloat(this.GetEntIndex(), szKeyValue, flValue);
 	}
@@ -127,69 +123,55 @@ methodmap CBaseEntity
 	{
 		return this.AcceptInputStr("Kill");
 	}
-	public bool KillAfterTime(float flTime)
+	public bool KillAfterTime(const float flTime)
 	{
-		this.OutputAdd("OnUser1", "!self", "kill", _, flTime);
-		return this.AcceptInput("FireUser1");
+		return this.OutputAdd("OnUser1", "!self", "kill", _, flTime) && this.AcceptInput("FireUser1");
 	}
-	public int GetSpawnFlags()
-	{
-		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_spawnflags");
-	}
-	public bool HasSpawnFlag(const int iSpawnFlag)
-	{
-		return view_as<bool>(this.GetSpawnFlags() & iSpawnFlag);
-	}
-	public void SetSpawnFlags(const int iSpawnFlags)
-	{
-		SetEntProp(this.GetEntIndex(), Prop_Data, "m_spawnflags", iSpawnFlags);
-	}
-	public int GetTeam()
+	public int GetTeam()	// TOOD: Turn this into a enum.
 	{
 		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_iTeamNum");
 	}
-	public void GetEyePosition(float vecBuffer[3])
+	public void GetEyePosition(float vec3Buffer[3])
 	{
-		if (this.IsClassPlayer())
+		if (this.IsPlayer())
 		{
-			GetClientEyePosition(this.GetEntIndex(), vecBuffer);
+			GetClientEyePosition(this.GetEntIndex(), vec3Buffer);
 		}
 		else
 		{
-			float vec3Origin[3];
-			this.GetAbsOrigin(vec3Origin);
+			this.GetAbsOrigin(vec3Buffer);
 
 			float vec3Offset[3];
 			GetEntPropVector(this.GetEntIndex(), Prop_Data, "m_vecViewOffset", vec3Offset);
 
-			AddVectors(vec3Origin, vec3Offset, vecBuffer);
+			AddVectors(vec3Buffer, vec3Offset, vec3Buffer);
 		}
 	}
 	// # Citations
 	//
 	// - [Source SDK 2013](https://github.com/ValveSoftware/source-sdk-2013/blob/0d8dceea4310fde5706b3ce1c70609d72a38efdf/mp/src/game/shared/baseentity_shared.cpp#L148)
 	//
-	public void GetEarPosition(float vecBuffer[3])
+	public void GetEarPosition(float vec3Buffer[3])
 	{
-		this.GetEyePosition(vecBuffer);
+		this.GetEyePosition(vec3Buffer);
 	}
-	public int GetFlags()
+	public int GetFlags()	// TODO: Turn this into a enum.
 	{
 		return GetEntityFlags(this.GetEntIndex());
 	}
-	public bool HasFlag(const int iFlag)
+	public bool HasFlags(const int iFlags)	// TODO: Turn this into a enum.
 	{
-		return (this.GetFlags() & iFlag) == iFlag;
+		return (this.GetFlags() & iFlags) == iFlags;
 	}
-	public void SetFlags(const int iFlags)
+	public void SetFlags(const int iFlags)	// TODO: Turn this into a enum.
 	{
 		SetEntityFlags(this.GetEntIndex(), iFlags);
 	}
-	public void AddFlags(const int iFlags)
+	public void AddFlags(const int iFlags)	// TODO: Turn this into a enum.
 	{
 		this.SetFlags(this.GetFlags() | iFlags);
 	}
-	public void RemoveFlags(const int iFlags)
+	public void RemoveFlags(const int iFlags)	// TODO: Turn this into a enum.
 	{
 		this.SetFlags(this.GetFlags() & ~iFlags);
 	}
@@ -197,35 +179,51 @@ methodmap CBaseEntity
 	{
 		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_iEFlags");
 	}
-	public void SetEFlags(const int iEFlags)
+	public bool HasEFlags(const int iEFlags)	// TODO: Turn this into a enum.
+	{
+		return (this.GetEFlags() & iEFlags) == iEFlags;
+	}
+	public void SetEFlags(const int iEFlags)	// TODO: Turn this into a enum.
 	{
 		SetEntProp(this.GetEntIndex(), Prop_Data, "m_iEFlags", iEFlags);
 	}
-	public void AddEFlags(const int iEFlags)
+	public void AddEFlags(const int iEFlags)	// TODO: Turn this into a enum.
 	{
 		this.SetEFlags(this.GetEFlags() | iEFlags);
 	}
-	public void RemoveEFlags(const int iEFlags)
+	public void RemoveEFlags(const int iEFlags)	// TODO: Turn this into a enum.
 	{
 		this.SetEFlags(this.GetEFlags() & ~iEFlags);
 	}
-	public int GetEdictFlags()
+	public int GetEdictFlags()	// TODO: Turn this into a enum.
 	{
 		return GetEdictFlags(this.GetEntIndex());
 	}
-	public void SetEdictFlags(const int iEdictFlags)
+	public bool HasEdictFlags(const int iEdictFlags)	// TODO: Turn this into a enum.
+	{
+		return (this.GetEdictFlags() & iEdictFlags) == iEdictFlags;
+	}
+	public void SetEdictFlags(const int iEdictFlags)	// TODO: Turn this into a enum.
 	{
 		SetEdictFlags(this.GetEntIndex(), iEdictFlags);
 	}
-	public void Teleport(const float vecOrigin[3] = NULL_VECTOR, const float vecAngles[3] = NULL_VECTOR, const float vecVelocity[3] = NULL_VECTOR)
+	public void AddEdictFlags(const int iEdictFlags)	// TODO: Turn this into a enum.
 	{
-		TeleportEntity(this.GetEntIndex(), vecOrigin, vecAngles, vecVelocity);
+		this.SetEdictFlags(this.GetEdictFlags() | iEdictFlags);
+	}
+	public void RemoveEdictFlags(const int iEdictFlags)	// TODO: Turn this into a enum.
+	{
+		this.SetEdictFlags(this.GetEdictFlags() & ~iEdictFlags);
+	}
+	public void Teleport(const float vec3Origin[3] = NULL_VECTOR, const float vec3Angles[3] = NULL_VECTOR, const float vec3Velocity[3] = NULL_VECTOR)
+	{
+		TeleportEntity(this.GetEntIndex(), vec3Origin, vec3Angles, vec3Velocity);
 	}
 	public CBaseEntity GetParent()
 	{
 		return CBaseEntity(GetEntPropEnt(this.GetEntIndex(), Prop_Data, "m_hMoveParent"));
 	}
-	public void SetParent(CBaseEntity pParent)
+	public void SetParent(const CBaseEntity pParent)
 	{
 		this.AcceptInputStr("SetParent", "!activator", pParent);
 	}
@@ -245,59 +243,59 @@ methodmap CBaseEntity
 	{
 		return CBaseEntity(GetEntPropEnt(this.GetEntIndex(), Prop_Data, "m_hMoveChild"));
 	}
-	public void SetMoveChild(CBaseEntity pMoveChild)
+	public void SetMoveChild(const CBaseEntity pMoveChild)
 	{
 		SetEntPropEnt(this.GetEntIndex(), Prop_Data, "m_hMoveChild", pMoveChild.GetEntIndex());
 	}
-	public void GetAbsOrigin(float vecBuffer[3])
+	public void GetAbsOrigin(float vec3Buffer[3])
 	{
-		GetEntPropVector(this.GetEntIndex(), Prop_Data, "m_vecAbsOrigin", vecBuffer);
+		GetEntPropVector(this.GetEntIndex(), Prop_Data, "m_vecAbsOrigin", vec3Buffer);
 	}
-	public void SetAbsOrigin(const float vecOrigin[3])
+	public void SetAbsOrigin(const float vec3Origin[3])
 	{
-		SetEntPropVector(this.GetEntIndex(), Prop_Data, "m_vecAbsOrigin", vecOrigin);
+		SetEntPropVector(this.GetEntIndex(), Prop_Data, "m_vecAbsOrigin", vec3Origin);
 	}
-	public void GetOrigin(float vecBuffer[3])
+	public void GetOrigin(float vec3Buffer[3])
 	{
-		GetEntPropVector(this.GetEntIndex(), Prop_Data, "m_vecOrigin", vecBuffer);
+		GetEntPropVector(this.GetEntIndex(), Prop_Data, "m_vecOrigin", vec3Buffer);
 	}
-	public void SetOrigin(const float vecOrigin[3])
+	public void SetOrigin(const float vec3Origin[3])
 	{
-		SetEntPropVector(this.GetEntIndex(), Prop_Data, "m_vecOrigin", vecOrigin);
+		SetEntPropVector(this.GetEntIndex(), Prop_Data, "m_vecOrigin", vec3Origin);
 	}
-	public void GetAbsAngles(float vecBuffer[3])
+	public void GetAbsAngles(float vec3Buffer[3])
 	{
-		GetEntPropVector(this.GetEntIndex(), Prop_Data, "m_angAbsRotation", vecBuffer);
+		GetEntPropVector(this.GetEntIndex(), Prop_Data, "m_angAbsRotation", vec3Buffer);
 	}
-	public void SetAbsAngles(const float vecAngles[3])
+	public void SetAbsAngles(const float vec3Angles[3])
 	{
-		SetEntPropVector(this.GetEntIndex(), Prop_Data, "m_angAbsRotation", vecAngles);
+		SetEntPropVector(this.GetEntIndex(), Prop_Data, "m_angAbsRotation", vec3Angles);
 	}
-	public void GetAngles(float vecBuffer[3])
+	public void GetAngles(float vec3Buffer[3])
 	{
-		GetEntPropVector(this.GetEntIndex(), Prop_Send, "m_angRotation", vecBuffer);
+		GetEntPropVector(this.GetEntIndex(), Prop_Send, "m_angRotation", vec3Buffer);
 	}
-	public void SetAngles(const float vecAngles[3])
+	public void SetAngles(const float vec3Angles[3])
 	{
-		SetEntPropVector(this.GetEntIndex(), Prop_Send, "m_angRotation", vecAngles);
+		SetEntPropVector(this.GetEntIndex(), Prop_Send, "m_angRotation", vec3Angles);
 	}
-	public void GetBaseVelocity(float vecBuffer[3])
+	public void GetBaseVelocity(float vec3Buffer[3])
 	{
-		GetEntPropVector(this.GetEntIndex(), Prop_Data, "m_vecBaseVelocity", vecBuffer);
+		GetEntPropVector(this.GetEntIndex(), Prop_Data, "m_vecBaseVelocity", vec3Buffer);
 	}
-	public void SetBaseVelocity(const float vecVel[3])
+	public void SetBaseVelocity(const float vec3Velocity[3])
 	{
-		SetEntPropVector(this.GetEntIndex(), Prop_Data, "m_vecBaseVelocity", vecVel);
+		SetEntPropVector(this.GetEntIndex(), Prop_Data, "m_vecBaseVelocity", vec3Velocity);
 	}
-	public void GetAbsVelocity(float vecBuffer[3])
+	public void GetAbsVelocity(float vec3Buffer[3])
 	{
-		GetEntPropVector(this.GetEntIndex(), Prop_Data, "m_vecAbsVelocity", vecBuffer);
+		GetEntPropVector(this.GetEntIndex(), Prop_Data, "m_vecAbsVelocity", vec3Buffer);
 	}
-	public void SetAbsVelocity(const float vecVel[3])
+	public void SetAbsVelocity(const float vec3Velocity[3])
 	{
-		SetEntPropVector(this.GetEntIndex(), Prop_Data, "m_vecAbsVelocity", vecVel);
+		SetEntPropVector(this.GetEntIndex(), Prop_Data, "m_vecAbsVelocity", vec3Velocity);
 	}
-	public void HookOutput(const char[] szOutput, EntityOutput pCallback, const bool bOnce)
+	public void HookOutput(const char[] szOutput, const EntityOutput pCallback, const bool bOnce)
 	{
 		HookSingleEntityOutput(this.GetEntIndex(), szOutput, pCallback, bOnce);
 	}
@@ -309,35 +307,35 @@ methodmap CBaseEntity
 	{
 		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_iHammerID");
 	}
-	public void GetMins(float vecBuffer[3])
+	public void GetMins(float vec3Buffer[3])
 	{
-		GetEntPropVector(this.GetEntIndex(), Prop_Data, "m_vecMins", vecBuffer);
+		GetEntPropVector(this.GetEntIndex(), Prop_Data, "m_vecMins", vec3Buffer);
 	}
-	public void SetMins(const float vecMins[3])
+	public void SetMins(const float vec3Mins[3])
 	{
-		SetEntPropVector(this.GetEntIndex(), Prop_Data, "m_vecMins", vecMins);
+		SetEntPropVector(this.GetEntIndex(), Prop_Data, "m_vecMins", vec3Mins);
 	}
-	public void GetMaxs(float vecBuffer[3])
+	public void GetMaxs(float vec3Buffer[3])
 	{
-		GetEntPropVector(this.GetEntIndex(), Prop_Data, "m_vecMaxs", vecBuffer);
+		GetEntPropVector(this.GetEntIndex(), Prop_Data, "m_vecMaxs", vec3Buffer);
 	}
-	public void SetMaxs(const float vecMaxs[3])
+	public void SetMaxs(const float vec3Maxs[3])
 	{
-		SetEntPropVector(this.GetEntIndex(), Prop_Data, "m_vecMaxs", vecMaxs);
+		SetEntPropVector(this.GetEntIndex(), Prop_Data, "m_vecMaxs", vec3Maxs);
 	}
-	public void SetCollisionBounds(const float vecMins[3], const float vecMaxs[3])
+	public void SetCollisionBounds(const float vec3Mins[3], const float vec3Maxs[3])
 	{
-		SDKCall(g_pSetMinMaxSize, this.GetEntIndex(), vecMins, vecMaxs);
+		SDKCall(g_pSetMinMaxSize, this.GetEntIndex(), vec3Mins, vec3Maxs);
 	}
-	public void WorldSpaceCenter(float vecCenter[3])
+	public void WorldSpaceCenter(float vec3Center[3])	// TODO: Should this be const?
 	{
-		SDKCall(g_pWorldSpaceCenter, this.GetEntIndex(), vecCenter);
+		SDKCall(g_pWorldSpaceCenter, this.GetEntIndex(), vec3Center);
 	}
 	public CBaseEntity GetOwner()
 	{
 		return CBaseEntity(GetEntPropEnt(this.GetEntIndex(), Prop_Data, "m_hOwnerEntity"));
 	}
-	public void SetOwner(CBaseEntity pOwnerEntity)
+	public void SetOwner(const CBaseEntity pOwnerEntity)
 	{
 		SetEntPropEnt(this.GetEntIndex(), Prop_Data, "m_hOwnerEntity", pOwnerEntity.GetEntIndex());
 	}
@@ -345,39 +343,39 @@ methodmap CBaseEntity
 	{
 		return GetEntityMoveType(this.GetEntIndex());
 	}
-	public void SetMoveType(const MoveType moveType)
+	public void SetMoveType(const MoveType eMoveType)
 	{
-		SetEntityMoveType(this.GetEntIndex(), moveType);
+		SetEntityMoveType(this.GetEntIndex(), eMoveType);
 	}
 	public MoveCollide_t GetMoveCollide()
 	{
 		return view_as<MoveCollide_t>(GetEntProp(this.GetEntIndex(), Prop_Data, "m_MoveCollide"));
 	}
-	public void SetMoveCollide(const MoveCollide_t moveCollide)
+	public void SetMoveCollide(const MoveCollide_t eMoveCollide)
 	{
-		SetEntProp(this.GetEntIndex(), Prop_Data, "m_MoveCollide", moveCollide);
+		SetEntProp(this.GetEntIndex(), Prop_Data, "m_MoveCollide", eMoveCollide);
 	}
-	public int GetCollisionGroup()
+	public Collision_Group_t GetCollisionGroup()
 	{
-		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_CollisionGroup");
+		return view_as<Collision_Group_t>(GetEntProp(this.GetEntIndex(), Prop_Data, "m_CollisionGroup"));
 	}
-	public void SetCollisionGroup(const int iCollisionGroup)
+	public void SetCollisionGroup(const Collision_Group_t eCollisionGroup)
 	{
-		SetEntityCollisionGroup(this.GetEntIndex(), iCollisionGroup);
+		SetEntityCollisionGroup(this.GetEntIndex(), view_as<int>(eCollisionGroup));
 	}
-	public int GetSolidType()
+	public SolidType_t GetSolidType()	// TODO: Turn this into a enum.
 	{
-		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_nSolidType");
+		return view_as<SolidType_t>(GetEntProp(this.GetEntIndex(), Prop_Data, "m_nSolidType"));
 	}
-	public void SetSolidType(const SolidType_t iSolidType)
+	public void SetSolidType(const SolidType_t eSolidType)
 	{
-		SetEntProp(this.GetEntIndex(), Prop_Data, "m_nSolidType", iSolidType);
+		SetEntProp(this.GetEntIndex(), Prop_Data, "m_nSolidType", eSolidType);
 	}
-	public int GetSolidFlags()
+	public int GetSolidFlags()	// TODO: Turn this into a enum.
 	{
 		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_usSolidFlags");
 	}
-	public void SetSolidFlags(const int iSolidFlags)
+	public void SetSolidFlags(const int iSolidFlags)	// TODO: Turn this into a enum.
 	{
 		SetEntProp(this.GetEntIndex(), Prop_Data, "m_usSolidFlags", iSolidFlags);
 	}
@@ -394,7 +392,7 @@ methodmap CBaseEntity
 		int iThinkTick = this.GetNextThinkTick();
 		return iThinkTick == -1 ? -1.0 : TICKS_TO_TIME(iThinkTick);
 	}
-	public void SetNextThink(float flNextThink, const char[] szContext = NULL_STRING)
+	public void SetNextThink(const float flNextThink, const char[] szContext = NULL_STRING)
 	{
 		if (strlen(szContext) > 0)
 		{
@@ -409,13 +407,13 @@ methodmap CBaseEntity
 	{
 		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_nSimulationTick");
 	}
-	public void GetViewOffset(float vecBuffer[3])
+	public void GetViewOffset(float vec3Buffer[3])
 	{
-		GetEntPropVector(this.GetEntIndex(), Prop_Data, "m_vecViewOffset", vecBuffer);
+		GetEntPropVector(this.GetEntIndex(), Prop_Data, "m_vecViewOffset", vec3Buffer);
 	}
-	public void SetViewOffset(const float vecViewOffset[3])
+	public void SetViewOffset(const float vec3ViewOffset[3])
 	{
-		SetEntPropVector(this.GetEntIndex(), Prop_Data, "m_vecViewOffset", vecViewOffset);
+		SetEntPropVector(this.GetEntIndex(), Prop_Data, "m_vecViewOffset", vec3ViewOffset);
 	}
 	public void SetModel(const char[] szModel)
 	{
@@ -423,7 +421,7 @@ methodmap CBaseEntity
 	}
 	public bool GetModelName(char[] szBuffer, const int iMaxLength)
 	{
-		return view_as<bool>(GetEntPropString(this.GetEntIndex(), Prop_Data, "m_ModelName", szBuffer, iMaxLength));
+		return GetEntPropString(this.GetEntIndex(), Prop_Data, "m_ModelName", szBuffer, iMaxLength) != 0;
 	}
 	public void SetModelName(const char[] szModel)
 	{
@@ -441,52 +439,59 @@ methodmap CBaseEntity
 	{
 		return GetEntityRenderMode(this.GetEntIndex());
 	}
-	public void SetRenderMode(const RenderMode rendermode)
+	public void SetRenderMode(const RenderMode eRenderMode)
 	{
-		SetEntityRenderMode(this.GetEntIndex(), rendermode);
+		SetEntityRenderMode(this.GetEntIndex(), eRenderMode);
 	}
 	public RenderFx GetRenderFx()
 	{
 		return GetEntityRenderFx(this.GetEntIndex());
 	}
-	public void SetRenderFx(const RenderFx renderfx)
+	public void SetRenderFx(const RenderFx eRenderFx)
 	{
-		SetEntityRenderFx(this.GetEntIndex(), renderfx);
+		SetEntityRenderFx(this.GetEntIndex(), eRenderFx);
 	}
-	public void GetRenderColor(int& r = 0, int& g = 0, int& b = 0, int& a = 0)
+	public RGBA GetRenderColor()
 	{
+		int r = 0;
+		int g = 0;
+		int b = 0;
+		int a = 0;
 		GetEntityRenderColor(this.GetEntIndex(), r, g, b, a);
+		return RGBA(r, g, b, a);
 	}
-	public void SetRenderColor(const int r, const int g, const int b, const int a)
+	public void SetRenderColor(const RGBA col4)
 	{
-		SetEntityRenderColor(this.GetEntIndex(), r, g, b, a);
+		SetEntityRenderColor(this.GetEntIndex(), col4.r, col4.g, col4.b, col4.a);
 	}
 	public int GetRenderAlpha()
 	{
-		int a; this.GetRenderColor(a, a, a, a);
-		return a;
+		return this.GetRenderColor().a;
 	}
-	public void SetRenderAlpha(const int iAmount)
+	public void SetRenderAlpha(const int a)
 	{
-		int r, g, b, a;
-		this.GetRenderColor(r, g, b, a);
-		this.SetRenderColor(r, g, b, iAmount);
+		RGBA col4 = this.GetRenderColor();
+		this.SetRenderColor(RGBA(col4.r, col4.g, col4.b, a));
 	}
-	public int GetEffects()
+	public EntityEffectFlags GetEffects()
 	{
-		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_fEffects");
+		return view_as<EntityEffectFlags>(GetEntProp(this.GetEntIndex(), Prop_Data, "m_fEffects"));
 	}
-	public void SetEffects(const int iEffects)
+	public bool HasEffects(const EntityEffectFlags eEffects)
 	{
-		SetEntProp(this.GetEntIndex(), Prop_Data, "m_fEffects", iEffects);
+		return (this.GetEffects() & eEffects) == eEffects;
 	}
-	public void AddEffects(const int iEffects)
+	public void SetEffects(const EntityEffectFlags eEffects)
 	{
-		this.SetEffects(this.GetEffects() | iEffects);
+		SetEntProp(this.GetEntIndex(), Prop_Data, "m_fEffects", eEffects);
 	}
-	public void RemoveEffects(const int iEffects)
+	public void AddEffects(const EntityEffectFlags eEffects)
 	{
-		this.SetEffects(this.GetEffects() & ~iEffects);
+		this.SetEffects(this.GetEffects() | eEffects);
+	}
+	public void RemoveEffects(const EntityEffectFlags eEffects)
+	{
+		this.SetEffects(this.GetEffects() & ~eEffects);
 	}
 	public int GetTakeDamage()
 	{
@@ -500,39 +505,24 @@ methodmap CBaseEntity
 	{
 		return this.GetEntIndex() == 0;
 	}
-	public bool IsClassPlayer()
+	public bool IsPlayer()
 	{
 		return (0 < this.GetEntIndex() <= MaxClients);
 	}
-	public bool IsClassWeapon()
+	public bool IsWeapon()
 	{
 		char szTitle[] = "weapon_";
 		char szClassname[sizeof(szTitle)];
-		if (this.GetClassname(szClassname, sizeof(szClassname)))
-			return view_as<bool>(strcmp(szClassname, szTitle, false) == 0);
-		return false;
+		return this.GetClassname(szClassname, sizeof(szClassname)) && strcmp(szClassname, szTitle, false) == 0;
 	}
 	public bool IsPickupItem()
 	{
-		char szNetClass[32];
-		if (this.GetNetClassname(szNetClass, sizeof(szNetClass)))
-		{
-			// Todo - support all games
-			return (strcmp(szNetClass, "CBasePickup") == 0 || strcmp(szNetClass, "CItem_Battery") == 0 || strcmp(szNetClass, "CAmmoCanister") == 0);
-		}
-		return false;
+		char szNetClass[MAX_NETNAME];
+		return this.GetNetClassname(szNetClass, sizeof(szNetClass)) && (strcmp(szNetClass, "CBasePickup") == 0 || strcmp(szNetClass, "CItem_Battery") == 0 || strcmp(szNetClass, "CAmmoCanister") == 0);
 	}
-	public bool IsClassNPC()
+	public bool IsNPC()
 	{
 		return SDKCall(g_pIsNPC, this);
-	}
-	public bool IsClassScientist()
-	{
-		char szTitle[] = "npc_human_scientist";
-		char szClassname[sizeof(szTitle)];
-		if (this.GetClassname(szClassname, sizeof(szClassname)))
-			return view_as<bool>(strcmp(szClassname, szTitle, false) == 0);
-		return false;
 	}
 	public WaterLevel GetWaterLevel()
 	{
@@ -542,7 +532,7 @@ methodmap CBaseEntity
 	{
 		return CBaseEntity(GetEntPropEnt(this.entindex, Prop_Data, "m_hGroundEntity"));
 	}
-	public void SetGroundEntity(CBaseEntity pGroundEntity)
+	public void SetGroundEntity(const CBaseEntity pGroundEntity)
 	{
 		SetEntPropEnt(this.entindex, Prop_Data, "m_hGroundEntity", pGroundEntity.entindex);
 	}
@@ -562,9 +552,9 @@ methodmap CBaseEntity
 	{
 		SetEntProp(this.GetEntIndex(), Prop_Data, "m_iMaxHealth", iMaxHealth);
 	}
-	public bool FVisibleEntity(CBaseEntity pEntity, int iTraceMask = MASK_BLOCKLOS, CBaseEntity& pBlocker = NULL_CBASEENTITY)
+	public bool FVisibleEntity(const CBaseEntity pEntity, int iTraceMask = MASK_BLOCKLOS, CBaseEntity& pBlocker = NULL_CBASEENTITY)
 	{
-		if (pEntity.GetFlags() & FL_NOTARGET)
+		if (pEntity.HasFlags(FL_NOTARGET))
 			return false;
 
 		float vec3LookerOrigin[3];
@@ -586,7 +576,7 @@ methodmap CBaseEntity
 			}
 
 			// Player sees through nodraw
-			if (this.IsClassPlayer())
+			if (this.IsPlayer())
 			{
 				iTraceMask &= ~CONTENTS_BLOCKLOS;
 			}
@@ -605,7 +595,7 @@ methodmap CBaseEntity
 				return true;
 			}
 
-			if (pEntity.IsClassPlayer())
+			if (pEntity.IsPlayer())
 			{
 				CBasePlayer pPlayer = view_as<CBasePlayer>(pEntity);
 				if (pPlayer.GetVehicle() == pTracedEntity)
@@ -642,7 +632,7 @@ methodmap CBaseEntity
 			}
 
 			// Player sees through nodraw
-			if (this.IsClassPlayer())
+			if (this.IsPlayer())
 			{
 				iTraceMask &= ~CONTENTS_BLOCKLOS;
 			}
@@ -664,9 +654,13 @@ methodmap CBaseEntity
 			return true;
 		}
 	}
+	public CBaseCombatCharacter AsBaseCombatCharacter()
+	{
+		ThrowError("Missing implementation.");
+	}
 }
 
-public bool TraceEntityFilter_FVisibleAiLosEnabled(int iEntIndex, int iMask, int iThisEntIndex)
+static bool TraceEntityFilter_FVisibleAiLosEnabled(int iEntIndex, int iMask, int iThisEntIndex)
 {
 	// The current check prevents the ray from hitting the caller.
 	// TODO:
@@ -675,7 +669,7 @@ public bool TraceEntityFilter_FVisibleAiLosEnabled(int iEntIndex, int iMask, int
 	//return CBaseEntity(iEntity).GetCollisionGroup() != COLLISION_GROUP_NONE;
 }
 
-public bool TraceEntityFilter_FVisible(int iEntIndex, int iMask, int iThisEntIndex)
+static bool TraceEntityFilter_FVisible(int iEntIndex, int iMask, int iThisEntIndex)
 {
 	// The current check prevents the ray from hitting the caller.
 	// TODO:

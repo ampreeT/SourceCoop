@@ -7,12 +7,16 @@
  */
 methodmap CPlayerState
 {
+	public Address GetAddress()
+	{
+		return view_as<Address>(this);
+	}
 	public int GetScore()
 	{
-		return LoadFromAddress(view_as<Address>(this) + g_iCPlayerState_frags, NumberType_Int32);
+		return LoadFromAddress(this.GetAddress() + g_iCPlayerState_frags, NumberType_Int32);
 	}
 	public void SetScore(int iScore)
 	{
-		StoreToAddress(view_as<Address>(this) + g_iCPlayerState_frags, iScore, NumberType_Int32);
+		StoreToAddress(this.GetAddress() + g_iCPlayerState_frags, iScore, NumberType_Int32);
 	}
 }

@@ -64,7 +64,7 @@ methodmap ItemInstancingManager
 
 public void Hook_Instancing_ItemSpawn(int iEntIndex)
 {
-	CBaseEntity pItem = CBaseEntity(iEntIndex);
+	CItem pItem = CItem(iEntIndex);
 	
 	#if defined SRCCOOP_BLACKMESA
 	DHookEntity(hkOnTryPickUp, false, iEntIndex, _, Hook_Instancing_OnTryPickUpPre);
@@ -81,7 +81,7 @@ public void Hook_Instancing_ItemSpawn(int iEntIndex)
 		SDKHook(iEntIndex, SDKHook_SetTransmit, Hook_Instancing_ItemTransmit);
 		SDKHook(iEntIndex, SDKHook_Use, Hook_Instancing_Use);
 	}
-	pItem.SetSpawnFlags(pItem.GetSpawnFlags() & ~SF_ITEM_HARDRESPAWN);
+	pItem.SetHardRespawn(false);
 	DispatchKeyValue(iEntIndex, "respawntime", "0");
 }
 
@@ -89,7 +89,7 @@ public void Hook_Instancing_ItemSpawn(int iEntIndex)
 public MRESReturn Hook_Instancing_OnTryPickUpPre(int _this, Handle hReturn, Handle hParams)
 {
 	CBasePlayer pPlayer = CBasePlayer(DHookGetParam(hParams, 1));
-	if (pPlayer.IsClassPlayer())
+	if (pPlayer.IsPlayer())
 	{
 		CBaseEntity pItem = CBaseEntity(_this);
 		if (ItemInstancingManager.HasPickedUpItem(pPlayer, pItem))
@@ -108,7 +108,7 @@ public MRESReturn Hook_Instancing_OnTryPickUpPost(int _this, Handle hReturn, Han
 	if (bPickedUp)
 	{
 		CBasePlayer pPlayer = CBasePlayer(DHookGetParam(hParams, 1));
-		if (pPlayer.IsClassPlayer())
+		if (pPlayer.IsPlayer())
 		{
 			CBaseEntity pItem = CBaseEntity(_this);
 			ItemInstancingManager.AddPickedUpItem(pPlayer, pItem);

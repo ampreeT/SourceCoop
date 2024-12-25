@@ -12,10 +12,6 @@ methodmap CBeam < CBaseEntity
 		return CBeam(CreateEntityByName("beam"));
 	}
 
-	public bool IsValid()
-	{
-		return view_as<CBaseEntity>(this).IsValid() && this.GetEntIndex() > 0;
-	}
 	public int GetAttachmentCount()
 	{
 		return GetEntProp(this.GetEntIndex(), Prop_Send, "m_nNumBeamEnts");

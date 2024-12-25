@@ -10,6 +10,8 @@
 #include <sdktools>
 #include <sourcescramble>
 
+#include <srccoop_api/color>
+
 IServerGameClients g_ServerGameClients;
 CPlayerInfoManager g_pPlayerInfoManager;
 
@@ -59,6 +61,33 @@ int g_iCPlayerState_frags = -1;
 int g_iOffset_CParamsManger_bIsMultiplayer = -1;
 #endif
 
+stock bool IsSpawnFlagSetOnEntity(const int iEntIndex, const int iBitIndex)
+{
+	if (iBitIndex < 0 || iBitIndex > 31)
+		ThrowError("Received out of bounds index %d; range is 0-31", iBitIndex);
+	
+	return (GetEntProp(iEntIndex, Prop_Data, "m_spawnflags") & (1 << iBitIndex)) != 0;
+}
+
+stock void SetSpawnFlagOnEntity(const int iEntIndex, const int iBitIndex, const bool bSetSpawnFlag)
+{
+	if (iBitIndex < 0 || iBitIndex > 31)
+		ThrowError("Received out of bounds index %d; range is 0-31", iBitIndex);
+	
+	int iSpawnFlags = GetEntProp(iEntIndex, Prop_Data, "m_spawnflags");
+
+	if (bSetSpawnFlag)
+	{
+		iSpawnFlags |= (1 << iBitIndex);
+	}
+	else
+	{
+		iSpawnFlags &= ~(1 << iBitIndex);
+	}
+	
+	SetEntProp(iEntIndex, Prop_Data, "m_spawnflags", iSpawnFlags);
+}
+
 #include <srccoop_api/classdef/core/CBaseEntity.inc>
 #include <srccoop_api/classdef/core/CPointEntity.inc>
 #include <srccoop_api/classdef/core/CLogicalEntity.inc>
@@ -81,10 +110,16 @@ int g_iOffset_CParamsManger_bIsMultiplayer = -1;
 #include <srccoop_api/classdef/core/CChangelevel.inc>
 #include <srccoop_api/classdef/core/CDynamicProp.inc>
 #include <srccoop_api/classdef/core/CEnvBeam.inc>
+#include <srccoop_api/classdef/core/CEnvZoom.inc>
 #include <srccoop_api/classdef/core/CFuncLadder.inc>
 #include <srccoop_api/classdef/core/CGlobalState.inc>
 #include <srccoop_api/classdef/core/CGlobalVars.inc>
+#include <srccoop_api/classdef/core/CInfoTarget.inc>
+#include <srccoop_api/classdef/core/CItem.inc>
+#include <srccoop_api/classdef/core/CItemSuit.inc>
 #include <srccoop_api/classdef/core/CLogicAchievement.inc>
+#include <srccoop_api/classdef/core/CLogicAuto.inc>
+#include <srccoop_api/classdef/core/CLogicRelay.inc>
 #include <srccoop_api/classdef/core/CMessage.inc>
 #include <srccoop_api/classdef/core/CMultiplayRules.inc>
 #include <srccoop_api/classdef/core/CParticleSystem.inc>
@@ -97,6 +132,7 @@ int g_iOffset_CParamsManger_bIsMultiplayer = -1;
 #include <srccoop_api/classdef/core/CPropVehicleDriveable.inc>
 #include <srccoop_api/classdef/core/CProtoSniper.inc>
 #include <srccoop_api/classdef/core/CSceneEntity.inc>
+#include <srccoop_api/classdef/core/CSniperTarget.inc>
 #include <srccoop_api/classdef/core/CSoundEnt.inc>
 #include <srccoop_api/classdef/core/CSprite.inc>
 #include <srccoop_api/classdef/core/CSpriteOriented.inc>

@@ -31,22 +31,22 @@ methodmap CGlobalState
 	{
 		return SDKCall(g_pGlobalEntityGetMap, szGlobalMap, iMaxLength, iGlobalIndex);
 	}
-	public static bool SetState(const int iGlobalIndex, GLOBALESTATE state)
+	public static bool SetState(const int iGlobalIndex, const GLOBALESTATE eState)
 	{
 		if (CGlobalState.IsValidIndex(iGlobalIndex))
 		{
-			SDKCall(g_pGlobalEntitySetState, iGlobalIndex, state);
+			SDKCall(g_pGlobalEntitySetState, iGlobalIndex, eState);
 			return true;
 		}
 		
 		return false;
 	}
-	public static bool SetStateByName(const char[] szGlobalName, const GLOBALESTATE state)
+	public static bool SetStateByName(const char[] szGlobalName, const GLOBALESTATE eState)
 	{
 		int iGlobalIndex = CGlobalState.GetIndex(szGlobalName);
 		if (iGlobalIndex != -1)
 		{
-			CGlobalState.SetState(iGlobalIndex, state);
+			CGlobalState.SetState(iGlobalIndex, eState);
 			return true;
 		}
 		
@@ -74,8 +74,8 @@ methodmap CGlobalState
 		return false;
 	}
 	// Returns index to global state
-	public static int Add(const char[] szGlobalName, const char[] szMapName, GLOBALESTATE state)
+	public static int Add(const char[] szGlobalName, const char[] szMapName, const GLOBALESTATE eState)
 	{
-		return SDKCall(g_pGlobalEntityAdd, szGlobalName, szMapName, state);
+		return SDKCall(g_pGlobalEntityAdd, szGlobalName, szMapName, eState);
 	}
 }

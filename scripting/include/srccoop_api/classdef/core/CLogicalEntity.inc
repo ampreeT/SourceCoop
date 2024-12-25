@@ -7,9 +7,4 @@ methodmap CLogicalEntity < CBaseEntity
 	{
 		return view_as<CLogicalEntity>(CBaseEntity(iEntIndex));
 	}
-	
-	public bool IsValid()
-	{
-		return view_as<CBaseEntity>(this).IsValid() && this.GetEntIndex() > 0;
-	}
 }

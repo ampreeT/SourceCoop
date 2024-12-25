@@ -8,8 +8,12 @@ methodmap CPlayerInfoManager
 		return g_pPlayerInfoManager;
 	}
 
+	public Address GetAddress()
+	{
+		return view_as<Address>(this);
+	}
 	public CGlobalVars GetGlobalVars()
 	{
-		return SDKCall(g_pGetGlobalVars, view_as<Address>(this));
+		return SDKCall(g_pGetGlobalVars, this.GetAddress());
 	}
 }

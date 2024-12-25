@@ -117,9 +117,7 @@ methodmap CoopManager
 				if (pEntity.IsClassname("logic_auto"))
 				{
 					// do not let it get killed, so the output can fire later
-					int iSpawnFlags = pEntity.GetSpawnFlags();
-					if (iSpawnFlags & SF_AUTO_FIREONCE)
-						pEntity.SetSpawnFlags(iSpawnFlags &~ SF_AUTO_FIREONCE);
+					view_as<CLogicAuto>(pEntity).SetFireOnce(false);
 				}
 				for (int i = 0; i < pOutputHookList.Length; i++)
 				{
@@ -664,10 +662,10 @@ public Action Callback_OutputCallbackForDelay(const char[] szOutput, int iCaller
 		}
 		else if (pFireOutputData.m_pCaller.IsClassname("logic_relay"))
 		{
-			int iSpawnFlags = pFireOutputData.m_pCaller.GetSpawnFlags();
-			if (iSpawnFlags & SF_REMOVE_ON_FIRE)
+			CLogicRelay pCaller = view_as<CLogicRelay>(pFireOutputData.m_pCaller);
+			if (pCaller.WillRemoveOnFire())
 			{
-				pFireOutputData.m_pCaller.SetSpawnFlags(iSpawnFlags &~ SF_REMOVE_ON_FIRE);
+				pCaller.SetRemoveOnFire(false);
 				UnhookSingleEntityOutput(iCaller, szOutput, Callback_OutputCallbackForDelay);
 				HookSingleEntityOutput(iCaller, szOutput, Callback_DeleteEntOnDelayedOutputFire);
 			}
@@ -696,7 +694,8 @@ public void Timer_ShowChapterTitle(Handle hTimer)
 	if (pMessage != NULL_CBASEENTITY)
 	{
 		pMessage.SetMessage(data.m_szChapterTitle);
-		pMessage.SetSpawnFlags(SF_MESSAGE_ONCE | SF_MESSAGE_ALL);
+		pMessage.SetShowOnce(true);
+		pMessage.SetShowAllPlayers(true);
 		pMessage.ShowMessage();
 	}
 }

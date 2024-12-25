@@ -62,7 +62,7 @@ methodmap CBaseCombatWeapon < CBaseAnimating
 	}
 	public bool CanFireUnderwater()
 	{
-		return view_as<bool>(GetEntProp(this.GetEntIndex(), Prop_Data, "m_bFiresUnderwater"));
+		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_bFiresUnderwater") != 0;
 	}
 	public int GetViewModelIndex()
 	{
@@ -95,5 +95,14 @@ methodmap CBaseCombatWeapon < CBaseAnimating
 	public bool IsReloading()
 	{
 		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_bInReload") != 0;
-	} 
+	}
+	public bool CanRespawn()
+	{
+		return !IsSpawnFlagSetOnEntity(this.GetEntIndex(), 30);			// SF_ITEM_NORESPAWN (1 << 30)
+	}
+	public void SetRespawn(const bool bRespawnEnabled)
+	{
+		// if set, item wont respawn in MP
+		SetSpawnFlagOnEntity(this.GetEntIndex(), 30, !bRespawnEnabled);	// SF_ITEM_NORESPAWN (1 << 30)
+	}
 }

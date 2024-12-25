@@ -3,6 +3,10 @@
 
 methodmap CVEngineServer
 {
+	public static Address GetAddress()
+	{
+		return view_as<Address>(g_pGetClusterForOrigin);
+	}
 	public static int GetClusterForOrigin(const float vec3Origin[3])
 	{
 		return SDKCall(g_pGetClusterForOrigin, vec3Origin);

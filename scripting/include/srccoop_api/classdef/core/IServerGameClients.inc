@@ -8,6 +8,10 @@ methodmap IServerGameClients
 		return g_ServerGameClients;
 	}
 	
+	public Address GetAddress()
+	{
+		return view_as<Address>(this);
+	}
 	public CPlayerState GetPlayerState(CBasePlayer pPlayer)
 	{
 		return SDKCall(g_pGetPlayerState, this, pPlayer.entindex);
