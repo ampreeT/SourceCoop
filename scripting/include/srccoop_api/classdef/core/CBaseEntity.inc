@@ -192,7 +192,7 @@ methodmap CBaseEntity
 	{
 		return this.OutputAdd("OnUser1", "!self", "kill", _, flTime) && this.AcceptInput("FireUser1");
 	}
-	public int GetTeam()	// TOOD: Turn this into a enum.
+	public int GetTeam()
 	{
 		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_iTeamNum");
 	}
@@ -701,6 +701,8 @@ methodmap CBaseEntity
 	}
 	public CBaseCombatCharacter AsBaseCombatCharacter()
 	{
+		// TODO:
+		// Call `MyCombatCharacterPointer` and compare against `0`.
 		ThrowError("Missing implementation.");
 	}
 	public bool IsEdictChanged()
@@ -790,6 +792,7 @@ static bool TraceEntityFilter_FVisibleAiLosEnabled(int iEntIndex, int iMask, int
 	// TODO:
 	// Review how to extend the filter to the original implementation.
 	return iEntIndex != iThisEntIndex;
+
 	//return CBaseEntity(iEntity).GetCollisionGroup() != COLLISION_GROUP_NONE;
 }
 
@@ -799,6 +802,7 @@ static bool TraceEntityFilter_FVisible(int iEntIndex, int iMask, int iThisEntInd
 	// TODO:
 	// Review how to extend the filter to the original implementation.
 	return iEntIndex != iThisEntIndex;
+
 	//return CBaseEntity(iEntity).GetCollisionGroup() != COLLISION_GROUP_NONE;
 }
 
