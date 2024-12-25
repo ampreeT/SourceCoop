@@ -294,8 +294,11 @@ public void OnPluginStart()
 	g_pSpawnOptions.Reset();
 	EquipmentManager.Initialize();
 	DnManager.Initialize();
-	IdleAnims_Initialize();
 	InitializeMenus();
+	
+	#if defined SRCCOOP_BLACKMESA
+	IdleAnims_Initialize();
+	#endif
 	
 	g_CoopMapStartFwd = new GlobalForward("SC_OnCoopMapStart", ET_Ignore);
 	g_CoopMapConfigLoadedFwd = new GlobalForward("SC_OnCoopMapConfigLoaded", ET_Ignore, Param_Cell, Param_Cell);
