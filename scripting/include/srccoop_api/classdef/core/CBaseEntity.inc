@@ -372,7 +372,7 @@ methodmap CBaseEntity
 	{
 		SDKCall(g_pSetMinMaxSize, this.GetEntIndex(), vec3Mins, vec3Maxs);
 	}
-	public void WorldSpaceCenter(float vec3Center[3])	// TODO: Should the first parameter be const?
+	public void WorldSpaceCenter(float vec3Center[3])
 	{
 		SDKCall(g_pWorldSpaceCenter, this.GetEntIndex(), vec3Center);
 	}
