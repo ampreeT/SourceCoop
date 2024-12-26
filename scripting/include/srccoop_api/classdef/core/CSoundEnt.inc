@@ -7,7 +7,7 @@ methodmap CSoundEnt < CPointEntity
 {
 	public static void InitClassdef(const GameData hGameConfig)
 	{
-		g_iCSoundSize = GetGamedataInt(hGameConfig, "CSoundSize");	// TODO: Change this to `hGameConfig.GetOffset`.
+		g_iCSoundSize = hGameConfig.GetOffset("sizeof(CSound)");
 		if (g_iCSoundSize < 0)
 			SetFailState("Could not obtain CSound struct size");
 	}

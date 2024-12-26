@@ -106,12 +106,12 @@ methodmap CBaseCombatCharacter < CBaseFlex
 	{
 		SetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flNextAttack", flNextAttack);
 	}
-	public CBasePlayer AsPlayer()
+	public CBasePlayer ToPlayer()
 	{
 		bool bIsPlayer = this != NULL_CBASEENTITY && this.IsPlayer();
 		return bIsPlayer ? view_as<CBasePlayer>(this) : NULL_CBASEENTITY;
 	}
-	public CAI_BaseNPC AsNPC()
+	public CAI_BaseNPC ToNPC()
 	{
 		bool bIsNPC = this != NULL_CBASEENTITY && this.IsNPC();
 		return bIsNPC ? view_as<CAI_BaseNPC>(this) : NULL_CBASEENTITY;

@@ -498,10 +498,7 @@ methodmap CBaseEntity
 	}
 	public RGBA GetRenderColor()
 	{
-		int r = 0;
-		int g = 0;
-		int b = 0;
-		int a = 0;
+		int r, g, b, a;
 		GetEntityRenderColor(this.GetEntIndex(), r, g, b, a);
 		return RGBA(r, g, b, a);
 	}
@@ -699,7 +696,7 @@ methodmap CBaseEntity
 			return true;
 		}
 	}
-	public CBaseCombatCharacter AsBaseCombatCharacter()
+	public CBaseCombatCharacter ToBaseCombatCharacter()
 	{
 		// TODO:
 		// Call `MyCombatCharacterPointer` and compare against `0`.
