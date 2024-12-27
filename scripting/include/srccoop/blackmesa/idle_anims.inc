@@ -93,7 +93,7 @@ public Action IdleAnims_Hook_SetTransmit(const int iEntity, const int iClient)
 
 	if (eObserverMode != OBS_MODE_NONE)
 	{
-		if (eObserverMode == OBS_MODE_IN_EYE)
+		if (eObserverMode == OBS_MODE_IN_EYE && pPlayer.GetObserverTarget() == pParentPlayer)
 		{
 			return Plugin_Handled;
 		}
