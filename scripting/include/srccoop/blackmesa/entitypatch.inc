@@ -28,7 +28,7 @@ public MRESReturn Hook_IsPlayerAlly(int _this, Handle hReturn, Handle hParams)
 public void Hook_LAVSpawnPost(int iEntIndex)
 {
 	CBaseEntity pEntity = CBaseEntity(iEntIndex);
-	pEntity.SetEdictFlags(pEntity.GetEdictFlags() | FL_EDICT_ALWAYS);
+	pEntity.SetEdictAlwaysTransmit(true);
 }
 
 //------------------------------------------------------
@@ -280,7 +280,7 @@ public MRESReturn Hook_MarionettistAcceptInput(int _this, Handle hReturn, Handle
 					{
 						int iActivator = DHookGetParam(hParams, 2);
 						CBaseEntity pActivator = CBaseEntity(iActivator);
-						if (pActivator.IsClassPlayer())
+						if (pActivator.IsPlayer())
 						{
 							MarionettistManipulate(_this, iActivator, view_as<CBasePlayer>(pActivator));
 							DHookSetReturn(hReturn, true);
@@ -482,7 +482,7 @@ public MRESReturn Hook_WeaponSetModel(int _this, DHookParam hParams)
 		if (pWeapon.IsValid())
 		{
 			CBaseCombatCharacter pOwner = pWeapon.GetOwner();
-			if (pOwner.IsValid() && !pOwner.IsClassPlayer())
+			if (pOwner.IsValid() && !pOwner.IsPlayer())
 			{
 				static const char szWeaponModel[][][] =
 				{
@@ -596,8 +596,8 @@ public MRESReturn Hook_MusicTrackAcceptInput(int _this, Handle hReturn, Handle h
 //------------------------------------------------------
 public Action Hook_SuitTouchPickup(const char[] szOutput, int iCaller, int iActivator, float flDelay)
 {
-	CBaseEntity pCaller = CBaseEntity(iCaller);
-	if (pCaller.HasSpawnFlag(SF_BOOTSEQUENCE))
+	CItemSuit pCaller = CItemSuit(iCaller);
+	if (pCaller.m_spawnflags & SF_BOOTSEQUENCE)
 	{
 		CBasePlayer pPlayer = CBasePlayer(iActivator);
 		if (pPlayer.IsValid())
@@ -690,21 +690,19 @@ public void Timer_SetTripmineSpriteColor(Handle timer, CSpriteTeam pSpriteTeam)
 		return;
 	}
 
-	int r, g, b;
-	
 	char szSpriteTexture[MAX_MODELNAME];
 	pSpriteTeam.GetModelName(szSpriteTexture, sizeof(szSpriteTexture));
 	
 	// Take the sprite color and alpha color.
 	// At this point, sprite alpha is set to `0`.
-	pSpriteTeam.GetRenderColor(r, g, b, _);
-	pSprite.SetRenderColor(r, g, b, 224);
+	RGBA col4Sprite = pSpriteTeam.GetRenderColor();
+	pSprite.SetRenderColor(RGBA(col4Sprite.r, col4Sprite.g, col4Sprite.b, 224));
 	pSprite.SetRenderMode(pSpriteTeam.GetRenderMode());
 	pSprite.SetRenderFx(pSpriteTeam.GetRenderFx());
 
 	// Sets the sprite texture.
 	pSprite.SetModelName(szSpriteTexture);
-	pSprite.SetSpawnFlags(1);	// TODO: spawnflag constant
+	pSprite.m_spawnflags |= SF_SPRITE_STARTON;
 	pSprite.SetScale(pSpriteTeam.GetScale());
 
 	// Attach to the tripmine and spawn.
@@ -724,8 +722,8 @@ public void Timer_SetTripmineSpriteColor(Handle timer, CSpriteTeam pSpriteTeam)
 	// TODO:
 	// Use alpha directly when real tripmine laser texture is used.
 	// Right now, the alpha that has to be set has to be higher.
-	pBeamTeam.GetRenderColor(r, g, b, _);
-	pBeam.SetRenderColor(r, g, b, 128);
+	RGBA col4Beam = pBeamTeam.GetRenderColor();
+	pBeam.SetRenderColor(RGBA(col4Beam.r, col4Beam.g, col4Beam.b, 128));
 	pBeam.SetRenderMode(pBeamTeam.GetRenderMode());
 	pBeam.SetRenderFx(pBeamTeam.GetRenderFx());
 
@@ -733,7 +731,7 @@ public void Timer_SetTripmineSpriteColor(Handle timer, CSpriteTeam pSpriteTeam)
 	// Use the real tripmine laser texture.
 	pBeam.SetModel("sprites/purplelaser1.vmt");
 	pBeam.SetTextureName("sprites/purplelaser1.spr");
-	pBeam.SetSpawnFlags(1);		// TODO: spawnflag constant
+	pBeam.m_spawnflags |= SF_BEAM_STARTON;
 	pBeam.SetDuration(0.0);
 	pBeam.SetWidth(8.0);
 	pBeam.SetOrigin(vec3BeamStartPos);
@@ -1112,7 +1110,7 @@ public MRESReturn Hook_Dissolve(int _this, DHookReturn hReturn, DHookParam hPara
 	int nDissolveType = hParams.Get(4);
 	if (nDissolveType == ENTITY_DISSOLVE_FADE || nDissolveType == ENTITY_DISSOLVE_REMOVE_NOW)
 	{
-		if (CBaseEntity(_this).IsClassPlayer())
+		if (CBaseEntity(_this).IsPlayer())
 		{
 			hParams.Set(4, ENTITY_DISSOLVE_NORMAL);
 			return MRES_ChangedHandled;

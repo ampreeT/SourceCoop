@@ -140,8 +140,8 @@ methodmap SurvivalManager {
 					pPlayer.SetViewEntity(pPlayer);
 					pPlayer.SetObserverMode(OBS_MODE_CHASE);
 					pPlayer.SetMoveType(MOVETYPE_OBSERVER);
-					pPlayer.SetSolidFlags(pPlayer.GetSolidFlags() | FSOLID_NOT_SOLID);
-					pPlayer.AddEffects(EF_NODRAW);
+					pPlayer.m_usSolidFlags |= FSOLID_NOT_SOLID;
+					pPlayer.m_fEffects |= EF_NODRAW;
 					
 					// Show spectate gui
 					ShowVGUIPanel(client, "specgui", null);

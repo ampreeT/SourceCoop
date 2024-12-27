@@ -31,12 +31,6 @@
 				"windows"	"PlayerInfoManager002"
 				"linux"		"PlayerInfoManager002"
 			}
-
-			"CSoundSize"
-			{
-				"windows"	"52"
-				"linux"		"52"
-			}
 		}
 		"Offsets"
 		{
@@ -64,6 +58,11 @@
 			{
 				"windows"	"32"
 				"linux"		"33"
+			}
+			"sizeof(CSound)"
+			{
+				"windows"	"52"
+				"linux"		"52"
 			}
 		}
 		"Signatures"
@@ -1634,7 +1633,7 @@
 			"UTIL_FindClientInPVSGuts"	// UTIL_FindClientInPVSGuts(edict_t*, unsigned char*, int)
 			{
 				"windows"	"\x55\x8B\xEC\x83\xEC\x18\x56\xE8\x2A\x2A\x2A\x2A\x8B\xF0\x85\xF6\x0F\x84\x2A\x2A\x2A\x2A\x8B\x4E\x0C"
-				"linux"		"@_ZL24UTIL_FindClientInPVSGutsP7edict_tPhj_constprop_0"
+				"linux"		"\x55\x89\xE5\x57\x89\xD7\x56\x89\xC6\x53\x83\xEC\x2C"
 			}
 		}
 

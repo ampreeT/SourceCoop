@@ -281,7 +281,7 @@ methodmap DnManager
 		sEntry.m_pTarget1 = pAttacker;
 		sEntry.m_pTarget1.GetName(sEntry.m_szTarget1Name, sizeof(sEntry.m_szTarget1Name));
 
-		if (pVictim.IsClassPlayer())
+		if (pVictim.IsPlayer())
 		{
 			if (pAttacker == pVictim)
 			{
@@ -333,7 +333,7 @@ methodmap DnManager
 			return false;
 		DnManager.GetDisplayNameForEvent(pAttacker, sEntry.m_szTarget1Name, sizeof(sEntry.m_szTarget1Name));
 
-		if (pVictim.IsClassPlayer())
+		if (pVictim.IsPlayer())
 		{
 			// Check if feature is enabled.
 			if (g_sDnData.m_piNoticeEntityKills.IntValue == 0)
@@ -388,7 +388,7 @@ methodmap DnManager
 			return;
 		
 		DnEntry sEntry;
-		if (pAttacker.IsClassPlayer())
+		if (pAttacker.IsPlayer())
 		{
 			if (!DnManager.WriteEntryPlayerKill(sEntry, view_as<CBasePlayer>(pAttacker), pVictim))
 				return;

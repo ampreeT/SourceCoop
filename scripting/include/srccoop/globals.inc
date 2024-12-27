@@ -193,13 +193,6 @@ DynamicDetour hkTestGroundMove;
 ArrayList g_pCoopModeMemPatchList;
 
 // ----------------------------
-// Adresses, Interfaces
-// ----------------------------
-IServerGameDLL g_ServerGameDLL;
-IServerTools g_ServerTools;
-CGlobalVars gpGlobals;
-
-// ----------------------------
 // Plugin variables
 // ----------------------------
 char g_szMapName[MAX_MAPNAME];
