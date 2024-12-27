@@ -343,7 +343,7 @@ public void Hook_ChangelevelSpawn(int iEntIndex)
 	CChangelevel pEntity = CChangelevel(iEntIndex);
 	DHookEntity(hkAcceptInput, true, pEntity.GetEntIndex(), _, Hook_ChangelevelAcceptInput);
 
-	if (pEntity.IsTouchEnabled())
+	if (!(pEntity.m_spawnflags & SF_CHANGELEVEL_NOTOUCH))
 	{
 		SDKHook(pEntity.GetEntIndex(), SDKHook_Touch, Hook_ChangelevelOnTouch);
 		CreateTimer(Conf.CHANGELEVEL_EFFECT_PERIOD, ChangelevelEffects, pEntity, TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT);
@@ -1108,7 +1108,7 @@ public MRESReturn Hook_BaseNpcUpdateSleepState(int _this, Handle hParams)
 					}
 				}
 				
-				if ((pBaseNPC.GetSoundInterests() & SOUND_DANGER) && !pBaseNPC.WillWaitTillSeen())
+				if ((pBaseNPC.GetSoundInterests() & SOUND_DANGER) && !(pBaseNPC.m_spawnflags & SF_NPC_WAIT_TILL_SEEN))
 				{
 					CSoundEnt pSoundEnt = CSoundEnt.Get();
 					if (pSoundEnt.IsValid())
@@ -1270,7 +1270,7 @@ public MRESReturn Hook_ProtoSniperSelectSchedule(int _this, Handle hReturn)
 	if (pSniper.HasCondition(view_as<int>(COND_SNIPER_SWEEP_TARGET)))
 	{
 		CSniperTarget pSweepTarget = pSniper.GetSweepTarget();
-		if ((pSweepTarget.IsValid() && !pSweepTarget.IsInterruptable()) || pSniper.IsSweepHighestPriority())
+		if ((pSweepTarget.IsValid() && (pSweepTarget.m_spawnflags & SF_SNIPERTARGET_NOINTERRUPT)) || pSniper.IsSweepHighestPriority())
 		{
 			DHookSetReturn(hReturn, SCHED_PSNIPER_SWEEP_TARGET_NOINTERRUPT);
 		}

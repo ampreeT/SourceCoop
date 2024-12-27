@@ -9,7 +9,7 @@
 #include <sdkhooks>
 #include <sdktools>
 #include <sourcescramble>
-#include <srccoop_api/color>
+#include <srccoop/util/color>
 
 #include <srccoop_api/classdef/core/CBaseEntity.inc>
 #include <srccoop_api/classdef/core/CPointEntity.inc>

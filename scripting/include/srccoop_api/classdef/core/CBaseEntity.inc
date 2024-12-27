@@ -90,6 +90,17 @@ methodmap CBaseEntity
 			return EntRefToEntIndex(view_as<int>(this));
 		}
 	}
+	property int m_spawnflags
+	{
+		public get()
+		{
+			return GetEntProp(this.GetEntIndex(), Prop_Data, "m_spawnflags");
+		}
+		public set(const int iSpawnFlags)
+		{
+			SetEntProp(this.GetEntIndex(), Prop_Data, "m_spawnflags", iSpawnFlags);
+		}
+	}
 	/** Deprecated: Use entindex property instead */
 	public int GetEntIndex()
 	{

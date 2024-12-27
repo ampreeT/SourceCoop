@@ -1,6 +1,11 @@
 #pragma newdecls required
 #pragma semicolon 1
 
+enum CLogicAuto_SpawnFlags
+{
+	SF_AUTO_FIREONCE = 0x01,
+}
+
 methodmap CLogicAuto < CBaseEntity
 {
 	public CLogicAuto(const int iEntIndex = -1)
@@ -12,12 +17,15 @@ methodmap CLogicAuto < CBaseEntity
 		return CLogicAuto(CreateEntityByName("logic_auto"));
 	}
 
-	public bool WillFireOnce()
+	property CLogicAuto_SpawnFlags m_spawnflags
 	{
-		return IsSpawnFlagSetOnEntity(this.GetEntIndex(), 0);   // SF_AUTO_FIREONCE 0x01
-	}
-	public void SetFireOnce(const bool bFireOnce)
-	{
-		SetSpawnFlagOnEntity(this.GetEntIndex(), 0, bFireOnce); // SF_AUTO_FIREONCE 0x01
+		public get()
+		{
+			return view_as<CLogicAuto_SpawnFlags>(view_as<CBaseEntity>(this).m_spawnflags);
+		}
+		public set(const CLogicAuto_SpawnFlags eSpawnFlags)
+		{
+			view_as<CBaseEntity>(this).m_spawnflags = view_as<int>(eSpawnFlags);
+		}
 	}
 }

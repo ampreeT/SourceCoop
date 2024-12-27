@@ -1,6 +1,13 @@
 #pragma newdecls required
 #pragma semicolon 1
 
+enum CSprite_SpawnFlags
+{
+	SF_SPRITE_STARTON = 0x0001,
+	SF_SPRITE_ONCE = 0x0002,
+	SF_SPRITE_TEMPORARY = 0x8000,
+}
+
 methodmap CSprite < CBaseEntity
 {
 	public CSprite(const int iEntIndex = -1)
@@ -12,6 +19,17 @@ methodmap CSprite < CBaseEntity
 		return CSprite(CreateEntityByName("env_sprite"));
 	}
 
+	property CSprite_SpawnFlags m_spawnflags
+	{
+		public get()
+		{
+			return view_as<CSprite_SpawnFlags>(view_as<CBaseEntity>(this).m_spawnflags);
+		}
+		public set(const CSprite_SpawnFlags eSpawnFlags)
+		{
+			view_as<CBaseEntity>(this).m_spawnflags = view_as<int>(eSpawnFlags);
+		}
+	}
 	public float GetScale()
 	{
 		return GetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flSpriteScale");
@@ -76,13 +94,5 @@ methodmap CSprite < CBaseEntity
 	public bool IsOn()
 	{
 		return !this.HasEffects(EF_NODRAW);
-	}
-	public bool WillStartOn()
-	{
-		return IsSpawnFlagSetOnEntity(this.GetEntIndex(), 0);   // SF_SPRITE_STARTON 0x0001
-	}
-	public void SetStartOn(const bool bStartOn)
-	{
-		SetSpawnFlagOnEntity(this.GetEntIndex(), 0, bStartOn);	// SF_SPRITE_STARTON 0x0001
 	}
 }

@@ -1070,19 +1070,3 @@ stock void SetBitOnInt(int& i, const int iBitIndex, const bool bSetBit)
 		i &= ~(1 << iBitIndex);
 	}
 }
-
-// Obtains a bitflag from a entity.
-//
-stock bool IsSpawnFlagSetOnEntity(const int iEntIndex, const int iBitIndex)
-{
-	return GetBitFromInt(GetEntProp(iEntIndex, Prop_Data, "m_spawnflags"), iBitIndex);
-}
-
-// Sets a bitflag on a entity.
-//
-stock void SetSpawnFlagOnEntity(const int iEntIndex, const int iBitIndex, const bool bSetSpawnFlag)
-{
-	int iSpawnFlags = GetEntProp(iEntIndex, Prop_Data, "m_spawnflags");
-	SetBitOnInt(iSpawnFlags, iBitIndex, bSetSpawnFlag);
-	SetEntProp(iEntIndex, Prop_Data, "m_spawnflags", iSpawnFlags);
-}

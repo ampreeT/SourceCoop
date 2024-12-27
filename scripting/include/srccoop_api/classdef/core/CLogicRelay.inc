@@ -1,6 +1,11 @@
 #pragma newdecls required
 #pragma semicolon 1
 
+enum CLogicRelay_SpawnFlags
+{
+	SF_REMOVE_ON_FIRE = 0x001,
+}
+
 methodmap CLogicRelay < CLogicalEntity
 {
 	public CLogicRelay(const int iEntIndex = -1)
@@ -12,12 +17,15 @@ methodmap CLogicRelay < CLogicalEntity
 		return CLogicRelay(CreateEntityByName("logic_relay"));
 	}
 
-	public bool WillRemoveOnFire()
+	property CLogicRelay_SpawnFlags m_spawnflags
 	{
-		return IsSpawnFlagSetOnEntity(this.GetEntIndex(), 0);       // SF_REMOVE_ON_FIRE 0x001
-	}
-	public void SetRemoveOnFire(const bool bRemoveOnFire)
-	{
-		SetSpawnFlagOnEntity(this.GetEntIndex(), 0, bRemoveOnFire); // SF_REMOVE_ON_FIRE 0x001
+		public get()
+		{
+			return view_as<CLogicRelay_SpawnFlags>(view_as<CBaseEntity>(this).m_spawnflags);
+		}
+		public set(const CLogicRelay_SpawnFlags eSpawnFlags)
+		{
+			view_as<CBaseEntity>(this).m_spawnflags = view_as<int>(eSpawnFlags);
+		}
 	}
 }

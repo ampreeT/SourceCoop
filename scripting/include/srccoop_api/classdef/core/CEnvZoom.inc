@@ -1,6 +1,11 @@
 #pragma newdecls required
 #pragma semicolon 1
 
+enum CEnvZoom_SpawnFlags
+{
+	ENV_ZOOM_OVERRIDE = (1 << 0),
+}
+
 methodmap CEnvZoom < CPointEntity
 {
 	public CEnvZoom(const int iEntIndex = -1)
@@ -12,12 +17,15 @@ methodmap CEnvZoom < CPointEntity
 		return CEnvZoom(CreateEntityByName("env_zoom"));
 	}
 	
-	public bool WillOverride()
+	property CEnvZoom_SpawnFlags m_spawnflags
 	{
-		return IsSpawnFlagSetOnEntity(this.GetEntIndex(), 0);	// ENV_ZOOM_OVERRIDE (1 << 0)
-	}
-	public void SetOverride(const bool bOverride)
-	{
-		SetSpawnFlagOnEntity(this.GetEntIndex(), 0, bOverride);	// ENV_ZOOM_OVERRIDE (1 << 0)
+		public get()
+		{
+			return view_as<CEnvZoom_SpawnFlags>(view_as<CBaseEntity>(this).m_spawnflags);
+		}
+		public set(const CEnvZoom_SpawnFlags eSpawnFlags)
+		{
+			view_as<CBaseEntity>(this).m_spawnflags = view_as<int>(eSpawnFlags);
+		}
 	}
 }

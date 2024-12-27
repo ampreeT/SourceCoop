@@ -7,6 +7,25 @@ static Handle g_pHearingSensitivity;
 static Handle g_pUpdateEnemyMemory;
 static Handle g_pShouldPlayerAvoid;
 
+enum CAI_BaseNPC_SpawnFlags
+{
+	SF_NPC_WAIT_TILL_SEEN = (1 << 0),		// spawnflag that makes npcs wait until player can see them before attacking.
+	SF_NPC_GAG = (1 << 1),					// no idle noises from this npc
+	SF_NPC_FALL_TO_GROUND = (1 << 2),		// used my NPC_Maker
+	SF_NPC_DROP_HEALTHKIT = (1 << 3),		// Drop a healthkit upon death
+	SF_NPC_START_EFFICIENT = (1 << 4),		// Set into efficiency mode from spawn
+	// ( 1 << 5  )
+	// ( 1 << 6  )
+	SF_NPC_WAIT_FOR_SCRIPT = (1 << 7),		// spawnflag that makes npcs wait to check for attacking until the script is done or they've been attacked
+	SF_NPC_LONG_RANGE = (1 << 8),			// makes npcs look far and relaxes weapon range limit 
+	SF_NPC_FADE_CORPSE = (1 << 9),			// Fade out corpse after death
+	SF_NPC_ALWAYSTHINK = (1 << 10),			// Simulate even when player isn't in PVS.
+	SF_NPC_TEMPLATE = (1 << 11),			// This NPC will be used as a template by an npc_maker -- do not spawn.
+	SF_NPC_ALTCOLLISION = (1 << 12),
+	SF_NPC_NO_WEAPON_DROP = (1 << 13),		// This NPC will not actually drop a weapon that can be picked up
+	SF_NPC_NO_PLAYER_PUSHAWAY = (1 << 14),	
+}
+
 methodmap CAI_BaseNPC < CBaseCombatCharacter
 {
 	public static void InitClassdef(const GameData hGameConfig)
@@ -70,6 +89,17 @@ methodmap CAI_BaseNPC < CBaseCombatCharacter
 		return view_as<CAI_BaseNPC>(CBaseCombatCharacter(iEntIndex));
 	}
 	
+	property CAI_BaseNPC_SpawnFlags m_spawnflags
+	{
+		public get()
+		{
+			return view_as<CAI_BaseNPC_SpawnFlags>(view_as<CBaseEntity>(this).m_spawnflags);
+		}
+		public set(const CAI_BaseNPC_SpawnFlags eSpawnFlags)
+		{
+			view_as<CBaseEntity>(this).m_spawnflags = view_as<int>(eSpawnFlags);
+		}
+	}
 	public NPC_STATE GetState()
 	{
 		return view_as<NPC_STATE>(GetEntProp(this.GetEntIndex(), Prop_Data, "m_NPCState"));
@@ -288,120 +318,5 @@ methodmap CAI_BaseNPC < CBaseCombatCharacter
 	public void SetCine(const CAI_ScriptedSequence pCine)
 	{
 		SetEntPropEnt(this.entindex, Prop_Data, "m_hCine", pCine.entindex);
-	}
-	public bool WillWaitTillSeen()
-	{
-	    return IsSpawnFlagSetOnEntity(this.GetEntIndex(), 0);		// SF_NPC_WAIT_TILL_SEEN (1 << 0)
-	}
-	public void SetWaitTillSeen(const bool bWaitTillSeen)
-	{
-		// spawnflag that makes npcs wait until player can see them before attacking.
-	    SetSpawnFlagOnEntity(this.GetEntIndex(), 0, bWaitTillSeen);	// SF_NPC_WAIT_TILL_SEEN (1 << 0)
-	}
-	public bool CanGag()
-	{
-	    return IsSpawnFlagSetOnEntity(this.GetEntIndex(), 1);	// SF_NPC_GAG (1 << 1)
-	}
-	public void SetGag(const bool bGag)
-	{
-		// no idle noises from this npc
-	    SetSpawnFlagOnEntity(this.GetEntIndex(), 1, bGag);		// SF_NPC_GAG (1 << 1)
-	}
-	public bool CanFallToGround()
-	{
-	    return IsSpawnFlagSetOnEntity(this.GetEntIndex(), 2);		// SF_NPC_FALL_TO_GROUND (1 << 2)
-	}
-	public void SetCanFallToGround(const bool bFallToGround)
-	{
-		// used my NPC_Maker
-	    SetSpawnFlagOnEntity(this.GetEntIndex(), 2, bFallToGround);	// SF_NPC_FALL_TO_GROUND (1 << 2)
-	}
-	public bool CanDropHealthkit()
-	{
-	    return IsSpawnFlagSetOnEntity(this.GetEntIndex(), 3);			// SF_NPC_DROP_HEALTHKIT (1 << 3)
-	}
-	public void SetCanDropHealthkit(const bool bDropHealthKit)
-	{
-		// Drop a healthkit upon death
-	    SetSpawnFlagOnEntity(this.GetEntIndex(), 3, bDropHealthKit);	// SF_NPC_DROP_HEALTHKIT (1 << 3)
-	}
-	public bool WillStartEfficient()
-	{
-	    return IsSpawnFlagSetOnEntity(this.GetEntIndex(), 4);			// SF_NPC_START_EFFICIENT (1 << 4)
-	}
-	public void SetStartEfficient(const bool bStartEfficient)
-	{
-		// Set into efficiency mode from spawn
-	    SetSpawnFlagOnEntity(this.GetEntIndex(), 4, bStartEfficient);	// SF_NPC_START_EFFICIENT (1 << 4)
-	}
-	public bool WillWaitForScript()
-	{
-	    return IsSpawnFlagSetOnEntity(this.GetEntIndex(), 7);			// SF_NPC_WAIT_FOR_SCRIPT (1 << 7)
-	}
-	public void SetWillWaitForScript(const bool bWaitForScript)
-	{
-		// spawnflag that makes npcs wait to check for attacking until the script is done or they've been attacked
-	    SetSpawnFlagOnEntity(this.GetEntIndex(), 7, bWaitForScript);	// SF_NPC_WAIT_FOR_SCRIPT (1 << 7)
-	}
-	public bool IsLongRange()
-	{
-	    return IsSpawnFlagSetOnEntity(this.GetEntIndex(), 8);		// SF_NPC_LONG_RANGE (1 << 8)
-	}
-	public void SetLongRange(const bool bLongRange)
-	{
-		// makes npcs look far and relaxes weapon range limit 
-	    SetSpawnFlagOnEntity(this.GetEntIndex(), 8, bLongRange);	// SF_NPC_LONG_RANGE (1 << 8)
-	}
-	public bool CanFadeCorpse()
-	{
-	    return IsSpawnFlagSetOnEntity(this.GetEntIndex(), 9);		// SF_NPC_FADE_CORPSE (1 << 9)
-	}
-	public void SetFadeCorpse(const bool bFadeCorpse)
-	{
-		// Fade out corpse after death
-	    SetSpawnFlagOnEntity(this.GetEntIndex(), 9, bFadeCorpse);	// SF_NPC_FADE_CORPSE (1 << 9)
-	}
-	public bool WillAlwaysThink()
-	{
-	    return IsSpawnFlagSetOnEntity(this.GetEntIndex(), 10);		// SF_NPC_ALWAYSTHINK (1 << 10)
-	}
-	public void SetAlwaysThink(const bool bAlwaysThink)
-	{
-		// Simulate even when player isn't in PVS.
-	    SetSpawnFlagOnEntity(this.GetEntIndex(), 10, bAlwaysThink);	// SF_NPC_ALWAYSTHINK (1 << 10)
-	}
-	public bool IsTemplated()
-	{
-	    return IsSpawnFlagSetOnEntity(this.GetEntIndex(), 11);		// SF_NPC_TEMPLATE (1 << 11)
-	}
-	public void SetTemplated(const bool bTemplated)
-	{
-		// This NPC will be used as a template by an npc_maker -- do not spawn.
-	    SetSpawnFlagOnEntity(this.GetEntIndex(), 11, bTemplated);	// SF_NPC_TEMPLATE (1 << 11)
-	}
-	public bool HasAlternateCollision()
-	{
-	    return IsSpawnFlagSetOnEntity(this.GetEntIndex(), 12);				// SF_NPC_ALTCOLLISION (1 << 12)
-	}
-	public void SetAlternateCollision(const bool bAlternateCollision)
-	{
-	    SetSpawnFlagOnEntity(this.GetEntIndex(), 12, bAlternateCollision);	// SF_NPC_ALTCOLLISION (1 << 12)
-	}
-	public bool CanDropWeapon()
-	{
-	    return !IsSpawnFlagSetOnEntity(this.GetEntIndex(), 13);		// SF_NPC_NO_WEAPON_DROP (1 << 13)
-	}
-	public void SetWeaponDrop(const bool bWeaponDrop)
-	{
-		// This NPC will not actually drop a weapon that can be picked up
-	    SetSpawnFlagOnEntity(this.GetEntIndex(), 13, !bWeaponDrop);	// SF_NPC_NO_WEAPON_DROP (1 << 13)
-	}
-	public bool CanPushPlayer()
-	{
-	    return !IsSpawnFlagSetOnEntity(this.GetEntIndex(), 14);		// SF_NPC_NO_PLAYER_PUSHAWAY (1 << 14)
-	}
-	public void SetPushPlayer(const bool bPushPlayer)
-	{
-	    SetSpawnFlagOnEntity(this.GetEntIndex(), 14, !bPushPlayer);	// SF_NPC_NO_PLAYER_PUSHAWAY (1 << 14)
 	}
 }

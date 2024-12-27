@@ -571,7 +571,7 @@ static bool CanOverrideEnvZoomOwner(CBaseEntity pZoomOwner)
 	char szClassname[MAX_CLASSNAME];
 	if (!pZoomOwner.GetClassname(szClassname, sizeof(szClassname)) || strcmp(szClassname, "env_zoom") != 0)
 		return false;
-	return view_as<CEnvZoom>(pZoomOwner).WillOverride();
+	return !!(view_as<CEnvZoom>(pZoomOwner).m_spawnflags & ENV_ZOOM_OVERRIDE);
 }
 
 static bool TraceEntityFilter_IgnoreData(int iEntIndex, int iMask, any pData)

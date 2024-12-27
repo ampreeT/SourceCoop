@@ -597,7 +597,7 @@ public MRESReturn Hook_MusicTrackAcceptInput(int _this, Handle hReturn, Handle h
 public Action Hook_SuitTouchPickup(const char[] szOutput, int iCaller, int iActivator, float flDelay)
 {
 	CItemSuit pCaller = CItemSuit(iCaller);
-	if (pCaller.WillPlayBootSequence())
+	if (pCaller.m_spawnflags & SF_BOOTSEQUENCE)
 	{
 		CBasePlayer pPlayer = CBasePlayer(iActivator);
 		if (pPlayer.IsValid())
@@ -702,7 +702,7 @@ public void Timer_SetTripmineSpriteColor(Handle timer, CSpriteTeam pSpriteTeam)
 
 	// Sets the sprite texture.
 	pSprite.SetModelName(szSpriteTexture);
-	pSprite.SetStartOn(true);
+	pSprite.m_spawnflags |= SF_SPRITE_STARTON;
 	pSprite.SetScale(pSpriteTeam.GetScale());
 
 	// Attach to the tripmine and spawn.
@@ -731,7 +731,7 @@ public void Timer_SetTripmineSpriteColor(Handle timer, CSpriteTeam pSpriteTeam)
 	// Use the real tripmine laser texture.
 	pBeam.SetModel("sprites/purplelaser1.vmt");
 	pBeam.SetTextureName("sprites/purplelaser1.spr");
-	pBeam.SetStartOn(true);
+	pBeam.m_spawnflags |= SF_BEAM_STARTON;
 	pBeam.SetDuration(0.0);
 	pBeam.SetWidth(8.0);
 	pBeam.SetOrigin(vec3BeamStartPos);

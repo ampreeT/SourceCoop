@@ -54,8 +54,6 @@
 //------------------------------------------------------
 // Spawnflags
 //------------------------------------------------------
-#define SF_SNIPERTARGET_NOINTERRUPT 2
-
 #define SF_INFOPLAYERSTART_MASTER 1
 
 #define SF_PLAYER_EQUIP_STRIP_WEAPONS 2

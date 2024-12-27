@@ -1,6 +1,11 @@
 #pragma newdecls required
 #pragma semicolon 1
 
+enum CItemSuit_SpawnFlags
+{
+	SF_BOOTSEQUENCE = (1 << 17),
+}
+
 // In BMS, the name of this class is `CItem_Suit`.
 methodmap CItemSuit < CItem
 {
@@ -13,13 +18,15 @@ methodmap CItemSuit < CItem
 		return CItemSuit(CreateEntityByName("item_suit"));
 	}
     
-	public bool WillPlayBootSequence()
+	property CItemSuit_SpawnFlags m_spawnflags
 	{
-		return IsSpawnFlagSetOnEntity(this.GetEntIndex(), 17);			    // SF_BOOTSEQUENCE (1 << 17)
-	}
-	public void SetPlayBootSequence(const bool bPlayBootSequence)
-	{
-		// if set in BM, item respawns at regular interval
-		SetSpawnFlagOnEntity(this.GetEntIndex(), 17, bPlayBootSequence);    // SF_BOOTSEQUENCE (1 << 17)
+		public get()
+		{
+			return view_as<CItemSuit_SpawnFlags>(view_as<CBaseEntity>(this).m_spawnflags);
+		}
+		public set(const CItemSuit_SpawnFlags eSpawnFlags)
+		{
+			view_as<CBaseEntity>(this).m_spawnflags = view_as<int>(eSpawnFlags);
+		}
 	}
 }

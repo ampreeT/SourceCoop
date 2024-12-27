@@ -81,7 +81,7 @@ public void Hook_Instancing_ItemSpawn(int iEntIndex)
 		SDKHook(iEntIndex, SDKHook_SetTransmit, Hook_Instancing_ItemTransmit);
 		SDKHook(iEntIndex, SDKHook_Use, Hook_Instancing_Use);
 	}
-	pItem.SetHardRespawn(false);
+	pItem.m_spawnflags &= ~SF_ITEM_HARDRESPAWN;
 	DispatchKeyValue(iEntIndex, "respawntime", "0");
 }
 

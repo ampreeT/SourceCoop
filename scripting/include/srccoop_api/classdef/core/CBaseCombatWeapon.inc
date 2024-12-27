@@ -3,6 +3,11 @@
 
 static Handle g_pSendWeaponAnim;
 
+enum CBaseCombatWeapon_SpawnFlags
+{
+	SF_ITEM_NORESPAWN = (1 << 30),
+}
+
 methodmap CBaseCombatWeapon < CBaseAnimating
 {
 	public static void InitClassdef(const GameData hGameConfig)
@@ -23,6 +28,17 @@ methodmap CBaseCombatWeapon < CBaseAnimating
 		return view_as<CBaseCombatWeapon>(CBaseAnimating(iEntIndex));
 	}
 	
+	property CBaseCombatWeapon_SpawnFlags m_spawnflags
+	{
+		public get()
+		{
+			return view_as<CBaseCombatWeapon_SpawnFlags>(view_as<CBaseEntity>(this).m_spawnflags);
+		}
+		public set(const CBaseCombatWeapon_SpawnFlags eSpawnFlags)
+		{
+			view_as<CBaseEntity>(this).m_spawnflags = view_as<int>(eSpawnFlags);
+		}
+	}
 	public CBaseCombatCharacter GetOwner()
 	{
 		return CBaseCombatCharacter(GetEntPropEnt(this.GetEntIndex(), Prop_Send, "m_hOwner"));
@@ -110,14 +126,5 @@ methodmap CBaseCombatWeapon < CBaseAnimating
 	public bool IsReloading()
 	{
 		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_bInReload") != 0;
-	}
-	public bool CanRespawn()
-	{
-		return !IsSpawnFlagSetOnEntity(this.GetEntIndex(), 30);			// SF_ITEM_NORESPAWN (1 << 30)
-	}
-	public void SetRespawn(const bool bRespawnEnabled)
-	{
-		// if set, item wont respawn in MP
-		SetSpawnFlagOnEntity(this.GetEntIndex(), 30, !bRespawnEnabled);	// SF_ITEM_NORESPAWN (1 << 30)
 	}
 }
