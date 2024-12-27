@@ -137,7 +137,7 @@ methodmap CBasePlayer < CBaseCombatCharacter
 		}
 		
 		CBaseAnimating pItem = CBaseAnimating(GivePlayerItem(this.GetEntIndex(), szItemName));
-		if (pItem.IsValid() && !pItem.GetOwner().IsValid())
+		if (pItem != NULL_CBASEENTITY && pItem.GetOwner() == NULL_CBASEENTITY)
 		{
 			// this would drop on the ground if player cant pick up any more
 			pItem.KillAfterTime(0.1);
@@ -453,12 +453,12 @@ methodmap CBasePlayer < CBaseCombatCharacter
 	}
 	public bool SetFOV(const CBaseEntity pRequester, const int iFOV, const float flZoomRate, const int iZoomStart = 0)
 	{
-		if (!pRequester.IsValid())
+		if (pRequester == NULL_CBASEENTITY)
 			return false;
 		
 		CBaseEntity pZoomOwner = CBaseEntity(GetEntPropEnt(this.GetEntIndex(), Prop_Data, "m_hZoomOwner"));
 		// If we already have an owner, we only allow requests from that owner
-		if (pZoomOwner.IsValid() && pZoomOwner != pRequester)
+		if (pZoomOwner != NULL_CBASEENTITY && pZoomOwner != pRequester)
 		{
 			if (!CanOverrideEnvZoomOwner(pZoomOwner))
 				return false;
