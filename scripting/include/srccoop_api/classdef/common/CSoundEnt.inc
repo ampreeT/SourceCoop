@@ -55,7 +55,7 @@ enum struct CSound
 		if (iOffsetPoolStart == -1)
 			ThrowError("Unable to retrieve offset %s", "m_SoundPool");
 
-		return pSoundEnt.GetAddress() + iOffsetPoolStart + this.GetSoundIndex() * g_iCSoundSize;
+		return pSoundEnt.address + iOffsetPoolStart + this.GetSoundIndex() * g_iCSoundSize;
 	}
 	int GetType()
 	{
@@ -155,5 +155,5 @@ static Address GetSoundPoolPropAddress(CSoundEnt pSoundEnt, const int iSoundInde
 		ThrowError("Internal Error: Computed offset %s is negative (%i); %s offset: %i, SoundPool offset: %i", szProperty, iOffset, szProperty, iOffsetFromStartProperty, iOffsetPoolStart);
 	
 	// this + offsetof(m_SoundPool[iSoundIndex]) + offsetof(property)
-	return pSoundEnt.GetAddress() + iOffsetPoolStart + iSoundIndex * g_iCSoundSize + iOffset;
+	return pSoundEnt.address + iOffsetPoolStart + iSoundIndex * g_iCSoundSize + iOffset;
 }

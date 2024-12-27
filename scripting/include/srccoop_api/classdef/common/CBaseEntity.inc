@@ -97,6 +97,13 @@ methodmap CBaseEntity
 			return view_as<int>(this);
 		}
 	}
+	property Address address
+	{
+		public get()
+		{
+			return GetEntityAddress(this.entindex);
+		}
+	}
 	property int edictFlags
 	{
 		public get()
@@ -170,10 +177,6 @@ methodmap CBaseEntity
 	public bool HasEdict()
 	{
 		return IsValidEdict(this.entindex);
-	}
-	public Address GetAddress()
-	{
-		return GetEntityAddress(this.entindex);
 	}
 	public bool GetClassname(char[] szBuffer, const int iMaxLength)
 	{

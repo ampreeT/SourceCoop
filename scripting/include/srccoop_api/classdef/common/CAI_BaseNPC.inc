@@ -238,10 +238,9 @@ methodmap CAI_BaseNPC < CBaseCombatCharacter
 			ThrowError("Unable to retrieve offset %s", "m_bForceConditionsGather");
 		int iOffsetConditions = iForceConditionsGatherOffset - 128;
 		
-		Address pAddress = this.GetAddress();
 		int iOffsetIndex = iCondition / CHAR_BIT;
 		int iBitIndex = iCondition % CHAR_BIT;
-		Address pOffset = view_as<Address>(view_as<int>(pAddress) + iOffsetConditions + iOffsetIndex);
+		Address pOffset = this.address + iOffsetConditions + iOffsetIndex;
 		int iConditionList = LoadFromAddress(pOffset, NumberType_Int8);
 		return view_as<bool>(iConditionList & (1 << iBitIndex));
 	}
@@ -265,10 +264,9 @@ methodmap CAI_BaseNPC < CBaseCombatCharacter
 			ThrowError("Unable to retrieve offset %s", "m_bForceConditionsGather");
 		int iOffsetConditions = iForceConditionsGatherOffset - 128;
 		
-		Address pAddress = this.GetAddress();
 		int iOffsetIndex = iCondition / CHAR_BIT;
 		int iBitIndex = iCondition % CHAR_BIT;
-		Address pOffset = view_as<Address>(view_as<int>(pAddress) + iOffsetConditions + iOffsetIndex);
+		Address pOffset = this.address + iOffsetConditions + iOffsetIndex;
 		int iConditionList = LoadFromAddress(pOffset, NumberType_Int8);
 
 		if (bSetCondition)
