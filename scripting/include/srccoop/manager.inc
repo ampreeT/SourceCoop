@@ -269,12 +269,12 @@ methodmap CoopManager
 		{
 			if (g_pLevelLump.m_iIntroType == INTRO_FADE)
 			{
-				pPlayer.AddFlags(FL_ATCONTROLS | FL_FROZEN);	// Freeze controls and angles.
+				pPlayer.m_fFlags |= (FL_ATCONTROLS | FL_FROZEN);	// Freeze controls and angles.
 				Client_ScreenFade(pPlayer.entindex, 0, FFADE_STAYOUT);
 			}
 			else if (g_pLevelLump.m_iIntroType == INTRO_FREEZE)
 			{
-				pPlayer.AddFlags(FL_ATCONTROLS);				// Freeze controls.
+				pPlayer.m_fFlags |= FL_ATCONTROLS;				// Freeze controls.
 				Client_ScreenFade(pPlayer.entindex, Conf.FROZEN_FADE_DUR_IN, FFADE_OUT | FFADE_STAYOUT, _,
 					Conf.FROZEN_FADE_COLOR[0], Conf.FROZEN_FADE_COLOR[1], Conf.FROZEN_FADE_COLOR[2], Conf.FROZEN_FADE_COLOR[3]);
 			}
@@ -587,7 +587,7 @@ public Action Timer_DecrementUntilMapStart(Handle hTimer)
 					// TODO: Look into this.
 					// `FL_FROZEN` is being removed even without the below line in Black Mesa (i doubt this affects other games).
 					// `CBM_MP_GameRules.SetStateEndTime` might be the culprit and might have side effects for other behaviors too.
-					pClient.RemoveFlags(FL_ATCONTROLS | FL_FROZEN);
+					pClient.m_fFlags &= ~(FL_ATCONTROLS | FL_FROZEN);
 					if (g_pLevelLump.m_iIntroType == INTRO_FREEZE)
 					{
 						Client_ScreenFade(pClient.entindex, Conf.FROZEN_FADE_DUR_OUT, FFADE_PURGE | FFADE_IN, 1,

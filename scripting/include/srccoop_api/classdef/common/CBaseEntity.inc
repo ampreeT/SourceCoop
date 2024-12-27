@@ -108,6 +108,17 @@ methodmap CBaseEntity
 			SetEntProp(this.entindex, Prop_Data, "m_spawnflags", iSpawnFlags);
 		}
 	}
+	property int m_fFlags
+	{
+		public get()
+		{
+			return GetEntityFlags(this.entindex);
+		}
+		public set(const int iFlags)
+		{
+			SetEntityFlags(this.entindex, iFlags);
+		}
+	}
 	property EntityEffectFlags m_fEffects
 	{
 		public get()
@@ -265,26 +276,6 @@ methodmap CBaseEntity
 	public void GetEarPosition(float vec3Buffer[3])
 	{
 		this.GetEyePosition(vec3Buffer);
-	}
-	public int GetFlags()
-	{
-		return GetEntityFlags(this.entindex);
-	}
-	public bool HasFlags(const int iFlags)
-	{
-		return (this.GetFlags() & iFlags) == iFlags;
-	}
-	public void SetFlags(const int iFlags)
-	{
-		SetEntityFlags(this.entindex, iFlags);
-	}
-	public void AddFlags(const int iFlags)
-	{
-		this.SetFlags(this.GetFlags() | iFlags);
-	}
-	public void RemoveFlags(const int iFlags)
-	{
-		this.SetFlags(this.GetFlags() & ~iFlags);
 	}
 	public void Teleport(const float vec3Origin[3] = NULL_VECTOR, const float vec3Angles[3] = NULL_VECTOR, const float vec3Velocity[3] = NULL_VECTOR)
 	{
@@ -594,7 +585,7 @@ methodmap CBaseEntity
 	}
 	public bool FVisibleEntity(const CBaseEntity pEntity, int iTraceMask = MASK_BLOCKLOS, CBaseEntity& pBlocker = NULL_CBASEENTITY)
 	{
-		if (pEntity.HasFlags(FL_NOTARGET))
+		if (pEntity.m_fFlags & FL_NOTARGET)
 			return false;
 
 		float vec3LookerOrigin[3];

@@ -211,7 +211,7 @@ methodmap CBasePlayer < CBaseCombatCharacter
 	public void StartDucking() // (taken from point_teleport code)
 	{
 		this.SetButtons(this.GetButtons() | IN_DUCK);
-		this.AddFlags(FL_DUCKING);
+		this.m_fFlags |= FL_DUCKING;
 		int iClient = this.entindex;
 		SetEntProp(iClient, Prop_Send, "m_bDucked", true);
 		SetEntProp(iClient, Prop_Send, "m_bDucking", true);
@@ -224,7 +224,7 @@ methodmap CBasePlayer < CBaseCombatCharacter
 	public void StopDucking()
 	{
 		this.SetButtons(this.GetButtons() & ~IN_DUCK);
-		this.RemoveFlags(FL_DUCKING);
+		this.m_fFlags &= ~FL_DUCKING;
 		int iClient = this.entindex;
 		SetEntProp(iClient, Prop_Send, "m_bDucked", false);
 		SetEntProp(iClient, Prop_Send, "m_bDucking", false);

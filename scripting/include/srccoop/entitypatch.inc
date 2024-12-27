@@ -1100,7 +1100,7 @@ public MRESReturn Hook_BaseNpcUpdateSleepState(int _this, Handle hParams)
 					for (int i = 1; i <= MaxClients; ++i)
 					{
 						CBasePlayer pPlayer = CBasePlayer(i);
-						if (pPlayer.IsValid() && pPlayer.IsAlive() && !pPlayer.HasFlags(FL_NOTARGET) && pPlayer.FVisibleEntity(pBaseNPC))
+						if (pPlayer.IsValid() && pPlayer.IsAlive() && !(pPlayer.m_fFlags & FL_NOTARGET) && pPlayer.FVisibleEntity(pBaseNPC))
 						{
 							pBaseNPC.Wake();
 							break;
@@ -1173,7 +1173,7 @@ public bool HasAnyPlayerWalkedIntoWakeRadius(CAI_BaseNPC pBaseNPC)
 	for (int i = 1; i <= MaxClients; ++i)
 	{
 		CBasePlayer pPlayer = CBasePlayer(i);
-		if (pPlayer.IsValid() && pPlayer.IsAlive() && !pPlayer.HasFlags(FL_NOTARGET))
+		if (pPlayer.IsValid() && pPlayer.IsAlive() && !(pPlayer.m_fFlags & FL_NOTARGET))
 		{
 			float vec3PlayerPosition[3];
 			pPlayer.GetAbsOrigin(vec3PlayerPosition);
