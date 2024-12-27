@@ -11,22 +11,19 @@ methodmap CBM_MP_GameRules < CMultiplayRules
 		SetFailState("CBM_MP_GameRules.GetStateIndex %s", szStateProp); return -1;
 	}
 	
-	public static void SetStateEndTime(const char[] szStateProp, float flEndTime)
+	public static void SetStateEndTime(const char[] szStateProp, const float flEndTime)
 	{
 		GameRules_SetPropFloat(szStateProp, flEndTime, STATE_ELEMENT_DONE_TIME);
 	}
-	
 	public static void SetCurrentState(const char[] szStateProp)
 	{
 		GameRules_SetProp("m_nCurrentStateId", CBM_MP_GameRules.GetStateIndex(szStateProp));
 	}
-	
 	public static void SetStateNextState(const char[] szStateProp, const char[] szNextStateProp)
 	{
 		GameRules_SetProp(szStateProp, CBM_MP_GameRules.GetStateIndex(szNextStateProp), _, STATE_ELEMENT_NEXT_STATE);
 	}
-	
-	public static void SetStateIsInIntermission(const char[] szStateProp, bool bInIntermission)
+	public static void SetStateIsInIntermission(const char[] szStateProp, const bool bInIntermission)
 	{
 		GameRules_SetProp(szStateProp, bInIntermission, _, STATE_ELEMENT_IS_IN_INTERMISSION);
 	}

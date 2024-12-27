@@ -31,12 +31,6 @@
 				"windows"	"PlayerInfoManager002"
 				"linux"		"PlayerInfoManager002"
 			}
-
-			"CSoundSize"
-			{
-				"windows"	"52"
-				"linux"		"52"
-			}
 		}
 		"Offsets"
 		{
@@ -64,6 +58,11 @@
 			{
 				"windows"	"32"
 				"linux"		"33"
+			}
+			"sizeof(CSound)"
+			{
+				"windows"	"52"
+				"linux"		"52"
 			}
 		}
 		"Signatures"

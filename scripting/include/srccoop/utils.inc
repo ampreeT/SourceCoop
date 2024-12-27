@@ -790,7 +790,7 @@ stock bool CanTeleportPlayer_Offset(float vecOrigin[3], float yaw, float distanc
 public bool CanTeleportPlayer_TraceFilter(int entity, int mask, any data)
 {
 	CBaseEntity pEntity = CBaseEntity(entity);
-	if (pEntity.IsClassPlayer() || pEntity.IsPickupItem())
+	if (pEntity.IsPlayer() || pEntity.IsPickupItem())
 	{
 		return false;
 	}
@@ -1046,4 +1046,27 @@ stock bool ResolveValveFile(const char[] szFile, char[] szFullPath, int maxLen)
 		dir.Close();
 	}
 	return false;
+}
+
+stock bool GetBitFromInt(const int i, const int iBitIndex)
+{
+	if (iBitIndex < 0 || iBitIndex > 31)
+		ThrowError("Received out of bounds index %d; range is `0..32`", iBitIndex);
+	
+	return (i & (1 << iBitIndex)) != 0;
+}
+
+stock void SetBitOnInt(int& i, const int iBitIndex, const bool bSetBit)
+{
+	if (iBitIndex < 0 || iBitIndex > 31)
+		ThrowError("Received out of bounds index %d; range is `0..32`", iBitIndex);
+	
+	if (bSetBit)
+	{
+		i |= (1 << iBitIndex);
+	}
+	else
+	{
+		i &= ~(1 << iBitIndex);
+	}
 }

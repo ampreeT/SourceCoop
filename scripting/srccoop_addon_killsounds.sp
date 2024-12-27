@@ -85,7 +85,7 @@ public void Event_EntityKilled(Event hEvent, const char[] szName, bool bDontBroa
 	CBaseEntity pKilled = CBaseEntity(hEvent.GetInt("entindex_killed"));
 	CBaseEntity pAttacker = CBaseEntity(hEvent.GetInt("entindex_attacker"));
 	
-	if (pAttacker.IsClassPlayer() && pKilled.IsClassNPC())
+	if (pAttacker.IsPlayer() && pKilled.IsNPC())
 	{
 		if (pEnabledCookie.GetInt(pAttacker.entindex, pConvarDefault.BoolValue))
 		{

@@ -14,7 +14,7 @@ methodmap CBlackMesaBaseDetonator < CBaseAnimating
 
 	public bool IsPlacedByLevelDesigner()
 	{
-		return view_as<bool>(GetEntProp(this.GetEntIndex(), Prop_Data, "m_bPlacedByLevelDesigner"));
+		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_bPlacedByLevelDesigner") != 0;
 	}
 	public void SetPlacedByLevelDesigner(const bool bIsPlacedByDesigner)
 	{

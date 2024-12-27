@@ -174,7 +174,7 @@ public Action OnPlayerRunCmd(int iClient, int &iButtons, int &iImpulse, float fV
 
 		// Make sure target is not an info_observer_menu
 		// force free-look where appropriate - this removes the extra (pointless) third person spec mode
-		if (iObsMode == OBS_MODE_POI && pTarget != pClient && (!pTarget.IsValid() || pTarget.IsClassPlayer()))
+		if (iObsMode == OBS_MODE_POI && pTarget != pClient && (!pTarget.IsValid() || pTarget.IsPlayer()))
 		{
 			SetEntProp(iClient, Prop_Data, "m_iObserverMode", OBS_MODE_ROAMING);
 		}
@@ -380,7 +380,7 @@ public MRESReturn Hook_PlayerSpawnPost(int iClient, Handle hReturn, Handle hPara
 			pPlayer.SetSuit(false);
 			pPlayer.SetMaxSpeed(190.0);
 			pPlayer.SetIsSprinting(false);
-			pPlayer.SetSolidFlags(pPlayer.GetSolidFlags() & ~FSOLID_NOT_SOLID);
+			pPlayer.m_usSolidFlags &= ~FSOLID_NOT_SOLID;
 			#endif
 
 			// Stop HEV sounds
@@ -501,13 +501,13 @@ void PlayerPatch_ApplyServerRagdoll(CBasePlayer pPlayer, Address pTakeDmgInfo)
 		// Player is currently using model for idle animations.
 		// The nodraw is required for hiding the player the tick he dies.
 		// The model that was parented is cleared since `CreateServerRagdoll` will not work otherwise.
-		pPlayer.AddEffects(EF_NODRAW);
+		pPlayer.m_fEffects |= EF_NODRAW;
 		g_pIdle[pPlayer.GetEntIndex()].m_pModel.ClearParent();
 		iRagdollInheritIndex = g_pIdle[pPlayer.GetEntIndex()].m_pModel.GetEntIndex();
 	}
 	else
 	{
-		pPlayer.RemoveEffects(EF_NODRAW);
+		pPlayer.m_fEffects &= ~EF_NODRAW;
 		iRagdollInheritIndex = pPlayer.GetEntIndex();
 	}
 	#else
@@ -574,7 +574,7 @@ public Action Hook_PlayerTraceAttack(int victim, int &attacker, int &inflictor, 
 	if (CoopManager.IsCoopModeEnabled() && !mp_friendlyfire.BoolValue)
 	{
 		// Disable FF
-		if (attacker != victim && CBasePlayer(attacker).IsClassPlayer())
+		if (attacker != victim && CBasePlayer(attacker).IsPlayer())
 		{
 			return Plugin_Handled;
 		}
@@ -593,7 +593,7 @@ public Action Hook_PlayerTakeDamage(int victim, int &attacker, int &inflictor, f
 	if (!mp_friendlyfire.BoolValue)
 	{
 		// Disable FF from other sources such as the tau cannon
-		if (attacker != victim && CBasePlayer(attacker).IsClassPlayer())
+		if (attacker != victim && CBasePlayer(attacker).IsPlayer())
 		{
 			return Plugin_Handled;
 		}
@@ -693,8 +693,8 @@ public MRESReturn Hook_PlayerShouldCollide(int _this, Handle hReturn, Handle hPa
 {
 	if (CoopManager.IsFeatureEnabled(FT_NOBLOCK))
 	{
-		int iCollisionGroup = DHookGetParam(hParams, 1);
-		if (iCollisionGroup == COLLISION_GROUP_PLAYER || iCollisionGroup == COLLISION_GROUP_PLAYER_MOVEMENT)
+		Collision_Group_t eCollisionGroup = DHookGetParam(hParams, 1);
+		if (eCollisionGroup == COLLISION_GROUP_PLAYER || eCollisionGroup == COLLISION_GROUP_PLAYER_MOVEMENT)
 		{
 			DHookSetReturn(hReturn, false);
 			return MRES_Supercede;
@@ -713,7 +713,7 @@ public MRESReturn Hook_ForcePlayerToDropThisObject(Handle hParams)
 	{
 		// singleplayer doesn't care what's passed in so we have to check for both player or item
 		CBaseEntity pParam = CBaseEntity(DHookGetParam(hParams, 1));
-		if (pParam.IsClassPlayer())
+		if (pParam.IsPlayer())
 		{
 			view_as<CBasePlayer>(pParam).ForceDropOfCarriedPhysObjects();
 		}
@@ -868,8 +868,8 @@ void PackPlayerItems(CBasePlayer pPlayer)
 		CBaseCombatWeapon pWeapon = g_pPackedEquipment[client].m_pWeaponEntityList.Get(i);
 		pPlayer.RemoveWeapon(pWeapon);
 		pWeapon.SetModelIndex(pWeapon.GetWeaponModelIndex(.bViewModel = false));
-		pWeapon.SetSpawnFlags(pWeapon.GetSpawnFlags() | SF_ITEM_NORESPAWN);
-		pWeapon.AddEffects(EF_NODRAW | EF_NOSHADOW);
+		pWeapon.m_spawnflags |= SF_ITEM_NORESPAWN;
+		pWeapon.m_fEffects |= EF_NODRAW | EF_NOSHADOW;
 	}
 	pPlayer.RemoveAllItems();
 }
