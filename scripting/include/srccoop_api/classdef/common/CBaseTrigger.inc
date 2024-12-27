@@ -69,6 +69,6 @@ methodmap CBaseTrigger < CBaseToggle
 		static char szBuffer[PLATFORM_MAX_PATH];
 		this.GetModelName(szBuffer, sizeof(szBuffer));
 		this.SetModel(szBuffer); // initialize the model from name
-		this.AddEffects(EF_NODRAW);
+		this.m_fEffects |= EF_NODRAW;
 	}
 }

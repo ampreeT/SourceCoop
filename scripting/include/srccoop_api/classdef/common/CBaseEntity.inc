@@ -9,6 +9,24 @@ static Handle g_pWorldSpaceCenter;
 static Handle g_pIsNPC;
 static Handle g_pSetMinMaxSize;
 
+enum EntityEffectFlags
+{
+	EF_BONEMERGE			= 0x001,	// Performs bone merge on client side
+	EF_BRIGHTLIGHT 			= 0x002,	// DLIGHT centered at entity origin
+	EF_DIMLIGHT 			= 0x004,	// player flashlight
+	EF_NOINTERP				= 0x008,	// don't interpolate the next frame
+	EF_NOSHADOW				= 0x010,	// Don't cast no shadow
+	EF_NODRAW				= 0x020,	// don't draw entity
+	EF_NORECEIVESHADOW		= 0x040,	// Don't receive no shadow
+	EF_BONEMERGE_FASTCULL	= 0x080,	// For use with EF_BONEMERGE. If this is set, then it places this ent's origin at its
+										// parent and uses the parent's bbox + the max extents of the aiment.
+										// Otherwise, it sets up the parent's bones every frame to figure out where to place
+										// the aiment, which is inefficient because it'll setup the parent's bones even if
+										// the parent is not in the PVS.
+	EF_ITEM_BLINK			= 0x100,	// blink an item so that the user notices it.
+	EF_PARENT_ANIMATES		= 0x200,	// always assume that the parent entity is animating
+}
+
 #define NULL_CBASEENTITY view_as<any>(-1)
 
 methodmap CBaseEntity
@@ -99,6 +117,17 @@ methodmap CBaseEntity
 		public set(const int iSpawnFlags)
 		{
 			SetEntProp(this.GetEntIndex(), Prop_Data, "m_spawnflags", iSpawnFlags);
+		}
+	}
+	property EntityEffectFlags m_fEffects
+	{
+		public get()
+		{
+			return view_as<EntityEffectFlags>(GetEntProp(this.GetEntIndex(), Prop_Data, "m_fEffects"));
+		}
+		public set(const EntityEffectFlags eEffects)
+		{
+			SetEntProp(this.GetEntIndex(), Prop_Data, "m_fEffects", eEffects);
 		}
 	}
 	/** Deprecated: Use entindex property instead */
@@ -525,26 +554,6 @@ methodmap CBaseEntity
 	{
 		RGBA col4 = this.GetRenderColor();
 		this.SetRenderColor(RGBA(col4.r, col4.g, col4.b, a));
-	}
-	public EntityEffectFlags GetEffects()		// TODO: Remove this function and turn each bitflag into a individual function.
-	{
-		return view_as<EntityEffectFlags>(GetEntProp(this.GetEntIndex(), Prop_Data, "m_fEffects"));
-	}
-	public bool HasEffects(const EntityEffectFlags eEffects)	// TODO: Remove this function and turn each bitflag into a individual function.
-	{
-		return (this.GetEffects() & eEffects) == eEffects;
-	}
-	public void SetEffects(const EntityEffectFlags eEffects)	// TODO: Remove this function and turn each bitflag into a individual function.
-	{
-		SetEntProp(this.GetEntIndex(), Prop_Data, "m_fEffects", eEffects);
-	}
-	public void AddEffects(const EntityEffectFlags eEffects)	// TODO: Remove this function and turn each bitflag into a individual function.
-	{
-		this.SetEffects(this.GetEffects() | eEffects);
-	}
-	public void RemoveEffects(const EntityEffectFlags eEffects)	// TODO: Remove this function and turn each bitflag into a individual function.
-	{
-		this.SetEffects(this.GetEffects() & ~eEffects);
 	}
 	public int GetTakeDamage()
 	{

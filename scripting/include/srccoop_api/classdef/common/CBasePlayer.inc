@@ -522,7 +522,7 @@ methodmap CBasePlayer < CBaseCombatCharacter
 			// TODO:
 			// For HL2DM, `ACT_VM_IDLE` might be used instead.
 			this.DrawViewModel(true);
-			pViewModel.RemoveEffects(EF_NODRAW);
+			pViewModel.m_fEffects &= ~EF_NODRAW;
 			pViewModel.SetModel(g_szModelNameProxy);
 			pViewModel.SetModelIndex(iModelIndex);
 			pViewModel.SendViewModelMatchingSequence(pViewModel.SelectWeightedSequence(ACT_VM_DRAW));

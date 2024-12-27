@@ -501,13 +501,13 @@ void PlayerPatch_ApplyServerRagdoll(CBasePlayer pPlayer, Address pTakeDmgInfo)
 		// Player is currently using model for idle animations.
 		// The nodraw is required for hiding the player the tick he dies.
 		// The model that was parented is cleared since `CreateServerRagdoll` will not work otherwise.
-		pPlayer.AddEffects(EF_NODRAW);
+		pPlayer.m_fEffects |= EF_NODRAW;
 		g_pIdle[pPlayer.GetEntIndex()].m_pModel.ClearParent();
 		iRagdollInheritIndex = g_pIdle[pPlayer.GetEntIndex()].m_pModel.GetEntIndex();
 	}
 	else
 	{
-		pPlayer.RemoveEffects(EF_NODRAW);
+		pPlayer.m_fEffects &= ~EF_NODRAW;
 		iRagdollInheritIndex = pPlayer.GetEntIndex();
 	}
 	#else
@@ -869,7 +869,7 @@ void PackPlayerItems(CBasePlayer pPlayer)
 		pPlayer.RemoveWeapon(pWeapon);
 		pWeapon.SetModelIndex(pWeapon.GetWeaponModelIndex(.bViewModel = false));
 		pWeapon.m_spawnflags |= SF_ITEM_NORESPAWN;
-		pWeapon.AddEffects(EF_NODRAW | EF_NOSHADOW);
+		pWeapon.m_fEffects |= EF_NODRAW | EF_NOSHADOW;
 	}
 	pPlayer.RemoveAllItems();
 }

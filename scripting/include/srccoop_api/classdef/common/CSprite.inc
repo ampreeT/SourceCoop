@@ -93,6 +93,6 @@ methodmap CSprite < CBaseEntity
 	}
 	public bool IsOn()
 	{
-		return !this.HasEffects(EF_NODRAW);
+		return !(this.m_fEffects & EF_NODRAW);
 	}
 }
