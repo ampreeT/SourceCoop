@@ -97,12 +97,16 @@ methodmap CBasePlayer < CBaseCombatCharacter
 	}
 	public void ClearSuitQueue()
 	{
-		for (int i = 0; i < 4; i++)
+		int iSize;
+		
+		iSize = GetEntPropArraySize(this.entindex, Prop_Data, "m_rgSuitPlayList");
+		for (int i = 0; i < iSize; i++)
 		{
 			SetEntProp(this.entindex, Prop_Data, "m_rgSuitPlayList", 0, 4, i);
 		}
 
-		for (int i = 0; i < 32; i++)
+		iSize = GetEntPropArraySize(this.entindex, Prop_Data, "m_rgiSuitNoRepeat");
+		for (int i = 0; i < iSize; i++)
 		{
 			SetEntProp(this.entindex, Prop_Data, "m_rgiSuitNoRepeat", 0, 4, i);
 			SetEntPropFloat(this.entindex, Prop_Data, "m_rgflSuitNoRepeatTime", 0.0, i);
