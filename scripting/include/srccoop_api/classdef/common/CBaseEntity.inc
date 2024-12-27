@@ -90,6 +90,13 @@ methodmap CBaseEntity
 			return EntRefToEntIndex(view_as<int>(this));
 		}
 	}
+	property int entref
+	{
+		public get()
+		{
+			return view_as<int>(this);
+		}
+	}
 	property int m_spawnflags
 	{
 		public get()
