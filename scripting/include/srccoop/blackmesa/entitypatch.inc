@@ -28,7 +28,7 @@ public MRESReturn Hook_IsPlayerAlly(int _this, Handle hReturn, Handle hParams)
 public void Hook_LAVSpawnPost(int iEntIndex)
 {
 	CBaseEntity pEntity = CBaseEntity(iEntIndex);
-	pEntity.SetEdictAlwaysTransmit(true);
+	pEntity.edictFlags |= FL_EDICT_ALWAYS;
 }
 
 //------------------------------------------------------

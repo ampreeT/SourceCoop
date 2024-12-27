@@ -97,6 +97,17 @@ methodmap CBaseEntity
 			return view_as<int>(this);
 		}
 	}
+	property int edictFlags
+	{
+		public get()
+		{
+			return GetEdictFlags(this.entindex);
+		}
+		public set(const int iEdictFlags)
+		{
+			SetEdictFlags(this.entindex, iEdictFlags);
+		}
+	}
 	property int m_spawnflags
 	{
 		public get()
@@ -691,85 +702,6 @@ methodmap CBaseEntity
 		// Call `MyCombatCharacterPointer` and compare against `0`.
 		ThrowError("Missing implementation.");
 	}
-	public bool IsEdictChanged()
-	{
-		return IsEdictFlagSetOnEntity(this.entindex, 0);		// FL_EDICT_CHANGED (1 << 0)
-	}
-	public void SetEdictChanged(const bool bEdictChanged)
-	{
-		// Game DLL sets this when the entity state changes
-		// Mutually exclusive with FL_EDICT_PARTIAL_CHANGE.
-		SetEdictFlagOnEntity(this.entindex, 0, bEdictChanged);	// FL_EDICT_CHANGED (1 << 0)
-	}
-	public bool IsEdictFree()
-	{
-		return IsEdictFlagSetOnEntity(this.entindex, 1);		// FL_EDICT_FREE (1 << 1)
-	}
-	public void SetEdictFree(const bool bEdictFree)
-	{
-		// this edict if free for reuse
-		SetEdictFlagOnEntity(this.entindex, 1, bEdictFree);	// FL_EDICT_FREE (1 << 1)
-	}
-	public bool IsEdictFull()
-	{
-	    return IsEdictFlagSetOnEntity(this.entindex, 2);		// FL_EDICT_FULL (1 << 2)
-	}
-	public void SetEdictFull(const bool bEdictFull)
-	{
-	    // this is a full server entity
-	    SetEdictFlagOnEntity(this.entindex, 2, bEdictFull);	// FL_EDICT_FULL (1 << 2)
-	}
-	public bool IsEdictAlwaysTransmitting()
-	{
-	    return IsEdictFlagSetOnEntity(this.entindex, 3);				// FL_EDICT_ALWAYS (1 << 3)
-	}
-	public void SetEdictAlwaysTransmit(const bool bEdictAlwaysTransmite)
-	{
-	    // always transmit this entity
-	    SetEdictFlagOnEntity(this.entindex, 3, bEdictAlwaysTransmite);	// FL_EDICT_ALWAYS (1 << 3)
-	}
-	public bool IsEdictDontSend()
-	{
-	    return IsEdictFlagSetOnEntity(this.entindex, 4);				// FL_EDICT_DONTSEND (1 << 4)
-	}
-	public void SetEdictDontSend(const bool bEdictDontSend)
-	{
-	    // don't transmit this entity
-	    SetEdictFlagOnEntity(this.entindex, 4, bEdictDontSend);		// FL_EDICT_DONTSEND (1 << 4)
-	}
-	public bool IsEdictAlwaysTransmittingPVSCheck()
-	{
-	    return IsEdictFlagSetOnEntity(this.entindex, 5);						// FL_EDICT_PVSCHECK (1 << 5)
-	}
-	public void SetEdictAlwaysTransmitPVSCheck(const bool bEdictAlwaysTransmitePVSCheck)
-	{
-	    // always transmit entity, but cull against PVS
-	    SetEdictFlagOnEntity(this.entindex, 5, bEdictAlwaysTransmitePVSCheck);	// FL_EDICT_PVSCHECK (1 << 5)
-	}
-	public bool IsEdictPendingDormantCheck()
-	{
-	    return IsEdictFlagSetOnEntity(this.entindex, 6);						// FL_EDICT_PENDING_DORMANT_CHECK (1 << 6)
-	}
-	public void SetEdictPendingDormantCheck(const bool bEdictPendingDormantCheck)
-	{
-	    SetEdictFlagOnEntity(this.entindex, 6, bEdictPendingDormantCheck);		// FL_EDICT_PENDING_DORMANT_CHECK (1 << 6)
-	}
-	public bool IsEdictDirtyPVSInformation()
-	{
-	    return IsEdictFlagSetOnEntity(this.entindex, 7);					// FL_EDICT_DIRTY_PVS_INFORMATION (1 << 7)
-	}
-	public void SetEdictDirtyPVSInformation(const bool bEdictDirtyPVSInformation)
-	{
-	    SetEdictFlagOnEntity(this.entindex, 7, bEdictDirtyPVSInformation);	// FL_EDICT_DIRTY_PVS_INFORMATION (1 << 7)
-	}
-	public bool IsFullEdictChanged()
-	{
-	    return IsEdictFlagSetOnEntity(this.entindex, 8);			// FL_FULL_EDICT_CHANGED (1 << 8)
-	}
-	public void SetFullEdictChanged(const bool bFullEdictChanged)
-	{
-	    SetEdictFlagOnEntity(this.entindex, 8, bFullEdictChanged);	// FL_FULL_EDICT_CHANGED (1 << 8)
-	}
 }
 
 static bool TraceEntityFilter_FVisibleAiLosEnabled(int iEntIndex, int iMask, int iThisEntIndex)
@@ -790,18 +722,6 @@ static bool TraceEntityFilter_FVisible(int iEntIndex, int iMask, int iThisEntInd
 	return iEntIndex != iThisEntIndex;
 
 	//return CBaseEntity(iEntity).GetCollisionGroup() != COLLISION_GROUP_NONE;
-}
-
-static bool IsEdictFlagSetOnEntity(const int iEntIndex, const int iBitIndex)
-{
-	return GetBitFromInt(GetEdictFlags(iEntIndex), iBitIndex);
-}
-
-static void SetEdictFlagOnEntity(const int iEntIndex, const int iBitIndex, const bool bSetEdict)
-{
-	int iEdictFlags = GetEdictFlags(iEntIndex);
-	SetBitOnInt(iEdictFlags, iBitIndex, bSetEdict);
-	SetEdictFlags(iEntIndex, iEdictFlags);
 }
 
 enum EntityEffectFlags
