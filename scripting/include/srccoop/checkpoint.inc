@@ -30,7 +30,7 @@ enum struct CCoopPortal
 			this.m_pParticle.Spawn();
 			this.m_pParticle.Activate();
 			this.m_pParticle.SetSolidType(SOLID_BBOX);
-			this.m_pParticle.SetSolidFlags(FSOLID_TRIGGER);
+			this.m_pParticle.m_usSolidFlags = FSOLID_TRIGGER;
 			this.m_pParticle.SetCollisionGroup(COLLISION_GROUP_DEBRIS_TRIGGER);
 			SDKHook(this.m_pParticle.entindex, SDKHook_StartTouchPost, Hook_TouchPortal);
 			return true;

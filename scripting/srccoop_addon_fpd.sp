@@ -234,7 +234,7 @@ public CInfoTarget CreateCameraDeath(const CBasePlayer pPlayer)
 	CInfoTarget pCamera = CInfoTarget.Create();
 	pCamera.SetClassname("camera_death");
 	pCamera.Spawn();
-	pCamera.SetForceTransmitToAllClients(true);
+	pCamera.m_iEFlags |= EFL_FORCE_CHECK_TRANSMIT;
 	pPlayer.SetViewEntity(pCamera);
 	return pCamera;
 }

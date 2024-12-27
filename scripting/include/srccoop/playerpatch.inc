@@ -380,7 +380,7 @@ public MRESReturn Hook_PlayerSpawnPost(int iClient, Handle hReturn, Handle hPara
 			pPlayer.SetSuit(false);
 			pPlayer.SetMaxSpeed(190.0);
 			pPlayer.SetIsSprinting(false);
-			pPlayer.SetSolidFlags(pPlayer.GetSolidFlags() & ~FSOLID_NOT_SOLID);
+			pPlayer.m_usSolidFlags &= ~FSOLID_NOT_SOLID;
 			#endif
 
 			// Stop HEV sounds

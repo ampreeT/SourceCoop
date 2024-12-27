@@ -11,15 +11,4 @@ methodmap CInfoTarget < CPointEntity
 	{
 		return CInfoTarget(CreateEntityByName("info_target"));
 	}
-
-	public bool IsForcedToTransmitToAllClients()
-	{
-        return this.HasEFlags(EFL_FORCE_CHECK_TRANSMIT);
-	}
-    // Ripped from CInfoTarget::Spawn().
-    // TODO: should this be moved to `CBaseEntity`?
-	public void SetForceTransmitToAllClients(const bool bTransmitToAllClients)
-	{
-		bTransmitToAllClients ? this.AddEFlags(EFL_FORCE_CHECK_TRANSMIT) : this.RemoveEFlags(EFL_FORCE_CHECK_TRANSMIT);
-	}
 }

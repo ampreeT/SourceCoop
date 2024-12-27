@@ -9,24 +9,6 @@ static Handle g_pWorldSpaceCenter;
 static Handle g_pIsNPC;
 static Handle g_pSetMinMaxSize;
 
-enum EntityEffectFlags
-{
-	EF_BONEMERGE			= 0x001,	// Performs bone merge on client side
-	EF_BRIGHTLIGHT 			= 0x002,	// DLIGHT centered at entity origin
-	EF_DIMLIGHT 			= 0x004,	// player flashlight
-	EF_NOINTERP				= 0x008,	// don't interpolate the next frame
-	EF_NOSHADOW				= 0x010,	// Don't cast no shadow
-	EF_NODRAW				= 0x020,	// don't draw entity
-	EF_NORECEIVESHADOW		= 0x040,	// Don't receive no shadow
-	EF_BONEMERGE_FASTCULL	= 0x080,	// For use with EF_BONEMERGE. If this is set, then it places this ent's origin at its
-										// parent and uses the parent's bbox + the max extents of the aiment.
-										// Otherwise, it sets up the parent's bones every frame to figure out where to place
-										// the aiment, which is inefficient because it'll setup the parent's bones even if
-										// the parent is not in the PVS.
-	EF_ITEM_BLINK			= 0x100,	// blink an item so that the user notices it.
-	EF_PARENT_ANIMATES		= 0x200,	// always assume that the parent entity is animating
-}
-
 #define NULL_CBASEENTITY view_as<any>(-1)
 
 methodmap CBaseEntity
@@ -128,6 +110,28 @@ methodmap CBaseEntity
 		public set(const EntityEffectFlags eEffects)
 		{
 			SetEntProp(this.GetEntIndex(), Prop_Data, "m_fEffects", eEffects);
+		}
+	}
+	property EntityFlags m_iEFlags
+	{
+		public get()
+		{
+			return view_as<EntityFlags>(GetEntProp(this.GetEntIndex(), Prop_Data, "m_iEFlags"));
+		}
+		public set(const EntityFlags eEFlags)
+		{
+			SetEntProp(this.GetEntIndex(), Prop_Data, "m_iEFlags", eEFlags);
+		}
+	}
+	property SolidFlags_t m_usSolidFlags
+	{
+		public get()
+		{
+			return view_as<SolidFlags_t>(GetEntProp(this.GetEntIndex(), Prop_Data, "m_usSolidFlags"));
+		}
+		public set(const SolidFlags_t eSolidFlags)
+		{
+			SetEntProp(this.GetEntIndex(), Prop_Data, "m_usSolidFlags", eSolidFlags);
 		}
 	}
 	/** Deprecated: Use entindex property instead */
@@ -260,45 +264,25 @@ methodmap CBaseEntity
 	{
 		this.GetEyePosition(vec3Buffer);
 	}
-	public int GetFlags()	// TODO: Remove this function and turn each bitflag into a individual function.
+	public int GetFlags()
 	{
 		return GetEntityFlags(this.GetEntIndex());
 	}
-	public bool HasFlags(const int iFlags)	// TODO: Remove this function and turn each bitflag into a individual function.
+	public bool HasFlags(const int iFlags)
 	{
 		return (this.GetFlags() & iFlags) == iFlags;
 	}
-	public void SetFlags(const int iFlags)	// TODO: Remove this function and turn each bitflag into a individual function.
+	public void SetFlags(const int iFlags)
 	{
 		SetEntityFlags(this.GetEntIndex(), iFlags);
 	}
-	public void AddFlags(const int iFlags)	// TODO: Remove this function and turn each bitflag into a individual function.
+	public void AddFlags(const int iFlags)
 	{
 		this.SetFlags(this.GetFlags() | iFlags);
 	}
-	public void RemoveFlags(const int iFlags)	// TODO: Remove this function and turn each bitflag into a individual function.
+	public void RemoveFlags(const int iFlags)
 	{
 		this.SetFlags(this.GetFlags() & ~iFlags);
-	}
-	public int GetEFlags()
-	{
-		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_iEFlags");
-	}
-	public bool HasEFlags(const int iEFlags)	// TODO: Remove this function and turn each bitflag into a individual function.
-	{
-		return (this.GetEFlags() & iEFlags) == iEFlags;
-	}
-	public void SetEFlags(const int iEFlags)	// TODO: Remove this function and turn each bitflag into a individual function.
-	{
-		SetEntProp(this.GetEntIndex(), Prop_Data, "m_iEFlags", iEFlags);
-	}
-	public void AddEFlags(const int iEFlags)	// TODO: Remove this function and turn each bitflag into a individual function.
-	{
-		this.SetEFlags(this.GetEFlags() | iEFlags);
-	}
-	public void RemoveEFlags(const int iEFlags)	// TODO: Remove this function and turn each bitflag into a individual function.
-	{
-		this.SetEFlags(this.GetEFlags() & ~iEFlags);
 	}
 	public void Teleport(const float vec3Origin[3] = NULL_VECTOR, const float vec3Angles[3] = NULL_VECTOR, const float vec3Velocity[3] = NULL_VECTOR)
 	{
@@ -455,14 +439,6 @@ methodmap CBaseEntity
 	public void SetSolidType(const SolidType_t eSolidType)
 	{
 		SetEntProp(this.GetEntIndex(), Prop_Data, "m_nSolidType", eSolidType);
-	}
-	public int GetSolidFlags()	// TODO: Remove this function and turn each bitflag into a individual function.
-	{
-		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_usSolidFlags");
-	}
-	public void SetSolidFlags(const int iSolidFlags)	// TODO: Remove this function and turn each bitflag into a individual function.
-	{
-		SetEntProp(this.GetEntIndex(), Prop_Data, "m_usSolidFlags", iSolidFlags);
 	}
 	public int GetNextThinkTick()
 	{
@@ -833,4 +809,86 @@ static void SetEdictFlagOnEntity(const int iEntIndex, const int iBitIndex, const
 	int iEdictFlags = GetEdictFlags(iEntIndex);
 	SetBitOnInt(iEdictFlags, iBitIndex, bSetEdict);
 	SetEdictFlags(iEntIndex, iEdictFlags);
+}
+
+enum EntityEffectFlags
+{
+	EF_BONEMERGE			= 0x001,	// Performs bone merge on client side
+	EF_BRIGHTLIGHT 			= 0x002,	// DLIGHT centered at entity origin
+	EF_DIMLIGHT 			= 0x004,	// player flashlight
+	EF_NOINTERP				= 0x008,	// don't interpolate the next frame
+	EF_NOSHADOW				= 0x010,	// Don't cast no shadow
+	EF_NODRAW				= 0x020,	// don't draw entity
+	EF_NORECEIVESHADOW		= 0x040,	// Don't receive no shadow
+	EF_BONEMERGE_FASTCULL	= 0x080,	// For use with EF_BONEMERGE. If this is set, then it places this ent's origin at its
+										// parent and uses the parent's bbox + the max extents of the aiment.
+										// Otherwise, it sets up the parent's bones every frame to figure out where to place
+										// the aiment, which is inefficient because it'll setup the parent's bones even if
+										// the parent is not in the PVS.
+	EF_ITEM_BLINK			= 0x100,	// blink an item so that the user notices it.
+	EF_PARENT_ANIMATES		= 0x200,	// always assume that the parent entity is animating
+}
+
+// entity flags, CBaseEntity::m_iEFlags
+enum EntityFlags
+{
+	EFL_KILLME = (1 << 0),							// This entity is marked for death -- This allows the game to actually delete ents at a safe time
+	EFL_DORMANT = (1 << 1),							// Entity is dormant, no updates to client
+	EFL_NOCLIP_ACTIVE = (1 << 2),					// Lets us know when the noclip command is active.
+	EFL_SETTING_UP_BONES = (1 << 3),				// Set while a model is setting up its bones.
+	EFL_KEEP_ON_RECREATE_ENTITIES = (1 << 4),		// This is a special entity that should not be deleted when we restart entities only
+	EFL_HAS_PLAYER_CHILD = (1 << 4),				// One of the child entities is a player.
+	EFL_DIRTY_SHADOWUPDATE = (1 << 5),				// Client only- need shadow manager to update the shadow...
+	EFL_NOTIFY = (1 << 6),							// Another entity is watching events on this entity (used by teleport)
+
+	// The default behavior in ShouldTransmit is to not send an entity if it doesn't
+	// have a model. Certain entities want to be sent anyway because all the drawing logic
+	// is in the client DLL. They can set this flag and the engine will transmit them even
+	// if they don't have a model.
+	EFL_FORCE_CHECK_TRANSMIT = (1 << 7),
+
+	EFL_BOT_FROZEN = (1 << 8),						// This is set on bots that are frozen.
+	EFL_SERVER_ONLY = (1 << 9),						// Non-networked entity.
+	EFL_NO_AUTO_EDICT_ATTACH = (1 << 10),			// Don't attach the edict; we're doing it explicitly
+	
+	// Some dirty bits with respect to abs computations
+	EFL_DIRTY_ABSTRANSFORM = (1 << 11),
+	EFL_DIRTY_ABSVELOCITY = (1 << 12),
+	EFL_DIRTY_ABSANGVELOCITY = (1 << 13),
+	EFL_DIRTY_SURROUNDING_COLLISION_BOUNDS = (1 << 14),
+	EFL_DIRTY_SPATIAL_PARTITION = (1 << 15),
+	// UNUSED = (1 << 16),
+
+	EFL_IN_SKYBOX = (1 << 17),						// This is set if the entity detects that it's in the skybox.
+	// This forces it to pass the "in PVS" for transmission.
+	EFL_USE_PARTITION_WHEN_NOT_SOLID = (1 << 18),	// Entities with this flag set show up in the partition even when not solid
+	EFL_TOUCHING_FLUID = (1 << 19),					// Used to determine if an entity is floating
+	EFL_IS_BEING_LIFTED_BY_BARNACLE = (1 << 20),
+	EFL_NO_ROTORWASH_PUSH = (1 << 21),				// I shouldn't be pushed by the rotorwash
+	EFL_NO_THINK_FUNCTION = (1 << 22),
+	EFL_NO_GAME_PHYSICS_SIMULATION = (1 << 23),
+	EFL_CHECK_UNTOUCH = (1 << 24),
+	EFL_DONTBLOCKLOS = (1 << 25),					// I shouldn't block NPC line-of-sight
+	EFL_DONTWALKON = (1 << 26),						// NPC;s should not walk on this entity
+	EFL_NO_DISSOLVE = (1 << 27),					// These guys shouldn't dissolve
+	EFL_NO_MEGAPHYSCANNON_RAGDOLL = (1 << 28),		// Mega physcannon can't ragdoll these guys.
+	EFL_NO_WATER_VELOCITY_CHANGE =	(1 << 29),		// Don't adjust this entity's velocity when transitioning into water
+	EFL_NO_PHYSCANNON_INTERACTION =	(1 << 30),		// Physcannon can't pick these up or punt them
+	EFL_NO_DAMAGE_FORCES = (1 << 31),				// Doesn't accept forces from physics damage
+}
+
+enum SolidFlags_t
+{
+	FSOLID_CUSTOMRAYTEST = 0x0001,			// Ignore solid type + always call into the entity for ray tests
+	FSOLID_CUSTOMBOXTEST = 0x0002,			// Ignore solid type + always call into the entity for swept box tests
+	FSOLID_NOT_SOLID = 0x0004,				// Are we currently not solid?
+	FSOLID_TRIGGER = 0x0008,				// This is something may be collideable but fires touch functions
+	
+	// even when it's not collideable (when the FSOLID_NOT_SOLID flag is set)
+	FSOLID_NOT_STANDABLE = 0x0010,			// You can't stand on this
+	FSOLID_VOLUME_CONTENTS = 0x0020,		// Contains volumetric contents (like water)
+	FSOLID_FORCE_WORLD_ALIGNED = 0x0040,	// Forces the collision rep to be world-aligned even if it's SOLID_BSP or SOLID_VPHYSICS
+	FSOLID_USE_TRIGGER_BOUNDS = 0x0080,		// Uses a special trigger bounds separate from the normal OBB
+	FSOLID_ROOT_PARENT_ALIGNED = 0x0100,	// Collisions are defined in root parent's local coordinate space
+	FSOLID_TRIGGER_TOUCH_DEBRIS = 0x0200,	// This trigger will touch debris objects
 }

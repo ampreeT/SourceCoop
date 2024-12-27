@@ -47,24 +47,23 @@ methodmap CBaseTrigger < CBaseToggle
 	// void CBaseTrigger::InitTrigger() from SDK
 	public void InitTrigger()
 	{
-		this.SetSolidType(this.GetParent().IsValid() ? SOLID_VPHYSICS : SOLID_BSP);
+		this.SetSolidType(this.GetParent() != NULL_CBASEENTITY ? SOLID_VPHYSICS : SOLID_BSP);
 		
-		int iSolidFlags = this.GetSolidFlags();	
 		if (this.IsEnabled())
 		{
-			iSolidFlags |= FSOLID_TRIGGER;
+			this.m_usSolidFlags |= FSOLID_TRIGGER;
 		}
 		else
 		{
-			iSolidFlags &= ~FSOLID_TRIGGER;
+			this.m_usSolidFlags &= ~FSOLID_TRIGGER;
 		}
 
 		if (this.m_spawnflags & SF_TRIG_TOUCH_DEBRIS)
 		{
-			iSolidFlags |= FSOLID_TRIGGER_TOUCH_DEBRIS;
+			this.m_usSolidFlags |= FSOLID_TRIGGER_TOUCH_DEBRIS;
 		}
 
-		this.SetSolidFlags(iSolidFlags | FSOLID_NOT_SOLID);
+		this.m_usSolidFlags |= FSOLID_NOT_SOLID;
 		this.SetMoveType(MOVETYPE_NONE);
 		static char szBuffer[PLATFORM_MAX_PATH];
 		this.GetModelName(szBuffer, sizeof(szBuffer));
