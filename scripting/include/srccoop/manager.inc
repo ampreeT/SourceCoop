@@ -117,7 +117,7 @@ methodmap CoopManager
 				if (pEntity.IsClassname("logic_auto"))
 				{
 					// do not let it get killed, so the output can fire later
-					view_as<CLogicAuto>(pEntity).m_spawnflags |= SF_AUTO_FIREONCE;
+					view_as<CLogicAuto>(pEntity).m_spawnflags &= ~SF_AUTO_FIREONCE;
 				}
 				for (int i = 0; i < pOutputHookList.Length; i++)
 				{
