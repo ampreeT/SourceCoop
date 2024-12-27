@@ -62,7 +62,7 @@ methodmap CSprite < CBaseEntity
 	{
 		SetEntPropFloat(this.GetEntIndex(), Prop_Send, "m_flFrame", flFrame);
 	}
-	public float GetMaxFrame()
+	public float Frames()
 	{
 		return GetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flMaxFrame");
 	}
