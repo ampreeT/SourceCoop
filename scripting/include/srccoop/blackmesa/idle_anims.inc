@@ -111,7 +111,7 @@ public Action IdleAnims_Hook_SetTransmit(const int iEntity, const int iClient)
 public void IdleAnims_Hook_PlayerPreThinkPost(const int iClient)
 {
 	CBasePlayer pPlayer = CBasePlayer(iClient);
-	int iPlayerIndex = pPlayer.GetEntIndex();
+	int iPlayerIndex = pPlayer.entindex;
 	bool bHasModel = g_pIdle[iPlayerIndex].m_pModel.IsValid();
 	if (pPlayer.IsAlive() && pPlayer.GetActiveWeapon() == NULL_CBASEENTITY)
 	{
@@ -137,7 +137,7 @@ public void IdleAnims_Hook_PlayerPreThinkPost(const int iClient)
 					g_pIdle[iPlayerIndex].m_pModel.SetAnimation("idle_noweapon");
 					g_pIdle[iPlayerIndex].m_eIdleType = IdleAnimType_IdleNoWeapon;
 
-					SDKHook(g_pIdle[iPlayerIndex].m_pModel.GetEntIndex(), SDKHook_SetTransmit, IdleAnims_Hook_SetTransmit);
+					SDKHook(g_pIdle[iPlayerIndex].m_pModel.entindex, SDKHook_SetTransmit, IdleAnims_Hook_SetTransmit);
 					hkUpdateOnRemove.HookEntity(Hook_Pre, g_pIdle[iPlayerIndex].m_pModel.entindex, IdleAnims_Hook_IdleKilled);
 					pPlayer.SetFadeMaxDist(0.000001);
 					

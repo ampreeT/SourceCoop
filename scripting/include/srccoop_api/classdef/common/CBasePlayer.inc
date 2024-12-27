@@ -52,44 +52,44 @@ methodmap CBasePlayer < CBaseCombatCharacter
 	}
 	public bool IsInGame()
 	{
-		int iEntIndex = this.GetEntIndex();
+		int iEntIndex = this.entindex;
 		return iEntIndex != -1 && IsClientInGame(iEntIndex);
 	}
 	public bool IsAlive()
 	{
-		return IsPlayerAlive(this.GetEntIndex());
+		return IsPlayerAlive(this.entindex);
 	}
 	public bool GetName(char[] szBuffer, const int iMaxLength)
 	{
-		return GetClientName(this.GetEntIndex(), szBuffer, iMaxLength);
+		return GetClientName(this.entindex, szBuffer, iMaxLength);
 	}
 	public void SetName(const char[] szPlayerName)
 	{
-		SetClientName(this.GetEntIndex(), szPlayerName);
+		SetClientName(this.entindex, szPlayerName);
 	}
 	public int GetUserId()
 	{
-		return GetClientUserId(this.GetEntIndex());
+		return GetClientUserId(this.entindex);
 	}
 	public CPropVehicleDriveable GetVehicle()
 	{
-		return CPropVehicleDriveable(GetEntPropEnt(this.GetEntIndex(), Prop_Send, "m_hVehicle"));
+		return CPropVehicleDriveable(GetEntPropEnt(this.entindex, Prop_Send, "m_hVehicle"));
 	}
 	public int GetArmor()
 	{
-		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_ArmorValue", 1);
+		return GetEntProp(this.entindex, Prop_Data, "m_ArmorValue", 1);
 	}
 	public void SetArmor(const int iArmor)
 	{
-		SetEntProp(this.GetEntIndex(), Prop_Data, "m_ArmorValue", iArmor, 1);
+		SetEntProp(this.entindex, Prop_Data, "m_ArmorValue", iArmor, 1);
 	}
 	public bool HasSuit()
 	{
-		return GetEntProp(this.GetEntIndex(), Prop_Send, "m_bWearingSuit") != 0;
+		return GetEntProp(this.entindex, Prop_Send, "m_bWearingSuit") != 0;
 	}
 	public void SetSuit(const bool bShouldHaveSuit)
 	{
-		SetEntProp(this.GetEntIndex(), Prop_Send, "m_bWearingSuit", bShouldHaveSuit);
+		SetEntProp(this.entindex, Prop_Send, "m_bWearingSuit", bShouldHaveSuit);
 	}
 	public void SetSuitUpdate(const char[] szName, int fgroup, int iNoRepeat)
 	{
@@ -110,23 +110,23 @@ methodmap CBasePlayer < CBaseCombatCharacter
 	}
 	public bool IsSprinting()
 	{
-		return GetEntProp(this.GetEntIndex(), Prop_Send, "m_bIsSprinting") != 0;
+		return GetEntProp(this.entindex, Prop_Send, "m_bIsSprinting") != 0;
 	}
 	public void SetIsSprinting(const bool bIsSprinting)
 	{
-		SetEntProp(this.GetEntIndex(), Prop_Send, "m_bIsSprinting", bIsSprinting);
+		SetEntProp(this.entindex, Prop_Send, "m_bIsSprinting", bIsSprinting);
 	}
 	public bool IsSprintEnabled()
 	{
-		return GetEntProp(this.GetEntIndex(), Prop_Send, "m_bSprintEnabled") != 0;
+		return GetEntProp(this.entindex, Prop_Send, "m_bSprintEnabled") != 0;
 	}
 	public void SetSprintEnabled(const bool bSprintEnabled)
 	{
-		SetEntProp(this.GetEntIndex(), Prop_Send, "m_bSprintEnabled", bSprintEnabled);
+		SetEntProp(this.entindex, Prop_Send, "m_bSprintEnabled", bSprintEnabled);
 	}
 	public void Kick()
 	{
-		KickClient(this.GetEntIndex());
+		KickClient(this.entindex);
 	}
 	public CBaseAnimating GiveItem(const char[] szItemName)
 	{
@@ -136,7 +136,7 @@ methodmap CBasePlayer < CBaseCombatCharacter
 			return NULL_CBASEENTITY;
 		}
 		
-		CBaseAnimating pItem = CBaseAnimating(GivePlayerItem(this.GetEntIndex(), szItemName));
+		CBaseAnimating pItem = CBaseAnimating(GivePlayerItem(this.entindex, szItemName));
 		if (pItem != NULL_CBASEENTITY && pItem.GetOwner() == NULL_CBASEENTITY)
 		{
 			// this would drop on the ground if player cant pick up any more
@@ -150,47 +150,47 @@ methodmap CBasePlayer < CBaseCombatCharacter
 	}
 	public void RemoveWeapon(const CBaseCombatWeapon pWeapon)
 	{
-		RemovePlayerItem(this.GetEntIndex(), pWeapon.GetEntIndex());
+		RemovePlayerItem(this.entindex, pWeapon.entindex);
 	}
 	public void RemoveAllItems(const bool bRemoveSuit = true)
 	{
-		SDKCall(g_pRemoveAllItems, this.GetEntIndex(), bRemoveSuit);
+		SDKCall(g_pRemoveAllItems, this.entindex, bRemoveSuit);
 	}
 	public bool EquipWeapon(const CBaseCombatWeapon pWeapon)
 	{
 		if (pWeapon != NULL_CBASEENTITY)
 		{
-			EquipPlayerWeapon(this.GetEntIndex(), pWeapon.GetEntIndex());
+			EquipPlayerWeapon(this.entindex, pWeapon.entindex);
 			return true;
 		}
 		
 		// still make this possible to set -1
-		EquipPlayerWeapon(this.GetEntIndex(), -1);
+		EquipPlayerWeapon(this.entindex, -1);
 		return false;
 	}
 	public int GetOldButtons()
 	{
-		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_nOldButtons");
+		return GetEntProp(this.entindex, Prop_Data, "m_nOldButtons");
 	}
 	public int GetButtons()
 	{
-		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_nButtons");
+		return GetEntProp(this.entindex, Prop_Data, "m_nButtons");
 	}
 	public void SetButtons(int iButtons)
 	{
-		SetEntProp(this.GetEntIndex(), Prop_Data, "m_nButtons", iButtons);
+		SetEntProp(this.entindex, Prop_Data, "m_nButtons", iButtons);
 	}
 	public int GetPressedButtons()
 	{
-		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_afButtonPressed");
+		return GetEntProp(this.entindex, Prop_Data, "m_afButtonPressed");
 	}
 	public int GetReleasedButtons()
 	{
-		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_afButtonReleased");
+		return GetEntProp(this.entindex, Prop_Data, "m_afButtonReleased");
 	}
 	public int GetLastButtons()
 	{
-		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_afButtonLast");
+		return GetEntProp(this.entindex, Prop_Data, "m_afButtonLast");
 	}
 	public bool WasPressingButton(const int iButton)
 	{
@@ -202,17 +202,17 @@ methodmap CBasePlayer < CBaseCombatCharacter
 	}
 	public bool IsDucking()
 	{
-		return GetEntProp(this.GetEntIndex(), Prop_Send, "m_bDucking") != 0;
+		return GetEntProp(this.entindex, Prop_Send, "m_bDucking") != 0;
 	}
 	public bool IsDucked()
 	{
-		return GetEntProp(this.GetEntIndex(), Prop_Send, "m_bDucked") != 0;
+		return GetEntProp(this.entindex, Prop_Send, "m_bDucked") != 0;
 	}
 	public void StartDucking() // (taken from point_teleport code)
 	{
 		this.SetButtons(this.GetButtons() | IN_DUCK);
 		this.AddFlags(FL_DUCKING);
-		int iClient = this.GetEntIndex();
+		int iClient = this.entindex;
 		SetEntProp(iClient, Prop_Send, "m_bDucked", true);
 		SetEntProp(iClient, Prop_Send, "m_bDucking", true);
 		SetEntPropFloat(iClient, Prop_Send, "m_flDucktime", 0.0);
@@ -225,7 +225,7 @@ methodmap CBasePlayer < CBaseCombatCharacter
 	{
 		this.SetButtons(this.GetButtons() & ~IN_DUCK);
 		this.RemoveFlags(FL_DUCKING);
-		int iClient = this.GetEntIndex();
+		int iClient = this.entindex;
 		SetEntProp(iClient, Prop_Send, "m_bDucked", false);
 		SetEntProp(iClient, Prop_Send, "m_bDucking", false);
 		float vecViewOffset[3] = VEC_VIEW;
@@ -235,7 +235,7 @@ methodmap CBasePlayer < CBaseCombatCharacter
 	}
 	public void GetEyeAngles(float vec3Buffer[3])
 	{
-		GetClientEyeAngles(this.GetEntIndex(), vec3Buffer);
+		GetClientEyeAngles(this.entindex, vec3Buffer);
 	}
 	public CBaseEntity GetAimTarget()
 	{
@@ -250,28 +250,28 @@ methodmap CBasePlayer < CBaseCombatCharacter
 	}
 	public void SetMaxSpeed(const float flMaxSpeed)
 	{
-		SetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flMaxspeed", flMaxSpeed);
+		SetEntPropFloat(this.entindex, Prop_Data, "m_flMaxspeed", flMaxSpeed);
 	}
 	public float GetMaxSpeed()
 	{
-		return GetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flMaxspeed");
+		return GetEntPropFloat(this.entindex, Prop_Data, "m_flMaxspeed");
 	}
 	public CBaseEntity GetViewEntity()
 	{
-		return CBaseEntity(GetEntPropEnt(this.GetEntIndex(), Prop_Data, "m_hViewEntity"));
+		return CBaseEntity(GetEntPropEnt(this.entindex, Prop_Data, "m_hViewEntity"));
 	}
 	public void SetViewEntity(const CBaseEntity pEntity)
 	{
-		SetEntPropEnt(this.GetEntIndex(), Prop_Data, "m_hViewEntity", (this == pEntity) ? -1 : pEntity.GetEntIndex());
-		SetClientViewEntity(this.GetEntIndex(), pEntity.GetEntIndex());
+		SetEntPropEnt(this.entindex, Prop_Data, "m_hViewEntity", (this == pEntity) ? -1 : pEntity.entindex);
+		SetClientViewEntity(this.entindex, pEntity.entindex);
 	}
 	public CPredictedViewModel GetViewModel(const int iIndex = 0)
 	{
-		return CPredictedViewModel(GetEntPropEnt(this.GetEntIndex(), Prop_Send, "m_hViewModel", iIndex));
+		return CPredictedViewModel(GetEntPropEnt(this.entindex, Prop_Send, "m_hViewModel", iIndex));
 	}
 	public void SetViewModel(const CBaseEntity pEntity, const int iIndex = 0)
 	{
-		SetEntPropEnt(this.GetEntIndex(), Prop_Send, "m_hViewModel", pEntity.GetEntIndex(), iIndex);
+		SetEntPropEnt(this.entindex, Prop_Send, "m_hViewModel", pEntity.entindex, iIndex);
 	}
 	public CPredictedViewModel CreateViewModel(const int iIndex = 0)
 	{
@@ -280,43 +280,43 @@ methodmap CBasePlayer < CBaseCombatCharacter
 	}
 	public CBaseAnimating GetRagdoll()
 	{
-		return CBaseAnimating(GetEntPropEnt(this.GetEntIndex(), Prop_Send, "m_hRagdoll"));
+		return CBaseAnimating(GetEntPropEnt(this.entindex, Prop_Send, "m_hRagdoll"));
 	}
 	public void SetRagdoll(const CBaseAnimating pEntity)
 	{
-		SetEntPropEnt(this.GetEntIndex(), Prop_Send, "m_hRagdoll", pEntity.GetEntIndex());
+		SetEntPropEnt(this.entindex, Prop_Send, "m_hRagdoll", pEntity.entindex);
 	}
 	public float GetDeathTime()
 	{
-		return GetEntPropFloat(this.GetEntIndex(), Prop_Send, "m_flDeathTime");
+		return GetEntPropFloat(this.entindex, Prop_Send, "m_flDeathTime");
 	}
 	public void SetDeathTime(const float flDeathTime)
 	{
-		SetEntPropFloat(this.GetEntIndex(), Prop_Send, "m_flDeathTime", flDeathTime);
+		SetEntPropFloat(this.entindex, Prop_Send, "m_flDeathTime", flDeathTime);
 	}
 	public Obs_Mode GetObserverMode()
 	{
-		return view_as<Obs_Mode>(GetEntProp(this.GetEntIndex(), Prop_Data, "m_iObserverMode"));
+		return view_as<Obs_Mode>(GetEntProp(this.entindex, Prop_Data, "m_iObserverMode"));
 	}
 	public void SetObserverMode(const Obs_Mode eMode)
 	{
-		SetEntProp(this.GetEntIndex(), Prop_Data, "m_iObserverMode", eMode);
+		SetEntProp(this.entindex, Prop_Data, "m_iObserverMode", eMode);
 	}
 	public CBaseEntity GetObserverTarget()
 	{
-		return CBaseEntity(GetEntPropEnt(this.GetEntIndex(), Prop_Data, "m_hObserverTarget"));
+		return CBaseEntity(GetEntPropEnt(this.entindex, Prop_Data, "m_hObserverTarget"));
 	}
 	public void SetObserverTarget(const CBaseEntity pTarget)
 	{
-		SetEntPropEnt(this.GetEntIndex(), Prop_Data, "m_hObserverTarget", pTarget.GetEntIndex());
+		SetEntPropEnt(this.entindex, Prop_Data, "m_hObserverTarget", pTarget.entindex);
 	}
 	public int GetHideHud()
 	{
-		return GetEntProp(this.GetEntIndex(), Prop_Send, "m_iHideHUD");
+		return GetEntProp(this.entindex, Prop_Send, "m_iHideHUD");
 	}
 	public void SetHideHud(const int iHideHud)
 	{
-		SetEntProp(this.GetEntIndex(), Prop_Send, "m_iHideHUD", iHideHud);
+		SetEntProp(this.entindex, Prop_Send, "m_iHideHUD", iHideHud);
 	}
 	public void ShowCrosshair(const bool bShow)
 	{
@@ -332,11 +332,11 @@ methodmap CBasePlayer < CBaseCombatCharacter
 	}
 	public void SetTeam(const int iTeamIndex)
 	{
-		ChangeClientTeam(this.GetEntIndex(), iTeamIndex);
+		ChangeClientTeam(this.entindex, iTeamIndex);
 	}
 	public CBaseEntity GetUseEntity()
 	{
-		return CBaseEntity(GetEntPropEnt(this.GetEntIndex(), Prop_Data, "m_hUseEntity"));
+		return CBaseEntity(GetEntPropEnt(this.entindex, Prop_Data, "m_hUseEntity"));
 	}
 	public CBaseEntity GetCarriedObject()
 	{
@@ -345,7 +345,7 @@ methodmap CBasePlayer < CBaseCombatCharacter
 		CBaseEntity pUseEntity = this.GetUseEntity();
 		if (pUseEntity != NULL_CBASEENTITY && pUseEntity.IsClassname("player_pickup"))
 		{
-			return CBaseEntity(GetEntPropEnt(pUseEntity.GetEntIndex(), Prop_Data, "m_attachedEntity"));
+			return CBaseEntity(GetEntPropEnt(pUseEntity.entindex, Prop_Data, "m_attachedEntity"));
 		}
 		#endif
 		return NULL_CBASEENTITY;
@@ -361,11 +361,11 @@ methodmap CBasePlayer < CBaseCombatCharacter
 	}
 	public void PlayGameSound(const char[] szSound)
 	{
-		ClientCommand(this.GetEntIndex(), "playgamesound %s", szSound);
+		ClientCommand(this.entindex, "playgamesound %s", szSound);
 	}
 	public void PlaySound(const char[] szSound)
 	{
-		EmitSoundToClient(this.GetEntIndex(), szSound);
+		EmitSoundToClient(this.entindex, szSound);
 	}
 	/**
 	 * Returns how many times the given player has died
@@ -374,7 +374,7 @@ methodmap CBasePlayer < CBaseCombatCharacter
 	 */
 	public int GetDeaths()
 	{
-		return GetClientDeaths(this.GetEntIndex());
+		return GetClientDeaths(this.entindex);
 	}
 	/**
 	 * Gets this player's score
@@ -383,7 +383,7 @@ methodmap CBasePlayer < CBaseCombatCharacter
 	 */
 	public int GetScore()
 	{
-		return GetClientFrags(this.GetEntIndex());
+		return GetClientFrags(this.entindex);
 	}
 	/**
 	 * Sets this player's score to the given value
@@ -392,7 +392,7 @@ methodmap CBasePlayer < CBaseCombatCharacter
 	 */
 	public void SetScore(const int iScore)
 	{
-		SetEntProp(this.GetEntIndex(), Prop_Data, "m_iFrags", iScore);
+		SetEntProp(this.entindex, Prop_Data, "m_iFrags", iScore);
 		IServerGameClients.Get().GetPlayerState(this).SetScore(iScore);
 	}
 	/**
@@ -409,45 +409,45 @@ methodmap CBasePlayer < CBaseCombatCharacter
 	}
 	public void Suicide()
 	{
-		ForcePlayerSuicide(this.GetEntIndex());
+		ForcePlayerSuicide(this.entindex);
 	}
 	public CFuncLadder GetLadder()
 	{
-		return CFuncLadder(GetEntPropEnt(this.GetEntIndex(), Prop_Data, "m_hLadder"));
+		return CFuncLadder(GetEntPropEnt(this.entindex, Prop_Data, "m_hLadder"));
 	}
 	public void SetLadder(const CFuncLadder pLadder)
 	{
 		if (this.GetLadder() != NULL_CBASEENTITY)
 		{
-			this.GetLadder().FireOutput("OnPlayerGotOffLadder", this.GetEntIndex());
+			this.GetLadder().FireOutput("OnPlayerGotOffLadder", this.entindex);
 		}
-		SetEntPropEnt(this.GetEntIndex(), Prop_Data, "m_hLadder", pLadder.entindex);
+		SetEntPropEnt(this.entindex, Prop_Data, "m_hLadder", pLadder.entindex);
 	}
 	public int GetDefaultFOV()
 	{
-		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_iDefaultFOV");
+		return GetEntProp(this.entindex, Prop_Data, "m_iDefaultFOV");
 	}
 	public int GetFOV()
 	{
-		int iFOV = GetEntProp(this.GetEntIndex(), Prop_Data, "m_iFOV");
+		int iFOV = GetEntProp(this.entindex, Prop_Data, "m_iFOV");
 		iFOV = iFOV == 0 ? this.GetDefaultFOV() : iFOV;
 
 		// TODO:
 		// Implement vehichle FOV logic https://github.com/ValveSoftware/source-sdk-2013/blob/0d8dceea4310fde5706b3ce1c70609d72a38efdf/sp/src/game/server/player.cpp#L8395
 
-		float flFOVRate = GetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flFOVRate");
+		float flFOVRate = GetEntPropFloat(this.entindex, Prop_Data, "m_flFOVRate");
 		if (flFOVRate == 0.0)
 			return iFOV;
 		
-		float flDeltaTime = (GetGameTime() - GetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flFOVTime")) / flFOVRate;
+		float flDeltaTime = (GetGameTime() - GetEntPropFloat(this.entindex, Prop_Data, "m_flFOVTime")) / flFOVRate;
 		if (flDeltaTime >= 1.0)
 		{
-			SetEntProp(this.GetEntIndex(), Prop_Data, "m_iFOVStart", iFOV);
+			SetEntProp(this.entindex, Prop_Data, "m_iFOVStart", iFOV);
 			return iFOV;
 		}
 		else
 		{
-			float flFOVStart = float(GetEntProp(this.GetEntIndex(), Prop_Data, "m_iFOVStart"));
+			float flFOVStart = float(GetEntProp(this.entindex, Prop_Data, "m_iFOVStart"));
 			return RoundFloat(SimpleSplineRemapValClamped(flDeltaTime, 0.0, 1.0, flFOVStart, float(iFOV)));
 		}
 	}
@@ -456,7 +456,7 @@ methodmap CBasePlayer < CBaseCombatCharacter
 		if (pRequester == NULL_CBASEENTITY)
 			return false;
 		
-		CBaseEntity pZoomOwner = CBaseEntity(GetEntPropEnt(this.GetEntIndex(), Prop_Data, "m_hZoomOwner"));
+		CBaseEntity pZoomOwner = CBaseEntity(GetEntPropEnt(this.entindex, Prop_Data, "m_hZoomOwner"));
 		// If we already have an owner, we only allow requests from that owner
 		if (pZoomOwner != NULL_CBASEENTITY && pZoomOwner != pRequester)
 		{
@@ -473,26 +473,26 @@ methodmap CBasePlayer < CBaseCombatCharacter
 			{
 				pZoomOwner = pRequester;
 			}
-			SetEntPropEnt(this.GetEntIndex(), Prop_Data, "m_hZoomOwner", pZoomOwner.GetEntIndex());
+			SetEntPropEnt(this.entindex, Prop_Data, "m_hZoomOwner", pZoomOwner.entindex);
 		}
 
-		SetEntProp(this.GetEntIndex(), Prop_Data, "m_iFOVStart", iZoomStart > 0 ? iZoomStart : this.GetFOV());
-		SetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flFOVTime", GetGameTime());
-		SetEntProp(this.GetEntIndex(), Prop_Data, "m_iFOV", iFOV);
-		SetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flFOVRate", flZoomRate);
+		SetEntProp(this.entindex, Prop_Data, "m_iFOVStart", iZoomStart > 0 ? iZoomStart : this.GetFOV());
+		SetEntPropFloat(this.entindex, Prop_Data, "m_flFOVTime", GetGameTime());
+		SetEntProp(this.entindex, Prop_Data, "m_iFOV", iFOV);
+		SetEntPropFloat(this.entindex, Prop_Data, "m_flFOVRate", flZoomRate);
 		return true;
 	}
 	public QueryCookie QueryConvar(const char[] szCvar, const ConVarQueryFinished fnCallback, const any value = 0)
 	{
-		return QueryClientConVar(this.GetEntIndex(), szCvar, fnCallback, value);
+		return QueryClientConVar(this.entindex, szCvar, fnCallback, value);
 	}
 	public bool IsDrawingViewModel()
 	{
-		return GetEntProp(this.GetEntIndex(), Prop_Send, "m_bDrawViewmodel") != 0;
+		return GetEntProp(this.entindex, Prop_Send, "m_bDrawViewmodel") != 0;
 	}
 	public void DrawViewModel(const bool bDrawViewmodel)
 	{
-		SetEntProp(this.GetEntIndex(), Prop_Send, "m_bDrawViewmodel", bDrawViewmodel);
+		SetEntProp(this.entindex, Prop_Send, "m_bDrawViewmodel", bDrawViewmodel);
 	}
 	public void StartAdmireGlovesAnimation()
 	{
@@ -531,11 +531,11 @@ methodmap CBasePlayer < CBaseCombatCharacter
 	}
 	public float GetLaggedMovement()
 	{
-		return GetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flLaggedMovementValue");
+		return GetEntPropFloat(this.entindex, Prop_Data, "m_flLaggedMovementValue");
 	}
 	public void SetLaggedMovement(const float flValue)
 	{
-		SetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flLaggedMovementValue", flValue);
+		SetEntPropFloat(this.entindex, Prop_Data, "m_flLaggedMovementValue", flValue);
 	}
 }
 

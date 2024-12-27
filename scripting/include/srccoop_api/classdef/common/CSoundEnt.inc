@@ -24,7 +24,7 @@ methodmap CSoundEnt < CPointEntity
 	public void ActiveList(CSound pSound)
 	{
 		pSound.m_pSoundEnt = this;
-		pSound.m_iSoundIndex = GetEntProp(this.GetEntIndex(), Prop_Data, "m_iActiveSound");
+		pSound.m_iSoundIndex = GetEntProp(this.entindex, Prop_Data, "m_iActiveSound");
 	}
 }
 
@@ -51,7 +51,7 @@ enum struct CSound
 			ThrowError("Attempted to use invalid CSound index %i.", this.GetSoundIndex());
 		
 		CSoundEnt pSoundEnt = this.GetSoundEnt();
-		int iOffsetPoolStart = FindDataMapInfo(pSoundEnt.GetEntIndex(), "m_SoundPool");
+		int iOffsetPoolStart = FindDataMapInfo(pSoundEnt.entindex, "m_SoundPool");
 		if (iOffsetPoolStart == -1)
 			ThrowError("Unable to retrieve offset %s", "m_SoundPool");
 
@@ -141,12 +141,12 @@ enum struct CSound
 static Address GetSoundPoolPropAddress(CSoundEnt pSoundEnt, const int iSoundIndex, const char[] szProperty)
 {
 	// Obtain the start offset `CSoundEnt::m_SoundPool`
-	int iOffsetPoolStart = FindDataMapInfo(pSoundEnt.GetEntIndex(), "m_SoundPool");
+	int iOffsetPoolStart = FindDataMapInfo(pSoundEnt.entindex, "m_SoundPool");
 	if (iOffsetPoolStart == -1)
 		ThrowError("Unable to retrieve offset %s", "m_SoundPool");
 
 	// obtain the offset within `CSound`
-	int iOffsetFromStartProperty = FindDataMapInfo(pSoundEnt.GetEntIndex(), szProperty);
+	int iOffsetFromStartProperty = FindDataMapInfo(pSoundEnt.entindex, szProperty);
 	if (iOffsetFromStartProperty == -1)
 		ThrowError("Unable to retrieve offset %s", szProperty);
 	

@@ -47,35 +47,35 @@ methodmap CBaseAnimating < CBaseEntity
 
 	public int GetSkin()
 	{
-		return GetEntProp(this.GetEntIndex(), Prop_Send, "m_nSkin");
+		return GetEntProp(this.entindex, Prop_Send, "m_nSkin");
 	}
 	public int SetSkin(const int iSkin)
 	{
-		SetEntProp(this.GetEntIndex(), Prop_Send, "m_nSkin", iSkin);
+		SetEntProp(this.entindex, Prop_Send, "m_nSkin", iSkin);
 	}
 	public int GetBody()
 	{
-		return GetEntProp(this.GetEntIndex(), Prop_Send, "m_nBody");
+		return GetEntProp(this.entindex, Prop_Send, "m_nBody");
 	}
 	public int SetBody(const int iBody)
 	{
-		SetEntProp(this.GetEntIndex(), Prop_Send, "m_nBody", iBody);
+		SetEntProp(this.entindex, Prop_Send, "m_nBody", iBody);
 	}
 	public float GetFadeMinDist()
 	{
-		return GetEntPropFloat(this.GetEntIndex(), Prop_Send, "m_fadeMinDist");
+		return GetEntPropFloat(this.entindex, Prop_Send, "m_fadeMinDist");
 	}
 	public void SetFadeMinDist(const float flFadeMinDist)
 	{
-		SetEntPropFloat(this.GetEntIndex(), Prop_Send, "m_fadeMinDist", flFadeMinDist);
+		SetEntPropFloat(this.entindex, Prop_Send, "m_fadeMinDist", flFadeMinDist);
 	}
 	public float GetFadeMaxDist()
 	{
-		return GetEntPropFloat(this.GetEntIndex(), Prop_Send, "m_fadeMaxDist");
+		return GetEntPropFloat(this.entindex, Prop_Send, "m_fadeMaxDist");
 	}
 	public void SetFadeMaxDist(const float flFadeMaxDist)
 	{
-		SetEntPropFloat(this.GetEntIndex(), Prop_Send, "m_fadeMaxDist", flFadeMaxDist);
+		SetEntPropFloat(this.entindex, Prop_Send, "m_fadeMaxDist", flFadeMaxDist);
 	}
 	public void SetFadeDistance(const float flFadeMinDist, const float flFadeMaxDist)
 	{
@@ -84,27 +84,27 @@ methodmap CBaseAnimating < CBaseEntity
 	}
 	public float GetFadeScale()
 	{
-		return GetEntPropFloat(this.GetEntIndex(), Prop_Send, "m_flFadeScale");
+		return GetEntPropFloat(this.entindex, Prop_Send, "m_flFadeScale");
 	}
 	public void SetFadeScale(const float flFadeScale)
 	{
-		SetEntPropFloat(this.GetEntIndex(), Prop_Send, "m_flFadeScale", flFadeScale);
+		SetEntPropFloat(this.entindex, Prop_Send, "m_flFadeScale", flFadeScale);
 	}
 	public float GetModelScale()
 	{
-		return GetEntPropFloat(this.GetEntIndex(), Prop_Send, "m_flModelScale");
+		return GetEntPropFloat(this.entindex, Prop_Send, "m_flModelScale");
 	}
 	public void SetModelScale(const float flModelScale)
 	{
-		SetEntPropFloat(this.GetEntIndex(), Prop_Send, "m_flModelScale", flModelScale);
+		SetEntPropFloat(this.entindex, Prop_Send, "m_flModelScale", flModelScale);
 	}
 	public int GetSequence()
 	{
-		return GetEntProp(this.GetEntIndex(), Prop_Send, "m_nSequence");
+		return GetEntProp(this.entindex, Prop_Send, "m_nSequence");
 	}
 	public void SetSequence(const int iSequence)
 	{
-		SetEntProp(this.GetEntIndex(), Prop_Send, "m_nSequence", iSequence);
+		SetEntProp(this.entindex, Prop_Send, "m_nSequence", iSequence);
 	}
 	public void GetSequenceLinearMotion(const int iSequence, float vec3Buffer[3])
 	{
@@ -112,35 +112,35 @@ methodmap CBaseAnimating < CBaseEntity
 	}
 	public float GetPlaybackRate()
 	{
-		return GetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flPlaybackRate");
+		return GetEntPropFloat(this.entindex, Prop_Data, "m_flPlaybackRate");
 	}
 	public void SetPlaybackRate(const float flPlaybackRate)
 	{
-		SetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flPlaybackRate", flPlaybackRate);
+		SetEntPropFloat(this.entindex, Prop_Data, "m_flPlaybackRate", flPlaybackRate);
 	}
 	public float GetCycle()
 	{
-		return GetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flCycle");
+		return GetEntPropFloat(this.entindex, Prop_Data, "m_flCycle");
 	}
 	public void SetCycle(const float flCycle)
 	{
-		SetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flCycle", flCycle);
+		SetEntPropFloat(this.entindex, Prop_Data, "m_flCycle", flCycle);
 	}
 	public int LookupAttachment(const char[] szName)
 	{
-		return LookupEntityAttachment(this.GetEntIndex(), szName);
+		return LookupEntityAttachment(this.entindex, szName);
 	}
 	public bool GetAttachment(const int iAttachment, float vec3Origin[3], float vec3Angles[3])
 	{
-		return GetEntityAttachment(this.GetEntIndex(), iAttachment, vec3Origin, vec3Angles);
+		return GetEntityAttachment(this.entindex, iAttachment, vec3Origin, vec3Angles);
 	}
 	public int GetForceBone()
 	{
-		return GetEntProp(this.GetEntIndex(), Prop_Send, "m_nForceBone");
+		return GetEntProp(this.entindex, Prop_Send, "m_nForceBone");
 	}
 	public void SetForceBone(const int iForceBone)
 	{
-		SetEntProp(this.GetEntIndex(), Prop_Send, "m_nForceBone", iForceBone);
+		SetEntProp(this.entindex, Prop_Send, "m_nForceBone", iForceBone);
 	}
 	#if defined SRCCOOP_BLACKMESA
 	public int SelectWeightedSequence(const int iActivity)
@@ -148,31 +148,31 @@ methodmap CBaseAnimating < CBaseEntity
 		// TODO:
 		// This is currently only implemented in Black Mesa but it may be required for others.
 		// Reimplement the logic from scratch.
-		return SDKCall(g_pSelectWeightedSequence, this.GetEntIndex(), iActivity);
+		return SDKCall(g_pSelectWeightedSequence, this.entindex, iActivity);
 	}
 	#endif
 	public float GetPoseParameter(const int iIndex)
 	{
-		return GetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flPoseParameter", iIndex);
+		return GetEntPropFloat(this.entindex, Prop_Data, "m_flPoseParameter", iIndex);
 	}
 	public void SetPoseParameter(const int iIndex, const float flPoseParameter)
 	{
-		SetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flPoseParameter", flPoseParameter, iIndex);
+		SetEntPropFloat(this.entindex, Prop_Data, "m_flPoseParameter", flPoseParameter, iIndex);
 	}
 	public bool IsSequenceFinished()
 	{
-		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_bSequenceFinished") != 0;
+		return GetEntProp(this.entindex, Prop_Data, "m_bSequenceFinished") != 0;
 	}
 	public void SetSequenceFinished(const bool bFinished)
 	{
-		SetEntProp(this.GetEntIndex(), Prop_Data, "m_bSequenceFinished", bFinished);
+		SetEntProp(this.entindex, Prop_Data, "m_bSequenceFinished", bFinished);
 	}
 	public float GetAnimationTime()
 	{
-		return GetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flAnimTime");
+		return GetEntPropFloat(this.entindex, Prop_Data, "m_flAnimTime");
 	}
 	public void SetAnimationTime(const float flAnimationTime)
 	{
-		SetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flAnimTime", flAnimationTime);
+		SetEntPropFloat(this.entindex, Prop_Data, "m_flAnimTime", flAnimationTime);
 	}
 }

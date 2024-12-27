@@ -1013,7 +1013,7 @@ public void SpawnPostponedItem(CBaseEntity pEntity)
 {
 	if (pEntity.IsValid())
 	{
-		SDKHook(pEntity.GetEntIndex(), SDKHook_SpawnPost, Hook_Instancing_ItemSpawn);
+		SDKHook(pEntity.entindex, SDKHook_SpawnPost, Hook_Instancing_ItemSpawn);
 		g_bIsMultiplayerOverride = false; // IsMultiplayer=false will spawn items with physics
 		pEntity.Spawn();
 		g_bIsMultiplayerOverride = true;

@@ -10,18 +10,18 @@ methodmap CBlackMesaBaseCombatWeaponIronsights < CBlackMesaBaseCombatWeapon
 
 	public bool IsInIronsights()
 	{
-		return GetEntProp(this.GetEntIndex(), Prop_Send, "m_bIronSights") != 0;
+		return GetEntProp(this.entindex, Prop_Send, "m_bIronSights") != 0;
 	}
 	public bool IsInIronsightsPostProcess()
 	{
-		return GetEntProp(this.GetEntIndex(), Prop_Send, "m_bIronSightsScopePostprocess") != 0;
+		return GetEntProp(this.entindex, Prop_Send, "m_bIronSightsScopePostprocess") != 0;
 	}
 	public bool SetIronsights(const bool bIronsights)
 	{
-		SetEntProp(this.GetEntIndex(), Prop_Send, "m_bIronSights", bIronsights);
+		SetEntProp(this.entindex, Prop_Send, "m_bIronSights", bIronsights);
 	}
 	public bool SetIronsightsPostProcess(const bool bIronsights)
 	{
-		SetEntProp(this.GetEntIndex(), Prop_Send, "m_bIronSightsScopePostprocess", bIronsights);
+		SetEntProp(this.entindex, Prop_Send, "m_bIronSightsScopePostprocess", bIronsights);
 	}
 }

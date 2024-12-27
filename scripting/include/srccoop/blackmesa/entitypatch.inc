@@ -321,8 +321,8 @@ void MarionettistManipulate(int iMarionettist, int iClient, CBasePlayer pPlayer)
 	
 	// start it
 	pPuppet.AcceptInputStr("Manipulate", "!activator", pPlayer);
-	hkThink.HookEntity(Hook_Post, pPuppet.GetEntIndex(), Hook_MarionettistPuppetThinkPost);
-	hkUpdateOnRemove.HookEntity(Hook_Post, pPuppet.GetEntIndex(), Hook_MarionettistPuppetRemoved);
+	hkThink.HookEntity(Hook_Post, pPuppet.entindex, Hook_MarionettistPuppetThinkPost);
+	hkUpdateOnRemove.HookEntity(Hook_Post, pPuppet.entindex, Hook_MarionettistPuppetRemoved);
 	g_pActiveMarionettist[iClient] = pPuppet;
 }
 
@@ -388,7 +388,7 @@ MRESReturn Hook_MarionettistPuppetRemoved(int iEntIndex)
 	{
 		if (g_pActiveMarionettist[i] == pPuppet)
 		{
-			if (GetEntProp(g_pActiveMarionettist[i].GetEntIndex(), Prop_Data, "m_bIgnoreCollisions"))
+			if (GetEntProp(g_pActiveMarionettist[i].entindex, Prop_Data, "m_bIgnoreCollisions"))
 			{
 				if (IsClientInGame(i))
 				{
@@ -798,9 +798,9 @@ public MRESReturn Hook_ToggleIronsights(int _this, Handle hParams)
 				return MRES_Supercede;
 			
 			// Values grabbed out of `weapon_crossbow.dmx`.
-			iFOV = g_pPlayerIronsightClassic[pPlayer.GetEntIndex()] ? 20 : 10;
+			iFOV = g_pPlayerIronsightClassic[pPlayer.entindex] ? 20 : 10;
 
-			if (!g_pPlayerIronsightClassic[pPlayer.GetEntIndex()])
+			if (!g_pPlayerIronsightClassic[pPlayer.entindex])
 			{
 				CPredictedViewModel pViewModel = pPlayer.GetViewModel();
 				if (pViewModel.IsValid())
@@ -815,9 +815,9 @@ public MRESReturn Hook_ToggleIronsights(int _this, Handle hParams)
 		else
 		{
 			// Values grabbed out of `weapon_357.dmx`.
-			iFOV = g_pPlayerIronsightClassic[pPlayer.GetEntIndex()] ? 40 : 55;
+			iFOV = g_pPlayerIronsightClassic[pPlayer.entindex] ? 40 : 55;
 
-			if (!g_pPlayerIronsightClassic[pPlayer.GetEntIndex()])
+			if (!g_pPlayerIronsightClassic[pPlayer.entindex])
 			{
 				pWeapon.SendWeaponAnim(bWillBeUsingIronsights ? ACT_VM_IDLE_TO_IS : ACT_VM_IS_TO_IDLE);
 				pPlayer.ShowCrosshair(!bWillBeUsingIronsights);
@@ -845,7 +845,7 @@ public MRESReturn Hook_IronsightGetPrimaryAttackActivity(int _this, Handle hRetu
 		if (pWeapon.IsInIronsights())
 		{
 			CBasePlayer pPlayer = view_as<CBasePlayer>(pWeapon.GetOwner());
-			if (pPlayer.IsValid() && !g_pPlayerIronsightClassic[pPlayer.GetEntIndex()])
+			if (pPlayer.IsValid() && !g_pPlayerIronsightClassic[pPlayer.entindex])
 			{
 				DHookSetReturn(hReturn, ACT_VM_PRIMARYATTACK_IS);
 				return MRES_Supercede;

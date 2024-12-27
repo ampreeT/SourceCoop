@@ -14,6 +14,6 @@ methodmap CPointHurt < CPointEntity
 	
 	public int GetDamageType()
 	{
-		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_bitsDamageType");
+		return GetEntProp(this.entindex, Prop_Data, "m_bitsDamageType");
 	}
 }

@@ -14,23 +14,23 @@ methodmap CBlackMesaBaseDetonator < CBaseAnimating
 
 	public bool IsPlacedByLevelDesigner()
 	{
-		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_bPlacedByLevelDesigner") != 0;
+		return GetEntProp(this.entindex, Prop_Data, "m_bPlacedByLevelDesigner") != 0;
 	}
 	public void SetPlacedByLevelDesigner(const bool bIsPlacedByDesigner)
 	{
-		SetEntProp(this.GetEntIndex(), Prop_Data, "m_bPlacedByLevelDesigner", bIsPlacedByDesigner);
+		SetEntProp(this.entindex, Prop_Data, "m_bPlacedByLevelDesigner", bIsPlacedByDesigner);
 	}
 	public CEnvBeamTeam GetBeam()
 	{
-		return CEnvBeamTeam(GetEntPropEnt(this.GetEntIndex(), Prop_Data, "m_hBeam"));
+		return CEnvBeamTeam(GetEntPropEnt(this.entindex, Prop_Data, "m_hBeam"));
 	}
 	public CSpriteTeam GetSprite()
 	{
-		return CSpriteTeam(GetEntPropEnt(this.GetEntIndex(), Prop_Data, "m_hLight"));
+		return CSpriteTeam(GetEntPropEnt(this.entindex, Prop_Data, "m_hLight"));
 	}
 	public CBlackMesaPlayer GetOwner()
 	{
-		return CBlackMesaPlayer(GetEntPropEnt(this.GetEntIndex(), Prop_Data, "m_hThrower"));
+		return CBlackMesaPlayer(GetEntPropEnt(this.entindex, Prop_Data, "m_hThrower"));
 	}
 }
 

@@ -10,14 +10,14 @@ methodmap CPredictedViewModel < CBaseViewModel
 	
 	public float GetWeaponTimeIdle()
 	{
-		return GetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flTimeWeaponIdle");
+		return GetEntPropFloat(this.entindex, Prop_Data, "m_flTimeWeaponIdle");
 	}
 	public void SetWeaponTimeIdle(const float flTimeIdle)
 	{
-		SetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flTimeWeaponIdle", flTimeIdle);
+		SetEntPropFloat(this.entindex, Prop_Data, "m_flTimeWeaponIdle", flTimeIdle);
 	}
 	public CBaseCombatWeapon GetOwningWeapon()
 	{
-		return CBaseCombatWeapon(GetEntPropEnt(this.GetEntIndex(), Prop_Data, "m_hWeapon"));
+		return CBaseCombatWeapon(GetEntPropEnt(this.entindex, Prop_Data, "m_hWeapon"));
 	}
 }
