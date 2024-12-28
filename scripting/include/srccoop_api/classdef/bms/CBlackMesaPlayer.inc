@@ -10,11 +10,11 @@ methodmap CBlackMesaPlayer < CBasePlayer
 	
 	public bool HasJumpModule()
 	{
-		return GetEntProp(this.GetEntIndex(), Prop_Send, "m_bHasJumpModule") != 0;
+		return GetEntProp(this.entindex, Prop_Send, "m_bHasJumpModule") != 0;
 	}
 	public void SetJumpModule(const bool bShouldHaveJumpModule)
 	{
-		SetEntProp(this.GetEntIndex(), Prop_Send, "m_bHasJumpModule", bShouldHaveJumpModule);
+		SetEntProp(this.entindex, Prop_Send, "m_bHasJumpModule", bShouldHaveJumpModule);
 	}
 	public void PerformForcedWeaponDeploy(const char[] szWeaponClassname)
 	{

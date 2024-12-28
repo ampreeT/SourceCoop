@@ -609,7 +609,7 @@ methodmap CCoopSpawnSystem
 		}
 		if (pCheckpoint.m_pTouchEnt.IsValid())
 		{
-			SDKHook(pCheckpoint.m_pTouchEnt.GetEntIndex(), SDKHook_StartTouchPost, Hook_TouchCheckpoint);
+			SDKHook(pCheckpoint.m_pTouchEnt.entindex, SDKHook_StartTouchPost, Hook_TouchCheckpoint);
 			bHasTrigger = true;
 		}
 		if (pCheckpoint.m_flRadius > 0.0)

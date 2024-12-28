@@ -155,7 +155,7 @@ public MRESReturn Hook_UTIL_GetLocalPlayer(Handle hReturn)
 			}
 		}
 		// LogDebug("Overriding UTIL_GetLocalPlayer");
-		DHookSetReturn(hReturn, pPlayer.GetEntIndex());
+		DHookSetReturn(hReturn, pPlayer.entindex);
 		return MRES_Supercede;
 	}
 	// BUGBUG Crash avoidance for Linux SM 1.12 - 7164+
@@ -289,7 +289,7 @@ public MRESReturn Hook_FindNamedEntity(int _this, Handle hReturn, Handle hParams
 				CBasePlayer pBestPlayer = GetNearestPlayer(pActor);
 				if (pBestPlayer != NULL_CBASEENTITY)
 				{
-					DHookSetReturn(hReturn, pBestPlayer.GetEntIndex());
+					DHookSetReturn(hReturn, pBestPlayer.entindex);
 					return MRES_Supercede;
 				}
 			}
@@ -341,11 +341,11 @@ public MRESReturn Hook_ExpresserHost_DoModifyOrAppendCriteriaPost(Handle hParams
 public void Hook_ChangelevelSpawn(int iEntIndex)
 {
 	CChangelevel pEntity = CChangelevel(iEntIndex);
-	DHookEntity(hkAcceptInput, true, pEntity.GetEntIndex(), _, Hook_ChangelevelAcceptInput);
+	DHookEntity(hkAcceptInput, true, pEntity.entindex, _, Hook_ChangelevelAcceptInput);
 
 	if (!(pEntity.m_spawnflags & SF_CHANGELEVEL_NOTOUCH))
 	{
-		SDKHook(pEntity.GetEntIndex(), SDKHook_Touch, Hook_ChangelevelOnTouch);
+		SDKHook(pEntity.entindex, SDKHook_Touch, Hook_ChangelevelOnTouch);
 		CreateTimer(Conf.CHANGELEVEL_EFFECT_PERIOD, ChangelevelEffects, pEntity, TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT);
 	}
 }
@@ -543,7 +543,7 @@ public MRESReturn Hook_PointViewcontrolAcceptInput(int _this, Handle hReturn, Ha
 					CBaseEntity pViewEntity = pActivator.GetViewEntity();
 					if (pViewEntity.IsValid() && pViewEntity.IsClassname("point_viewcontrol") && pViewEntity != pThis)
 					{
-						SetEntPropEnt(pViewEntity.GetEntIndex(), Prop_Data, "m_hPlayer", pActivator.GetEntIndex());
+						SetEntPropEnt(pViewEntity.entindex, Prop_Data, "m_hPlayer", pActivator.entindex);
 						bHookSkip = true;
 						pViewEntity.AcceptInputStr("Disable");
 						bHookSkip = false;
@@ -648,7 +648,7 @@ public MRESReturn Hook_EnvZoomAcceptInput(int _this, Handle hReturn, Handle hPar
 				szNewInput = "Zoom";
 				if (pActivator.IsPlayer())
 				{
-					iNewClient = pActivator.GetEntIndex();
+					iNewClient = pActivator.entindex;
 				}
 			}
 			else if (strcmp(szInput, "ZoomAll", false) == 0)
@@ -881,11 +881,11 @@ public void Timer_EnvSpritePostSpawn(Handle timer, CBaseEntity pEntity)
 {
 	if (pEntity.IsValid())
 	{
-		if (HasEntProp(pEntity.GetEntIndex(), Prop_Data, "m_flGlowProxySize"))
+		if (HasEntProp(pEntity.entindex, Prop_Data, "m_flGlowProxySize"))
 		{
-			if (GetEntPropFloat(pEntity.GetEntIndex(), Prop_Data, "m_flGlowProxySize") > 64.0)
+			if (GetEntPropFloat(pEntity.entindex, Prop_Data, "m_flGlowProxySize") > 64.0)
 			{
-				SetEntPropFloat(pEntity.GetEntIndex(), Prop_Data, "m_flGlowProxySize", 64.0);
+				SetEntPropFloat(pEntity.entindex, Prop_Data, "m_flGlowProxySize", 64.0);
 			}
 		}
 	}
@@ -904,7 +904,7 @@ public MRESReturn Hook_ResolveNamesPost(int _this)
 	{
 		CBaseEntity pEnt = CBaseEntity(_this);
 		CBasePlayer pPlayer = GetNearestPlayer(pEnt);
-		SetEntPropEnt(_this, Prop_Data, "m_hGoalEntity", pPlayer.GetEntIndex());
+		SetEntPropEnt(_this, Prop_Data, "m_hGoalEntity", pPlayer.entindex);
 	}
 	return MRES_Ignored;
 }
@@ -1100,7 +1100,7 @@ public MRESReturn Hook_BaseNpcUpdateSleepState(int _this, Handle hParams)
 					for (int i = 1; i <= MaxClients; ++i)
 					{
 						CBasePlayer pPlayer = CBasePlayer(i);
-						if (pPlayer.IsValid() && pPlayer.IsAlive() && !pPlayer.HasFlags(FL_NOTARGET) && pPlayer.FVisibleEntity(pBaseNPC))
+						if (pPlayer.IsValid() && pPlayer.IsAlive() && !(pPlayer.m_fFlags & FL_NOTARGET) && pPlayer.FVisibleEntity(pBaseNPC))
 						{
 							pBaseNPC.Wake();
 							break;
@@ -1173,7 +1173,7 @@ public bool HasAnyPlayerWalkedIntoWakeRadius(CAI_BaseNPC pBaseNPC)
 	for (int i = 1; i <= MaxClients; ++i)
 	{
 		CBasePlayer pPlayer = CBasePlayer(i);
-		if (pPlayer.IsValid() && pPlayer.IsAlive() && !pPlayer.HasFlags(FL_NOTARGET))
+		if (pPlayer.IsValid() && pPlayer.IsAlive() && !(pPlayer.m_fFlags & FL_NOTARGET))
 		{
 			float vec3PlayerPosition[3];
 			pPlayer.GetAbsOrigin(vec3PlayerPosition);
@@ -1240,7 +1240,7 @@ public MRESReturn Hook_ProtoSniperSelectSchedule(int _this, Handle hReturn)
 		/*
 		if (PrecacheSound("NPC_Sniper.TargetDestroyed", true))
 		{
-			EmitGameSoundToAll("NPC_Sniper.TargetDestroyed", pSniper.GetEntIndex());
+			EmitGameSoundToAll("NPC_Sniper.TargetDestroyed", pSniper.entindex);
 		}
 		*/
 	}
@@ -1513,7 +1513,7 @@ public MRESReturn Hook_UTIL_FindClientInPVSGuts(DHookReturn hReturn, DHookParam 
 {
 	// Naive solution with fast execution.
 	// The original implementation below this implementation causes issues with NPCs doing nothing.
-	DHookSetReturn(hReturn, GetNearestPlayerPreferAlive(CBaseEntity(hParams.Get(1))).GetEntIndex());
+	DHookSetReturn(hReturn, GetNearestPlayerPreferAlive(CBaseEntity(hParams.Get(1))).entindex);
 	return MRES_Supercede;
 
 	/*

@@ -352,7 +352,7 @@ public bool TraceEntityFilter(int entity, int mask, any data)
 
 public void SC_OnPlayerRagdollCreated(CBasePlayer pPlayer, CBaseAnimating pRagdoll)
 {
-	int client = pPlayer.GetEntIndex();
+	int client = pPlayer.entindex;
 	delete g_pRagdollEffectsTimer[client];
 	if (g_bEnabled)
 	{
@@ -368,7 +368,7 @@ public void Timer_SetRagdollEffects(Handle timer, CBasePlayer pPlayer)
 {
 	if (pPlayer.IsInGame())
 	{
-		g_pRagdollEffectsTimer[pPlayer.GetEntIndex()] = null;
+		g_pRagdollEffectsTimer[pPlayer.entindex] = null;
 		CBaseEntity pRagdoll = pPlayer.GetRagdoll();
 		if (pRagdoll.IsValid())
 		{
@@ -398,7 +398,7 @@ CBaseEntity g_pProgressBar[MAXPLAYERS+1] = {NULL_CBASEENTITY, ...};
 stock void Client_ProgressBar(CBasePlayer pPlayer, float flTime = 4.0, float flBarLength = 30.0, float flBarWidth = 0.3, int Color[4] = {0, 255, 0, 255}, float flDistFromPlayer = 20.0)
 {
 	// Always remove previous bar if there is one
-	Client_RemoveProgressBar(pPlayer.GetEntIndex());
+	Client_RemoveProgressBar(pPlayer.entindex);
 	
 	static float vecEyePosition[3];
 	
@@ -413,11 +413,11 @@ stock void Client_ProgressBar(CBasePlayer pPlayer, float flTime = 4.0, float flB
 			if (IsValidEntity(iBarBox))
 			{
 				SetEntPropEnt(iBeam, Prop_Data, "m_hEffectEntity", iBarBox);
-				SetEntPropEnt(iBarBox, Prop_Data, "m_hEffectEntity", pPlayer.GetEntIndex());
+				SetEntPropEnt(iBarBox, Prop_Data, "m_hEffectEntity", pPlayer.entindex);
 				SDKHookEx(iBarBox, SDKHook_SetTransmit, Transmit_ProgressBarBox);
 			}
 			
-			g_pProgressBar[pPlayer.GetEntIndex()] = CBaseEntity(iBeam);
+			g_pProgressBar[pPlayer.entindex] = CBaseEntity(iBeam);
 			static float vecStats[3];
 			vecStats[0] = flTime;
 			vecStats[1] = flBarLength;
@@ -467,7 +467,7 @@ stock void Client_RemoveProgressBar(int iPlayer)
 {
 	if (g_pProgressBar[iPlayer].IsValid())
 	{
-		CBaseEntity pBarBox = CBaseEntity(GetEntPropEnt(g_pProgressBar[iPlayer].GetEntIndex(), Prop_Data, "m_hEffectEntity"));
+		CBaseEntity pBarBox = CBaseEntity(GetEntPropEnt(g_pProgressBar[iPlayer].entindex, Prop_Data, "m_hEffectEntity"));
 		if (pBarBox.IsValid())
 		{
 			pBarBox.Kill();

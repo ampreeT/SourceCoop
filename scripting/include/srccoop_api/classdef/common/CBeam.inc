@@ -14,26 +14,26 @@ methodmap CBeam < CBaseEntity
 
 	public int GetAttachmentCount()
 	{
-		return GetEntProp(this.GetEntIndex(), Prop_Send, "m_nNumBeamEnts");
+		return GetEntProp(this.entindex, Prop_Send, "m_nNumBeamEnts");
 	}
 	public void SetAttachmentCount(const int iAttachmentCount)
 	{
-		SetEntProp(this.GetEntIndex(), Prop_Send, "m_nNumBeamEnts", iAttachmentCount);
+		SetEntProp(this.entindex, Prop_Send, "m_nNumBeamEnts", iAttachmentCount);
 	}
 	public int GetBeamType()
 	{
-		return GetEntProp(this.GetEntIndex(), Prop_Send, "m_nBeamType");
+		return GetEntProp(this.entindex, Prop_Send, "m_nBeamType");
 	}
 	public int SetBeamType(const int iBeamType)
 	{
-		SetEntProp(this.GetEntIndex(), Prop_Send, "m_nBeamType", iBeamType);
+		SetEntProp(this.entindex, Prop_Send, "m_nBeamType", iBeamType);
 	}
 	public CBaseEntity GetAttachment(const int iIndex)
 	{
-		return CBaseEntity(GetEntPropEnt(this.GetEntIndex(), Prop_Send, "m_hAttachEntity", iIndex));
+		return CBaseEntity(GetEntPropEnt(this.entindex, Prop_Send, "m_hAttachEntity", iIndex));
 	}
 	public void SetAttachment(const int iIndex, CBaseEntity pEntity)
 	{
-		SetEntPropEnt(this.GetEntIndex(), Prop_Send, "m_hAttachEntity", pEntity.GetEntIndex(), iIndex);
+		SetEntPropEnt(this.entindex, Prop_Send, "m_hAttachEntity", pEntity.entindex, iIndex);
 	}
 }

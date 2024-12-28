@@ -32,54 +32,54 @@ methodmap CSprite < CBaseEntity
 	}
 	public float GetScale()
 	{
-		return GetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flSpriteScale");
+		return GetEntPropFloat(this.entindex, Prop_Data, "m_flSpriteScale");
 	}
 	public void SetScale(const float flScale)
 	{
-		SetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flSpriteScale", flScale);
+		SetEntPropFloat(this.entindex, Prop_Data, "m_flSpriteScale", flScale);
 	}
 	public int GetBrightness()
 	{
-		return GetEntProp(this.GetEntIndex(), Prop_Send, "m_nBrightness");
+		return GetEntProp(this.entindex, Prop_Send, "m_nBrightness");
 	}
 	public void SetBrigtness(const int iBrightness)
 	{
-		SetEntProp(this.GetEntIndex(), Prop_Send, "m_nBrightness", iBrightness);
+		SetEntProp(this.entindex, Prop_Send, "m_nBrightness", iBrightness);
 	}
 	public float GetFrameRate()
 	{
-		return GetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flSpriteFramerate");
+		return GetEntPropFloat(this.entindex, Prop_Data, "m_flSpriteFramerate");
 	}
 	public void SetFrameRate(const float flFrameRate)
 	{
-		SetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flSpriteFramerate", flFrameRate);
+		SetEntPropFloat(this.entindex, Prop_Data, "m_flSpriteFramerate", flFrameRate);
 	}
 	public float GetFrame()
 	{
-		return GetEntPropFloat(this.GetEntIndex(), Prop_Send, "m_flFrame");
+		return GetEntPropFloat(this.entindex, Prop_Send, "m_flFrame");
 	}
 	public void SetFrame(const float flFrame)
 	{
-		SetEntPropFloat(this.GetEntIndex(), Prop_Send, "m_flFrame", flFrame);
+		SetEntPropFloat(this.entindex, Prop_Send, "m_flFrame", flFrame);
 	}
 	public float Frames()
 	{
-		return GetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flMaxFrame");
+		return GetEntPropFloat(this.entindex, Prop_Data, "m_flMaxFrame");
 	}
 	public float GetGlowProxySize()
 	{
-		return GetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flGlowProxySize");
+		return GetEntPropFloat(this.entindex, Prop_Data, "m_flGlowProxySize");
 	}
 	public void SetGlowProxySize(const float flGlowProxySize)
 	{
-		SetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flGlowProxySize", flGlowProxySize);
+		SetEntPropFloat(this.entindex, Prop_Data, "m_flGlowProxySize", flGlowProxySize);
 	}
 	public void SetAttachment(const CBaseEntity pEntity, const int iAttachment)
 	{
 		if (pEntity != NULL_CBASEENTITY)
 		{
-			SetEntPropEnt(this.GetEntIndex(), Prop_Data, "m_hAttachedToEntity", pEntity.GetEntIndex());
-			SetEntProp(this.GetEntIndex(), Prop_Data, "m_nAttachment", iAttachment);
+			SetEntPropEnt(this.entindex, Prop_Data, "m_hAttachedToEntity", pEntity.entindex);
+			SetEntProp(this.entindex, Prop_Data, "m_nAttachment", iAttachment);
 			this.SetParent(pEntity);
 		}
 	}

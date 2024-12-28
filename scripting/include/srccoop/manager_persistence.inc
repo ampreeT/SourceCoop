@@ -74,9 +74,9 @@ methodmap EquipmentManager
 	
 	public static bool GetEquipment(CBasePlayer pPlayer, CCoopEquipment equipment)
 	{
-		if (strlen(g_szSteamIds[pPlayer.GetEntIndex()]) > 0)
+		if (strlen(g_szSteamIds[pPlayer.entindex]) > 0)
 		{
-			return EquipmentManager.GetEquipmentSteam(g_szSteamIds[pPlayer.GetEntIndex()], equipment);
+			return EquipmentManager.GetEquipmentSteam(g_szSteamIds[pPlayer.entindex], equipment);
 		}
 		return false;
 	}

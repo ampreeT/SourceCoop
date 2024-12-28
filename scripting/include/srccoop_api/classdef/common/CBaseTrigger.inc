@@ -38,11 +38,11 @@ methodmap CBaseTrigger < CBaseToggle
 	}
 	public bool IsEnabled()
 	{
-		return !GetEntProp(this.GetEntIndex(), Prop_Data, "m_bDisabled");
+		return !GetEntProp(this.entindex, Prop_Data, "m_bDisabled");
 	}
 	public void SetEnabled(const bool bEnabled)
 	{
-		SetEntProp(this.GetEntIndex(), Prop_Data, "m_bDisabled", !bEnabled);
+		SetEntProp(this.entindex, Prop_Data, "m_bDisabled", !bEnabled);
 	}
 	// void CBaseTrigger::InitTrigger() from SDK
 	public void InitTrigger()

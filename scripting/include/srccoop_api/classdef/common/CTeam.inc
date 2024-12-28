@@ -23,14 +23,14 @@ methodmap CTeam < CBaseEntity
 
 	public int GetTeam()
 	{
-		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_iTeamNum");
+		return GetEntProp(this.entindex, Prop_Data, "m_iTeamNum");
 	}
 	public int GetScore()
 	{
-		return GetEntProp(this.GetEntIndex(), Prop_Send, "m_iScore");
+		return GetEntProp(this.entindex, Prop_Send, "m_iScore");
 	}
 	public void SetScore(const int iScore)
 	{
-		SetEntProp(this.GetEntIndex(), Prop_Send, "m_iScore", iScore);
+		SetEntProp(this.entindex, Prop_Send, "m_iScore", iScore);
 	}
 }

@@ -14,11 +14,11 @@ methodmap CFuncLadder < CBaseEntity
 
 	public bool IsEnabled()
 	{
-		return !GetEntProp(this.GetEntIndex(), Prop_Data, "m_bDisabled");
+		return !GetEntProp(this.entindex, Prop_Data, "m_bDisabled");
 	}
 	public void GetTopPosition(float vec3Buffer[3])
 	{
-		GetEntPropVector(this.GetEntIndex(), Prop_Data, "m_vecPlayerMountPositionTop", vec3Buffer);
+		GetEntPropVector(this.entindex, Prop_Data, "m_vecPlayerMountPositionTop", vec3Buffer);
 		float vecLocalOrigin[3];
 		this.GetOrigin(vecLocalOrigin);
 		AddVectors(vec3Buffer, vecLocalOrigin, vec3Buffer);
@@ -33,7 +33,7 @@ methodmap CFuncLadder < CBaseEntity
 	}
 	public void GetBottomPosition(float vecBuffer[3])
 	{
-		GetEntPropVector(this.GetEntIndex(), Prop_Data, "m_vecPlayerMountPositionBottom", vecBuffer);
+		GetEntPropVector(this.entindex, Prop_Data, "m_vecPlayerMountPositionBottom", vecBuffer);
 		float vecLocalOrigin[3];
 		this.GetOrigin(vecLocalOrigin);
 		AddVectors(vecBuffer, vecLocalOrigin, vecBuffer);

@@ -15,18 +15,18 @@ methodmap CSceneEntity < CPointEntity
 
 	public float GetCurrentTime()
 	{
-		return GetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flCurrentTime");
+		return GetEntPropFloat(this.entindex, Prop_Data, "m_flCurrentTime");
 	}
 	public void SetCurrentTime(const float flCurrentTime)
 	{
-		SetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flCurrentTime", flCurrentTime);
+		SetEntPropFloat(this.entindex, Prop_Data, "m_flCurrentTime", flCurrentTime);
 	}
 	public float GetForceClientTime()
 	{
-		return GetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flForceClientTime");
+		return GetEntPropFloat(this.entindex, Prop_Data, "m_flForceClientTime");
 	}
 	public void SetForceClientTime(const float flForceClientTime)
 	{
-		SetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flForceClientTime", flForceClientTime);
+		SetEntPropFloat(this.entindex, Prop_Data, "m_flForceClientTime", flForceClientTime);
 	}
 }
