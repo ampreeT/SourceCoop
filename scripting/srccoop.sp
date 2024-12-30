@@ -344,6 +344,11 @@ public void OnPluginStart()
 			}
 		}
 	}
+
+	#if defined ENTPATCH_BARNACLE_PREDICTION
+	HookEntityOutput("npc_barnacle", "OnGrab", Hook_Barnacle_OnGrab);
+	HookEntityOutput("npc_barnacle", "OnRelease", Hook_Barnacle_OnRelease);
+	#endif
 }
 
 #pragma dynamic ENTITYSTRING_LENGTH
