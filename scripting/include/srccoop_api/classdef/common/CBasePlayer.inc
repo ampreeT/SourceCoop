@@ -365,7 +365,7 @@ methodmap CBasePlayer < CBaseCombatCharacter
 	}
 	public void SendCommand(const char[] szCommand)
 	{
-		ClientCommand(this.GetEntIndex(), szCommand);
+		ClientCommand(this.entindex, szCommand);
 	}
 	public void PlayGameSound(const char[] szSound)
 	{
