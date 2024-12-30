@@ -319,4 +319,17 @@ methodmap CAI_BaseNPC < CBaseCombatCharacter
 	{
 		SetEntPropEnt(this.entindex, Prop_Data, "m_hCine", pCine.entindex);
 	}
+	public void ForgetEntity(const CBaseEntity pEntity)
+	{
+		static const char g_szPlaceholderName[] = "__srccoop_forget_entity";
+
+		char szTargetname[MAX_CLASSNAME];
+		pEntity.GetTargetname(szTargetname, sizeof(szTargetname));
+		
+		// This input will iterate through the entity list.
+		// If this is too expensive, call `CAI_Enemies::ClearMemory` directly instead.
+		pEntity.SetTargetname(g_szPlaceholderName);
+		this.AcceptInputStr("ForgetEntity", g_szPlaceholderName);
+		pEntity.SetTargetname(szTargetname);
+	}
 }

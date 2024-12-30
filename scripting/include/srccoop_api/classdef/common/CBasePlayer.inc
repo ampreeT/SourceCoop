@@ -278,11 +278,11 @@ methodmap CBasePlayer < CBaseCombatCharacter
 		SDKCall(g_pCreateViewModel, this.entindex, iIndex);
 		return this.GetViewModel(iIndex);
 	}
-	public CBaseAnimating GetRagdoll()
+	public CBaseEntity GetRagdoll()
 	{
-		return CBaseAnimating(GetEntPropEnt(this.GetEntIndex(), Prop_Send, "m_hRagdoll"));
+		return CBaseEntity(GetEntPropEnt(this.GetEntIndex(), Prop_Send, "m_hRagdoll"));
 	}
-	public void SetRagdoll(const CBaseAnimating pEntity)
+	public void SetRagdoll(const CBaseEntity pEntity)
 	{
 		SetEntPropEnt(this.GetEntIndex(), Prop_Send, "m_hRagdoll", pEntity.GetEntIndex());
 	}
@@ -358,6 +358,10 @@ methodmap CBasePlayer < CBaseCombatCharacter
 	public void ForceDropOfCarriedPhysObjects()
 	{
 		this.AcceptInputStr("ForceDropPhysObjects");
+	}
+	public void SendCommand(const char[] szCommand)
+	{
+		ClientCommand(this.GetEntIndex(), szCommand);
 	}
 	public void PlayGameSound(const char[] szSound)
 	{

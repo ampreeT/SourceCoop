@@ -777,6 +777,10 @@ methodmap CBaseEntity
 	{
 	    SetEdictFlagOnEntity(this.GetEntIndex(), 8, bFullEdictChanged);	// FL_FULL_EDICT_CHANGED (1 << 8)
 	}
+	public void StopSound(const int iChannel, const char[] szName)
+	{
+		StopSound(this.entindex, iChannel, szName);
+	}
 }
 
 static bool TraceEntityFilter_FVisibleAiLosEnabled(int iEntIndex, int iMask, int iThisEntIndex)

@@ -45,6 +45,7 @@
 #include <srccoop_api/classdef/common/CLogicRelay.inc>
 #include <srccoop_api/classdef/common/CMessage.inc>
 #include <srccoop_api/classdef/common/CMultiplayRules.inc>
+#include <srccoop_api/classdef/common/CNPC_Barnacle.inc>
 #include <srccoop_api/classdef/common/CParticleSystem.inc>
 #include <srccoop_api/classdef/common/CPlayerInfoManager.inc>
 #include <srccoop_api/classdef/common/CPlayerResource.inc>
@@ -53,12 +54,14 @@
 #include <srccoop_api/classdef/common/CPredictedViewModel.inc>
 #include <srccoop_api/classdef/common/CPropVehicle.inc>
 #include <srccoop_api/classdef/common/CPropVehicleDriveable.inc>
+#include <srccoop_api/classdef/common/CRagdollProp.inc>
 #include <srccoop_api/classdef/common/CProtoSniper.inc>
 #include <srccoop_api/classdef/common/CSceneEntity.inc>
 #include <srccoop_api/classdef/common/CSniperTarget.inc>
 #include <srccoop_api/classdef/common/CSoundEnt.inc>
 #include <srccoop_api/classdef/common/CSprite.inc>
 #include <srccoop_api/classdef/common/CSpriteOriented.inc>
+#include <srccoop_api/classdef/common/CTakeDamageInfo.inc>
 #include <srccoop_api/classdef/common/CTeam.inc>
 #include <srccoop_api/classdef/common/CTraceRay.inc>
 #include <srccoop_api/classdef/common/CTriggerHurt.inc>
@@ -102,6 +105,7 @@ stock void InitClassdef(const GameData hGameConfig)
 	CVEngineServer.InitClassdef(hGameConfig);
 	CSoundEnt.InitClassdef(hGameConfig);
 	CPlayerState.InitClassdef(hGameConfig);
+	CNPC_Barnacle.InitClassdef(hGameConfig);
 
 	// Always last.
 	CGlobalVars.InitClassdef(hGameConfig);

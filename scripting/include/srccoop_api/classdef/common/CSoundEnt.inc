@@ -76,7 +76,7 @@ enum struct CSound
 		if (!this.IsValid())
 			ThrowError("Attempted to use invalid CSound index %i.", this.GetSoundIndex());
 		
-		return CBaseEntity(LoadFromAddress(GetSoundPoolPropAddress(this.GetSoundEnt(), this.GetSoundIndex(), "m_hOwner"), NumberType_Int32) | (1 << 31));
+		return GetEntityFromEHandlePointer(GetSoundPoolPropAddress(this.GetSoundEnt(), this.GetSoundIndex(), "m_hOwner"));
 	}
 	void Next()
 	{

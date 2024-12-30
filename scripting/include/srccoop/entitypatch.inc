@@ -1513,7 +1513,8 @@ public MRESReturn Hook_UTIL_FindClientInPVSGuts(DHookReturn hReturn, DHookParam 
 {
 	// Naive solution with fast execution.
 	// The original implementation below this implementation causes issues with NPCs doing nothing.
-	DHookSetReturn(hReturn, GetNearestPlayerPreferAlive(CBaseEntity(hParams.Get(1))).GetEntIndex());
+	CBaseEntity pEntity = CBaseEntity(hParams.Get(1));
+	DHookSetReturn(hReturn, (pEntity != NULL_CBASEENTITY) ? GetNearestPlayerPreferAlive(pEntity).GetEntIndex() : -1);
 	return MRES_Supercede;
 
 	/*

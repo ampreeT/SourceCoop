@@ -30,7 +30,7 @@ methodmap CGlobalVars < CGlobalVarsBase
 		if (!(gpGlobals = CPlayerInfoManager.Get().GetGlobalVars()))
 			SetFailState("Could not get `gpGlobals` from `PlayerInfoManager`");
 	}
-	public static CGlobalVarsBase Get()
+	public static CGlobalVars Get()
 	{
 		return gpGlobals;
 	}

@@ -757,7 +757,10 @@ public void Timer_SetTripmineSpriteColor(Handle timer, CSpriteTeam pSpriteTeam)
 //------------------------------------------------------
 public void Hook_GrenadeFragSpawn(const int iEntIndex)
 {
-	g_bIsMultiplayerOverride = false;
+	if (CoopManager.IsFeatureEnabled(FT_SP_WEAPONS))
+	{
+		g_bIsMultiplayerOverride = false;
+	}
 }
 
 //------------------------------------------------------
@@ -766,7 +769,10 @@ public void Hook_GrenadeFragSpawn(const int iEntIndex)
 //------------------------------------------------------
 public void Hook_GrenadeFragSpawnPost(const int iEntIndex)
 {
-	g_bIsMultiplayerOverride = true;
+	if (CoopManager.IsFeatureEnabled(FT_SP_WEAPONS))
+	{
+		g_bIsMultiplayerOverride = true;
+	}
 }
 
 //------------------------------------------------------
@@ -1126,7 +1132,7 @@ public MRESReturn Hook_CParamsManager_InitInstances(Address _this, Handle hRetur
 	// TODO:
 	// Currently, this is getting only called during level init, but
 	// we also need to call this if the feature is turned on/off mid-round.
-	CParamsManager pParamsManager = CParamsManager(_this);
+	CParamsManager pParamsManager = CParamsManager.FromAddress(_this);
 	pParamsManager.SetMultiplayer(!CoopManager.IsFeatureEnabled(FT_SP_WEAPONS));
 	return MRES_Ignored;
 }
