@@ -353,9 +353,10 @@ public MRESReturn Hook_PlayerSpawnPost(int iClient, Handle hReturn, Handle hPara
 		return MRES_Ignored;
 	
 	CBasePlayer pPlayer = CBasePlayer(iClient);
-	ClearNpcMemoryForPlayer(pPlayer);
 	if (pPlayer.IsAlive())
 	{
+		ClearNpcMemoryForPlayer(pPlayer);
+		
 		// Ensure death camera and ragdoll get removed
 		CBaseEntity pRagdoll = pPlayer.GetRagdoll();
 		if (pRagdoll != NULL_CBASEENTITY)
