@@ -15,7 +15,7 @@ methodmap CTakeDamageInfo
     // xref: "entindex_inflictor"
     public CBaseEntity GetInflictor()
     {
-        return GetEntityFromEHandlePointer(this.GetAddress() + 0x24);       // m_hInflictor
+        return CBaseEntity(LoadEntityFromHandleAddress(this.GetAddress() + 0x24));       // m_hInflictor
     }
     public int GetDamageType()
     {

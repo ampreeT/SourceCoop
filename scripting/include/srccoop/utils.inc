@@ -1070,8 +1070,3 @@ stock void SetBitOnInt(int& i, const int iBitIndex, const bool bSetBit)
 		i &= ~(1 << iBitIndex);
 	}
 }
-
-stock CBaseEntity GetEntityFromEHandlePointer(const Address pAddress)
-{
-	return CBaseEntity(LoadFromAddress(pAddress, NumberType_Int32) | (1 << 31));
-}
