@@ -29,19 +29,19 @@ methodmap ItemInstancingManager
 	{
 		if (!CoopManager.IsFeatureEnabled(FT_INSTANCE_ITEMS_NORESET))
 		{
-			g_pPickedUpItems[pPlayer.GetEntIndex()].Clear();
+			g_pPickedUpItems[pPlayer.entindex].Clear();
 		}
 	}
 	
 	public static void AddPickedUpItem(CBasePlayer pPlayer, CBaseEntity pItem)
 	{
 		char key[32]; IntToString(view_as<int>(pItem), key, sizeof(key));
-		g_pPickedUpItems[pPlayer.GetEntIndex()].SetValue(key, true);
+		g_pPickedUpItems[pPlayer.entindex].SetValue(key, true);
 	}
 	
 	public static bool HasPickedUpItem(CBasePlayer pPlayer, CBaseEntity pItem)
 	{
-		int client = pPlayer.GetEntIndex();
+		int client = pPlayer.entindex;
 		if (!g_pPickedUpItems[client]) // filter sourceTV
 			return false;
 		

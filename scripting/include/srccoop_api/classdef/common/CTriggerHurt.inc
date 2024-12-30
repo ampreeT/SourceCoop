@@ -14,6 +14,6 @@ methodmap CTriggerHurt < CBaseTrigger
 
 	public int GetDamageType()
 	{
-		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_bitsDamageInflict");
+		return GetEntProp(this.entindex, Prop_Data, "m_bitsDamageInflict");
 	}
 }

@@ -24,6 +24,6 @@ methodmap CBaseViewModel < CBaseAnimating
 
 	public void SendViewModelMatchingSequence(const int iSequence)
 	{
-		SDKCall(g_pSendViewModelMatchingSequence, this.GetEntIndex(), iSequence);
+		SDKCall(g_pSendViewModelMatchingSequence, this.entindex, iSequence);
 	}
 }

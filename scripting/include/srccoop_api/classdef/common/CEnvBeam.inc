@@ -30,50 +30,50 @@ methodmap CEnvBeam < CBeam
 	}
 	public float GetDuration()
 	{
-		return GetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_life");
+		return GetEntPropFloat(this.entindex, Prop_Data, "m_life");
 	}
 	public void SetDuration(const float flDuration)
 	{
-		SetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_life", flDuration);
+		SetEntPropFloat(this.entindex, Prop_Data, "m_life", flDuration);
 	}
 	public bool GetStartEntity(char[] szBuffer, const int iMaxLength)
 	{
-		return GetEntPropString(this.GetEntIndex(), Prop_Data, "m_iszStartEntity", szBuffer, iMaxLength) != 0; 
+		return GetEntPropString(this.entindex, Prop_Data, "m_iszStartEntity", szBuffer, iMaxLength) != 0; 
 	}
 	public int SetStartEntity(const char[] szTargetname)
 	{
-		return SetEntPropString(this.GetEntIndex(), Prop_Data, "m_iszStartEntity", szTargetname); 
+		return SetEntPropString(this.entindex, Prop_Data, "m_iszStartEntity", szTargetname); 
 	}
 	public float GetWidth()
 	{
-		return GetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_boltWidth");
+		return GetEntPropFloat(this.entindex, Prop_Data, "m_boltWidth");
 	}
 	public void SetWidth(const float flWidth)
 	{
-		SetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_boltWidth", flWidth);
+		SetEntPropFloat(this.entindex, Prop_Data, "m_boltWidth", flWidth);
 	}
 	public bool GetTextureName(char[] szBuffer, const int iMaxLength)
 	{
-		return GetEntPropString(this.GetEntIndex(), Prop_Data, "m_iszSpriteName", szBuffer, iMaxLength) != 0;
+		return GetEntPropString(this.entindex, Prop_Data, "m_iszSpriteName", szBuffer, iMaxLength) != 0;
 	}
 	public int SetTextureName(const char[] szTexturePath)
 	{
-		return SetEntPropString(this.GetEntIndex(), Prop_Data, "m_iszSpriteName", szTexturePath); 
+		return SetEntPropString(this.entindex, Prop_Data, "m_iszSpriteName", szTexturePath); 
 	}
 	public float GetNoiseAmplitude()
 	{
-		return GetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_noiseAmplitude");
+		return GetEntPropFloat(this.entindex, Prop_Data, "m_noiseAmplitude");
 	}
 	public void SetNoiseAmplitude(const float flAmplitude)
 	{
-		SetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_noiseAmplitude", flAmplitude);
+		SetEntPropFloat(this.entindex, Prop_Data, "m_noiseAmplitude", flAmplitude);
 	}
 	public int GetTextureScrollRate()
 	{
-		return GetEntProp(this.GetEntIndex(), Prop_Send, "m_speed");
+		return GetEntProp(this.entindex, Prop_Send, "m_speed");
 	}
 	public void SetTextureScrollRate(const int iTextureScrollRate)
 	{
-		SetEntProp(this.GetEntIndex(), Prop_Send, "m_speed", iTextureScrollRate);
+		SetEntProp(this.entindex, Prop_Send, "m_speed", iTextureScrollRate);
 	}
 }

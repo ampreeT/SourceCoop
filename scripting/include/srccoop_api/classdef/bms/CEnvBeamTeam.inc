@@ -14,7 +14,7 @@ methodmap CEnvBeamTeam < CBeam
 
 	public CBlackMesaPlayer GetOwner()
 	{
-		return CBlackMesaPlayer(GetEntProp(this.GetEntIndex(), Prop_Data, "m_iOwnerEntIdx"));
+		return CBlackMesaPlayer(GetEntProp(this.entindex, Prop_Data, "m_iOwnerEntIdx"));
 	}
 	public CBlackMesaBaseDetonator GetTripmine()
 	{

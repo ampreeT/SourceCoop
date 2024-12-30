@@ -10,26 +10,26 @@ methodmap CPropChargerBase < CBaseAnimating
 
 	public float GetChargerRate()
 	{
-		return GetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flChargerRate");
+		return GetEntPropFloat(this.entindex, Prop_Data, "m_flChargerRate");
 	}
 	public void SetChargerRate(const float flChargeRate)
 	{
-		SetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flChargerRate", flChargeRate);
+		SetEntPropFloat(this.entindex, Prop_Data, "m_flChargerRate", flChargeRate);
 	}
 	public float GetChargerAmount()
 	{
-		return GetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flChargerAmt");
+		return GetEntPropFloat(this.entindex, Prop_Data, "m_flChargerAmt");
 	}
 	public void SetChargerAmount(const float flChargeAmount)
 	{
-		SetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flChargerAmt", flChargeAmount);
+		SetEntPropFloat(this.entindex, Prop_Data, "m_flChargerAmt", flChargeAmount);
 	}
 	public float GetChargerRange()
 	{
-		return GetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flChargerRange");
+		return GetEntPropFloat(this.entindex, Prop_Data, "m_flChargerRange");
 	}
 	public void SetChargerRange(const float flChargerRange)
 	{
-		SetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flChargerRange", flChargerRange);
+		SetEntPropFloat(this.entindex, Prop_Data, "m_flChargerRange", flChargerRange);
 	}
 }

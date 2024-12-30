@@ -74,9 +74,9 @@ public void Hook_PlayerPreThinkPost(int iClient)
 				CBaseEntity pParent = pPlayer.GetParent();
 				if (pParent.IsValid())
 				{
-					if (HasEntProp(pParent.GetEntIndex(), Prop_Data, "m_hPrey"))
+					if (HasEntProp(pParent.entindex, Prop_Data, "m_hPrey"))
 					{
-						if (GetEntPropEnt(pParent.GetEntIndex(), Prop_Data, "m_hPrey") == pPlayer.GetEntIndex())
+						if (GetEntPropEnt(pParent.entindex, Prop_Data, "m_hPrey") == pPlayer.entindex)
 						{
 							if (!pWeapon.CanFireUnderwater() && pWeapon.GetPrimaryAmmoType() != -1)
 							{
@@ -496,22 +496,22 @@ void PlayerPatch_ApplyServerRagdoll(const CBasePlayer pPlayer, const CTakeDamage
 	
 	#if defined SRCCOOP_BLACKMESA
 	int iRagdollInheritIndex;
-	if (g_pIdle[pPlayer.GetEntIndex()].m_pModel.IsValid())
+	if (g_pIdle[pPlayer.entindex].m_pModel.IsValid())
 	{
 		// Player is currently using model for idle animations.
 		// The nodraw is required for hiding the player the tick he dies.
 		// The model that was parented is cleared since `CreateServerRagdoll` will not work otherwise.
 		pPlayer.m_fEffects |= EF_NODRAW;
-		g_pIdle[pPlayer.GetEntIndex()].m_pModel.ClearParent();
-		iRagdollInheritIndex = g_pIdle[pPlayer.GetEntIndex()].m_pModel.GetEntIndex();
+		g_pIdle[pPlayer.entindex].m_pModel.ClearParent();
+		iRagdollInheritIndex = g_pIdle[pPlayer.entindex].m_pModel.entindex;
 	}
 	else
 	{
 		pPlayer.m_fEffects &= ~EF_NODRAW;
-		iRagdollInheritIndex = pPlayer.GetEntIndex();
+		iRagdollInheritIndex = pPlayer.entindex;
 	}
 	#else
-	int iRagdollInheritIndex = pPlayer.GetEntIndex();
+	int iRagdollInheritIndex = pPlayer.entindex;
 	#endif
 
 	// TODO:
@@ -874,14 +874,14 @@ CCoopEquipment g_pPackedEquipment[MAXPLAYERS + 1];
 
 bool HasPackedItems(CBasePlayer pPlayer)
 {
-	return g_pPackedEquipment[pPlayer.GetEntIndex()].IsInitialized();
+	return g_pPackedEquipment[pPlayer.entindex].IsInitialized();
 }
 
 void PackPlayerItems(CBasePlayer pPlayer)
 {
 	ClearPackedItems(pPlayer);
 	
-	int client = pPlayer.GetEntIndex();
+	int client = pPlayer.entindex;
 	g_pPackedEquipment[client].Initialize(true);
 	g_pPackedEquipment[client].Fill(pPlayer);
 	
@@ -899,7 +899,7 @@ void PackPlayerItems(CBasePlayer pPlayer)
 
 void RestorePackedItems(CBasePlayer pPlayer)
 {
-	int client = pPlayer.GetEntIndex();
+	int client = pPlayer.entindex;
 	if (!g_pPackedEquipment[client].IsInitialized())
 		return;
 
@@ -923,7 +923,7 @@ void RestorePackedItems(CBasePlayer pPlayer)
 
 void ClearPackedItems(CBasePlayer pPlayer)
 {
-	int client = pPlayer.GetEntIndex();
+	int client = pPlayer.entindex;
 	if (!g_pPackedEquipment[client].IsInitialized())
 		return;
 

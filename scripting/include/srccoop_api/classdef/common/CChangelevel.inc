@@ -30,6 +30,6 @@ methodmap CChangelevel < CBaseTrigger
 	}
 	public void GetMapName(char[] szBuffer, const int iMaxLength)
 	{
-		GetEntPropString(this.GetEntIndex(), Prop_Data, "m_szMapName", szBuffer, iMaxLength);
+		GetEntPropString(this.entindex, Prop_Data, "m_szMapName", szBuffer, iMaxLength);
 	}
 }

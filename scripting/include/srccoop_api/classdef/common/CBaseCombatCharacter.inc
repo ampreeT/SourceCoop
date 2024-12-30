@@ -26,7 +26,7 @@ methodmap CBaseCombatCharacter < CBaseFlex
 
 	public int GetLifeState()
 	{
-		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_lifeState");
+		return GetEntProp(this.entindex, Prop_Data, "m_lifeState");
 	}
 	public bool IsAlive()
 	{
@@ -34,11 +34,11 @@ methodmap CBaseCombatCharacter < CBaseFlex
 	}
 	public CBaseCombatWeapon GetActiveWeapon()
 	{
-		return CBaseCombatWeapon(GetEntPropEnt(this.GetEntIndex(), Prop_Send, "m_hActiveWeapon"));
+		return CBaseCombatWeapon(GetEntPropEnt(this.entindex, Prop_Send, "m_hActiveWeapon"));
 	}
 	public void SetActiveWeapon(const CBaseCombatWeapon pWeapon)
 	{
-		SetEntPropEnt(this.GetEntIndex(), Prop_Send, "m_hActiveWeapon", pWeapon.GetEntIndex());
+		SetEntPropEnt(this.entindex, Prop_Send, "m_hActiveWeapon", pWeapon.entindex);
 	}
 	public bool HasWeapon(const char[] szWeaponName)
 	{
@@ -58,7 +58,7 @@ methodmap CBaseCombatCharacter < CBaseFlex
 	}
 	public bool WeaponSwitch(const CBaseCombatWeapon pWeapon, const int iViewmodelindex = 0)
 	{
-		return SDKCall(g_pWeaponSwitch, this.GetEntIndex(), pWeapon.GetEntIndex(), iViewmodelindex);
+		return SDKCall(g_pWeaponSwitch, this.entindex, pWeapon.entindex, iViewmodelindex);
 	}
 	// Deprecated, WeaponSwitch() prefered instead
 	public bool SetActiveWeaponByClass(const char[] szWeaponName)
@@ -76,35 +76,35 @@ methodmap CBaseCombatCharacter < CBaseFlex
 	}
 	public CBaseCombatWeapon GetLastWeapon()
 	{
-		return CBaseCombatWeapon(GetEntPropEnt(this.GetEntIndex(), Prop_Data, "m_hLastWeapon"));
+		return CBaseCombatWeapon(GetEntPropEnt(this.entindex, Prop_Data, "m_hLastWeapon"));
 	}
 	public void SetLastWeapon(const CBaseCombatWeapon pWeapon)
 	{
-		SetEntPropEnt(this.GetEntIndex(), Prop_Data, "m_hLastWeapon", pWeapon.GetEntIndex());
+		SetEntPropEnt(this.entindex, Prop_Data, "m_hLastWeapon", pWeapon.entindex);
 	}
 	public CBaseCombatWeapon GetWeaponFromIndex(const int iIndex)
 	{
-		return CBaseCombatWeapon(GetEntPropEnt(this.GetEntIndex(), Prop_Send, "m_hMyWeapons", iIndex));
+		return CBaseCombatWeapon(GetEntPropEnt(this.entindex, Prop_Send, "m_hMyWeapons", iIndex));
 	}
 	public void SetWeaponAtIndex(const int iIndex, CBaseCombatWeapon pWeapon)
 	{
-		SetEntPropEnt(this.GetEntIndex(), Prop_Send, "m_hMyWeapons", pWeapon.GetEntIndex(), iIndex);
+		SetEntPropEnt(this.entindex, Prop_Send, "m_hMyWeapons", pWeapon.entindex, iIndex);
 	}
 	public int GetAmmoFromIndex(const int iIndex)
 	{
-		return GetEntProp(this.GetEntIndex(), Prop_Send, "m_iAmmo", _, iIndex);
+		return GetEntProp(this.entindex, Prop_Send, "m_iAmmo", _, iIndex);
 	}
 	public void SetAmmoFromIndex(const int iIndex, const int iAmmoCount)
 	{
-		SetEntProp(this.GetEntIndex(), Prop_Send, "m_iAmmo", iAmmoCount, _, iIndex);
+		SetEntProp(this.entindex, Prop_Send, "m_iAmmo", iAmmoCount, _, iIndex);
 	}
 	public float GetNextAttack()
 	{
-		return GetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flNextAttack");
+		return GetEntPropFloat(this.entindex, Prop_Data, "m_flNextAttack");
 	}
 	public void SetNextAttack(const float flNextAttack)
 	{
-		SetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flNextAttack", flNextAttack);
+		SetEntPropFloat(this.entindex, Prop_Data, "m_flNextAttack", flNextAttack);
 	}
 	public CBasePlayer ToPlayer()
 	{

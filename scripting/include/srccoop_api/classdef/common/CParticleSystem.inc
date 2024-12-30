@@ -23,47 +23,47 @@ methodmap CParticleSystem < CBaseEntity
 	
 	public bool IsActive()
 	{
-		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_bActive") != 0;
+		return GetEntProp(this.entindex, Prop_Data, "m_bActive") != 0;
 	}
 	public bool GetStartActive()
 	{
-		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_bStartActive") != 0;
+		return GetEntProp(this.entindex, Prop_Data, "m_bStartActive") != 0;
 	}
 	public void SetStartActive(const bool bStartsActive)
 	{
-		SetEntProp(this.GetEntIndex(), Prop_Data, "m_bStartActive", bStartsActive);
+		SetEntProp(this.entindex, Prop_Data, "m_bStartActive", bStartsActive);
 	}
 	public bool IsWeatherEffect()
 	{
-		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_bWeatherEffect") != 0;
+		return GetEntProp(this.entindex, Prop_Data, "m_bWeatherEffect") != 0;
 	}
 	public void SetWeatherEffect(const bool bWeatherEffect)
 	{
-		SetEntProp(this.GetEntIndex(), Prop_Data, "m_bWeatherEffect", bWeatherEffect);
+		SetEntProp(this.entindex, Prop_Data, "m_bWeatherEffect", bWeatherEffect);
 	}
 	public bool GetOrientationFollowsViewer()
 	{
-		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_bOrientationFollowsViewer") != 0;
+		return GetEntProp(this.entindex, Prop_Data, "m_bOrientationFollowsViewer") != 0;
 	}
 	public void SetOrientationFollowsViewer(const bool bOrientationFollowsViewer)
 	{
-		SetEntProp(this.GetEntIndex(), Prop_Data, "m_bOrientationFollowsViewer", bOrientationFollowsViewer);
+		SetEntProp(this.entindex, Prop_Data, "m_bOrientationFollowsViewer", bOrientationFollowsViewer);
 	}
 	public float GetStartTime()
 	{
-		return GetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flStartTime");
+		return GetEntPropFloat(this.entindex, Prop_Data, "m_flStartTime");
 	}
 	public void SetStartTime(const float flStartTime)
 	{
-		SetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flStartTime", flStartTime);
+		SetEntPropFloat(this.entindex, Prop_Data, "m_flStartTime", flStartTime);
 	}
 	public bool GetEffectName(char[] szBuffer, const int iMaxLength)
 	{
-		return GetEntPropString(this.GetEntIndex(), Prop_Data, "m_iszEffectName", szBuffer, iMaxLength) != 0;
+		return GetEntPropString(this.entindex, Prop_Data, "m_iszEffectName", szBuffer, iMaxLength) != 0;
 	}
 	public int SetEffectName(const char[] szEffectName)
 	{
-		return SetEntPropString(this.GetEntIndex(), Prop_Data, "m_iszEffectName", szEffectName); 
+		return SetEntPropString(this.entindex, Prop_Data, "m_iszEffectName", szEffectName); 
 	}
 	public void Start()
 	{

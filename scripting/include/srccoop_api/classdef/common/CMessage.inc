@@ -31,11 +31,11 @@ methodmap CMessage < CPointEntity
 	}
 	public bool GetMessage(char[] szBuffer, const int iMaxLength)
 	{
-		return GetEntPropString(this.GetEntIndex(), Prop_Data, "m_iszMessage", szBuffer, iMaxLength) != 0;
+		return GetEntPropString(this.entindex, Prop_Data, "m_iszMessage", szBuffer, iMaxLength) != 0;
 	}
 	public void SetMessage(const char[] szMessage)
 	{
-		SetEntPropString(this.GetEntIndex(), Prop_Data, "m_iszMessage", szMessage);
+		SetEntPropString(this.entindex, Prop_Data, "m_iszMessage", szMessage);
 	}
 	public void ShowMessage()
 	{

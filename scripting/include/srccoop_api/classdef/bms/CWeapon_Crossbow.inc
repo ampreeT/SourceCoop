@@ -14,10 +14,10 @@ methodmap CWeapon_Crossbow < CBlackMesaBaseCombatWeaponIronsights
 
 	public bool IsRearming()
 	{
-		return GetEntProp(this.GetEntIndex(), Prop_Send, "m_bNeedsToRearm") != 0;
+		return GetEntProp(this.entindex, Prop_Send, "m_bNeedsToRearm") != 0;
 	}
 	public void SetRearming(const bool bRearming)
 	{
-		SetEntProp(this.GetEntIndex(), Prop_Send, "m_bNeedsToRearm", bRearming);
+		SetEntProp(this.entindex, Prop_Send, "m_bNeedsToRearm", bRearming);
 	}
 }

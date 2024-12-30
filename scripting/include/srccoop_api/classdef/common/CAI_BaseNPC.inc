@@ -102,11 +102,11 @@ methodmap CAI_BaseNPC < CBaseCombatCharacter
 	}
 	public NPC_STATE GetState()
 	{
-		return view_as<NPC_STATE>(GetEntProp(this.GetEntIndex(), Prop_Data, "m_NPCState"));
+		return view_as<NPC_STATE>(GetEntProp(this.entindex, Prop_Data, "m_NPCState"));
 	}
 	public bool IsInAScript()
 	{
-		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_bInAScript") != 0;
+		return GetEntProp(this.entindex, Prop_Data, "m_bInAScript") != 0;
 	}
 	public bool IsSoundVisible(CSound pSound)
 	{
@@ -146,15 +146,15 @@ methodmap CAI_BaseNPC < CBaseCombatCharacter
 	}
 	public float GetWakeRadius()
 	{
-		return GetEntPropFloat(this.GetEntIndex(), Prop_Data, "m_flWakeRadius");
+		return GetEntPropFloat(this.entindex, Prop_Data, "m_flWakeRadius");
 	}
 	public int GetSleepFlags()
 	{
-		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_SleepFlags");
+		return GetEntProp(this.entindex, Prop_Data, "m_SleepFlags");
 	}
 	public int SetSleepFlags(const int iSleepFlags)
 	{
-		SetEntProp(this.GetEntIndex(), Prop_Data, "m_SleepFlags", iSleepFlags);
+		SetEntProp(this.entindex, Prop_Data, "m_SleepFlags", iSleepFlags);
 	}
 	public bool HasSleepFlags(const int iSleepFlags)
 	{
@@ -170,11 +170,11 @@ methodmap CAI_BaseNPC < CBaseCombatCharacter
 	}
 	public AI_SleepState_t GetSleepState()
 	{
-		return view_as<AI_SleepState_t>(GetEntProp(this.GetEntIndex(), Prop_Data, "m_SleepState"));
+		return view_as<AI_SleepState_t>(GetEntProp(this.entindex, Prop_Data, "m_SleepState"));
 	}
 	public void SetSleepState(const AI_SleepState_t eSleepState)
 	{
-		SetEntProp(this.GetEntIndex(), Prop_Data, "m_SleepState", eSleepState);
+		SetEntProp(this.entindex, Prop_Data, "m_SleepState", eSleepState);
 	}
 	public void Wake()
 	{
@@ -188,19 +188,19 @@ methodmap CAI_BaseNPC < CBaseCombatCharacter
 	}
 	public AI_Efficiency_t GetEfficiency()
 	{
-		return view_as<AI_Efficiency_t>(GetEntProp(this.GetEntIndex(), Prop_Data, "m_Efficiency"));
+		return view_as<AI_Efficiency_t>(GetEntProp(this.entindex, Prop_Data, "m_Efficiency"));
 	}
 	public void SetEfficiency(const AI_Efficiency_t iEfficiency)
 	{
-		SetEntProp(this.GetEntIndex(), Prop_Data, "m_Efficiency", iEfficiency);
+		SetEntProp(this.entindex, Prop_Data, "m_Efficiency", iEfficiency);
 	}
 	public CBaseEntity GetEnemy()
 	{
-		return CBaseEntity(GetEntPropEnt(this.GetEntIndex(), Prop_Data, "m_hEnemy"));
+		return CBaseEntity(GetEntPropEnt(this.entindex, Prop_Data, "m_hEnemy"));
 	}
 	public void SetEnemy(const CBaseEntity pEntity)
 	{
-		SetEntPropEnt(this.GetEntIndex(), Prop_Data, "m_hEnemy", pEntity.GetEntIndex());
+		SetEntPropEnt(this.entindex, Prop_Data, "m_hEnemy", pEntity.entindex);
 	}
 	public int GetSoundInterests()
 	{
@@ -212,11 +212,11 @@ methodmap CAI_BaseNPC < CBaseCombatCharacter
 	}
 	public void SetTargetEnt(const CBaseEntity pTarget)
 	{
-		SetEntPropEnt(this.GetEntIndex(), Prop_Data, "m_hTargetEnt", pTarget.GetEntIndex());
+		SetEntPropEnt(this.entindex, Prop_Data, "m_hTargetEnt", pTarget.entindex);
 	}
 	public CBaseEntity GetTargetEnt()
 	{
-		return CBaseEntity(GetEntPropEnt(this.GetEntIndex(), Prop_Data, "m_hTargetEnt"));
+		return CBaseEntity(GetEntPropEnt(this.entindex, Prop_Data, "m_hTargetEnt"));
 	}
 	public bool HasCondition(const int iCondition)
 	{
@@ -233,15 +233,14 @@ methodmap CAI_BaseNPC < CBaseCombatCharacter
 		//	bool				m_bForceConditionsGather;
 		// m_Conditions = offsetof(this, m_bForceConditionsGather) - (sizeof(CAI_ScheduleBits) * 4)
 		
-		int iForceConditionsGatherOffset = FindDataMapInfo(this.GetEntIndex(), "m_bForceConditionsGather");		// m_bForceConditionsGather (datamap) - 128 = m_Conditions
+		int iForceConditionsGatherOffset = FindDataMapInfo(this.entindex, "m_bForceConditionsGather");		// m_bForceConditionsGather (datamap) - 128 = m_Conditions
 		if (iForceConditionsGatherOffset == -1)
 			ThrowError("Unable to retrieve offset %s", "m_bForceConditionsGather");
 		int iOffsetConditions = iForceConditionsGatherOffset - 128;
 		
-		Address pAddress = this.GetAddress();
 		int iOffsetIndex = iCondition / CHAR_BIT;
 		int iBitIndex = iCondition % CHAR_BIT;
-		Address pOffset = view_as<Address>(view_as<int>(pAddress) + iOffsetConditions + iOffsetIndex);
+		Address pOffset = this.address + iOffsetConditions + iOffsetIndex;
 		int iConditionList = LoadFromAddress(pOffset, NumberType_Int8);
 		return view_as<bool>(iConditionList & (1 << iBitIndex));
 	}
@@ -260,15 +259,14 @@ methodmap CAI_BaseNPC < CBaseCombatCharacter
 		//	bool				m_bForceConditionsGather;
 		// m_Conditions = offsetof(this, m_bForceConditionsGather) - (sizeof(CAI_ScheduleBits) * 4)
 		
-		int iForceConditionsGatherOffset = FindDataMapInfo(this.GetEntIndex(), "m_bForceConditionsGather");		// m_bForceConditionsGather (datamap) - 128 = m_Conditions
+		int iForceConditionsGatherOffset = FindDataMapInfo(this.entindex, "m_bForceConditionsGather");		// m_bForceConditionsGather (datamap) - 128 = m_Conditions
 		if (iForceConditionsGatherOffset == -1)
 			ThrowError("Unable to retrieve offset %s", "m_bForceConditionsGather");
 		int iOffsetConditions = iForceConditionsGatherOffset - 128;
 		
-		Address pAddress = this.GetAddress();
 		int iOffsetIndex = iCondition / CHAR_BIT;
 		int iBitIndex = iCondition % CHAR_BIT;
-		Address pOffset = view_as<Address>(view_as<int>(pAddress) + iOffsetConditions + iOffsetIndex);
+		Address pOffset = this.address + iOffsetConditions + iOffsetIndex;
 		int iConditionList = LoadFromAddress(pOffset, NumberType_Int8);
 
 		if (bSetCondition)
@@ -284,12 +282,12 @@ methodmap CAI_BaseNPC < CBaseCombatCharacter
 	}
 	public int GetTaskInterrupt()
 	{
-		return GetEntProp(this.GetEntIndex(), Prop_Data, "iTaskInterrupt");
+		return GetEntProp(this.entindex, Prop_Data, "iTaskInterrupt");
 	}
 	public bool IsMoving()
 	{
 		// CAI_BaseNPC::IsMoving( void ) ==> GetNavigator()->IsGoalSet() ==> GetPath()->GoalType() != GOALTYPE_NONE
-		return GetEntProp(this.GetEntIndex(), Prop_Data, "m_goalType") != GOALTYPE_NONE;
+		return GetEntProp(this.entindex, Prop_Data, "m_goalType") != GOALTYPE_NONE;
 	}
 	public bool ShouldPlayerAvoid()
 	{
@@ -297,19 +295,19 @@ methodmap CAI_BaseNPC < CBaseCombatCharacter
 	}
 	public bool GetPerformAvoidance()
 	{
-		return !!GetEntProp(this.GetEntIndex(), Prop_Data, "m_bPerformAvoidance");
+		return !!GetEntProp(this.entindex, Prop_Data, "m_bPerformAvoidance");
 	}
 	public void SetPerformAvoidance(const bool bPerformAvoidance)
 	{
-		SetEntProp(this.GetEntIndex(), Prop_Data, "m_bPerformAvoidance", bPerformAvoidance);
+		SetEntProp(this.entindex, Prop_Data, "m_bPerformAvoidance", bPerformAvoidance);
 	}
 	public bool GetPlayerAvoidState()
 	{
-		return !!GetEntProp(this.GetEntIndex(), Prop_Data, "m_bPlayerAvoidState");
+		return !!GetEntProp(this.entindex, Prop_Data, "m_bPlayerAvoidState");
 	}
 	public void SetPlayerAvoidState(const bool bPlayerAvoidState)
 	{
-		SetEntProp(this.GetEntIndex(), Prop_Data, "m_bPlayerAvoidState", bPlayerAvoidState);
+		SetEntProp(this.entindex, Prop_Data, "m_bPlayerAvoidState", bPlayerAvoidState);
 	}
 	public CAI_ScriptedSequence GetCine()
 	{

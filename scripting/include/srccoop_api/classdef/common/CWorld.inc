@@ -14,6 +14,6 @@ methodmap CWorld < CBaseEntity
 	}
 	public bool GetChapterTitle(char[] szBuffer, const int iMaxLength)
 	{
-		return GetEntPropString(this.GetEntIndex(), Prop_Data, "m_iszChapterTitle", szBuffer, iMaxLength) != 0;
+		return GetEntPropString(this.entindex, Prop_Data, "m_iszChapterTitle", szBuffer, iMaxLength) != 0;
 	}
 }

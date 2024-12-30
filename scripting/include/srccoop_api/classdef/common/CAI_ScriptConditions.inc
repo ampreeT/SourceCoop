@@ -14,11 +14,11 @@ methodmap CAI_ScriptConditions < CBaseEntity
 
 	public bool IsEnabled()
 	{
-		return !GetEntProp(this.GetEntIndex(), Prop_Data, "m_fDisabled");
+		return !GetEntProp(this.entindex, Prop_Data, "m_fDisabled");
 	}
 	public void SetEnabled(const bool bEnabled)
 	{
-		SetEntProp(this.GetEntIndex(), Prop_Data, "m_fDisabled", !bEnabled);
+		SetEntProp(this.entindex, Prop_Data, "m_fDisabled", !bEnabled);
 	}
 	public CBaseEntity GetTargetEnt()
 	{

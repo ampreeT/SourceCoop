@@ -14,6 +14,6 @@ methodmap CLogicAchievement < CLogicalEntity
 
 	public bool GetAchievementEventID(char[] szBuffer, const int iMaxLength)
 	{
-		return GetEntPropString(this.GetEntIndex(), Prop_Data, "m_iszAchievementEventID", szBuffer, iMaxLength) != 0;
+		return GetEntPropString(this.entindex, Prop_Data, "m_iszAchievementEventID", szBuffer, iMaxLength) != 0;
 	}
 }
