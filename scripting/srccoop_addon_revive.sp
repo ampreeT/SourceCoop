@@ -80,8 +80,7 @@ public void OnPluginStart()
 	g_pConvarAllowInClassicMode = CreateConVar("sourcecoop_revive_in_classic_mode", "1", "Whether to allow reviving in non-survival mode.", _, true, 0.0, true, 1.0);
 	g_pConvarAllowInClassicMode.AddChangeHook(OnAllowInClassicModeChanged);
 	
-	RegAdminCmd("sourcecoop_revive", Command_ForceRespawn, ADMFLAG_ROOT, "Force respawn player.");
-	RegAdminCmd("sc_revive", Command_ForceRespawn, ADMFLAG_ROOT, "Force respawn player.");
+	RegAdminCmd("sc_revive", Command_Revive, ADMFLAG_SLAY, "Respawns dead players");
 
 	g_pSpawnOptions.bRevive = true;
 	g_pSpawnOptions.bUnstuck = true;
@@ -127,29 +126,49 @@ void SetEnabledState()
 	{
 		g_bEnabled = false;
 		for (int i = 1; i <= MaxClients; i++)
+		{
 			ResetReviveStatus(i);
+		}
 	}
 }
 
-public Action Command_ForceRespawn(int client, int args)
+public Action Command_Revive(int client, int args)
 {
-	static char szTarget[64];
-	
 	if (!g_bEnabled)
 	{
+		MsgReply(client, "Revive is disabled.");
 		return Plugin_Handled;
 	}
-	if (args < 1)
+	if (args != 1)
 	{
-		MsgReply(client, "You must specify a player to spawn.");
+		MsgReply(client, "Usage: sc_revive <target>");
 		return Plugin_Handled;
 	}
 	
+	char szTarget[65];
 	GetCmdArg(1, szTarget, sizeof(szTarget));
+
+	char szTargetName[MAX_TARGET_LENGTH];
+	int iTargets[MAXPLAYERS], iTargetCount;
+	bool bIsML;
 	
-	int iTarget = FindTarget(client, szTarget, false);
-	if (iTarget > 0)
+	if ((iTargetCount = ProcessTargetString(
+			szTarget,
+			client,
+			iTargets,
+			sizeof(iTargets),
+			COMMAND_FILTER_NO_IMMUNITY|COMMAND_FILTER_DEAD|COMMAND_FILTER_NO_BOTS,
+			szTargetName,
+			sizeof(szTargetName),
+			bIsML)) <= 0)
 	{
+		ReplyToTargetError(client, iTargetCount);
+		return Plugin_Handled;
+	}
+
+	for (int i = 0; i < iTargetCount; i++)
+	{
+		int iTarget = iTargets[i];
 		CBasePlayer pTarget = CBasePlayer(iTarget);
 		if (pTarget.GetRagdoll().IsValid())
 		{
@@ -165,7 +184,7 @@ public Action Command_ForceRespawn(int client, int args)
 		{
 			Client_ScreenFade(iTarget, 512, FFADE_PURGE|FFADE_IN, 1, 0, 0, 200, 255);
 			EmitSoundToClient(iTarget, Conf.SND_RESPAWN, iTarget, SNDCHAN_STATIC, SNDLEVEL_NONE, .pitch = Conf.SND_RESPAWN_PITCH);
-			MsgReply(client, "Spawned '%N'.", iTarget);
+			MsgReply(client, "Respawned '%N'.", iTarget);
 			if (client != iTarget)
 			{
 				Msg(iTarget, "%N respawned you!", client);
@@ -333,7 +352,7 @@ public bool TraceEntityFilter(int entity, int mask, any data)
 
 public void SC_OnPlayerRagdollCreated(CBasePlayer pPlayer, CBaseAnimating pRagdoll)
 {
-	int client = pPlayer.GetEntIndex();
+	int client = pPlayer.entindex;
 	delete g_pRagdollEffectsTimer[client];
 	if (g_bEnabled)
 	{
@@ -349,12 +368,12 @@ public void Timer_SetRagdollEffects(Handle timer, CBasePlayer pPlayer)
 {
 	if (pPlayer.IsInGame())
 	{
-		g_pRagdollEffectsTimer[pPlayer.GetEntIndex()] = null;
+		g_pRagdollEffectsTimer[pPlayer.entindex] = null;
 		CBaseEntity pRagdoll = pPlayer.GetRagdoll();
 		if (pRagdoll.IsValid())
 		{
 			if (g_pConVarRagdollBlink.BoolValue)
-				pRagdoll.AddEffects(EF_ITEM_BLINK);
+				pRagdoll.m_fEffects |= EF_ITEM_BLINK;
 
 			if (g_pConVarRagdollParticle.BoolValue && Conf.RAGDOLL_PARTICLE[0] != EOS)
 			{
@@ -379,7 +398,7 @@ CBaseEntity g_pProgressBar[MAXPLAYERS+1] = {NULL_CBASEENTITY, ...};
 stock void Client_ProgressBar(CBasePlayer pPlayer, float flTime = 4.0, float flBarLength = 30.0, float flBarWidth = 0.3, int Color[4] = {0, 255, 0, 255}, float flDistFromPlayer = 20.0)
 {
 	// Always remove previous bar if there is one
-	Client_RemoveProgressBar(pPlayer.GetEntIndex());
+	Client_RemoveProgressBar(pPlayer.entindex);
 	
 	static float vecEyePosition[3];
 	
@@ -394,11 +413,11 @@ stock void Client_ProgressBar(CBasePlayer pPlayer, float flTime = 4.0, float flB
 			if (IsValidEntity(iBarBox))
 			{
 				SetEntPropEnt(iBeam, Prop_Data, "m_hEffectEntity", iBarBox);
-				SetEntPropEnt(iBarBox, Prop_Data, "m_hEffectEntity", pPlayer.GetEntIndex());
+				SetEntPropEnt(iBarBox, Prop_Data, "m_hEffectEntity", pPlayer.entindex);
 				SDKHookEx(iBarBox, SDKHook_SetTransmit, Transmit_ProgressBarBox);
 			}
 			
-			g_pProgressBar[pPlayer.GetEntIndex()] = CBaseEntity(iBeam);
+			g_pProgressBar[pPlayer.entindex] = CBaseEntity(iBeam);
 			static float vecStats[3];
 			vecStats[0] = flTime;
 			vecStats[1] = flBarLength;
@@ -448,7 +467,7 @@ stock void Client_RemoveProgressBar(int iPlayer)
 {
 	if (g_pProgressBar[iPlayer].IsValid())
 	{
-		CBaseEntity pBarBox = CBaseEntity(GetEntPropEnt(g_pProgressBar[iPlayer].GetEntIndex(), Prop_Data, "m_hEffectEntity"));
+		CBaseEntity pBarBox = CBaseEntity(GetEntPropEnt(g_pProgressBar[iPlayer].entindex, Prop_Data, "m_hEffectEntity"));
 		if (pBarBox.IsValid())
 		{
 			pBarBox.Kill();

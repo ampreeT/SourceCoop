@@ -50,7 +50,10 @@ DynamicHook hkThink;
 DynamicHook hkUpdateOnRemove;
 DynamicHook hkEvent_Killed;
 DynamicHook hkKeyValue_char;
+
+#if defined SRCCOOP_BLACKMESA
 DynamicDetour hkGiveDefaultItems;
+#endif
 
 #if defined GAMEPATCH_ALLOW_FLASHLIGHT
 DynamicHook hkFAllowFlashlight;
@@ -188,13 +191,6 @@ DynamicDetour hkTestGroundMove;
 // MemPatches
 // ----------------------------
 ArrayList g_pCoopModeMemPatchList;
-
-// ----------------------------
-// Adresses, Interfaces
-// ----------------------------
-IServerGameDLL g_ServerGameDLL;
-IServerTools g_ServerTools;
-CGlobalVars gpGlobals;
 
 // ----------------------------
 // Plugin variables

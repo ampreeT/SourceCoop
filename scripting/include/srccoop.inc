@@ -44,6 +44,7 @@
 	#define ENTPATCH_FUNC_TRACKAUTOCHANGE
 	#define ENTPATCH_FUNC_TRACKTRAIN
 	#define ENTPATCH_NPC_RUNTASK
+	#define ENTPATCH_BARNACLE_PREDICTION
 	
 	#define PLAYERPATCH_SUIT_SOUNDS
 	#define PLAYERPATCH_PICKUP_FORCEPLAYERTODROPTHISOBJECT
@@ -97,6 +98,7 @@
 	#define ENTPATCH_FUNC_TRACKAUTOCHANGE
 	#define ENTPATCH_FUNC_TRACKTRAIN
 	#define ENTPATCH_NPC_RUNTASK
+	#define ENTPATCH_BARNACLE_PREDICTION
 	#define ENTPATCH_BM_XENTURRET
 	#define ENTPATCH_BM_ICHTHYOSAUR
 	#define ENTPATCH_BM_GARGANTUA
@@ -151,13 +153,12 @@
 
 #include <srccoop/util/assert>
 #include <srccoop/typedef>
-#include <srccoop/typedef_game>
-#include <srccoop/public>
-#include <srccoop/classdef>
 #if defined SRCCOOP_BLACKMESA
 #include <srccoop/blackmesa/typedef>
-#include <srccoop/blackmesa/classdef>
 #endif
+#include <srccoop/typedef_game>
+#include <srccoop/public>
+#include <srccoop_api/classdef>
 #include <srccoop/utils>
 #include <srccoop/config>
 #include <srccoop/features>

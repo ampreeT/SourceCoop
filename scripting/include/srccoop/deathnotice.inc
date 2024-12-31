@@ -137,7 +137,7 @@ methodmap DnManager
 				{
 					g_sDnData.m_pBot1 = CBasePlayer(CreateFakeClient("ScBot01"));
 					g_sDnData.m_pBot1.SetTeam(TEAM_SPECTATOR);
-					g_sDnData.m_pBot1.SetFlags(FL_FAKECLIENT | FL_NOTARGET);
+					g_sDnData.m_pBot1.m_fFlags |= (FL_FAKECLIENT | FL_NOTARGET);
 				}
 				return g_sDnData.m_pBot1;
 			}
@@ -156,7 +156,7 @@ methodmap DnManager
 				{
 					g_sDnData.m_pBot2 = CBasePlayer(CreateFakeClient("ScBot02"));
 					g_sDnData.m_pBot2.SetTeam(TEAM_SPECTATOR);
-					g_sDnData.m_pBot2.SetFlags(FL_FAKECLIENT | FL_NOTARGET);
+					g_sDnData.m_pBot2.m_fFlags |= (FL_FAKECLIENT | FL_NOTARGET);
 				}
 				return g_sDnData.m_pBot2;
 			}
@@ -281,7 +281,7 @@ methodmap DnManager
 		sEntry.m_pTarget1 = pAttacker;
 		sEntry.m_pTarget1.GetName(sEntry.m_szTarget1Name, sizeof(sEntry.m_szTarget1Name));
 
-		if (pVictim.IsClassPlayer())
+		if (pVictim.IsPlayer())
 		{
 			if (pAttacker == pVictim)
 			{
@@ -333,7 +333,7 @@ methodmap DnManager
 			return false;
 		DnManager.GetDisplayNameForEvent(pAttacker, sEntry.m_szTarget1Name, sizeof(sEntry.m_szTarget1Name));
 
-		if (pVictim.IsClassPlayer())
+		if (pVictim.IsPlayer())
 		{
 			// Check if feature is enabled.
 			if (g_sDnData.m_piNoticeEntityKills.IntValue == 0)
@@ -388,7 +388,7 @@ methodmap DnManager
 			return;
 		
 		DnEntry sEntry;
-		if (pAttacker.IsClassPlayer())
+		if (pAttacker.IsPlayer())
 		{
 			if (!DnManager.WriteEntryPlayerKill(sEntry, view_as<CBasePlayer>(pAttacker), pVictim))
 				return;

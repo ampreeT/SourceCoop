@@ -100,13 +100,13 @@ methodmap SurvivalManager {
 
 	public static bool IsDead(CBasePlayer pPlayer)
 	{
-		int iSteamID = GetSteamAccountID(pPlayer.GetEntIndex(), g_pConvarValidateSteamIds.BoolValue);
+		int iSteamID = GetSteamAccountID(pPlayer.entindex, g_pConvarValidateSteamIds.BoolValue);
 		return data.m_pDeadPlayerIDs.FindValue(iSteamID) != -1;
 	}
 
 	public static void SetDead(CBasePlayer pPlayer, bool bDead)
 	{
-		int iSteamID = GetSteamAccountID(pPlayer.GetEntIndex(), g_pConvarValidateSteamIds.BoolValue);
+		int iSteamID = GetSteamAccountID(pPlayer.entindex, g_pConvarValidateSteamIds.BoolValue);
 		int index = data.m_pDeadPlayerIDs.FindValue(iSteamID);
 
 		if ((index == -1) == bDead)
@@ -131,7 +131,7 @@ methodmap SurvivalManager {
 		{
 			if (!data.m_bRespawning && (!SurvivalManager.CheckSpawnTimeout() || SurvivalManager.IsDead(pPlayer)))
 			{
-				int client = pPlayer.GetEntIndex();
+				int client = pPlayer.entindex;
 				
 				if (!data.m_bSpecInit[client] && data.m_pRestartTimer == null)
 				{
@@ -140,8 +140,8 @@ methodmap SurvivalManager {
 					pPlayer.SetViewEntity(pPlayer);
 					pPlayer.SetObserverMode(OBS_MODE_CHASE);
 					pPlayer.SetMoveType(MOVETYPE_OBSERVER);
-					pPlayer.SetSolidFlags(pPlayer.GetSolidFlags() | FSOLID_NOT_SOLID);
-					pPlayer.AddEffects(EF_NODRAW);
+					pPlayer.m_usSolidFlags |= FSOLID_NOT_SOLID;
+					pPlayer.m_fEffects |= EF_NODRAW;
 					
 					// Show spectate gui
 					ShowVGUIPanel(client, "specgui", null);
@@ -170,7 +170,7 @@ methodmap SurvivalManager {
 	{
 		if (SurvivalManager.GetMode())
 		{
-			data.m_bSpecInit[pPlayer.GetEntIndex()] = false;
+			data.m_bSpecInit[pPlayer.entindex] = false;
 			SurvivalManager.GameOverCheck();
 		}
 	}
@@ -179,7 +179,7 @@ methodmap SurvivalManager {
 	{
 		if (SurvivalManager.GetMode())
 		{
-			data.m_bSpecInit[pPlayer.GetEntIndex()] = false;
+			data.m_bSpecInit[pPlayer.entindex] = false;
 			SurvivalManager.SetDead(pPlayer, true);
 			SurvivalManager.GameOverCheck();
 		}

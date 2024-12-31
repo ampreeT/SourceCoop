@@ -74,7 +74,7 @@ void AddMaxClientsOverride()
 	{
 		ThrowError("MaxClients override overflow (max: %d)", MAX_MAXPLAYERS_OVERRIDES);
 	}
-	gpGlobals.SetMaxPlayers(1);
+	CGlobalVars.Get().SetMaxPlayers(1);
 	g_iMaxClientsOverrides++;
 }
 
@@ -95,7 +95,7 @@ void PopMaxClientsOverride()
 	}
 	if (!--g_iMaxClientsOverrides)
 	{
-		gpGlobals.SetMaxPlayers(MaxClients);
+		CGlobalVars.Get().SetMaxPlayers(MaxClients);
 	}
 }
 
@@ -139,7 +139,7 @@ public MRESReturn Hook_UTIL_GetLocalPlayer(Handle hReturn)
 	if (pOverrideEntity.IsValid())
 	{
 		CBasePlayer pPlayer;
-		if (pOverrideEntity.IsClassPlayer())
+		if (pOverrideEntity.IsPlayer())
 		{
 			pPlayer = view_as<CBasePlayer>(pOverrideEntity);
 		}
@@ -155,7 +155,7 @@ public MRESReturn Hook_UTIL_GetLocalPlayer(Handle hReturn)
 			}
 		}
 		// LogDebug("Overriding UTIL_GetLocalPlayer");
-		DHookSetReturn(hReturn, pPlayer.GetEntIndex());
+		DHookSetReturn(hReturn, pPlayer.entindex);
 		return MRES_Supercede;
 	}
 	// BUGBUG Crash avoidance for Linux SM 1.12 - 7164+
@@ -289,7 +289,7 @@ public MRESReturn Hook_FindNamedEntity(int _this, Handle hReturn, Handle hParams
 				CBasePlayer pBestPlayer = GetNearestPlayer(pActor);
 				if (pBestPlayer != NULL_CBASEENTITY)
 				{
-					DHookSetReturn(hReturn, pBestPlayer.GetEntIndex());
+					DHookSetReturn(hReturn, pBestPlayer.entindex);
 					return MRES_Supercede;
 				}
 			}
@@ -341,11 +341,11 @@ public MRESReturn Hook_ExpresserHost_DoModifyOrAppendCriteriaPost(Handle hParams
 public void Hook_ChangelevelSpawn(int iEntIndex)
 {
 	CChangelevel pEntity = CChangelevel(iEntIndex);
-	DHookEntity(hkAcceptInput, true, pEntity.GetEntIndex(), _, Hook_ChangelevelAcceptInput);
+	DHookEntity(hkAcceptInput, true, pEntity.entindex, _, Hook_ChangelevelAcceptInput);
 
-	if (!pEntity.HasSpawnFlag(SF_CHANGELEVEL_NOTOUCH))
+	if (!(pEntity.m_spawnflags & SF_CHANGELEVEL_NOTOUCH))
 	{
-		SDKHook(pEntity.GetEntIndex(), SDKHook_Touch, Hook_ChangelevelOnTouch);
+		SDKHook(pEntity.entindex, SDKHook_Touch, Hook_ChangelevelOnTouch);
 		CreateTimer(Conf.CHANGELEVEL_EFFECT_PERIOD, ChangelevelEffects, pEntity, TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT);
 	}
 }
@@ -449,34 +449,9 @@ public MRESReturn Hook_GameEndAcceptInput(int _this, Handle hReturn, Handle hPar
 //------------------------------------------------------
 public Action Hook_AutosaveSpawn(int iEntIndex)
 {
-	CBaseEntity pTrigger = CBaseEntity(iEntIndex);
-	InitTrigger(pTrigger);
+	CBaseTrigger pTrigger = CBaseTrigger(iEntIndex);
+	pTrigger.InitTrigger();
 	return Plugin_Stop;
-}
-
-// void CBaseTrigger::InitTrigger() from SDK
-void InitTrigger(CBaseEntity pTrigger)
-{
-	pTrigger.SetSolidType(pTrigger.GetParent().IsValid()? SOLID_VPHYSICS : SOLID_BSP);
-	int iSolidFlags = pTrigger.GetSolidFlags();
-	if (GetEntProp(pTrigger.GetEntIndex(), Prop_Data, "m_bDisabled"))
-	{
-		iSolidFlags &= ~FSOLID_TRIGGER;
-	}
-	else
-	{
-		iSolidFlags |= FSOLID_TRIGGER;
-	}
-	if (pTrigger.HasSpawnFlag(SF_TRIG_TOUCH_DEBRIS))
-	{
-		iSolidFlags |= FSOLID_TRIGGER_TOUCH_DEBRIS;
-	}
-	pTrigger.SetSolidFlags(iSolidFlags | FSOLID_NOT_SOLID);
-	pTrigger.SetMoveType(MOVETYPE_NONE);
-	static char szBuffer[PLATFORM_MAX_PATH];
-	pTrigger.GetModelName(szBuffer, sizeof(szBuffer));
-	pTrigger.SetModel(szBuffer); // initialize the model from name
-	pTrigger.AddEffects(EF_NODRAW);
 }
 
 //------------------------------------------------------
@@ -562,13 +537,13 @@ public MRESReturn Hook_PointViewcontrolAcceptInput(int _this, Handle hReturn, Ha
 				{
 					pActivator = CBasePlayer(DHookGetParam(hParams, 2));
 				}
-				if (pActivator.IsClassPlayer())
+				if (pActivator.IsPlayer())
 				{
 					// prevent bugging out if already using cam
 					CBaseEntity pViewEntity = pActivator.GetViewEntity();
 					if (pViewEntity.IsValid() && pViewEntity.IsClassname("point_viewcontrol") && pViewEntity != pThis)
 					{
-						SetEntPropEnt(pViewEntity.GetEntIndex(), Prop_Data, "m_hPlayer", pActivator.GetEntIndex());
+						SetEntPropEnt(pViewEntity.entindex, Prop_Data, "m_hPlayer", pActivator.entindex);
 						bHookSkip = true;
 						pViewEntity.AcceptInputStr("Disable");
 						bHookSkip = false;
@@ -671,9 +646,9 @@ public MRESReturn Hook_EnvZoomAcceptInput(int _this, Handle hReturn, Handle hPar
 			if (strcmp(szInput, "Zoom", false) == 0)
 			{
 				szNewInput = "Zoom";
-				if (pActivator.IsClassPlayer())
+				if (pActivator.IsPlayer())
 				{
-					iNewClient = pActivator.GetEntIndex();
+					iNewClient = pActivator.entindex;
 				}
 			}
 			else if (strcmp(szInput, "ZoomAll", false) == 0)
@@ -906,11 +881,11 @@ public void Timer_EnvSpritePostSpawn(Handle timer, CBaseEntity pEntity)
 {
 	if (pEntity.IsValid())
 	{
-		if (HasEntProp(pEntity.GetEntIndex(), Prop_Data, "m_flGlowProxySize"))
+		if (HasEntProp(pEntity.entindex, Prop_Data, "m_flGlowProxySize"))
 		{
-			if (GetEntPropFloat(pEntity.GetEntIndex(), Prop_Data, "m_flGlowProxySize") > 64.0)
+			if (GetEntPropFloat(pEntity.entindex, Prop_Data, "m_flGlowProxySize") > 64.0)
 			{
-				SetEntPropFloat(pEntity.GetEntIndex(), Prop_Data, "m_flGlowProxySize", 64.0);
+				SetEntPropFloat(pEntity.entindex, Prop_Data, "m_flGlowProxySize", 64.0);
 			}
 		}
 	}
@@ -929,7 +904,7 @@ public MRESReturn Hook_ResolveNamesPost(int _this)
 	{
 		CBaseEntity pEnt = CBaseEntity(_this);
 		CBasePlayer pPlayer = GetNearestPlayer(pEnt);
-		SetEntPropEnt(_this, Prop_Data, "m_hGoalEntity", pPlayer.GetEntIndex());
+		SetEntPropEnt(_this, Prop_Data, "m_hGoalEntity", pPlayer.entindex);
 	}
 	return MRES_Ignored;
 }
@@ -1067,7 +1042,7 @@ public MRESReturn Hook_SetPlayerAvoidState(int _this)
 	pThis.SetPlayerAvoidState(pThis.ShouldPlayerAvoid());
 	pThis.SetPerformAvoidance(bShouldPlayerAvoid);
 	
-	int iCollGroup = pThis.GetCollisionGroup();
+	Collision_Group_t iCollGroup = pThis.GetCollisionGroup();
 	if (iCollGroup == COLLISION_GROUP_NPC || iCollGroup == COLLISION_GROUP_NPC_ACTOR)
 	{
 		if (bShouldPlayerAvoid)
@@ -1097,22 +1072,22 @@ public MRESReturn Hook_BaseNpcUpdateSleepState(int _this, Handle hParams)
 	CAI_BaseNPC pBaseNPC = CAI_BaseNPC(_this);
 	bool bInPVS = DHookGetParam(hParams, 1);
 	
-	int iSleepState = pBaseNPC.GetSleepState();
-	if (iSleepState > view_as<int>(AISS_AWAKE))
+	AI_SleepState_t eSleepState = pBaseNPC.GetSleepState();
+	if (eSleepState > AISS_AWAKE)
 	{
 		// wake up if any player has walked into radius
 		if (HasAnyPlayerWalkedIntoWakeRadius(pBaseNPC))
 		{
 			pBaseNPC.Wake();
 		}
-		else if (iSleepState == view_as<int>(AISS_WAITING_FOR_PVS))
+		else if (eSleepState == AISS_WAITING_FOR_PVS)
 		{
 			if (bInPVS)
 			{
 				pBaseNPC.Wake();
 			}
 		}
-		else if (iSleepState == view_as<int>(AISS_WAITING_FOR_THREAT))
+		else if (eSleepState == AISS_WAITING_FOR_THREAT)
 		{
 			if (pBaseNPC.HasCondition(view_as<int>(COND_LIGHT_DAMAGE)) || pBaseNPC.HasCondition(view_as<int>(COND_HEAVY_DAMAGE)))
 			{
@@ -1125,7 +1100,7 @@ public MRESReturn Hook_BaseNpcUpdateSleepState(int _this, Handle hParams)
 					for (int i = 1; i <= MaxClients; ++i)
 					{
 						CBasePlayer pPlayer = CBasePlayer(i);
-						if (pPlayer.IsValid() && pPlayer.IsAlive() && !(pPlayer.GetFlags() & FL_NOTARGET) && pPlayer.FVisibleEntity(pBaseNPC))
+						if (pPlayer.IsValid() && pPlayer.IsAlive() && !(pPlayer.m_fFlags & FL_NOTARGET) && pPlayer.FVisibleEntity(pBaseNPC))
 						{
 							pBaseNPC.Wake();
 							break;
@@ -1133,7 +1108,7 @@ public MRESReturn Hook_BaseNpcUpdateSleepState(int _this, Handle hParams)
 					}
 				}
 				
-				if ((pBaseNPC.GetSoundInterests() & SOUND_DANGER) && !(pBaseNPC.HasSpawnFlag(SF_NPC_WAIT_TILL_SEEN)))
+				if ((pBaseNPC.GetSoundInterests() & SOUND_DANGER) && !(pBaseNPC.m_spawnflags & SF_NPC_WAIT_TILL_SEEN))
 				{
 					CSoundEnt pSoundEnt = CSoundEnt.Get();
 					if (pSoundEnt.IsValid())
@@ -1157,13 +1132,13 @@ public MRESReturn Hook_BaseNpcUpdateSleepState(int _this, Handle hParams)
 	{
 		// NPC is awake
 		// Don't let an NPC sleep if they're running a script!
-		if (!pBaseNPC.IsInAScript() && pBaseNPC.GetState() != view_as<int>(NPC_STATE_SCRIPT))
+		if (!pBaseNPC.IsInAScript() && pBaseNPC.GetState() != NPC_STATE_SCRIPT)
 		{
 			if (pBaseNPC.HasSleepFlags(AI_SLEEP_FLAG_AUTO_PVS))
 			{
 				if (!pBaseNPC.HasCondition(view_as<int>(COND_IN_PVS)))
 				{
-					pBaseNPC.SetSleepState(view_as<int>(AISS_WAITING_FOR_PVS));
+					pBaseNPC.SetSleepState(AISS_WAITING_FOR_PVS);
 					pBaseNPC.Sleep();
 				}
 			}
@@ -1198,7 +1173,7 @@ public bool HasAnyPlayerWalkedIntoWakeRadius(CAI_BaseNPC pBaseNPC)
 	for (int i = 1; i <= MaxClients; ++i)
 	{
 		CBasePlayer pPlayer = CBasePlayer(i);
-		if (pPlayer.IsValid() && pPlayer.IsAlive() && !(pPlayer.GetFlags() & FL_NOTARGET))
+		if (pPlayer.IsValid() && pPlayer.IsAlive() && !(pPlayer.m_fFlags & FL_NOTARGET))
 		{
 			float vec3PlayerPosition[3];
 			pPlayer.GetAbsOrigin(vec3PlayerPosition);
@@ -1265,7 +1240,7 @@ public MRESReturn Hook_ProtoSniperSelectSchedule(int _this, Handle hReturn)
 		/*
 		if (PrecacheSound("NPC_Sniper.TargetDestroyed", true))
 		{
-			EmitGameSoundToAll("NPC_Sniper.TargetDestroyed", pSniper.GetEntIndex());
+			EmitGameSoundToAll("NPC_Sniper.TargetDestroyed", pSniper.entindex);
 		}
 		*/
 	}
@@ -1294,8 +1269,8 @@ public MRESReturn Hook_ProtoSniperSelectSchedule(int _this, Handle hReturn)
 	
 	if (pSniper.HasCondition(view_as<int>(COND_SNIPER_SWEEP_TARGET)))
 	{
-		CBaseEntity pSweepTarget = pSniper.GetSweepTarget();
-		if ((pSweepTarget.IsValid() && pSweepTarget.HasSpawnFlag(SF_SNIPERTARGET_NOINTERRUPT)) || pSniper.IsSweepHighestPriority())
+		CSniperTarget pSweepTarget = pSniper.GetSweepTarget();
+		if ((pSweepTarget.IsValid() && (pSweepTarget.m_spawnflags & SF_SNIPERTARGET_NOINTERRUPT)) || pSniper.IsSweepHighestPriority())
 		{
 			DHookSetReturn(hReturn, SCHED_PSNIPER_SWEEP_TARGET_NOINTERRUPT);
 		}
@@ -1393,7 +1368,7 @@ public MRESReturn Hook_LoadSavedAcceptInput(int _this, Handle hReturn, Handle hP
 		{
 			int iActivator = DHookGetParam(hParams, 2);
 			CBasePlayer pActivator = CBasePlayer(iActivator);
-			if (pActivator.IsClassPlayer())
+			if (pActivator.IsPlayer())
 			{
 				int r, g, b, a;
 				GetEntityRenderColor(_this, r, g, b, a);
@@ -1538,7 +1513,8 @@ public MRESReturn Hook_UTIL_FindClientInPVSGuts(DHookReturn hReturn, DHookParam 
 {
 	// Naive solution with fast execution.
 	// The original implementation below this implementation causes issues with NPCs doing nothing.
-	DHookSetReturn(hReturn, GetNearestPlayerPreferAlive(CBaseEntity(hParams.Get(1))).GetEntIndex());
+	CBaseEntity pEntity = CBaseEntity(hParams.Get(1));
+	DHookSetReturn(hReturn, (pEntity != NULL_CBASEENTITY) ? GetNearestPlayerPreferAlive(pEntity).entindex : -1);
 	return MRES_Supercede;
 
 	/*
@@ -1550,7 +1526,7 @@ public MRESReturn Hook_UTIL_FindClientInPVSGuts(DHookReturn hReturn, DHookParam 
 	for (int i = 1; i <= MaxClients; ++i)
 	{
 		CBasePlayer pPlayer = CBasePlayer(i);
-		if (pPlayer != NULL_CBASEENTITY && !(pPlayer.GetFlags() & FL_NOTARGET))
+		if (pPlayer != NULL_CBASEENTITY && !pPlayer.HasFlags(FL_NOTARGET))
 		{
 			float vec3PlayerPosition[3];
 			pPlayer.GetAbsOrigin(vec3PlayerPosition);
@@ -1584,7 +1560,7 @@ public MRESReturn Hook_ScriptedSequenceStartScript(int _this)
 {
 	CAI_ScriptedSequence pThis = CAI_ScriptedSequence(_this);
 	CBaseEntity pTarget = pThis.GetTargetEnt();
-	if (pTarget != NULL_CBASEENTITY && pTarget.IsClassNPC())
+	if (pTarget != NULL_CBASEENTITY && pTarget.IsNPC())
 	{
 		CAI_BaseNPC pTargetNpc = view_as<CAI_BaseNPC>(pTarget);
 		if (pThis == pTargetNpc.GetCine())
@@ -1593,4 +1569,57 @@ public MRESReturn Hook_ScriptedSequenceStartScript(int _this)
 		}
 	}
 	return MRES_Ignored;
+}
+
+//------------------------------------------------------
+// npc_barnacle
+// Fixes prediction and view jitter while being grabbed by a barnacle.
+//------------------------------------------------------
+public void Hook_Barnacle_OnGrab(const char[] szOutput, const int iCaller, const int iActivator, const float flDelay)
+{
+	CNPC_Barnacle pBarnacle = CNPC_Barnacle(iCaller);
+
+	// The enemy of the barnacle is not set until after `CNPC_Barnacle::AttachTongueToTarget` is finished executing.
+	// https://github.com/ValveSoftware/source-sdk-2013/blob/0d8dceea4310fde5706b3ce1c70609d72a38efdf/sp/src/game/server/hl2/npc_barnacle.cpp#L1359
+	CreateTimer(0.0, Timer_Barnacle_OnGrab, pBarnacle, TIMER_FLAG_NO_MAPCHANGE);
+}
+
+//------------------------------------------------------
+// npc_barnacle
+// Fixes prediction and view jitter while being grabbed by a barnacle.
+//------------------------------------------------------
+public void Timer_Barnacle_OnGrab(Handle hTimer, const CNPC_Barnacle pBarnacle)
+{
+	if (pBarnacle.IsValid() && pBarnacle.IsAlive())
+	{
+		CBaseEntity pEnemy = pBarnacle.GetEnemy();
+		if (pEnemy != NULL_CBASEENTITY && pEnemy.IsPlayer())
+		{
+			CBasePlayer pPlayer = view_as<CBasePlayer>(pEnemy);
+
+			// Prevents client-side prediction errors for movement while being pulled up.
+			pPlayer.m_fFlags |= FL_ATCONTROLS;
+			// Removes the initial view jitter when being pulled up.
+			pPlayer.SetMoveType(MOVETYPE_FLY);
+			// Remove the view jitter while being pulled up.
+			pPlayer.SetLaggedMovement(0.0);
+		}
+	}
+}
+
+//------------------------------------------------------
+// npc_barnacle
+// Fixes prediction and view jitter while being grabbed by a barnacle.
+//------------------------------------------------------
+public void Hook_Barnacle_OnRelease(const char[] szOutput, const int iCaller, const int iActivator, const float flDelay)
+{
+	CNPC_Barnacle pBarnacle = CNPC_Barnacle(iCaller);
+	CBaseEntity pEnemy = pBarnacle.GetEnemy();
+	if (pEnemy != NULL_CBASEENTITY && pEnemy.IsPlayer())
+	{
+		CBasePlayer pPlayer = view_as<CBasePlayer>(pEnemy);
+		pPlayer.m_fFlags &= ~FL_ATCONTROLS;
+		pPlayer.SetMoveType(MOVETYPE_WALK);
+		pPlayer.SetLaggedMovement(1.0);
+	}
 }

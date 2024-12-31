@@ -74,7 +74,7 @@ public void Hook_PlayerPreThinkPost(int iClient)
 		CBaseCombatWeapon pWeapon = pPlayer.GetActiveWeapon();
 		if (pWeapon.IsValid())
 		{
-			if (pPlayer.GetCarriedObject().IsValid())
+			if (pPlayer.IsCarryingObject())
 			{
 				// fix clientside prediction errors when dropping objects
 				PreventWeaponFiring(pWeapon, 1.0);
@@ -85,9 +85,9 @@ public void Hook_PlayerPreThinkPost(int iClient)
 				CBaseEntity pParent = pPlayer.GetParent();
 				if (pParent.IsValid())
 				{
-					if (HasEntProp(pParent.GetEntIndex(), Prop_Data, "m_hPrey"))
+					if (HasEntProp(pParent.entindex, Prop_Data, "m_hPrey"))
 					{
-						if (GetEntPropEnt(pParent.GetEntIndex(), Prop_Data, "m_hPrey") == pPlayer.GetEntIndex())
+						if (GetEntPropEnt(pParent.entindex, Prop_Data, "m_hPrey") == pPlayer.entindex)
 						{
 							if (!pWeapon.CanFireUnderwater() && pWeapon.GetPrimaryAmmoType() != -1)
 							{
@@ -185,7 +185,7 @@ public Action OnPlayerRunCmd(int iClient, int &iButtons, int &iImpulse, float fV
 
 		// Make sure target is not an info_observer_menu
 		// force free-look where appropriate - this removes the extra (pointless) third person spec mode
-		if (iObsMode == OBS_MODE_POI && pTarget != pClient && (!pTarget.IsValid() || pTarget.IsClassPlayer()))
+		if (iObsMode == OBS_MODE_POI && pTarget != pClient && (!pTarget.IsValid() || pTarget.IsPlayer()))
 		{
 			SetEntProp(iClient, Prop_Data, "m_iObserverMode", OBS_MODE_ROAMING);
 		}
@@ -364,34 +364,34 @@ public MRESReturn Hook_PlayerSpawnPost(int iClient, Handle hReturn, Handle hPara
 		return MRES_Ignored;
 	
 	CBasePlayer pPlayer = CBasePlayer(iClient);
-	if (pPlayer.IsValid())
+	if (pPlayer.IsAlive())
 	{
-		if (pPlayer.IsAlive())
+		ClearNpcMemoryForPlayer(pPlayer);
+		
+		// Ensure death camera and ragdoll get removed
+		CBaseEntity pRagdoll = pPlayer.GetRagdoll();
+		if (pRagdoll != NULL_CBASEENTITY)
 		{
-			// Ensure death camera and ragdoll get removed
-			CBaseEntity pRagdoll = pPlayer.GetRagdoll();
-			if (pRagdoll.IsValid())
-			{
-				pRagdoll.Kill();
-			}
+			pRagdoll.Kill();
+		}
 
-			// Ensure view entity is player and observer mode is off
-			// Set before spawnsystem SpawnPlayer in case view entitiy is changed there
-			pPlayer.SetViewEntity(pPlayer);
-			pPlayer.SetObserverMode(OBS_MODE_NONE);
+		// Ensure view entity is player and observer mode is off
+		// Set before spawnsystem SpawnPlayer in case view entity is changed there
+		pPlayer.SetViewEntity(pPlayer);
+		pPlayer.SetObserverMode(OBS_MODE_NONE);
 
-			// Fix for if player died on a ladder
-			SetEntPropEnt(pPlayer.GetEntIndex(), Prop_Data, "m_hLadder", -1);
+		// Fix for if player died on a ladder
+		pPlayer.SetLadder(NULL_CBASEENTITY);
 
-			// Apply on-spawn convars
-			SendClientConvars(iClient, true);
+		// Apply on-spawn convars
+		SendClientConvars(iClient, true);
 
-			// Correct the 'damages' from the prethink hook hack
-			#if defined SRCCOOP_BLACKMESA
-			pPlayer.SetSuit(false);
-			pPlayer.SetMaxSpeed(190.0);
-			pPlayer.SetIsSprinting(false);
-			pPlayer.SetSolidFlags(pPlayer.GetSolidFlags() & ~FSOLID_NOT_SOLID);
+		// Correct the 'damages' from the prethink hook hack
+		#if defined SRCCOOP_BLACKMESA
+		pPlayer.SetSuit(false);
+		pPlayer.SetMaxSpeed(190.0);
+		pPlayer.SetIsSprinting(false);
+		pPlayer.m_usSolidFlags &= ~FSOLID_NOT_SOLID;
 
 			// Client movement prediction fix.
 			// `sv_speed_sprint` in MP is used for base movement speed.
@@ -402,52 +402,51 @@ public MRESReturn Hook_PlayerSpawnPost(int iClient, Handle hReturn, Handle hPara
 			ConVar hWalkSpeed = FindConVar("sv_speed_walk");
 			hSprintSpeed.ReplicateToClient(pPlayer.GetEntIndex(), "190.0");
 			hWalkSpeed.ReplicateToClient(pPlayer.GetEntIndex(), "0.0");
-			#endif
+		#endif
 
-			// Stop HEV sounds
-			#if defined PLAYERPATCH_SUIT_SOUNDS
-			pPlayer.ClearSuitQueue();
-			StopSound(iClient, SNDCHAN_STATIC, szLastSuitSound[iClient]);
-			#endif
+		// Stop HEV sounds
+		#if defined PLAYERPATCH_SUIT_SOUNDS
+		pPlayer.ClearSuitQueue();
+		pPlayer.StopSound(SNDCHAN_STATIC, szLastSuitSound[iClient]);
+		#endif
 
-			CoopManager.OnPlayerSpawned(pPlayer);
-		}
-		else // Not alive => entered the game
+		CoopManager.OnPlayerSpawned(pPlayer);
+	}
+	else // Not alive => entered the game
+	{
+		// Set initial view
+		CCoopSpawnSystem.TeleportPlayerOnSpawn(pPlayer);
+
+		// Initialize clientside convars from skill.cfg, which may have not executed.
+		#if defined SRCCOOP_BLACKMESA
+		pPlayer.QueryConvar("r_bloomtintexponent_nextgen", QueryConVar_Bloom, 2.2);
+		pPlayer.QueryConvar("r_bloomtintr_nextgen", QueryConVar_Bloom, 0.25);
+		pPlayer.QueryConvar("r_bloomtintg_nextgen", QueryConVar_Bloom, 0.25);
+		pPlayer.QueryConvar("r_bloomtintb_nextgen", QueryConVar_Bloom, 0.25);
+		pPlayer.QueryConvar("gb_flashlight_intensity", QueryConVar_Bloom, 0.8);
+		#endif
+		
+		#if defined GAMEPATCH_TEAMSELECT_UI
+
+		if (pPlayer.GetTeam() == TEAM_SPECTATOR)
 		{
-			// Set initial view
-			CCoopSpawnSystem.TeleportPlayerOnSpawn(pPlayer);
-
-			// Initialize clientside convars from skill.cfg, which may have not executed.
-			#if defined SRCCOOP_BLACKMESA
-			QueryClientConVar(iClient, "r_bloomtintexponent_nextgen", QueryConVar_Bloom, 2.2);
-			QueryClientConVar(iClient, "r_bloomtintr_nextgen", QueryConVar_Bloom, 0.25);
-			QueryClientConVar(iClient, "r_bloomtintg_nextgen", QueryConVar_Bloom, 0.25);
-			QueryClientConVar(iClient, "r_bloomtintb_nextgen", QueryConVar_Bloom, 0.25);
-			QueryClientConVar(iClient, "gb_flashlight_intensity", QueryConVar_Bloom, 0.8);
-			#endif
-			
-			#if defined GAMEPATCH_TEAMSELECT_UI
-
-			if (GetClientTeam(iClient) == TEAM_SPECTATOR)
+			if (g_pConvarDisableTeamSelect.BoolValue)
 			{
-				if (g_pConvarDisableTeamSelect.BoolValue)
-				{
-					// Hide team select
-					ClientCommand(iClient, "hidepanel team");
-					ClientCommand(iClient, "hidepanel deathmatch");
-					ChangeClientTeam(iClient, TEAM_SCIENTIST);
-					g_bPostTeamSelect[iClient] = true;
-				}
-				else
-				{
-					// Always show DM variant of team select
-					ClientCommand(iClient, "hidepanel team");
-					ClientCommand(iClient, "showpanel deathmatch");
-				}
+				// Hide team select
+				pPlayer.SendCommand("hidepanel team");
+				pPlayer.SendCommand("hidepanel deathmatch");
+				pPlayer.SetTeam(TEAM_SCIENTIST);
+				g_bPostTeamSelect[iClient] = true;
 			}
-
-			#endif // GAMEPATCH_TEAMSELECT_UI
+			else
+			{
+				// Always show DM variant of team select
+				pPlayer.SendCommand("hidepanel team");
+				pPlayer.SendCommand("showpanel deathmatch");
+			}
 		}
+
+		#endif // GAMEPATCH_TEAMSELECT_UI
 	}
 	return MRES_Ignored;
 }
@@ -481,10 +480,11 @@ public MRESReturn Hook_PlayerKilledPost(int _this, DHookParam hParams)
 		return MRES_Ignored;
 
 	CBasePlayer pPlayer = CBasePlayer(_this);
+	ClearNpcMemoryForPlayer(pPlayer);
 
 	#if defined PLAYERPATCH_SERVERSIDE_RAGDOLLS
-	Address pTakeDmgInfo = hParams.GetAddress(1);
-	PlayerPatch_ApplyServerRagdoll(pPlayer, pTakeDmgInfo);
+	CTakeDamageInfo pTakeDamageInfo = CTakeDamageInfo.FromAddress(hParams.GetAddress(1));
+	PlayerPatch_ApplyServerRagdoll(pPlayer, pTakeDamageInfo);
 	#endif
 	
 	SurvivalManager.OnPlayerDeath(pPlayer);
@@ -494,16 +494,16 @@ public MRESReturn Hook_PlayerKilledPost(int _this, DHookParam hParams)
 
 #if defined PLAYERPATCH_SERVERSIDE_RAGDOLLS
 
-void PlayerPatch_ApplyServerRagdoll(CBasePlayer pPlayer, Address pTakeDmgInfo)
+void PlayerPatch_ApplyServerRagdoll(const CBasePlayer pPlayer, const CTakeDamageInfo pTakeDamageInfo)
 {
-	int iDmgType = LoadFromAddress(pTakeDmgInfo + view_as<Address>(60), NumberType_Int32);
-	if (iDmgType & DMG_DISSOLVE)
+	int iDamageType = pTakeDamageInfo.GetDamageType();
+	if (iDamageType & DMG_DISSOLVE)
 	{
 		// dont bother
 		return;
 	}
 
-	CBaseAnimating pRagdoll = pPlayer.GetRagdoll();
+	CBaseEntity pRagdoll = pPlayer.GetRagdoll();
 	if (pRagdoll != NULL_CBASEENTITY)
 	{
 		pRagdoll.Kill();
@@ -517,28 +517,50 @@ void PlayerPatch_ApplyServerRagdoll(CBasePlayer pPlayer, Address pTakeDmgInfo)
 	
 	#if defined SRCCOOP_BLACKMESA
 	int iRagdollInheritIndex;
-	if (g_pIdle[pPlayer.GetEntIndex()].m_pModel.IsValid())
+	if (g_pIdle[pPlayer.entindex].m_pModel.IsValid())
 	{
 		// Player is currently using model for idle animations.
 		// The nodraw is required for hiding the player the tick he dies.
 		// The model that was parented is cleared since `CreateServerRagdoll` will not work otherwise.
-		pPlayer.AddEffects(EF_NODRAW);
-		g_pIdle[pPlayer.GetEntIndex()].m_pModel.ClearParent();
-		iRagdollInheritIndex = g_pIdle[pPlayer.GetEntIndex()].m_pModel.GetEntIndex();
+		pPlayer.m_fEffects |= EF_NODRAW;
+		g_pIdle[pPlayer.entindex].m_pModel.ClearParent();
+		iRagdollInheritIndex = g_pIdle[pPlayer.entindex].m_pModel.entindex;
 	}
 	else
 	{
-		pPlayer.RemoveEffects(EF_NODRAW);
-		iRagdollInheritIndex = pPlayer.GetEntIndex();
+		pPlayer.m_fEffects &= ~EF_NODRAW;
+		iRagdollInheritIndex = pPlayer.entindex;
 	}
 	#else
-	int iRagdollInheritIndex = pPlayer.GetEntIndex();
+	int iRagdollInheritIndex = pPlayer.entindex;
 	#endif
-	
-	pRagdoll = CBaseAnimating(SDKCall(g_pCreateServerRagdoll, iRagdollInheritIndex, pPlayer.GetForceBone(), pTakeDmgInfo, COLLISION_GROUP_DEBRIS_TRIGGER, false));
-	if (pRagdoll.IsValid())
+
+	// TODO:
+	// Move `g_pCreateServerRagdoll` into `CRagdollProp`.
+	pRagdoll = CRagdollProp(SDKCall(g_pCreateServerRagdoll, iRagdollInheritIndex, pPlayer.GetForceBone(), pTakeDamageInfo, COLLISION_GROUP_DEBRIS_TRIGGER, false));
+	if (pRagdoll != NULL_CBASEENTITY)
 	{
 		SDKHook(pRagdoll.entindex, SDKHook_OnTakeDamage, Hook_NoDmg);
+
+		// TODO: If killed by a player, attach ragdoll to barnacle
+		//CBaseEntity pInflictor = pTakeDamageInfo.GetInflictor();
+		//if (pInflictor != NULL_CBASEENTITY)
+		//{
+		//	char szClassname[MAX_CLASSNAME];
+		//	pInflictor.GetClassname(szClassname, sizeof(szClassname));
+		//	if (strcmp(szClassname, "npc_barnacle") == 0)
+		//	{
+		//		CNPC_Barnacle pBarnacle = view_as<CNPC_Barnacle>(pInflictor);
+		//
+		//		float vec3GrabPosition[3];
+		//		pPlayer.GetEyePosition(vec3GrabPosition);
+		//		
+		//		float vec3Position[3];
+		//		pPlayer.GetAbsOrigin(vec3Position);
+		//		pBarnacle.AttachTongueToTarget(pRagdoll, vec3GrabPosition);
+		//		pRagdoll.m_iEFlags |= EFL_IS_BEING_LIFTED_BY_BARNACLE;
+		//	}
+		//}
 
 		pPlayer.SetRagdoll(pRagdoll);
 		pPlayer.SetObserverMode(OBS_MODE_CHASE);
@@ -595,7 +617,7 @@ public Action Hook_PlayerTraceAttack(int victim, int &attacker, int &inflictor, 
 	if (CoopManager.IsCoopModeEnabled() && !mp_friendlyfire.BoolValue)
 	{
 		// Disable FF
-		if (attacker != victim && CBasePlayer(attacker).IsClassPlayer())
+		if (attacker != victim && CBasePlayer(attacker).IsPlayer())
 		{
 			return Plugin_Handled;
 		}
@@ -614,7 +636,7 @@ public Action Hook_PlayerTakeDamage(int victim, int &attacker, int &inflictor, f
 	if (!mp_friendlyfire.BoolValue)
 	{
 		// Disable FF from other sources such as the tau cannon
-		if (attacker != victim && CBasePlayer(attacker).IsClassPlayer())
+		if (attacker != victim && CBasePlayer(attacker).IsPlayer())
 		{
 			return Plugin_Handled;
 		}
@@ -642,15 +664,11 @@ public MRESReturn Hook_PlayerWeaponShootPosition_Post(int iClient, Handle hRetur
 {
 	CBasePlayer pPlayer = CBasePlayer(iClient);
 	// Objects that are carried will call this hook and lag further behind the desired position.
-	if (pPlayer.GetCarriedObject() == NULL_CBASEENTITY)
-	{
-		DHookSetReturnVector(hReturn, g_vec3PlayerShootPosition[iClient]);
-		return MRES_Supercede;
-	}
-	else
-	{
+	if (pPlayer.IsCarryingObject())
 		return MRES_Ignored;
-	}
+
+	DHookSetReturnVector(hReturn, g_vec3PlayerShootPosition[iClient]);
+	return MRES_Supercede;
 }
 
 //------------------------------------------------------
@@ -700,10 +718,11 @@ public MRESReturn Hook_PlayerChangeTeamPost(int iClient, Handle hParams)
 		if (iTeamNum == TEAM_SPECTATOR)
 		{
 			CBaseEntity pRagdoll = pPlayer.GetRagdoll();
-			if (pRagdoll.IsValid())
+			if (pRagdoll != NULL_CBASEENTITY)
 			{
 				pRagdoll.Kill();
 			}
+			ClearNpcMemoryForPlayer(pPlayer);
 		}
 
 		SurvivalManager.OnPlayerChangeTeam(pPlayer, iTeamNum);
@@ -718,8 +737,8 @@ public MRESReturn Hook_PlayerShouldCollide(int _this, Handle hReturn, Handle hPa
 {
 	if (CoopManager.IsFeatureEnabled(FT_NOBLOCK))
 	{
-		int iCollisionGroup = DHookGetParam(hParams, 1);
-		if (iCollisionGroup == COLLISION_GROUP_PLAYER || iCollisionGroup == COLLISION_GROUP_PLAYER_MOVEMENT)
+		Collision_Group_t eCollisionGroup = DHookGetParam(hParams, 1);
+		if (eCollisionGroup == COLLISION_GROUP_PLAYER || eCollisionGroup == COLLISION_GROUP_PLAYER_MOVEMENT)
 		{
 			DHookSetReturn(hReturn, false);
 			return MRES_Supercede;
@@ -738,7 +757,7 @@ public MRESReturn Hook_ForcePlayerToDropThisObject(Handle hParams)
 	{
 		// singleplayer doesn't care what's passed in so we have to check for both player or item
 		CBaseEntity pParam = CBaseEntity(DHookGetParam(hParams, 1));
-		if (pParam.IsClassPlayer())
+		if (pParam.IsPlayer())
 		{
 			view_as<CBasePlayer>(pParam).ForceDropOfCarriedPhysObjects();
 		}
@@ -876,14 +895,14 @@ CCoopEquipment g_pPackedEquipment[MAXPLAYERS + 1];
 
 bool HasPackedItems(CBasePlayer pPlayer)
 {
-	return g_pPackedEquipment[pPlayer.GetEntIndex()].IsInitialized();
+	return g_pPackedEquipment[pPlayer.entindex].IsInitialized();
 }
 
 void PackPlayerItems(CBasePlayer pPlayer)
 {
 	ClearPackedItems(pPlayer);
 	
-	int client = pPlayer.GetEntIndex();
+	int client = pPlayer.entindex;
 	g_pPackedEquipment[client].Initialize(true);
 	g_pPackedEquipment[client].Fill(pPlayer);
 	
@@ -893,15 +912,15 @@ void PackPlayerItems(CBasePlayer pPlayer)
 		CBaseCombatWeapon pWeapon = g_pPackedEquipment[client].m_pWeaponEntityList.Get(i);
 		pPlayer.RemoveWeapon(pWeapon);
 		pWeapon.SetModelIndex(pWeapon.GetWeaponModelIndex(.bViewModel = false));
-		pWeapon.SetSpawnFlags(pWeapon.GetSpawnFlags() | SF_ITEM_NORESPAWN);
-		pWeapon.AddEffects(EF_NODRAW | EF_NOSHADOW);
+		pWeapon.m_spawnflags |= SF_ITEM_NORESPAWN;
+		pWeapon.m_fEffects |= EF_NODRAW | EF_NOSHADOW;
 	}
 	pPlayer.RemoveAllItems();
 }
 
 void RestorePackedItems(CBasePlayer pPlayer)
 {
-	int client = pPlayer.GetEntIndex();
+	int client = pPlayer.entindex;
 	if (!g_pPackedEquipment[client].IsInitialized())
 		return;
 
@@ -925,7 +944,7 @@ void RestorePackedItems(CBasePlayer pPlayer)
 
 void ClearPackedItems(CBasePlayer pPlayer)
 {
-	int client = pPlayer.GetEntIndex();
+	int client = pPlayer.entindex;
 	if (!g_pPackedEquipment[client].IsInitialized())
 		return;
 
@@ -1025,4 +1044,30 @@ void QueryConVarSafeSet(QueryCookie cookie, int client, ConVarQueryResult result
 	{
 		LogMessage("Issuing client commands is not allowed. Please remove \"%s\" from client_console in the map's edt file.", cvarName);
 	}
+}
+
+public bool TraceEntityFilter_IgnorePlayers(int iEntIndex, int iMask, any pData)
+{
+	CBasePlayer pPlayer = CBasePlayer(iEntIndex);
+	if (pPlayer.IsValid())
+		return false;
+	return (iEntIndex != pData);
+}
+
+// Clears the player out of NPC memories and clears flags.
+//
+static void ClearNpcMemoryForPlayer(const CBasePlayer pPlayer)
+{
+	int iEntIndex = -1;
+	while ((iEntIndex = FindEntityByClassname(iEntIndex, "*")) != -1)
+	{
+		CBaseEntity pEntity = CBaseEntity(iEntIndex);
+		if (pEntity.IsNPC())
+		{
+			CAI_BaseNPC pNPC = view_as<CAI_BaseNPC>(pEntity);
+			pNPC.ForgetEntity(pPlayer);
+		}
+	}
+
+	pPlayer.m_iEFlags &= ~EFL_IS_BEING_LIFTED_BY_BARNACLE;
 }

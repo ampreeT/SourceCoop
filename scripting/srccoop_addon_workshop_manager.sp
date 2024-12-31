@@ -20,6 +20,12 @@ public Plugin myinfo =
 ConVar pWorkshopMsg;
 bool bKickEnabled;
 
+public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
+{
+	if (GetEngineVersion() != Engine_BlackMesa)
+		return APLRes_SilentFailure;
+}
+
 public void OnPluginStart()
 {
 	InitSourceCoopAddon();

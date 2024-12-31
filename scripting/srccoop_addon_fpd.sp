@@ -168,7 +168,7 @@ public void Hook_CameraDeathSpawn(int iEntIndex)
 	CBasePlayer pOwner = view_as<CBasePlayer>(pEntity.GetOwner());
 	if (pOwner.IsValid())
 	{
-		if (ShouldUseFPDeathCamera(pOwner.GetEntIndex()))
+		if (ShouldUseFPDeathCamera(pOwner.entindex))
 		{
 			CBaseEntity pViewEntity = pOwner.GetViewEntity();
 			if (!pViewEntity.IsValid() || pViewEntity == pOwner)
@@ -200,7 +200,7 @@ MRESReturn Hook_CameraDeathRemoved(int iEntIndex)
 
 public void SC_OnPlayerRagdollCreated(CBasePlayer pPlayer, CBaseAnimating pRagdoll)
 {
-	int client = pPlayer.GetEntIndex();
+	int client = pPlayer.entindex;
 	CBaseEntity pViewEnt;
 	if (g_Engine == Engine_BlackMesa)
 	{
@@ -225,16 +225,16 @@ public void SC_OnPlayerRagdollCreated(CBasePlayer pPlayer, CBaseAnimating pRagdo
 	int fadeDuration = g_pConvarFadeToBlackLength.IntValue;
 	if (fadeDuration)
 	{
-		Client_ScreenFade(pPlayer.GetEntIndex(), fadeDuration, FFADE_OUT | FFADE_STAYOUT);
+		Client_ScreenFade(pPlayer.entindex, fadeDuration, FFADE_OUT | FFADE_STAYOUT);
 	}
 }
 
-public CBaseEntity CreateCameraDeath(CBasePlayer pPlayer)
+public CInfoTarget CreateCameraDeath(const CBasePlayer pPlayer)
 {
-	CBaseEntity pCamera = CBaseEntity.Create("info_target");
+	CInfoTarget pCamera = CInfoTarget.Create();
 	pCamera.SetClassname("camera_death");
-	pCamera.SetSpawnFlags(1);
 	pCamera.Spawn();
+	pCamera.m_iEFlags |= EFL_FORCE_CHECK_TRANSMIT;
 	pPlayer.SetViewEntity(pCamera);
 	return pCamera;
 }

@@ -10,6 +10,14 @@
 // Coop manager
 //------------------------------------------------------
 
+enum struct FireOutputData
+{
+	char m_szName[32];
+	CBaseEntity m_pCaller;
+	CBaseEntity m_pActivator;
+	float m_flDelay;
+}
+
 enum struct CoopManagerData
 {
 	KeyValues kv;
@@ -74,7 +82,7 @@ methodmap CoopManager
 			if (CoopManager.IsNewMapSeries())
 			{
 				// reset global states
-				g_ServerGameDLL.GameShutdown();
+				IServerGameDLL.Get().GameShutdown();
 				EquipmentManager.ClearAll();
 			}
 			g_pLevelLump.ParseMapEntities(szMapEntities);
@@ -109,14 +117,12 @@ methodmap CoopManager
 				if (pEntity.IsClassname("logic_auto"))
 				{
 					// do not let it get killed, so the output can fire later
-					int iSpawnFlags = pEntity.GetSpawnFlags();
-					if (iSpawnFlags & SF_AUTO_FIREONCE)
-						pEntity.SetSpawnFlags(iSpawnFlags &~ SF_AUTO_FIREONCE);
+					view_as<CLogicAuto>(pEntity).m_spawnflags &= ~SF_AUTO_FIREONCE;
 				}
 				for (int i = 0; i < pOutputHookList.Length; i++)
 				{
 					CEntityOutputHook pOutputHook; pOutputHookList.GetArray(i, pOutputHook);
-					HookSingleEntityOutput(pEntity.GetEntIndex(), pOutputHook.m_szOutputName, Callback_OutputCallbackForDelay);
+					HookSingleEntityOutput(pEntity.entindex, pOutputHook.m_szOutputName, Callback_OutputCallbackForDelay);
 				}
 				data.m_bMapHasDelayedOutput = true;
 			}
@@ -263,13 +269,13 @@ methodmap CoopManager
 		{
 			if (g_pLevelLump.m_iIntroType == INTRO_FADE)
 			{
-				pPlayer.AddFlags(FL_ATCONTROLS | FL_FROZEN);	// Freeze controls and angles.
-				Client_ScreenFade(pPlayer.GetEntIndex(), 0, FFADE_STAYOUT);
+				pPlayer.m_fFlags |= (FL_ATCONTROLS | FL_FROZEN | FL_NOTARGET);	// Freeze controls and angles.
+				Client_ScreenFade(pPlayer.entindex, 0, FFADE_STAYOUT);
 			}
 			else if (g_pLevelLump.m_iIntroType == INTRO_FREEZE)
 			{
-				pPlayer.AddFlags(FL_ATCONTROLS);				// Freeze controls.
-				Client_ScreenFade(pPlayer.GetEntIndex(), Conf.FROZEN_FADE_DUR_IN, FFADE_OUT | FFADE_STAYOUT, _,
+				pPlayer.m_fFlags |= (FL_ATCONTROLS | FL_NOTARGET);				// Freeze controls.
+				Client_ScreenFade(pPlayer.entindex, Conf.FROZEN_FADE_DUR_IN, FFADE_OUT | FFADE_STAYOUT, _,
 					Conf.FROZEN_FADE_COLOR[0], Conf.FROZEN_FADE_COLOR[1], Conf.FROZEN_FADE_COLOR[2], Conf.FROZEN_FADE_COLOR[3]);
 			}
 
@@ -577,14 +583,14 @@ public Action Timer_DecrementUntilMapStart(Handle hTimer)
 			{
 				if (IsClientInGame(i) && !IsFakeClient(i))
 				{
-					CBasePlayer pClient = CBasePlayer(i);
+					CBasePlayer pPlayer = CBasePlayer(i);
 					// TODO: Look into this.
 					// `FL_FROZEN` is being removed even without the below line in Black Mesa (i doubt this affects other games).
 					// `CBM_MP_GameRules.SetStateEndTime` might be the culprit and might have side effects for other behaviors too.
-					pClient.RemoveFlags(FL_ATCONTROLS | FL_FROZEN);
+					pPlayer.m_fFlags &= ~(FL_ATCONTROLS | FL_FROZEN | FL_NOTARGET);
 					if (g_pLevelLump.m_iIntroType == INTRO_FREEZE)
 					{
-						Client_ScreenFade(pClient.GetEntIndex(), Conf.FROZEN_FADE_DUR_OUT, FFADE_PURGE | FFADE_IN, 1,
+						Client_ScreenFade(pPlayer.entindex, Conf.FROZEN_FADE_DUR_OUT, FFADE_PURGE | FFADE_IN, 1,
 							Conf.FROZEN_FADE_COLOR[0], Conf.FROZEN_FADE_COLOR[1], Conf.FROZEN_FADE_COLOR[2], Conf.FROZEN_FADE_COLOR[3]);
 					}
 				}
@@ -597,7 +603,7 @@ public Action Timer_DecrementUntilMapStart(Handle hTimer)
 			FireOutputData pFireOutputData; data.m_pDelayedOutputs.GetArray(i, pFireOutputData);
 			if (pFireOutputData.m_pCaller.IsValid())
 			{
-				FireEntityOutput(pFireOutputData.m_pCaller.GetEntIndex(), pFireOutputData.m_szName, pFireOutputData.m_pActivator.GetEntIndex(), pFireOutputData.m_flDelay);
+				FireEntityOutput(pFireOutputData.m_pCaller.entindex, pFireOutputData.m_szName, pFireOutputData.m_pActivator.entindex, pFireOutputData.m_flDelay);
 
 				if (pFireOutputData.m_pCaller.IsClassname("trigger_once"))
 				{
@@ -656,10 +662,10 @@ public Action Callback_OutputCallbackForDelay(const char[] szOutput, int iCaller
 		}
 		else if (pFireOutputData.m_pCaller.IsClassname("logic_relay"))
 		{
-			int iSpawnFlags = pFireOutputData.m_pCaller.GetSpawnFlags();
-			if (iSpawnFlags & SF_REMOVE_ON_FIRE)
+			CLogicRelay pCaller = view_as<CLogicRelay>(pFireOutputData.m_pCaller);
+			if (pCaller.m_spawnflags & SF_REMOVE_ON_FIRE)
 			{
-				pFireOutputData.m_pCaller.SetSpawnFlags(iSpawnFlags &~ SF_REMOVE_ON_FIRE);
+				pCaller.m_spawnflags &= ~SF_REMOVE_ON_FIRE;
 				UnhookSingleEntityOutput(iCaller, szOutput, Callback_OutputCallbackForDelay);
 				HookSingleEntityOutput(iCaller, szOutput, Callback_DeleteEntOnDelayedOutputFire);
 			}
@@ -688,7 +694,7 @@ public void Timer_ShowChapterTitle(Handle hTimer)
 	if (pMessage != NULL_CBASEENTITY)
 	{
 		pMessage.SetMessage(data.m_szChapterTitle);
-		pMessage.SetSpawnFlags(SF_MESSAGE_ONCE | SF_MESSAGE_ALL);
+		pMessage.m_spawnflags |= SF_MESSAGE_ONCE | SF_MESSAGE_ALL;
 		pMessage.ShowMessage();
 	}
 }

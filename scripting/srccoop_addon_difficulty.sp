@@ -141,7 +141,7 @@ void UpdateAutoDifficulty()
 public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 {
 	CBaseEntity pEntity = CBaseEntity(iEntIndex);
-	if (pEntity.IsClassNPC())
+	if (pEntity.IsNPC())
 	{
 		SDKHook(iEntIndex, SDKHook_OnTakeDamage, Hook_OnNpcTakeDamage);
 		
@@ -158,7 +158,7 @@ public Action Hook_OnPlayerTakeDamage(int victim, int &attacker, int &inflictor,
 	{
 		CBaseEntity pAttacker = CBaseEntity(attacker);
 		
-		if (pAttacker.IsClassNPC() && PassIgnoreMap(g_pMapIgnoredFrom, attacker))
+		if (pAttacker.IsNPC() && PassIgnoreMap(g_pMapIgnoredFrom, attacker))
 		{
 			damage += g_iDifficulty * SCALE * damage;
 			return Plugin_Changed;
@@ -173,7 +173,7 @@ public Action Hook_OnNpcTakeDamage(int victim, int &attacker, int &inflictor, fl
 	{
 		CBaseEntity pAttacker = CBaseEntity(attacker);
 		
-		if (pAttacker.IsClassPlayer() && PassIgnoreMap(g_pMapIgnoredTo, victim))
+		if (pAttacker.IsPlayer() && PassIgnoreMap(g_pMapIgnoredTo, victim))
 		{
 			damage = damage / (g_iDifficulty * SCALE + 1);
 			return Plugin_Changed;

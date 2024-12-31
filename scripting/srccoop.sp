@@ -23,15 +23,6 @@ void LoadGameData()
 	// Init SDKCalls for classdef
 	InitClassdef(pGameConfig);
 	
-	if (!(g_ServerGameDLL = IServerGameDLL(GetInterface(pGameConfig, "server", "IServerGameDLL"))))
-		SetFailState("Could not get interface for %s", "IServerGameDLL");
-
-	if (!(g_ServerTools = IServerTools(GetInterface(pGameConfig, "server", "IServerTools"))))
-		SetFailState("Could not get interface for %s", "IServerTools");
-	
-	if (!(gpGlobals = g_pPlayerInfoManager.GetGlobalVars()))
-		SetFailState("Could not get gpGlobals from PlayerInfoManager");
-	
 	// Calls
 
 	#if defined PLAYERPATCH_SERVERSIDE_RAGDOLLS
@@ -50,7 +41,7 @@ void LoadGameData()
 	#endif
 
 	LoadDHookVirtual(pGameConfig, hkLevelInit, "CServerGameDLL::LevelInit");
-	if (hkLevelInit.HookRaw(Hook_Pre, view_as<Address>(g_ServerGameDLL), Hook_OnLevelInit) == INVALID_HOOK_ID)
+	if (hkLevelInit.HookRaw(Hook_Pre, IServerGameDLL.Get().GetAddress(), Hook_OnLevelInit) == INVALID_HOOK_ID)
 		SetFailState("Could not hook CServerGameDLL::LevelInit");
 	
 	LoadDHookVirtual(pGameConfig, hkChangeTeam, "CBasePlayer::ChangeTeam");
@@ -62,7 +53,10 @@ void LoadGameData()
 	LoadDHookVirtual(pGameConfig, hkUpdateOnRemove, "CBaseEntity::UpdateOnRemove");
 	LoadDHookVirtual(pGameConfig, hkEvent_Killed, "CBaseEntity::Event_Killed");
 	LoadDHookVirtual(pGameConfig, hkKeyValue_char, "CBaseEntity::KeyValue_char");
+	
+	#if defined SRCCOOP_BLACKMESA
 	LoadDHookDetour(pGameConfig, hkGiveDefaultItems, "*Player::GiveDefaultItems", Hook_GiveDefaultItems);
+	#endif
 
 	#if defined ENTPATCH_PLAYER_ALLY
 	LoadDHookVirtual(pGameConfig, hkIsPlayerAlly, "CAI_BaseNPC::IsPlayerAlly");
@@ -189,7 +183,7 @@ void LoadGameData()
 	#if defined GAMEPATCH_PREDICTED_EFFECTS
 	LoadDHookDetour(pGameConfig, hkIgnorePredictionCull, "CRecipientFilter::IgnorePredictionCull", Hook_IgnorePredictionCull);
 	LoadDHookVirtual(pGameConfig, hkDispatchEffect, "CTempEntsSystem::DispatchEffect");
-	if (hkDispatchEffect.HookRaw(Hook_Pre, g_ServerTools.GetTempEntsSystem(), Hook_DispatchEffect) == INVALID_HOOK_ID)
+	if (hkDispatchEffect.HookRaw(Hook_Pre, IServerTools.Get().GetTempEntsSystem(), Hook_DispatchEffect) == INVALID_HOOK_ID)
 		SetFailState("Could not hook CTempEntsSystem::DispatchEffect");
 	#endif
 
@@ -302,6 +296,10 @@ public void OnPluginStart()
 	DnManager.Initialize();
 	InitializeMenus();
 	
+	#if defined SRCCOOP_BLACKMESA
+	IdleAnims_Initialize();
+	#endif
+	
 	g_CoopMapStartFwd = new GlobalForward("SC_OnCoopMapStart", ET_Ignore);
 	g_CoopMapConfigLoadedFwd = new GlobalForward("SC_OnCoopMapConfigLoaded", ET_Ignore, Param_Cell, Param_Cell);
 	g_OnPlayerRagdollCreatedFwd = new GlobalForward("SC_OnPlayerRagdollCreated", ET_Ignore, Param_Cell, Param_Cell);
@@ -346,6 +344,11 @@ public void OnPluginStart()
 			}
 		}
 	}
+
+	#if defined ENTPATCH_BARNACLE_PREDICTION
+	HookEntityOutput("npc_barnacle", "OnGrab", Hook_Barnacle_OnGrab);
+	HookEntityOutput("npc_barnacle", "OnRelease", Hook_Barnacle_OnRelease);
+	#endif
 }
 
 #pragma dynamic ENTITYSTRING_LENGTH
@@ -594,7 +597,7 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 	SDKHook(iEntIndex, SDKHook_Spawn, Hook_FixupBrushModels);
 	SDKHook(iEntIndex, SDKHook_SpawnPost, Hook_EntitySpawnPost);
 	
-	bool bIsNPC = pEntity.IsClassNPC();
+	bool bIsNPC = pEntity.IsNPC();
 
 	if (bIsNPC)
 	{
@@ -873,7 +876,7 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 		#endif
 
 		#if defined ENTPATCH_WEAPON_MODELS
-		if (pEntity.IsClassWeapon())
+		if (pEntity.IsWeapon())
 		{
 			DHookEntity(hkSetModel, false, iEntIndex, _, Hook_WeaponSetModel);
 			return;
@@ -1015,7 +1018,7 @@ public void SpawnPostponedItem(CBaseEntity pEntity)
 {
 	if (pEntity.IsValid())
 	{
-		SDKHook(pEntity.GetEntIndex(), SDKHook_SpawnPost, Hook_Instancing_ItemSpawn);
+		SDKHook(pEntity.entindex, SDKHook_SpawnPost, Hook_Instancing_ItemSpawn);
 		g_bIsMultiplayerOverride = false; // IsMultiplayer=false will spawn items with physics
 		pEntity.Spawn();
 		g_bIsMultiplayerOverride = true;
@@ -1059,7 +1062,7 @@ public MRESReturn Hook_OnEquipmentTryPickUpPost(int _this, Handle hReturn, Handl
 		if (bPickedUp)
 		{
 			CBasePlayer pPlayer = CBasePlayer(DHookGetParam(hParams, 1));
-			if (pPlayer.IsClassPlayer())
+			if (pPlayer.IsPlayer())
 			{
 				CBaseEntity pItem = CBaseEntity(_this);
 				char szClass[MAX_CLASSNAME];
