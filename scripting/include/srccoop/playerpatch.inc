@@ -353,80 +353,79 @@ public MRESReturn Hook_PlayerSpawnPost(int iClient, Handle hReturn, Handle hPara
 		return MRES_Ignored;
 	
 	CBasePlayer pPlayer = CBasePlayer(iClient);
-	if (pPlayer.IsValid())
+	if (pPlayer.IsAlive())
 	{
-		if (pPlayer.IsAlive())
+		ClearNpcMemoryForPlayer(pPlayer);
+		
+		// Ensure death camera and ragdoll get removed
+		CBaseEntity pRagdoll = pPlayer.GetRagdoll();
+		if (pRagdoll != NULL_CBASEENTITY)
 		{
-			// Ensure death camera and ragdoll get removed
-			CBaseEntity pRagdoll = pPlayer.GetRagdoll();
-			if (pRagdoll.IsValid())
-			{
-				pRagdoll.Kill();
-			}
-
-			// Ensure view entity is player and observer mode is off
-			// Set before spawnsystem SpawnPlayer in case view entitiy is changed there
-			pPlayer.SetViewEntity(pPlayer);
-			pPlayer.SetObserverMode(OBS_MODE_NONE);
-
-			// Fix for if player died on a ladder
-			SetEntPropEnt(pPlayer.entindex, Prop_Data, "m_hLadder", -1);
-
-			// Apply on-spawn convars
-			SendClientConvars(iClient, true);
-
-			// Correct the 'damages' from the prethink hook hack
-			#if defined SRCCOOP_BLACKMESA
-			pPlayer.SetSuit(false);
-			pPlayer.SetMaxSpeed(190.0);
-			pPlayer.SetIsSprinting(false);
-			pPlayer.m_usSolidFlags &= ~FSOLID_NOT_SOLID;
-			#endif
-
-			// Stop HEV sounds
-			#if defined PLAYERPATCH_SUIT_SOUNDS
-			pPlayer.ClearSuitQueue();
-			StopSound(iClient, SNDCHAN_STATIC, szLastSuitSound[iClient]);
-			#endif
-
-			CoopManager.OnPlayerSpawned(pPlayer);
+			pRagdoll.Kill();
 		}
-		else // Not alive => entered the game
+
+		// Ensure view entity is player and observer mode is off
+		// Set before spawnsystem SpawnPlayer in case view entity is changed there
+		pPlayer.SetViewEntity(pPlayer);
+		pPlayer.SetObserverMode(OBS_MODE_NONE);
+
+		// Fix for if player died on a ladder
+		pPlayer.SetLadder(NULL_CBASEENTITY);
+
+		// Apply on-spawn convars
+		SendClientConvars(iClient, true);
+
+		// Correct the 'damages' from the prethink hook hack
+		#if defined SRCCOOP_BLACKMESA
+		pPlayer.SetSuit(false);
+		pPlayer.SetMaxSpeed(190.0);
+		pPlayer.SetIsSprinting(false);
+		pPlayer.m_usSolidFlags &= ~FSOLID_NOT_SOLID;
+		#endif
+
+		// Stop HEV sounds
+		#if defined PLAYERPATCH_SUIT_SOUNDS
+		pPlayer.ClearSuitQueue();
+		pPlayer.StopSound(SNDCHAN_STATIC, szLastSuitSound[iClient]);
+		#endif
+
+		CoopManager.OnPlayerSpawned(pPlayer);
+	}
+	else // Not alive => entered the game
+	{
+		// Set initial view
+		CCoopSpawnSystem.TeleportPlayerOnSpawn(pPlayer);
+
+		// Initialize clientside convars from skill.cfg, which may have not executed.
+		#if defined SRCCOOP_BLACKMESA
+		pPlayer.QueryConvar("r_bloomtintexponent_nextgen", QueryConVar_Bloom, 2.2);
+		pPlayer.QueryConvar("r_bloomtintr_nextgen", QueryConVar_Bloom, 0.25);
+		pPlayer.QueryConvar("r_bloomtintg_nextgen", QueryConVar_Bloom, 0.25);
+		pPlayer.QueryConvar("r_bloomtintb_nextgen", QueryConVar_Bloom, 0.25);
+		pPlayer.QueryConvar("gb_flashlight_intensity", QueryConVar_Bloom, 0.8);
+		#endif
+		
+		#if defined GAMEPATCH_TEAMSELECT_UI
+
+		if (pPlayer.GetTeam() == TEAM_SPECTATOR)
 		{
-			// Set initial view
-			CCoopSpawnSystem.TeleportPlayerOnSpawn(pPlayer);
-
-			// Initialize clientside convars from skill.cfg, which may have not executed.
-			#if defined SRCCOOP_BLACKMESA
-			QueryClientConVar(iClient, "r_bloomtintexponent_nextgen", QueryConVar_Bloom, 2.2);
-			QueryClientConVar(iClient, "r_bloomtintr_nextgen", QueryConVar_Bloom, 0.25);
-			QueryClientConVar(iClient, "r_bloomtintg_nextgen", QueryConVar_Bloom, 0.25);
-			QueryClientConVar(iClient, "r_bloomtintb_nextgen", QueryConVar_Bloom, 0.25);
-			QueryClientConVar(iClient, "gb_flashlight_intensity", QueryConVar_Bloom, 0.8);
-			#endif
-			
-			#if defined GAMEPATCH_TEAMSELECT_UI
-
-			if (GetClientTeam(iClient) == TEAM_SPECTATOR)
+			if (g_pConvarDisableTeamSelect.BoolValue)
 			{
-				if (g_pConvarDisableTeamSelect.BoolValue)
-				{
-					// Hide team select
-					ClientCommand(iClient, "hidepanel team");
-					ClientCommand(iClient, "hidepanel deathmatch");
-					ChangeClientTeam(iClient, TEAM_SCIENTIST);
-					g_bPostTeamSelect[iClient] = true;
-				}
-				else
-				{
-					// Always show DM variant of team select
-					ClientCommand(iClient, "hidepanel team");
-					ClientCommand(iClient, "showpanel deathmatch");
-				}
+				// Hide team select
+				pPlayer.SendCommand("hidepanel team");
+				pPlayer.SendCommand("hidepanel deathmatch");
+				pPlayer.SetTeam(TEAM_SCIENTIST);
+				g_bPostTeamSelect[iClient] = true;
 			}
-
-			#endif // GAMEPATCH_TEAMSELECT_UI
+			else
+			{
+				// Always show DM variant of team select
+				pPlayer.SendCommand("hidepanel team");
+				pPlayer.SendCommand("showpanel deathmatch");
+			}
 		}
+
+		#endif // GAMEPATCH_TEAMSELECT_UI
 	}
 	return MRES_Ignored;
 }
@@ -460,10 +459,11 @@ public MRESReturn Hook_PlayerKilledPost(int _this, DHookParam hParams)
 		return MRES_Ignored;
 
 	CBasePlayer pPlayer = CBasePlayer(_this);
+	ClearNpcMemoryForPlayer(pPlayer);
 
 	#if defined PLAYERPATCH_SERVERSIDE_RAGDOLLS
-	Address pTakeDmgInfo = hParams.GetAddress(1);
-	PlayerPatch_ApplyServerRagdoll(pPlayer, pTakeDmgInfo);
+	CTakeDamageInfo pTakeDamageInfo = CTakeDamageInfo.FromAddress(hParams.GetAddress(1));
+	PlayerPatch_ApplyServerRagdoll(pPlayer, pTakeDamageInfo);
 	#endif
 	
 	SurvivalManager.OnPlayerDeath(pPlayer);
@@ -473,16 +473,16 @@ public MRESReturn Hook_PlayerKilledPost(int _this, DHookParam hParams)
 
 #if defined PLAYERPATCH_SERVERSIDE_RAGDOLLS
 
-void PlayerPatch_ApplyServerRagdoll(CBasePlayer pPlayer, Address pTakeDmgInfo)
+void PlayerPatch_ApplyServerRagdoll(const CBasePlayer pPlayer, const CTakeDamageInfo pTakeDamageInfo)
 {
-	int iDmgType = LoadFromAddress(pTakeDmgInfo + view_as<Address>(60), NumberType_Int32);
-	if (iDmgType & DMG_DISSOLVE)
+	int iDamageType = pTakeDamageInfo.GetDamageType();
+	if (iDamageType & DMG_DISSOLVE)
 	{
 		// dont bother
 		return;
 	}
 
-	CBaseAnimating pRagdoll = pPlayer.GetRagdoll();
+	CBaseEntity pRagdoll = pPlayer.GetRagdoll();
 	if (pRagdoll != NULL_CBASEENTITY)
 	{
 		pRagdoll.Kill();
@@ -513,11 +513,33 @@ void PlayerPatch_ApplyServerRagdoll(CBasePlayer pPlayer, Address pTakeDmgInfo)
 	#else
 	int iRagdollInheritIndex = pPlayer.entindex;
 	#endif
-	
-	pRagdoll = CBaseAnimating(SDKCall(g_pCreateServerRagdoll, iRagdollInheritIndex, pPlayer.GetForceBone(), pTakeDmgInfo, COLLISION_GROUP_DEBRIS_TRIGGER, false));
-	if (pRagdoll.IsValid())
+
+	// TODO:
+	// Move `g_pCreateServerRagdoll` into `CRagdollProp`.
+	pRagdoll = CRagdollProp(SDKCall(g_pCreateServerRagdoll, iRagdollInheritIndex, pPlayer.GetForceBone(), pTakeDamageInfo, COLLISION_GROUP_DEBRIS_TRIGGER, false));
+	if (pRagdoll != NULL_CBASEENTITY)
 	{
 		SDKHook(pRagdoll.entindex, SDKHook_OnTakeDamage, Hook_NoDmg);
+
+		// TODO: If killed by a player, attach ragdoll to barnacle
+		//CBaseEntity pInflictor = pTakeDamageInfo.GetInflictor();
+		//if (pInflictor != NULL_CBASEENTITY)
+		//{
+		//	char szClassname[MAX_CLASSNAME];
+		//	pInflictor.GetClassname(szClassname, sizeof(szClassname));
+		//	if (strcmp(szClassname, "npc_barnacle") == 0)
+		//	{
+		//		CNPC_Barnacle pBarnacle = view_as<CNPC_Barnacle>(pInflictor);
+		//
+		//		float vec3GrabPosition[3];
+		//		pPlayer.GetEyePosition(vec3GrabPosition);
+		//		
+		//		float vec3Position[3];
+		//		pPlayer.GetAbsOrigin(vec3Position);
+		//		pBarnacle.AttachTongueToTarget(pRagdoll, vec3GrabPosition);
+		//		pRagdoll.m_iEFlags |= EFL_IS_BEING_LIFTED_BY_BARNACLE;
+		//	}
+		//}
 
 		pPlayer.SetRagdoll(pRagdoll);
 		pPlayer.SetObserverMode(OBS_MODE_CHASE);
@@ -675,10 +697,11 @@ public MRESReturn Hook_PlayerChangeTeamPost(int iClient, Handle hParams)
 		if (iTeamNum == TEAM_SPECTATOR)
 		{
 			CBaseEntity pRagdoll = pPlayer.GetRagdoll();
-			if (pRagdoll.IsValid())
+			if (pRagdoll != NULL_CBASEENTITY)
 			{
 				pRagdoll.Kill();
 			}
+			ClearNpcMemoryForPlayer(pPlayer);
 		}
 
 		SurvivalManager.OnPlayerChangeTeam(pPlayer, iTeamNum);
@@ -1008,4 +1031,22 @@ public bool TraceEntityFilter_IgnorePlayers(int iEntIndex, int iMask, any pData)
 	if (pPlayer.IsValid())
 		return false;
 	return (iEntIndex != pData);
+}
+
+// Clears the player out of NPC memories and clears flags.
+//
+static void ClearNpcMemoryForPlayer(const CBasePlayer pPlayer)
+{
+	int iEntIndex = -1;
+	while ((iEntIndex = FindEntityByClassname(iEntIndex, "*")) != -1)
+	{
+		CBaseEntity pEntity = CBaseEntity(iEntIndex);
+		if (pEntity.IsNPC())
+		{
+			CAI_BaseNPC pNPC = view_as<CAI_BaseNPC>(pEntity);
+			pNPC.ForgetEntity(pPlayer);
+		}
+	}
+
+	pPlayer.m_iEFlags &= ~EFL_IS_BEING_LIFTED_BY_BARNACLE;
 }

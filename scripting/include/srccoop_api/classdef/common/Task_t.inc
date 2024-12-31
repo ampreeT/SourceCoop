@@ -3,7 +3,7 @@
 
 methodmap Task_t
 {
-	public Task_t(const Address pAddress)
+	public static Task_t FromAddress(const Address pAddress)
 	{
 		return view_as<Task_t>(pAddress);
 	}

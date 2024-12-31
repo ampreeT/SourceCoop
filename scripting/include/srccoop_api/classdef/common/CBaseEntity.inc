@@ -705,6 +705,10 @@ methodmap CBaseEntity
 		// Call `MyCombatCharacterPointer` and compare against `0`.
 		ThrowError("Missing implementation.");
 	}
+	public void StopSound(const int iChannel, const char[] szName)
+	{
+		StopSound(this.entindex, iChannel, szName);
+	}
 }
 
 static bool TraceEntityFilter_FVisibleAiLosEnabled(int iEntIndex, int iMask, int iThisEntIndex)

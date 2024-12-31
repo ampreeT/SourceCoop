@@ -11,7 +11,7 @@ methodmap CParamsManager
 		if (g_iOffset_bIsMultiplayer < 0)
 			SetFailState("Could not obtain member variable offset `CParamsManager::m_bIsMultiplayer`");
 	}
-	public CParamsManager(const Address pAddress)
+	public static CParamsManager FromAddress(const Address pAddress)
 	{
 		return view_as<CParamsManager>(pAddress);
 	}
