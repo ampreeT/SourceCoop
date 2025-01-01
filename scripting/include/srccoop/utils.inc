@@ -1070,3 +1070,23 @@ stock void SetBitOnInt(int& i, const int iBitIndex, const bool bSetBit)
 		i &= ~(1 << iBitIndex);
 	}
 }
+
+stock void SetClientGamerules(const char[] szGamerulesClass)
+{
+	int iTable = FindStringTable("GameRulesCreation");
+	if (iTable == INVALID_STRING_TABLE)
+	{
+		ThrowError("Could not find string table GameRulesCreation !");
+	}
+	SetStringTableData(iTable, 0, szGamerulesClass, strlen(szGamerulesClass) + 1);
+}
+
+stock int GetClientGamerules(char[] szGamerulesClass, int iMaxLength)
+{
+	int iTable = FindStringTable("GameRulesCreation");
+	if (iTable == INVALID_STRING_TABLE)
+	{
+		ThrowError("Could not find string table GameRulesCreation !");
+	}
+	return GetStringTableData(iTable, 0, szGamerulesClass, iMaxLength);
+}

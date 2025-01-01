@@ -259,11 +259,12 @@ public void OnPluginStart()
 	LoadTranslations("srccoop.phrases");
 	InitDebugLog("sourcecoop_debug", "SRCCOOP", ADMFLAG_ROOT);
 	CreateConVar("sourcecoop_version", SRCCOOP_VERSION, _, FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
-	g_pConvarCoopTeam = CreateConVar("sourcecoop_team", "scientist", "Sets which team to use in TDM mode. Valid values are [marines] or [scientist] or a team number. Setting anything else will not manage teams.");
+	g_pConvarCoopTeam = CreateConVar("sourcecoop_team", "3", "Sets which team to use in TDM mode. Accepts either a (partial) team name or a team number. Invalid values will disable team enforcement.");
 	#if defined GAMEPATCH_TEAMSELECT_UI
 	g_pConvarDisableTeamSelect = CreateConVar("sourcecoop_disable_teamselect", "1", "Whether to skip the team select screen and spawn in instantly.", _, true, 0.0, true, 1.0);
 	#endif
 	g_pConvarCoopRespawnTime = CreateConVar("sourcecoop_respawntime", "2.0", "Sets player respawn time in seconds.", _, true, 0.1);
+	g_pConvarCleanHud = CreateConVar("sourcecoop_clean_hud", "1", "Whether to hide non-essential hud elements. (Black Mesa: hides status at top of the screen)", _, true, 0.0, true, 1.0);
 	g_pConvarStartWaitPeriod = CreateConVar("sourcecoop_start_wait_period", "15.0", "The max number of seconds to wait since first player spawned in to start the map. ", _, true, 0.0);
 	g_pConvarStartWaitMode = CreateConVar("sourcecoop_start_wait_mode", "2", "\n0 = The timer is not skipped (exceptions are maps without an intro_type or delayed outputs set).\n1 = The timer is skipped when all players enter the game.\n2 = The timer is skipped when player count matches the previous map's player count.", _, true, 0.0, true, 2.0);
 	g_pConvarEndWaitPeriod = CreateConVar("sourcecoop_end_wait_period", "60.0", "The max number of seconds to wait since first player triggered a changelevel. The timer speed increases each time a new player finishes the level.", _, true, 0.0);
@@ -415,7 +416,7 @@ public void OnMapStart()
 		CBaseEntity pEnt = g_pPostponedSpawns.Get(i);
 		RequestFrame(SpawnPostponedItem, pEnt);
 	}
-	
+
 	g_pPostponedSpawns.Clear();
 	g_bMapStarted = true;
 }

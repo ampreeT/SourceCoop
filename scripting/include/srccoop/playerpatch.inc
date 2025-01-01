@@ -654,7 +654,7 @@ public MRESReturn Hook_PlayerWeaponShootPosition_Post(int iClient, Handle hRetur
 // Player team change hooks
 // - Force everyone to single team in TDM
 //------------------------------------------------------
-public MRESReturn Hook_PlayerChangeTeam(int iClient, Handle hParams)
+public MRESReturn Hook_PlayerChangeTeam(int iClient, DHookParam hParams)
 {
 	if (CoopManager.IsCoopModeEnabled() && iClient != -1)
 	{
@@ -664,23 +664,18 @@ public MRESReturn Hook_PlayerChangeTeam(int iClient, Handle hParams)
 		if (!CMultiplayRules.IsTeamplay())
 			return MRES_Ignored;
 		
-		int iTeamNum = DHookGetParam(hParams, 1);
-		if (iTeamNum == TEAM_SCIENTIST || iTeamNum == TEAM_MARINES || iTeamNum == TEAM_UNASSIGNED)
+		int iTeamNum = hParams.Get(1);
+		if (iTeamNum == TEAM_UNASSIGNED || iTeamNum > TEAM_SPECTATOR)
 		{
-			char szTeam[16]; g_pConvarCoopTeam.GetString(szTeam, sizeof(szTeam));
-			if (StrEqual(szTeam, "scientist", false) || StrEqual(szTeam, "3"))
+			int iEnforcedTeam = CoopManager.GetEnforcedTeam();
+			if (iEnforcedTeam != -1)
 			{
-				DHookSetParam(hParams, 1, TEAM_SCIENTIST);
-				return MRES_ChangedHandled;
-			}
-			else if (StrEqual(szTeam, "marines", false) || StrEqual(szTeam, "2"))
-			{
-				DHookSetParam(hParams, 1, TEAM_MARINES);
+				hParams.Set(1, iEnforcedTeam);
 				return MRES_ChangedHandled;
 			}
 			if (iTeamNum == TEAM_UNASSIGNED)
 			{
-				DHookSetParam(hParams, 1, TEAM_SCIENTIST);
+				hParams.Set(1, TEAM_SCIENTIST);
 				return MRES_ChangedHandled;
 			}
 		}
