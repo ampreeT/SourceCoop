@@ -155,7 +155,8 @@ DynamicDetour hkBaseNpcUpdateSleepState;
 #endif
 
 #if defined ENTPATCH_NPC_THINK_LOCALPLAYER
-DynamicDetour hkPhysics_RunThinkFunctions;
+int g_iGameFrameHookId = INVALID_HOOK_ID;
+DynamicHook hkGameFrame;
 #endif
 
 #if defined ENTPATCH_BM_DISSOLVE

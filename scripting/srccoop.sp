@@ -44,6 +44,12 @@ void LoadGameData()
 	if (hkLevelInit.HookRaw(Hook_Pre, IServerGameDLL.Get().GetAddress(), Hook_OnLevelInit) == INVALID_HOOK_ID)
 		SetFailState("Could not hook CServerGameDLL::LevelInit");
 	
+	#if defined ENTPATCH_NPC_THINK_LOCALPLAYER
+	LoadDHookVirtual(pGameConfig, hkGameFrame, "CServerGameDLL::GameFrame");
+	if ((g_iGameFrameHookId = hkGameFrame.HookRaw(Hook_Pre, IServerGameDLL.Get().GetAddress(), Hook_GameFrame)) == INVALID_HOOK_ID)
+		SetFailState("Could not hook CServerGameDLL::GameFrame");
+	#endif
+	
 	LoadDHookVirtual(pGameConfig, hkChangeTeam, "CBasePlayer::ChangeTeam");
 	LoadDHookVirtual(pGameConfig, hkShouldCollide, "CBaseEntity::ShouldCollide");
 	LoadDHookVirtual(pGameConfig, hkPlayerSpawn, "CBasePlayer::Spawn");
@@ -162,10 +168,6 @@ void LoadGameData()
 
 	#if defined PLAYERPATCH_PICKUP_FORCEPLAYERTODROPTHISOBJECT
 	LoadDHookDetour(pGameConfig, hkPickup_ForcePlayerToDropThisObject, "Pickup_ForcePlayerToDropThisObject", Hook_ForcePlayerToDropThisObject);
-	#endif
-
-	#if defined ENTPATCH_NPC_THINK_LOCALPLAYER
-	LoadDHookDetour(pGameConfig, hkPhysics_RunThinkFunctions, "Physics_RunThinkFunctions", Hook_Physics_RunThinkFunctions);
 	#endif
 
 	#if defined ENTPATCH_BM_DISSOLVE
@@ -467,8 +469,9 @@ public void OnClientPutInServer(int client)
 	if (!g_iPlayerCount++)
 	{
 		#if defined ENTPATCH_NPC_THINK_LOCALPLAYER
-		// resume entity thinking
-		hkPhysics_RunThinkFunctions.Disable(Hook_Pre, Hook_Physics_RunThinkFunctions);
+		// resume running frames
+		DynamicHook.RemoveHook(g_iGameFrameHookId);
+		g_iGameFrameHookId = INVALID_HOOK_ID;
 		#endif
 	}
 
@@ -538,8 +541,8 @@ public void OnClientDisconnect_Post(int client)
 		#if defined ENTPATCH_NPC_THINK_LOCALPLAYER
 		if (!g_iPlayerCount)
 		{
-			// pause entity thinking
-			hkPhysics_RunThinkFunctions.Enable(Hook_Pre, Hook_Physics_RunThinkFunctions);
+			// pause running frames
+			g_iGameFrameHookId = hkGameFrame.HookRaw(Hook_Pre, IServerGameDLL.Get().GetAddress(), Hook_GameFrame);
 		}
 		#endif
 	}

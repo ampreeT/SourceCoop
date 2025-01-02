@@ -427,6 +427,20 @@
 					}
 				}
 			}
+			"CServerGameDLL::GameFrame"
+			{
+				"offset"	"CServerGameDLL::GameFrame"
+				"hooktype"	"raw"
+				"return"	"void"
+				"this"		"ignore"
+				"arguments"
+				{
+					"simulating"
+					{
+						"type"	"bool"
+					}
+				}
+			}
 			"CEngineSoundServer::SetPlayerDSP"
 			{
 				"offset"	"CEngineSoundServer::SetPlayerDSP"
@@ -690,19 +704,6 @@
 					}
 				}
 			}
-			"Physics_RunThinkFunctions"
-			{
-				"signature"	"Physics_RunThinkFunctions"
-				"callconv"	"cdecl"
-				"return"	"void"
-				"arguments"
-				{
-					"simulating"
-					{
-						"type"	"bool"
-					}
-				}
-			}
 			"CBoneSetup::AccumulatePose"
 			{
 				"signature"	"CBoneSetup::AccumulatePose"
@@ -872,6 +873,7 @@
 				"signature"	"UTIL_FindClientInPVSGuts"
 				"callconv"	"cdecl"
 				"return"	"edict"
+				"this"		"ignore"
 				"arguments"
 				{
 					"pEdict"
@@ -1062,12 +1064,6 @@
 				"windows"	"\x55\x8B\xEC\x83\xEC\x5C\x56\x57\x8B\xF9\x2A\x2A\x2A\x2A\x2A\x8B\xF0\x85\xF6\x2A\x2A\x2A\x2A\x2A\x2A"
 				"linux"		"@_ZN11CWeapon_Tau8FireBeamERKfb"
 			}
-			"Physics_RunThinkFunctions"
-			{
-				// str: "sv_teststepsimulation" (referenced convar)
-				"windows"	"\x55\x8B\xEC\x83\xEC\x08\xA1\x2A\x2A\x2A\x2A\x33\xC5\x89\x45\xFC\xA1\x2A\x2A\x2A\x2A"
-				"linux"		"@_Z25Physics_RunThinkFunctionsb"
-			}
 			"CAI_ExpresserHost_NPC_DoModifyOrAppendCriteria"
 			{
 				"windows"	"\x55\x8B\xEC\x83\xEC\x0C\x53\x56\x8B\x75\x08\x57\xFF\xB6\xA0\x09\x00\x00\x2A\x2A\x2A\x2A\x2A\x8B\x7D\x0C\x83\xC4"
@@ -1205,6 +1201,11 @@
 			{
 				"windows"	"8"
 				"linux"		"8"
+			}
+			"CServerGameDLL::GameFrame" // CServerGameDLL::GameFrame(bool)
+			{
+				"windows"	"5"
+				"linux"		"5"
 			}
 			"CMultiplayRules::FAllowFlashlight" // CMultiplayRules::FAllowFlashlight()
 			{
@@ -1609,12 +1610,6 @@
 				"windows"	"\x55\x8B\xEC\x83\xEC\x0C\x53\x56\x57\xFF\x75\x08"
 				"linux"		"@_Z16GlobalEntity_AddPKcS0_12GLOBALESTATE"
 			}
-			"Physics_RunThinkFunctions"
-			{
-				// str: "Trace: %d, contents %d, enumerate %d" (in caller)
-				"windows"	"\x55\x8B\xEC\x51\xA1\x2A\x2A\x2A\x2A\xB9\x2A\x2A\x2A\x2A\x53\x56\x57\x83\x78\x30\x00\xA1"
-				"linux"		"@_Z25Physics_RunThinkFunctionsb"
-			}
 			"CAI_ExpresserHost_NPC_DoModifyOrAppendCriteria"
 			{
 				"windows"	"\x55\x8B\xEC\x83\xEC\x0C\x53\x56\x8B\x75\x08\x57\xFF\xB6\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x8B\x2A\x2A\x83\xC4\x04" // str: "timesincecombat"
@@ -1706,6 +1701,11 @@
 			{
 				"windows"	"8"
 				"linux"		"8"
+			}
+			"CServerGameDLL::GameFrame" // CServerGameDLL::GameFrame(bool)
+			{
+				"windows"	"5"
+				"linux"		"5"
 			}
 			"CMultiplayRules::IsMultiplayer" // CMultiplayRules::IsMultiplayer()
 			{

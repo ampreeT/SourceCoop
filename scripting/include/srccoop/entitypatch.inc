@@ -223,11 +223,11 @@ public MRESReturn Hook_BaseNPCThinkPost(int _this)
 }
 
 //------------------------------------------------------
-// Physics_RunThinkFunctions - The main physics simulation loop against all entities
+// CServerGameDLL::GameFrame
 // This hook is only active when there are no real players on the server!
 // Its main purpose is to ensure NPCs can always find a valid player pointer when thinking. 
 //------------------------------------------------------
-public MRESReturn Hook_Physics_RunThinkFunctions(DHookParam hParams)
+public MRESReturn Hook_GameFrame(DHookParam hParams)
 {
 	return MRES_Supercede;
 }
