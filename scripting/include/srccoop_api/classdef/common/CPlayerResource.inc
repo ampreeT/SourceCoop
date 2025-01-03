@@ -1,6 +1,9 @@
 #pragma newdecls required
 #pragma semicolon 1
 
+/**
+ * Note: This entity updates its values in 0.1s thinks.
+ */
 methodmap CPlayerResource < CBaseEntity
 {
 	public CPlayerResource(const int iEntIndex = -1)

@@ -555,7 +555,25 @@ methodmap CoopManager
 	{
 		return (ccl == CCL_MAPS);
 	}
-	
+
+	/**
+	 * Finds an index of the team to enforce.
+	 * Must be called after teams had been created.
+	 * Returns -1 on failure / if teams are not to be enforced.
+	 */
+	public static int GetEnforcedTeam()
+	{
+		char szTeam[MAX_TEAMNAME];
+		int iTeam;
+
+		g_pConvarCoopTeam.GetString(szTeam, sizeof(szTeam));
+		if (!StringToIntEx(szTeam, iTeam))
+		{
+			iTeam = FindTeamByName(szTeam);
+		}
+
+		return (iTeam > TEAM_SPECTATOR) ? iTeam : -1;
+	}
 }
 
 // Runs every 1 second.
@@ -576,6 +594,17 @@ public Action Timer_DecrementUntilMapStart(Handle hTimer)
 		{
 			CreateTimer(1.0, Timer_ShowChapterTitle, _, TIMER_FLAG_NO_MAPCHANGE);
 		}
+
+		#if defined SRCCOOP_BLACKMESA
+		if (g_pConvarCleanHud.BoolValue)
+		{
+			SetClientGamerules("CBM_MP_Coop_GameRules"); // hides the top hud
+			if (CMultiplayRules.IsTeamplay())
+			{
+				hkThink.HookEntity(Hook_Post, GetPlayerResourceEntity(), Hook_PlayerResourceFixupCoopTeam);
+			}
+		}
+		#endif
 
 		if (g_pLevelLump.m_iIntroType == INTRO_FADE || g_pLevelLump.m_iIntroType == INTRO_FREEZE)
 		{
@@ -705,6 +734,27 @@ static void RequestStopThink(CBaseEntity pEntity)
 	{
 		pEntity.SetNextThinkTick(0);
 	}
+}
+
+/**
+ * When we set the CBM_MP_Coop_GameRules on client, it expects to display a single team (0).
+ * For teamplay mode, we need to fixup the sent team value to the expected team.
+ */
+public MRESReturn Hook_PlayerResourceFixupCoopTeam(int _this)
+{
+	CPlayerResource pPlayerResource = CPlayerResource(_this);
+	for (int i = 1; i <= MaxClients; i++)
+	{
+		if (IsClientInGame(i))
+		{
+			CBasePlayer pPlayer = CBasePlayer(i);
+			if (pPlayer.GetTeam() > TEAM_SPECTATOR)
+			{
+				pPlayerResource.SetTeam(pPlayer, 0);
+			}
+		}
+	}
+	return MRES_Ignored;
 }
 
 // end shortcut
