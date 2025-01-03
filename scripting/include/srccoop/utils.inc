@@ -28,6 +28,24 @@
 #define CONF_INT(%1) this.%1 = GetGamedataInt(pGameConfig, CONF_PREFIX...#%1);
 #define CONF_CLR(%1) GetGamedataColor(pGameConfig, CONF_PREFIX...#%1, this.%1);
 
+// Obtains the max formatted length of a 32-bit signed integer at compile time.
+// The value that is returned includes the signed bit and null terminator. 
+#define CONST_GET_MAX_FORMAT_LENGTH_INT(%1) ( \
+view_as<int>(!!((%1) & (1 << 31))) + \
+1 +	\
+view_as<int>(!!((%1) / 10)) + \
+view_as<int>(!!((%1) / 10 / 10)) + \
+view_as<int>(!!((%1) / 10 / 10 / 10)) + \
+view_as<int>(!!((%1) / 10 / 10 / 10 / 10)) + \
+view_as<int>(!!((%1) / 10 / 10 / 10 / 10 / 10)) + \
+view_as<int>(!!((%1) / 10 / 10 / 10 / 10 / 10 / 10)) + \
+view_as<int>(!!((%1) / 10 / 10 / 10 / 10 / 10 / 10 / 10)) + \
+view_as<int>(!!((%1) / 10 / 10 / 10 / 10 / 10 / 10 / 10 / 10)) + \
+view_as<int>(!!((%1) / 10 / 10 / 10 / 10 / 10 / 10 / 10 / 10 / 10)) + \
+view_as<int>(!!((%1) / 10 / 10 / 10 / 10 / 10 / 10 / 10 / 10 / 10 / 10)) + \
+view_as<int>(!!((%1) / 10 / 10 / 10 / 10 / 10 / 10 / 10 / 10 / 10 / 10 / 10)) + \
+1	\
+)
 
 stock void GetGamedataString(GameData pGameConfig, const char[] szKey, char[] szVal, int len)
 {
@@ -216,6 +234,9 @@ stock int LoadStringFromAddress(Address addr, char[] buffer, int maxlen, bool &b
  */
 stock int GetEntityFromAddress(Address pEntity)
 {
+	if (!pEntity)
+		return -1;
+	
 	static int offs_RefEHandle;
 	if (offs_RefEHandle)
 		return LoadEntityFromHandleAddress(pEntity + offs_RefEHandle);

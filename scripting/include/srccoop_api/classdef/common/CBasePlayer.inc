@@ -367,6 +367,20 @@ methodmap CBasePlayer < CBaseCombatCharacter
 	{
 		ClientCommand(this.entindex, szCommand);
 	}
+	public bool SendConVarValueStr(const ConVar hConVar, const char[] szValue)
+	{
+		return SendConVarValue(this.entindex, hConVar, szValue);
+	}
+	public bool SendConVarValueInt(const ConVar hConVar, const int iValue)
+	{
+		char szValue[13];
+		IntToString(iValue, szValue, sizeof(szValue));
+		return this.SendConVarValueStr(hConVar, szValue);
+	}
+	public bool SendConVarValueBool(const ConVar hConVar, const int bValue)
+	{
+		return this.SendConVarValueInt(hConVar, view_as<int>(bValue));
+	}
 	public void PlayGameSound(const char[] szSound)
 	{
 		ClientCommand(this.entindex, "playgamesound %s", szSound);
@@ -544,6 +558,14 @@ methodmap CBasePlayer < CBaseCombatCharacter
 	public void SetLaggedMovement(const float flValue)
 	{
 		SetEntPropFloat(this.entindex, Prop_Data, "m_flLaggedMovementValue", flValue);
+	}
+	public int GetTickBase()
+	{
+		return GetEntProp(this.entindex, Prop_Send, "m_nTickBase");
+	}
+	public void SetTickBase(const int iTickBase)
+	{
+		SetEntProp(this.entindex, Prop_Send, "m_nTickBase", iTickBase);
 	}
 }
 

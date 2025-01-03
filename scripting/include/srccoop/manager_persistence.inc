@@ -154,9 +154,9 @@ methodmap EquipmentManager
 
 		for (int i = 0; i < MAX_AMMO_TYPES; i++)
 		{
-			char key[8];
-			IntToString(i, key, sizeof(key));
-			equipment.m_iAmmoCount[i] = kv.GetNum(key, 0);	
+			char szKey[CONST_GET_MAX_FORMAT_LENGTH_INT(MAX_AMMO_TYPES - 1)];
+			IntToString(i, szKey, sizeof(szKey));
+			equipment.m_iAmmoCount[i] = kv.GetNum(szKey, 0);
 		}
 
 		CBasePlayer pTarget = CBasePlayer(iTarget);
@@ -214,9 +214,9 @@ methodmap EquipmentManager
 			kv.JumpToKey("ammo", true);
 			for (int k = 0; k < MAX_AMMO_TYPES; k++)
 			{
-				char key[8];
-				IntToString(k, key, sizeof(key));
-				kv.SetNum(key, equipment.m_iAmmoCount[k]);
+				char szKey[CONST_GET_MAX_FORMAT_LENGTH_INT(MAX_AMMO_TYPES - 1)];
+				IntToString(k, szKey, sizeof(szKey));
+				kv.SetNum(szKey, equipment.m_iAmmoCount[k]);
 			}
 
 			if (close)

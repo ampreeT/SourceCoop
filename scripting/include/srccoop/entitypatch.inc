@@ -320,7 +320,7 @@ public MRESReturn Hook_ExpresserHost_DoModifyOrAppendCriteriaPost(Handle hParams
 		int iLength = RoundFloat(GetVectorDistance(vec3SpeakerPosition, vec3PlayerPosition));
 		
 		// This is rounded from a float to string to save stack space for string formatting.
-		char szLength[16];
+		char szLength[CONST_GET_MAX_FORMAT_LENGTH_INT(INT_MIN)];
 		IntToString(iLength, szLength, sizeof(szLength));
 		pCriteria.AppendCriteria("distancetoplayer", szLength);
 

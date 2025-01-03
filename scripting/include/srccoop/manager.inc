@@ -699,5 +699,13 @@ public void Timer_ShowChapterTitle(Handle hTimer)
 	}
 }
 
+static void RequestStopThink(CBaseEntity pEntity)
+{
+	if (pEntity.IsValid())
+	{
+		pEntity.SetNextThinkTick(0);
+	}
+}
+
 // end shortcut
 #undef data
