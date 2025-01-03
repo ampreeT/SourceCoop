@@ -28,8 +28,8 @@
 #define CONF_INT(%1) this.%1 = GetGamedataInt(pGameConfig, CONF_PREFIX...#%1);
 #define CONF_CLR(%1) GetGamedataColor(pGameConfig, CONF_PREFIX...#%1, this.%1);
 
-// Obtains the max formatted length of a 32-bit signed integer at compile time.
-// The value that is returned includes the signed bit and null terminator. 
+// Obtains the max formatted length (including the negative sign and null terminator) of a 32-bit signed integer at compile time.
+// This will accept both positive and negative values.
 #define MAX_CHARS_INT(%1) ( \
 view_as<int>(!!((%1) & (1 << 31))) + \
 1 +	\
