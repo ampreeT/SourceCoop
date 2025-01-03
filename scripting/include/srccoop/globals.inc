@@ -26,10 +26,17 @@ ConVar g_pConvarDefaultMapConfigDest;
 ConVar g_pConvarDisableTeamSelect;
 #endif
 
-// Existing ConVars
+// Existing ConVars.
 ConVar mp_friendlyfire;
 ConVar mp_flashlight;
 ConVar mp_forcerespawn;
+
+// Existing Black Mesa ConVars.
+ConVar sv_always_run;
+ConVar sv_speed_sprint;
+ConVar sv_speed_walk;
+ConVar sv_jump_long_enabled;
+ConVar sv_long_jump_manacost;
 
 // ----------------------------
 // SDK Calls

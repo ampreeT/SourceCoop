@@ -728,6 +728,14 @@ public void Timer_ShowChapterTitle(Handle hTimer)
 	}
 }
 
+static void RequestStopThink(CBaseEntity pEntity)
+{
+	if (pEntity.IsValid())
+	{
+		pEntity.SetNextThinkTick(0);
+	}
+}
+
 /**
  * When we set the CBM_MP_Coop_GameRules on client, it expects to display a single team (0).
  * For teamplay mode, we need to fixup the sent team value to the expected team.

@@ -35,6 +35,7 @@
 #include <srccoop_api/classdef/common/CEnvBeam.inc>
 #include <srccoop_api/classdef/common/CEnvZoom.inc>
 #include <srccoop_api/classdef/common/CFuncLadder.inc>
+#include <srccoop_api/classdef/common/CGameMovement.inc>
 #include <srccoop_api/classdef/common/CGlobalState.inc>
 #include <srccoop_api/classdef/common/CGlobalVars.inc>
 #include <srccoop_api/classdef/common/CInfoTarget.inc>
