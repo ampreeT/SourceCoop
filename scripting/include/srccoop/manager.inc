@@ -598,7 +598,7 @@ public Action Timer_DecrementUntilMapStart(Handle hTimer)
 		#if defined SRCCOOP_BLACKMESA
 		if (g_pConvarCleanHud.BoolValue)
 		{
-			SetClientGamerules("CBM_SP_GameRules"); // hides the top hud
+			SetClientGamerules("CBM_MP_Coop_GameRules"); // hides the top hud
 			if (CMultiplayRules.IsTeamplay())
 			{
 				hkThink.HookEntity(Hook_Post, GetPlayerResourceEntity(), Hook_PlayerResourceFixupCoopTeam);
