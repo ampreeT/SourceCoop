@@ -30,7 +30,7 @@
 
 // Obtains the max formatted length of a 32-bit signed integer at compile time.
 // The value that is returned includes the signed bit and null terminator. 
-#define CONST_GET_MAX_FORMAT_LENGTH_INT(%1) ( \
+#define MAX_CHARS_INT(%1) ( \
 view_as<int>(!!((%1) & (1 << 31))) + \
 1 +	\
 view_as<int>(!!((%1) / 10)) + \

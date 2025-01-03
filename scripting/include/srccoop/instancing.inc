@@ -35,7 +35,7 @@ methodmap ItemInstancingManager
 	
 	public static void AddPickedUpItem(CBasePlayer pPlayer, CBaseEntity pItem)
 	{
-		char szKey[CONST_GET_MAX_FORMAT_LENGTH_INT(INT_MIN)];
+		char szKey[MAX_CHARS_INT(INT_MIN)];
 		IntToString(view_as<int>(pItem), szKey, sizeof(szKey));
 		g_pPickedUpItems[pPlayer.entindex].SetValue(szKey, true);
 	}
@@ -46,7 +46,7 @@ methodmap ItemInstancingManager
 		if (!g_pPickedUpItems[client]) // filter sourceTV
 			return false;
 		
-		char szKey[CONST_GET_MAX_FORMAT_LENGTH_INT(INT_MIN)];
+		char szKey[MAX_CHARS_INT(INT_MIN)];
 		IntToString(view_as<int>(pItem), szKey, sizeof(szKey));
 
 		bool _bValue;
@@ -55,7 +55,7 @@ methodmap ItemInstancingManager
 	
 	public static void ClearPickedUpItem(CBaseEntity pItem)
 	{
-		char szKey[CONST_GET_MAX_FORMAT_LENGTH_INT(INT_MIN)];
+		char szKey[MAX_CHARS_INT(INT_MIN)];
 		IntToString(view_as<int>(pItem), szKey, sizeof(szKey));
 		for (int i = 0; i <= MaxClients; i++)
 		{

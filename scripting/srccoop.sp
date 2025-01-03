@@ -1128,18 +1128,18 @@ void GreetPlayer(int client)
 
 //stock void Test_ConstGetMaxFormatLengthInt()
 //{
-//    assert_eq(CONST_GET_MAX_FORMAT_LENGTH_INT(0), 2);
-//    assert_eq(CONST_GET_MAX_FORMAT_LENGTH_INT(1), 2);
-//    assert_eq(CONST_GET_MAX_FORMAT_LENGTH_INT(16), 3);
-//    assert_eq(CONST_GET_MAX_FORMAT_LENGTH_INT(256), 4);
-//    assert_eq(CONST_GET_MAX_FORMAT_LENGTH_INT(4096), 5);
-//    assert_eq(CONST_GET_MAX_FORMAT_LENGTH_INT(99999), 6);
-//    assert_eq(CONST_GET_MAX_FORMAT_LENGTH_INT(2147483647), 11);
+//    assert_eq(MAX_CHARS_INT(0), 2);
+//    assert_eq(MAX_CHARS_INT(1), 2);
+//    assert_eq(MAX_CHARS_INT(16), 3);
+//    assert_eq(MAX_CHARS_INT(256), 4);
+//    assert_eq(MAX_CHARS_INT(4096), 5);
+//    assert_eq(MAX_CHARS_INT(99999), 6);
+//    assert_eq(MAX_CHARS_INT(2147483647), 11);
 //    
-//    assert_eq(CONST_GET_MAX_FORMAT_LENGTH_INT(-1), 3);
-//    assert_eq(CONST_GET_MAX_FORMAT_LENGTH_INT(-16), 4);
-//    assert_eq(CONST_GET_MAX_FORMAT_LENGTH_INT(-256), 5);
-//    assert_eq(CONST_GET_MAX_FORMAT_LENGTH_INT(-4096), 6);
-//    assert_eq(CONST_GET_MAX_FORMAT_LENGTH_INT(-99999), 7);
-//    assert_eq(CONST_GET_MAX_FORMAT_LENGTH_INT(-2147483648), 12);
+//    assert_eq(MAX_CHARS_INT(-1), 3);
+//    assert_eq(MAX_CHARS_INT(-16), 4);
+//    assert_eq(MAX_CHARS_INT(-256), 5);
+//    assert_eq(MAX_CHARS_INT(-4096), 6);
+//    assert_eq(MAX_CHARS_INT(-99999), 7);
+//    assert_eq(MAX_CHARS_INT(-2147483648), 12);
 //}
