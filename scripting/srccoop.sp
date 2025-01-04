@@ -287,10 +287,8 @@ public void OnPluginStart()
 	sv_long_jump_manacost = FindConVar("sv_long_jump_manacost");
 
 	#if defined PLAYERPATCH_BM_CLIENT_PREDICTION
-	if (sv_always_run != null)
-	{
-		HookConVarChange(sv_always_run, Hook_ConVar_AlwaysRun);
-	}
+	sv_always_run.Flags &= ~FCVAR_REPLICATED;
+	HookConVarChange(sv_always_run, Hook_ConVar_AlwaysRun);
 	#endif
 	
 	RegAdminCmd("sourcecoop_ft", Command_SetFeature, ADMFLAG_ROOT, "Command for toggling plugin features on/off");
@@ -397,7 +395,7 @@ public MRESReturn Hook_OnLevelInit(DHookReturn hReturn, DHookParam hParams)
 	#endif
 
 	#if defined PLAYERPATCH_BM_CLIENT_PREDICTION
-	sv_speed_sprint.FloatValue = !bCoopMode || sv_always_run.BoolValue ? 320.0 : 190.0;
+	SetMovementPredictionConVars();
 	#endif
 
 	if (bCoopMode)
@@ -1128,18 +1126,18 @@ void GreetPlayer(int client)
 
 //stock void Test_ConstGetMaxFormatLengthInt()
 //{
-//    assert_eq(MAX_CHARS_INT(0), 2);
-//    assert_eq(MAX_CHARS_INT(1), 2);
-//    assert_eq(MAX_CHARS_INT(16), 3);
-//    assert_eq(MAX_CHARS_INT(256), 4);
-//    assert_eq(MAX_CHARS_INT(4096), 5);
-//    assert_eq(MAX_CHARS_INT(99999), 6);
-//    assert_eq(MAX_CHARS_INT(2147483647), 11);
+//    assert_eq(CONST_GET_MAX_FORMAT_LENGTH_INT(0), 2);
+//    assert_eq(CONST_GET_MAX_FORMAT_LENGTH_INT(1), 2);
+//    assert_eq(CONST_GET_MAX_FORMAT_LENGTH_INT(16), 3);
+//    assert_eq(CONST_GET_MAX_FORMAT_LENGTH_INT(256), 4);
+//    assert_eq(CONST_GET_MAX_FORMAT_LENGTH_INT(4096), 5);
+//    assert_eq(CONST_GET_MAX_FORMAT_LENGTH_INT(99999), 6);
+//    assert_eq(CONST_GET_MAX_FORMAT_LENGTH_INT(2147483647), 11);
 //    
-//    assert_eq(MAX_CHARS_INT(-1), 3);
-//    assert_eq(MAX_CHARS_INT(-16), 4);
-//    assert_eq(MAX_CHARS_INT(-256), 5);
-//    assert_eq(MAX_CHARS_INT(-4096), 6);
-//    assert_eq(MAX_CHARS_INT(-99999), 7);
-//    assert_eq(MAX_CHARS_INT(-2147483648), 12);
+//    assert_eq(CONST_GET_MAX_FORMAT_LENGTH_INT(-1), 3);
+//    assert_eq(CONST_GET_MAX_FORMAT_LENGTH_INT(-16), 4);
+//    assert_eq(CONST_GET_MAX_FORMAT_LENGTH_INT(-256), 5);
+//    assert_eq(CONST_GET_MAX_FORMAT_LENGTH_INT(-4096), 6);
+//    assert_eq(CONST_GET_MAX_FORMAT_LENGTH_INT(-99999), 7);
+//    assert_eq(CONST_GET_MAX_FORMAT_LENGTH_INT(-2147483648), 12);
 //}

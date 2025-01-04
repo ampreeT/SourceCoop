@@ -55,6 +55,10 @@ methodmap CBasePlayer < CBaseCombatCharacter
 		int iEntIndex = this.entindex;
 		return iEntIndex != -1 && IsClientInGame(iEntIndex);
 	}
+	public bool IsBot()
+	{
+		return IsFakeClient(this.entindex);
+	}
 	public bool IsAlive()
 	{
 		return IsPlayerAlive(this.entindex);
@@ -369,7 +373,18 @@ methodmap CBasePlayer < CBaseCombatCharacter
 	}
 	public bool SendConVarValueStr(const ConVar hConVar, const char[] szValue)
 	{
-		return SendConVarValue(this.entindex, hConVar, szValue);
+		if (this.IsBot())
+		{
+			// TODO: Make the array length a constant.
+			char szConVar[48];
+			hConVar.GetName(szConVar, sizeof(szConVar));
+			SetFakeClientConVar(this.entindex, szConVar, szValue);
+			return true;
+		}
+		else
+		{
+			return SendConVarValue(this.entindex, hConVar, szValue);
+		}
 	}
 	public bool SendConVarValueInt(const ConVar hConVar, const int iValue)
 	{

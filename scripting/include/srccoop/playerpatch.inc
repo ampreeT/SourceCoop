@@ -477,11 +477,6 @@ public MRESReturn Hook_PlayerSpawnPost(int iClient, Handle hReturn, Handle hPara
 		#if defined PLAYERPATCH_BM_CLIENT_PREDICTION
 		// Fixes client prediction on the jump module HUD and the first initial jump with full mana.
         pPlayer.SendConVarValueInt(sv_long_jump_manacost, 0);
-		
-		// Client movement prediction fix.
-		// `sv_speed_walk` in MP is used for sprinting (`IN_SPEED`) when `sv_always_run` is set to `0`.
-		// If `sv_speed_walk` is set to `0.0`, then `sv_speed_mp` is used instead which is set to `320.0` by default.
-		pPlayer.SendConVarValueInt(sv_speed_walk, sv_always_run.BoolValue ? 190 : 0);
 		#endif
 
 		// Stop HEV sounds
@@ -1129,21 +1124,20 @@ public bool TraceEntityFilter_IgnorePlayers(int iEntIndex, int iMask, any pData)
 	return (iEntIndex != pData);
 }
 
+public void SetMovementPredictionConVars()
+{
+	// Client movement prediction fix.
+	// `sv_speed_walk` in MP is used for sprinting (`IN_SPEED`).
+	// If `sv_speed_walk` is set to `0.0`, then `sv_speed_mp` is used instead which is set to `320.0` by default.
+	bool bIsCoop = CoopManager.IsCoopModeEnabled();
+	bool bAlwaysRun = sv_always_run.BoolValue;
+	sv_speed_sprint.FloatValue = (!bIsCoop || bAlwaysRun) ? 320.0 : 190.0;
+	sv_speed_walk.FloatValue = (!bIsCoop || bAlwaysRun) ? 90.0 : 0.0;
+}
+
 public void Hook_ConVar_AlwaysRun(const ConVar hConVar, const char[] szOldValue, const char[] szNewValue)
 {
-	if (!CoopManager.IsCoopModeEnabled())
-		return;
-	
-	bool bAlwaysRun = hConVar.BoolValue;
-	for (int i = 1; i <= MaxClients; ++i)
-	{
-		CBasePlayer pPlayer = CBasePlayer(i);
-		if (pPlayer != NULL_CBASEENTITY)
-		{
-			pPlayer.SendConVarValueInt(sv_speed_walk, bAlwaysRun ? 190 : 0);
-		}
-	}
-	sv_speed_sprint.FloatValue = bAlwaysRun ? 320.0 : 190.0;
+	SetMovementPredictionConVars();
 }
 
 // Clears the player out of NPC memories and clears flags.
