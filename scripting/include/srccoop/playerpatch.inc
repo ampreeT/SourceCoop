@@ -314,19 +314,7 @@ public Action PlayerSoundListener(int iClients[MAXPLAYERS], int& iNumClients, ch
 			// Jump and land sounds are already predicted on the client so they need to be removed.
 			if (StrContains(szSample, "_jump") != -1 || StrContains(szSample, "_land") != -1)
 			{
-				for (int i = (iNumClients - 1); i >= 0; --i)
-				{
-					if (iClients[i] == iEntIndex)
-					{
-						for (int j = i; j < (iNumClients - 1); ++j)
-						{
-							iClients[j] = iClients[j + 1];
-						}
-						iNumClients -= 1;
-						return Plugin_Changed;
-					}
-				}
-				return Plugin_Continue;
+				return RemovePlayerFromSoundListener(iEntIndex, iClients, iNumClients) ? Plugin_Changed : Plugin_Continue;
 			}
 
 			// Footsteps are emitted on the server but not sent to client, because the client usually plays them on its own - but not when sprinting in MP mode (actually just pressing +speed!)
@@ -342,21 +330,8 @@ public Action PlayerSoundListener(int iClients[MAXPLAYERS], int& iNumClients, ch
 		// The jump module sound in Black Mesa plays twice as the sound is already predicted so it needs to be removed.
 		if (strcmp(szSample, "weapons/jumpmod/jumpmod_long1.wav") == 0)
 		{
-			for (int i = (iNumClients - 1); i >= 0; --i)
-			{
-				if (iClients[i] == iEntIndex)
-				{
-					for (int j = i; j < (iNumClients - 1); ++j)
-					{
-						iClients[j] = iClients[j + 1];
-					}
-					iNumClients -= 1;
-					return Plugin_Changed;
-				}
-			}
+			return RemovePlayerFromSoundListener(iEntIndex, iClients, iNumClients) ? Plugin_Changed : Plugin_Continue;
 		}
-
-		//if (strcmp)
 	}
 	#endif // PLAYERPATCH_BM_CLIENT_PREDICTION
 
@@ -1156,4 +1131,23 @@ static void ClearNpcMemoryForPlayer(const CBasePlayer pPlayer)
 	}
 
 	pPlayer.m_iEFlags &= ~EFL_IS_BEING_LIFTED_BY_BARNACLE;
+}
+
+// If removing the player index was successful, this function returns `true`, modifies the array and adjusts `iNumClients`.
+//
+stock bool RemovePlayerFromSoundListener(const int iClientIndex, int iClients[MAXPLAYERS], int& iNumClients)
+{
+	for (int i = (iNumClients - 1); i >= 0; --i)
+	{
+		if (iClients[i] == iClientIndex)
+		{
+			for (int j = i; j < (iNumClients - 1); ++j)
+			{
+				iClients[j] = iClients[j + 1];
+			}
+			iNumClients -= 1;
+			return true;
+		}
+	}
+	return false;
 }
