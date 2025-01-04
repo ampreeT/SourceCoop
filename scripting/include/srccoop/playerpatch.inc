@@ -1148,5 +1148,6 @@ stock bool RemovePlayerFromSoundListener(const int iClientIndex, int iClients[MA
 			iNumClients -= 1;
 			return true;
 		}
+	}
 	return false;
 }
