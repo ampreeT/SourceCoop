@@ -1137,7 +1137,7 @@ static void ClearNpcMemoryForPlayer(const CBasePlayer pPlayer)
 //
 stock bool RemovePlayerFromSoundListener(const int iClientIndex, int iClients[MAXPLAYERS], int& iNumClients)
 {
-	for (int i = (iNumClients - 1); i >= 0; --i)
+	for (int i = 0; i < iNumClients; ++i)
 	{
 		if (iClients[i] == iClientIndex)
 		{
@@ -1148,6 +1148,5 @@ stock bool RemovePlayerFromSoundListener(const int iClientIndex, int iClients[MA
 			iNumClients -= 1;
 			return true;
 		}
-	}
 	return false;
 }
