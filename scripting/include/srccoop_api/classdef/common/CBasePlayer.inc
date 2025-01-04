@@ -55,6 +55,10 @@ methodmap CBasePlayer < CBaseCombatCharacter
 		int iEntIndex = this.entindex;
 		return iEntIndex != -1 && IsClientInGame(iEntIndex);
 	}
+	public bool IsBot()
+	{
+		return IsFakeClient(this.entindex);
+	}
 	public bool IsAlive()
 	{
 		return IsPlayerAlive(this.entindex);
@@ -367,6 +371,31 @@ methodmap CBasePlayer < CBaseCombatCharacter
 	{
 		ClientCommand(this.entindex, szCommand);
 	}
+	public bool SendConVarValueStr(const ConVar hConVar, const char[] szValue)
+	{
+		if (this.IsBot())
+		{
+			// TODO: Make the array length a constant.
+			char szConVar[48];
+			hConVar.GetName(szConVar, sizeof(szConVar));
+			SetFakeClientConVar(this.entindex, szConVar, szValue);
+			return true;
+		}
+		else
+		{
+			return SendConVarValue(this.entindex, hConVar, szValue);
+		}
+	}
+	public bool SendConVarValueInt(const ConVar hConVar, const int iValue)
+	{
+		char szValue[13];
+		IntToString(iValue, szValue, sizeof(szValue));
+		return this.SendConVarValueStr(hConVar, szValue);
+	}
+	public bool SendConVarValueBool(const ConVar hConVar, const int bValue)
+	{
+		return this.SendConVarValueInt(hConVar, view_as<int>(bValue));
+	}
 	public void PlayGameSound(const char[] szSound)
 	{
 		ClientCommand(this.entindex, "playgamesound %s", szSound);
@@ -544,6 +573,14 @@ methodmap CBasePlayer < CBaseCombatCharacter
 	public void SetLaggedMovement(const float flValue)
 	{
 		SetEntPropFloat(this.entindex, Prop_Data, "m_flLaggedMovementValue", flValue);
+	}
+	public int GetTickBase()
+	{
+		return GetEntProp(this.entindex, Prop_Send, "m_nTickBase");
+	}
+	public void SetTickBase(const int iTickBase)
+	{
+		SetEntProp(this.entindex, Prop_Send, "m_nTickBase", iTickBase);
 	}
 }
 

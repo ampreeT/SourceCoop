@@ -7,6 +7,8 @@
 #pragma semicolon 1
 
 static float g_vec3PlayerShootPosition[MAXPLAYERS + 1][3];
+static bool g_bSetJumpModuleActive[MAXPLAYERS + 1];
+static float g_flPlayerMaxSpeed[MAXPLAYERS + 1];
 
 //------------------------------------------------------
 // Allow flashlight
@@ -40,10 +42,13 @@ public void Hook_PlayerPreThink(int iClient)
 	if (!CoopManager.IsCoopModeEnabled())
 		return;
 	
-	if (IsPlayerAlive(iClient))
+	CBasePlayer pPlayer = CBasePlayer(iClient);
+	if (pPlayer.IsAlive())
 	{
 		g_bIsMultiplayerOverride = false;
 	}
+
+	g_flPlayerMaxSpeed[iClient] = pPlayer.GetMaxSpeed();
 }
 
 public void Hook_PlayerPreThinkPost(int iClient)
@@ -59,9 +64,49 @@ public void Hook_PlayerPreThinkPost(int iClient)
 	CBasePlayer pPlayer = CBasePlayer(iClient);
 	if (pPlayer.IsAlive())
 	{
+		#if defined PLAYERPATCH_BM_CLIENT_PREDICTION
+		CBlackMesaPlayer pBlackMesaPlayer = view_as<CBlackMesaPlayer>(pPlayer);
+
+		if (!sv_always_run.BoolValue)	// If `sv_always_run` is set to `true`, then client prediction is working as intended.
+		{
+			// In multiplayer, max speed on both the client and the server is set when `IN_SPEED` is held.
+			// While in singleplayer, it is set when `IN_SPEED` is held and the player is holding any directional movement key.
+			bool bIsPressingSprint = pBlackMesaPlayer.IsPressingButton(IN_SPEED);
+			bool bIsDucked = pBlackMesaPlayer.IsDucked();
+			if (bIsPressingSprint && (!bIsDucked || (bIsDucked && g_flPlayerMaxSpeed[iClient] == 320.0)))
+			{
+				pBlackMesaPlayer.SetMaxSpeed(320.0);		// Controlled by `sv_speed_sprint` in game code.
+			}
+			else
+			{
+				pBlackMesaPlayer.SetMaxSpeed(190.0);		// Controlled by `sv_speed_mp` since `sv_speed_walk` is set to `0` only on the client.
+			}
+		}
+
+		// Manually re-enable the jump module.
+		// This introduces one rare client prediction bug where the client can jump multiple times without
+		// enough mana but this only happens if the client has extremely high ping.
+		if (pBlackMesaPlayer.GetJumpModuleMana() < sv_long_jump_manacost.FloatValue)
+		{
+			if (g_bSetJumpModuleActive[iClient])
+			{
+        		pBlackMesaPlayer.SendConVarValueBool(sv_jump_long_enabled, false);
+				g_bSetJumpModuleActive[iClient] = false;
+			}
+		}
+		else
+		{
+			if (!g_bSetJumpModuleActive[iClient])
+			{
+        		pBlackMesaPlayer.SendConVarValueBool(sv_jump_long_enabled, sv_jump_long_enabled.BoolValue);
+				g_bSetJumpModuleActive[iClient] = true;
+			}
+		}
+		#endif
+		
 		#if defined SRCCOOP_BLACKMESA
 		CBaseCombatWeapon pWeapon = pPlayer.GetActiveWeapon();
-		if (pWeapon.IsValid())
+		if (pWeapon != NULL_CBASEENTITY)
 		{
 			if (pPlayer.IsCarryingObject())
 			{
@@ -244,33 +289,51 @@ public Action PlayerCommandListener(int client, const char[] command, int argc)
 char szLastSuitSound[MAXPLAYERS+1][PLATFORM_MAX_PATH];
 #endif
 
-public Action PlayerSoundListener(int clients[MAXPLAYERS], int &numClients, char sample[PLATFORM_MAX_PATH], int &entity, int &channel, float &volume, int &level, int &pitch, int &flags, char soundEntry[PLATFORM_MAX_PATH], int &seed)
+public Action PlayerSoundListener(int iClients[MAXPLAYERS], int& iNumClients, char szSample[PLATFORM_MAX_PATH], int& iEntIndex, int& iChannel, float& flVolume, int& iLevel, int& iPitch, int& iFlags, char szSoundEntry[PLATFORM_MAX_PATH], int& iSeed)
 {
 	#if defined PLAYERPATCH_SUIT_SOUNDS
-	if (strncmp(sample, "!HEV_", 5) == 0)
+	if (strncmp(szSample, "!HEV_", 5) == 0)
 	{
 		// Here we save last played HEV sound so we can stop it on respawn
-		for (int i = 0; i < numClients; i++)
+		for (int i = 0; i < iNumClients; i++)
 		{
-			szLastSuitSound[clients[i]] = sample;
+			szLastSuitSound[iClients[i]] = szSample;
 		}
 	}
 	#endif
 
-	#if defined SRCCOOP_BLACKMESA
-	if (strncmp(sample, "physics\\footsteps\\", 18) == 0 || strncmp(sample, "player/suit_sprint.wav", 22) == 0)
+	#if defined PLAYERPATCH_BM_CLIENT_PREDICTION
+	CBaseEntity pEntity = CBaseEntity(iEntIndex);
+
+	if (pEntity != NULL_CBASEENTITY && pEntity.IsPlayer())
 	{
-		// Footsteps are emitted on the server but not sent to client, because the client usually plays them on its own - but not when sprinting in MP mode (actually just pressing +speed!)
-		// We can resolve this by sending the footsteps, which are already generated on the server, to the client.
-		CBasePlayer pPlayer = CBasePlayer(entity);
-		if (pPlayer.IsValid() && pPlayer.GetButtons() & IN_SPEED)
+		CBasePlayer pPlayer = view_as<CBasePlayer>(pEntity);
+
+		if (strncmp(szSample, "physics\\footsteps\\", 18) == 0 || strncmp(szSample, "player/suit_sprint.wav", 22) == 0)
 		{
-			clients[0] = entity;
-			numClients = 1;
-			return Plugin_Changed;
+			// Jump and land sounds are already predicted on the client so they need to be removed.
+			if (StrContains(szSample, "_jump") != -1 || StrContains(szSample, "_land") != -1)
+			{
+				return RemovePlayerFromSoundListener(iEntIndex, iClients, iNumClients) ? Plugin_Changed : Plugin_Continue;
+			}
+
+			// Footsteps are emitted on the server but not sent to client, because the client usually plays them on its own - but not when sprinting in MP mode (actually just pressing +speed!)
+			// We can resolve this by sending the footsteps, which are already generated on the server, to the client.
+			if (!pPlayer.IsDucked() && (pPlayer.GetButtons() & IN_SPEED))
+			{
+				iClients[0] = iEntIndex;
+				iNumClients = 1;
+				return Plugin_Changed;
+			}
+		}
+		
+		// The jump module sound in Black Mesa plays twice as the sound is already predicted so it needs to be removed.
+		if (strcmp(szSample, "weapons/jumpmod/jumpmod_long1.wav") == 0)
+		{
+			return RemovePlayerFromSoundListener(iEntIndex, iClients, iNumClients) ? Plugin_Changed : Plugin_Continue;
 		}
 	}
-	#endif // SRCCOOP_BLACKMESA
+	#endif // PLAYERPATCH_BM_CLIENT_PREDICTION
 
 	return Plugin_Continue;
 }
@@ -314,9 +377,13 @@ public MRESReturn Hook_PlayerAcceptInput(int _this, Handle hReturn, Handle hPara
 //------------------------------------------------------
 // ClientPutInServer
 //------------------------------------------------------
-public void PlayerPatch_OnClientPutInServer(int client)
+public void PlayerPatch_OnClientPutInServer(const int iClient)
 {
-	SendClientConvars(client, false);
+	#if defined PLAYERPATCH_BM_CLIENT_PREDICTION
+	g_bSetJumpModuleActive[iClient] = false;
+	#endif
+	
+	SendClientConvars(iClient, false);
 }
 
 //------------------------------------------------------
@@ -378,9 +445,13 @@ public MRESReturn Hook_PlayerSpawnPost(int iClient, Handle hReturn, Handle hPara
 		// Correct the 'damages' from the prethink hook hack
 		#if defined SRCCOOP_BLACKMESA
 		pPlayer.SetSuit(false);
-		pPlayer.SetMaxSpeed(190.0);
 		pPlayer.SetIsSprinting(false);
 		pPlayer.m_usSolidFlags &= ~FSOLID_NOT_SOLID;
+		#endif
+		
+		#if defined PLAYERPATCH_BM_CLIENT_PREDICTION
+		// Fixes client prediction on the jump module HUD and the first initial jump with full mana.
+        pPlayer.SendConVarValueInt(sv_long_jump_manacost, 0);
 		#endif
 
 		// Stop HEV sounds
@@ -1028,6 +1099,22 @@ public bool TraceEntityFilter_IgnorePlayers(int iEntIndex, int iMask, any pData)
 	return (iEntIndex != pData);
 }
 
+public void SetMovementPredictionConVars()
+{
+	// Client movement prediction fix.
+	// `sv_speed_walk` in MP is used for sprinting (`IN_SPEED`).
+	// If `sv_speed_walk` is set to `0.0`, then `sv_speed_mp` is used instead which is set to `320.0` by default.
+	bool bIsCoop = CoopManager.IsCoopModeEnabled();
+	bool bAlwaysRun = sv_always_run.BoolValue;
+	sv_speed_sprint.FloatValue = (!bIsCoop || bAlwaysRun) ? 320.0 : 190.0;
+	sv_speed_walk.FloatValue = (!bIsCoop || bAlwaysRun) ? 90.0 : 0.0;
+}
+
+public void Hook_ConVar_AlwaysRun(const ConVar hConVar, const char[] szOldValue, const char[] szNewValue)
+{
+	SetMovementPredictionConVars();
+}
+
 // Clears the player out of NPC memories and clears flags.
 //
 static void ClearNpcMemoryForPlayer(const CBasePlayer pPlayer)
@@ -1044,4 +1131,23 @@ static void ClearNpcMemoryForPlayer(const CBasePlayer pPlayer)
 	}
 
 	pPlayer.m_iEFlags &= ~EFL_IS_BEING_LIFTED_BY_BARNACLE;
+}
+
+// If removing the player index was successful, this function returns `true`, modifies the array and adjusts `iNumClients`.
+//
+stock bool RemovePlayerFromSoundListener(const int iClientIndex, int iClients[MAXPLAYERS], int& iNumClients)
+{
+	for (int i = 0; i < iNumClients; ++i)
+	{
+		if (iClients[i] == iClientIndex)
+		{
+			for (int j = i; j < (iNumClients - 1); ++j)
+			{
+				iClients[j] = iClients[j + 1];
+			}
+			iNumClients -= 1;
+			return true;
+		}
+	}
+	return false;
 }

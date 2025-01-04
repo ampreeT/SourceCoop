@@ -20,4 +20,12 @@ methodmap CBlackMesaPlayer < CBasePlayer
 	{
 		this.AcceptInputStr("PerformForcedWeaponDeploy", szWeaponClassname);
 	}
+	public float GetJumpModuleMana()
+	{
+		return GetEntPropFloat(this.entindex, Prop_Send, "m_flLongJumpMana");
+	}
+	public float SetJumpModuleMana(const float flManaCost)
+	{
+		SetEntPropFloat(this.entindex, Prop_Send, "m_flLongJumpMana", flManaCost);
+	}
 }

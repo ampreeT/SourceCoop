@@ -35,8 +35,9 @@ methodmap ItemInstancingManager
 	
 	public static void AddPickedUpItem(CBasePlayer pPlayer, CBaseEntity pItem)
 	{
-		char key[32]; IntToString(view_as<int>(pItem), key, sizeof(key));
-		g_pPickedUpItems[pPlayer.entindex].SetValue(key, true);
+		char szKey[MAX_CHARS_INT(INT_MIN)];
+		IntToString(view_as<int>(pItem), szKey, sizeof(szKey));
+		g_pPickedUpItems[pPlayer.entindex].SetValue(szKey, true);
 	}
 	
 	public static bool HasPickedUpItem(CBasePlayer pPlayer, CBaseEntity pItem)
@@ -45,18 +46,22 @@ methodmap ItemInstancingManager
 		if (!g_pPickedUpItems[client]) // filter sourceTV
 			return false;
 		
-		char key[32]; bool _val; IntToString(view_as<int>(pItem), key, sizeof(key));
-		return g_pPickedUpItems[client].GetValue(key, _val);
+		char szKey[MAX_CHARS_INT(INT_MIN)];
+		IntToString(view_as<int>(pItem), szKey, sizeof(szKey));
+
+		bool _bValue;
+		return g_pPickedUpItems[client].GetValue(szKey, _bValue);
 	}
 	
 	public static void ClearPickedUpItem(CBaseEntity pItem)
 	{
-		char key[32]; IntToString(view_as<int>(pItem), key, sizeof(key));
+		char szKey[MAX_CHARS_INT(INT_MIN)];
+		IntToString(view_as<int>(pItem), szKey, sizeof(szKey));
 		for (int i = 0; i <= MaxClients; i++)
 		{
 			if (g_pPickedUpItems[i] != null)
 			{
-				g_pPickedUpItems[i].Remove(key);
+				g_pPickedUpItems[i].Remove(szKey);
 			}
 		}
 	}

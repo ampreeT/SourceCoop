@@ -278,6 +278,18 @@ public void OnPluginStart()
 	mp_friendlyfire = FindConVar("mp_friendlyfire");
 	mp_flashlight = FindConVar("mp_flashlight");
 	mp_forcerespawn = FindConVar("mp_forcerespawn");
+
+	// Black Mesa ConVars.
+	sv_always_run = FindConVar("sv_always_run");
+	sv_speed_sprint = FindConVar("sv_speed_sprint");
+	sv_speed_walk = FindConVar("sv_speed_walk");
+	sv_jump_long_enabled = FindConVar("sv_jump_long_enabled");
+	sv_long_jump_manacost = FindConVar("sv_long_jump_manacost");
+
+	#if defined PLAYERPATCH_BM_CLIENT_PREDICTION
+	sv_always_run.Flags &= ~FCVAR_REPLICATED;
+	HookConVarChange(sv_always_run, Hook_ConVar_AlwaysRun);
+	#endif
 	
 	RegAdminCmd("sourcecoop_ft", Command_SetFeature, ADMFLAG_ROOT, "Command for toggling plugin features on/off");
 	RegAdminCmd("sc_ft", Command_SetFeature, ADMFLAG_ROOT, "Command for toggling plugin features on/off");
@@ -380,6 +392,10 @@ public MRESReturn Hook_OnLevelInit(DHookReturn hReturn, DHookParam hParams)
 	// This ends up calling our hook for `CParamsManager::InitInstances`.
 	#if defined ENTPATCH_BM_SP_WEAPONS
 	ServerCommand("params_reload_server");
+	#endif
+
+	#if defined PLAYERPATCH_BM_CLIENT_PREDICTION
+	SetMovementPredictionConVars();
 	#endif
 
 	if (bCoopMode)
@@ -1027,14 +1043,6 @@ public void SpawnPostponedItem(CBaseEntity pEntity)
 	}
 }
 
-public void RequestStopThink(CBaseEntity pEntity)
-{
-	if (pEntity.IsValid())
-	{
-		pEntity.SetNextThinkTick(0);
-	}
-}
-
 public Action Event_BroadcastTeamsound(Event hEvent, const char[] szName, bool bDontBroadcast)
 {
 	if (CoopManager.IsCoopModeEnabled())
@@ -1115,3 +1123,21 @@ void GreetPlayer(int client)
 		Msg(client, "%t", "welcome", SRCCOOP_VERSION);
 	}
 }
+
+//stock void Test_ConstGetMaxFormatLengthInt()
+//{
+//    assert_eq(CONST_GET_MAX_FORMAT_LENGTH_INT(0), 2);
+//    assert_eq(CONST_GET_MAX_FORMAT_LENGTH_INT(1), 2);
+//    assert_eq(CONST_GET_MAX_FORMAT_LENGTH_INT(16), 3);
+//    assert_eq(CONST_GET_MAX_FORMAT_LENGTH_INT(256), 4);
+//    assert_eq(CONST_GET_MAX_FORMAT_LENGTH_INT(4096), 5);
+//    assert_eq(CONST_GET_MAX_FORMAT_LENGTH_INT(99999), 6);
+//    assert_eq(CONST_GET_MAX_FORMAT_LENGTH_INT(2147483647), 11);
+//    
+//    assert_eq(CONST_GET_MAX_FORMAT_LENGTH_INT(-1), 3);
+//    assert_eq(CONST_GET_MAX_FORMAT_LENGTH_INT(-16), 4);
+//    assert_eq(CONST_GET_MAX_FORMAT_LENGTH_INT(-256), 5);
+//    assert_eq(CONST_GET_MAX_FORMAT_LENGTH_INT(-4096), 6);
+//    assert_eq(CONST_GET_MAX_FORMAT_LENGTH_INT(-99999), 7);
+//    assert_eq(CONST_GET_MAX_FORMAT_LENGTH_INT(-2147483648), 12);
+//}
