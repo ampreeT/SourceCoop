@@ -1,0 +1,1 @@
+#include <srccoop_api/classdef>

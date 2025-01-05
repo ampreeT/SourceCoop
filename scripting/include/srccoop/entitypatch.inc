@@ -1148,8 +1148,8 @@ public MRESReturn Hook_BaseNpcUpdateSleepState(int _this, Handle hParams)
 				if (pBaseNPC.HasCondition(view_as<int>(COND_IN_PVS)))
 				{
 					// OK, we're in the player's PVS. Now switch to regular old AUTO_PVS sleep rules.
-					pBaseNPC.AddSleepFlags(view_as<int>(AI_SLEEP_FLAG_AUTO_PVS));
-					pBaseNPC.RemoveSleepFlags(view_as<int>(AI_SLEEP_FLAG_AUTO_PVS_AFTER_PVS));
+					pBaseNPC.AddSleepFlags(AI_SLEEP_FLAG_AUTO_PVS);
+					pBaseNPC.RemoveSleepFlags(AI_SLEEP_FLAG_AUTO_PVS_AFTER_PVS);
 				}
 			}
 		}
@@ -1373,7 +1373,7 @@ public MRESReturn Hook_LoadSavedAcceptInput(int _this, Handle hReturn, Handle hP
 				int r, g, b, a;
 				GetEntityRenderColor(_this, r, g, b, a);
 				float duration = GetEntPropFloat(_this, Prop_Data, "m_Duration");
-				Client_ScreenFade(iActivator, RoundFloat(duration * 1000), FFADE_OUT|FFADE_STAYOUT, _, r, g, b, a);
+				Client_ScreenFade(iActivator, RoundFloat(duration * 1000), view_as<int>(FFADE_OUT | FFADE_STAYOUT), _, r, g, b, a);
 				
 				// This breaks the spectator overlay if the player is already dead
 				if (pActivator.IsAlive())

@@ -65,8 +65,8 @@ public void Event_PlayerChangeTeam(Event hEvent, const char[] szName, bool bDont
 	int client = GetClientOfUserId(hEvent.GetInt("userid"));
 	if (!bHidden[client])
 	{
-		int iTeam = hEvent.GetInt("team");
-		if (iTeam == TEAM_SCIENTIST || iTeam == TEAM_MARINES || iTeam == TEAM_UNASSIGNED)
+		Team_t eTeam = view_as<Team_t>(hEvent.GetInt("team"));
+		if (eTeam == TEAM_SCIENTIST || eTeam == TEAM_MARINES || eTeam == TEAM_UNASSIGNED)
 		{
 			ClientCommand(client, "r_screenoverlay 0");
 			bHidden[client] = true;

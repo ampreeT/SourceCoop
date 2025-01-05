@@ -182,7 +182,7 @@ public Action Command_Revive(int client, int args)
 
 		if (SC_Respawn(pTarget, g_pSpawnOptions))
 		{
-			Client_ScreenFade(iTarget, 512, FFADE_PURGE|FFADE_IN, 1, 0, 0, 200, 255);
+			Client_ScreenFade(iTarget, 512, view_as<int>(FFADE_PURGE | FFADE_IN), 1, 0, 0, 200, 255);
 			EmitSoundToClient(iTarget, Conf.SND_RESPAWN, iTarget, SNDCHAN_STATIC, SNDLEVEL_NONE, .pitch = Conf.SND_RESPAWN_PITCH);
 			MsgReply(client, "Respawned '%N'.", iTarget);
 			if (client != iTarget)
@@ -268,7 +268,7 @@ public void OnPlayerRunCmdPost(int client, int buttons)
 
 							if (SC_Respawn(pTarget, g_pSpawnOptions))
 							{
-								Client_ScreenFade(pTarget.entindex, 512, FFADE_PURGE|FFADE_IN, 1, 0, 0, 200, 255);
+								Client_ScreenFade(pTarget.entindex, 512, view_as<int>(FFADE_PURGE | FFADE_IN), 1, 0, 0, 200, 255);
 								EmitAmbientSound(Conf.SND_RESPAWN, g_pSpawnOptions.vecOrigin, .level = Conf.SNDLEVEL, .pitch = Conf.SND_RESPAWN_PITCH);
 								
 								// Give score to reviver

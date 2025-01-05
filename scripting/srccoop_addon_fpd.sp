@@ -225,7 +225,7 @@ public void SC_OnPlayerRagdollCreated(CBasePlayer pPlayer, CBaseAnimating pRagdo
 	int fadeDuration = g_pConvarFadeToBlackLength.IntValue;
 	if (fadeDuration)
 	{
-		Client_ScreenFade(pPlayer.entindex, fadeDuration, FFADE_OUT | FFADE_STAYOUT);
+		Client_ScreenFade(pPlayer.entindex, fadeDuration, view_as<int>(FFADE_OUT | FFADE_STAYOUT));
 	}
 }
 

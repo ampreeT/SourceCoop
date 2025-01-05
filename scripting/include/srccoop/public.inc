@@ -100,8 +100,8 @@ enum struct SpawnOptions
 		this.bUseSpawnSystem = true;
 		this.bUseSpawnEquipment = true;
 		this.bRevive = false;
-		this.vecOrigin = vec3_origin;
-		this.vecAngles = vec3_origin;
+		this.vecOrigin = { 0.0, 0.0, 0.0 };
+		this.vecAngles = { 0.0, 0.0, 0.0 };
 		this.bUnstuck = true;
 	}
 }

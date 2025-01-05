@@ -263,9 +263,9 @@ methodmap CBaseEntity
 	{
 		return this.OutputAdd("OnUser1", "!self", "kill", _, flTime) && this.AcceptInput("FireUser1");
 	}
-	public int GetTeam()
+	public Team_t GetTeam()
 	{
-		return GetEntProp(this.entindex, Prop_Data, "m_iTeamNum");
+		return view_as<Team_t>(GetEntProp(this.entindex, Prop_Data, "m_iTeamNum"));
 	}
 	public void GetEyePosition(float vec3Buffer[3])
 	{
@@ -538,13 +538,13 @@ methodmap CBaseEntity
 		RGBA col4 = this.GetRenderColor();
 		this.SetRenderColor(RGBA(col4.r, col4.g, col4.b, a));
 	}
-	public int GetTakeDamage()
+	public TakeDamage_t GetTakeDamage()
 	{
-		return GetEntProp(this.entindex, Prop_Data, "m_takedamage");
+		return view_as<TakeDamage_t>(GetEntProp(this.entindex, Prop_Data, "m_takedamage"));
 	}
-	public void SetTakeDamage(const int m_takedamage)
+	public void SetTakeDamage(const TakeDamage_t eTakeDamage)
 	{
-		SetEntProp(this.entindex, Prop_Data, "m_takedamage", m_takedamage); 
+		SetEntProp(this.entindex, Prop_Data, "m_takedamage", eTakeDamage); 
 	}
 	public bool IsWorld()
 	{
@@ -569,9 +569,9 @@ methodmap CBaseEntity
 	{
 		return SDKCall(g_pIsNPC, this);
 	}
-	public WaterLevel GetWaterLevel()
+	public WaterLevel_t GetWaterLevel()
 	{
-		return view_as<WaterLevel>(GetEntProp(this.entindex, Prop_Data, "m_nWaterLevel"));
+		return view_as<WaterLevel_t>(GetEntProp(this.entindex, Prop_Data, "m_nWaterLevel"));
 	}
 	public CBaseEntity GetGroundEntity()
 	{

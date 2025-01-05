@@ -57,7 +57,7 @@ enum struct CSound
 
 		return pSoundEnt.address + iOffsetPoolStart + this.GetSoundIndex() * g_iCSoundSize;
 	}
-	int GetType()
+	Sound_t GetType()
 	{
 		if (!this.IsValid())
 			ThrowError("Attempted to use invalid CSound index %i.", this.GetSoundIndex());
@@ -97,8 +97,8 @@ enum struct CSound
 	}
 	void GetSoundReactOrigin(float vecBuffer[3])
 	{
-		int iType = this.GetType();
-		if (iType == SOUND_BULLET_IMPACT || iType == SOUND_PHYSICS_DANGER)
+		Sound_t eType = this.GetType();
+		if (eType == SOUND_BULLET_IMPACT || eType == SOUND_PHYSICS_DANGER)
 		{
 			CBaseEntity pOwner = this.GetOwner();
 			if (pOwner != NULL_CBASEENTITY)
@@ -112,7 +112,7 @@ enum struct CSound
 			return;
 		}
 
-		if (iType & SOUND_CONTEXT_REACT_TO_SOURCE)
+		if (eType & SOUND_CONTEXT_REACT_TO_SOURCE)
 		{
 			CBaseEntity pOwner = this.GetOwner();
 			if (pOwner != NULL_CBASEENTITY)
@@ -122,7 +122,7 @@ enum struct CSound
 			}
 		}
 
-		if ((iType & SOUND_DANGER) && (iType & SOUND_CONTEXT_FROM_SNIPER))
+		if ((eType & SOUND_DANGER) && (eType & SOUND_CONTEXT_FROM_SNIPER))
 		{
 			CBaseEntity pOwner = this.GetOwner();
 			if (pOwner != NULL_CBASEENTITY)

@@ -25,11 +25,7 @@
 #include <topmenus>
 
 #include <srccoop/util/assert>
-#include <srccoop/typedef_game>
 #include <srccoop/public>
-#if defined SRCCOOP_BLACKMESA
-#include <srccoop/blackmesa/typedef>
-#endif
 #include <srccoop_api/classdef>
 #include <srccoop/utils>
 #include <srccoop/features>

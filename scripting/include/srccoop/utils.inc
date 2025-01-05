@@ -687,7 +687,7 @@ stock CBasePlayer GetNearestPlayerEx(float vecPos[3], bool bAliveOnly = true, bo
 			if (!bAlive)
 				continue;
 		}
-		else if (bNoSpectators && GetClientTeam(i) == TEAM_SPECTATOR)
+		else if (bNoSpectators && view_as<Team_t>(GetClientTeam(i)) == TEAM_SPECTATOR)
 		{
 			continue;
 		}
@@ -728,7 +728,7 @@ stock int GetRealClientCount(bool bInGameOnly, bool bAliveOnly = false, bool bNo
 		if ((bInGameOnly? IsClientInGame(i) : IsClientConnected(i))
 			&& !IsFakeClient(i)
 			&& (!bAliveOnly || IsPlayerAlive(i))
-			&& (!bNoSpectators || GetClientTeam(i) != TEAM_SPECTATOR))
+			&& (!bNoSpectators || view_as<Team_t>(GetClientTeam(i)) != TEAM_SPECTATOR))
 		{
  			clients++;
  		}

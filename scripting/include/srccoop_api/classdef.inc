@@ -10,6 +10,7 @@
 #include <sdktools>
 #include <sourcescramble>
 #include <srccoop/util/color>
+#include <srccoop_api/typedef>
 
 #include <srccoop_api/classdef/common/CBaseEntity.inc>
 #include <srccoop_api/classdef/common/CPointEntity.inc>

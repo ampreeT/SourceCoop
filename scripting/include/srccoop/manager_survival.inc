@@ -147,7 +147,7 @@ methodmap SurvivalManager {
 					ShowVGUIPanel(client, "specgui", null);
 					
 					// Remove previous fades
-					Client_ScreenFade(client, 1500, FFADE_IN|FFADE_PURGE, 1, 0, 0, 0, 255);
+					Client_ScreenFade(client, 1500, view_as<int>(FFADE_IN | FFADE_PURGE), 1, 0, 0, 0, 255);
 					
 					SetHudTextParams(0.016, 0.04, 5.0, 255, 255, 255, 255, 1, 1.0, 1.0, 1.0);
 					if (SurvivalManager.GetRespawnAtCheckpoints() && CCoopSpawnSystem.CountCheckpoints(true, true))
@@ -166,7 +166,7 @@ methodmap SurvivalManager {
 		return true;
 	}
 	
-	public static void OnPlayerChangeTeam(CBasePlayer pPlayer, int iTeamNum)
+	public static void OnPlayerChangeTeam(const CBasePlayer pPlayer, const Team_t eTeam)
 	{
 		if (SurvivalManager.GetMode())
 		{
@@ -298,7 +298,7 @@ methodmap SurvivalManager {
 			{
 				CBasePlayer pPlayer = CBasePlayer(i);
 				if (pPlayer.GetTeam() != TEAM_SPECTATOR)
-					Client_ScreenFade(i, 1000, FFADE_OUT|FFADE_STAYOUT, _, 0, 0, 0, 255);
+					Client_ScreenFade(i, 1000, view_as<int>(FFADE_OUT | FFADE_STAYOUT), _, 0, 0, 0, 255);
 				
 				#if defined SRCCOOP_BLACKMESA
 				if (!IsTranslatedForLanguage("survival game over", GetClientLanguage(i)))

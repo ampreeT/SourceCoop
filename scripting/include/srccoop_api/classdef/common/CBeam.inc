@@ -20,13 +20,13 @@ methodmap CBeam < CBaseEntity
 	{
 		SetEntProp(this.entindex, Prop_Send, "m_nNumBeamEnts", iAttachmentCount);
 	}
-	public int GetBeamType()
+	public BeamType_t GetBeamType()
 	{
-		return GetEntProp(this.entindex, Prop_Send, "m_nBeamType");
+		return view_as<BeamType_t>(GetEntProp(this.entindex, Prop_Send, "m_nBeamType"));
 	}
-	public int SetBeamType(const int iBeamType)
+	public int SetBeamType(const BeamType_t eBeamtype)
 	{
-		SetEntProp(this.entindex, Prop_Send, "m_nBeamType", iBeamType);
+		SetEntProp(this.entindex, Prop_Send, "m_nBeamType", eBeamtype);
 	}
 	public CBaseEntity GetAttachment(const int iIndex)
 	{

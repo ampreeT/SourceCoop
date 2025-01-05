@@ -148,25 +148,25 @@ methodmap CAI_BaseNPC < CBaseCombatCharacter
 	{
 		return GetEntPropFloat(this.entindex, Prop_Data, "m_flWakeRadius");
 	}
-	public int GetSleepFlags()
+	public AI_SleepFlags_t GetSleepFlags()
 	{
-		return GetEntProp(this.entindex, Prop_Data, "m_SleepFlags");
+		return view_as<AI_SleepFlags_t>(GetEntProp(this.entindex, Prop_Data, "m_SleepFlags"));
 	}
-	public int SetSleepFlags(const int iSleepFlags)
+	public int SetSleepFlags(const AI_SleepFlags_t eSleepFlags)
 	{
-		SetEntProp(this.entindex, Prop_Data, "m_SleepFlags", iSleepFlags);
+		SetEntProp(this.entindex, Prop_Data, "m_SleepFlags", eSleepFlags);
 	}
-	public bool HasSleepFlags(const int iSleepFlags)
+	public bool HasSleepFlags(const AI_SleepFlags_t eSleepFlags)
 	{
-		return (this.GetSleepFlags() & iSleepFlags) == iSleepFlags;
+		return (this.GetSleepFlags() & eSleepFlags) == eSleepFlags;
 	}
-	public void AddSleepFlags(const int iSleepFlags)
+	public void AddSleepFlags(const AI_SleepFlags_t eSleepFlags)
 	{
-		this.SetSleepFlags(this.GetSleepFlags() | iSleepFlags);
+		this.SetSleepFlags(this.GetSleepFlags() | eSleepFlags);
 	}
-	public void RemoveSleepFlags(const int iSleepFlags)
+	public void RemoveSleepFlags(const AI_SleepFlags_t eSleepFlags)
 	{
-		this.SetSleepFlags(this.GetSleepFlags() & ~iSleepFlags);
+		this.SetSleepFlags(this.GetSleepFlags() & ~eSleepFlags);
 	}
 	public AI_SleepState_t GetSleepState()
 	{
@@ -202,7 +202,7 @@ methodmap CAI_BaseNPC < CBaseCombatCharacter
 	{
 		SetEntPropEnt(this.entindex, Prop_Data, "m_hEnemy", pEntity.entindex);
 	}
-	public int GetSoundInterests()
+	public Sound_t GetSoundInterests()
 	{
 		return SDKCall(g_pGetSoundInterests, this);
 	}
@@ -284,10 +284,14 @@ methodmap CAI_BaseNPC < CBaseCombatCharacter
 	{
 		return GetEntProp(this.entindex, Prop_Data, "iTaskInterrupt");
 	}
+	public GoalType_t GetGoalType()
+	{
+		return view_as<GoalType_t>(GetEntProp(this.entindex, Prop_Data, "m_goalType"));
+	}
 	public bool IsMoving()
 	{
 		// CAI_BaseNPC::IsMoving( void ) ==> GetNavigator()->IsGoalSet() ==> GetPath()->GoalType() != GOALTYPE_NONE
-		return GetEntProp(this.entindex, Prop_Data, "m_goalType") != GOALTYPE_NONE;
+		return this.GetGoalType() != GOALTYPE_NONE;
 	}
 	public bool ShouldPlayerAvoid()
 	{

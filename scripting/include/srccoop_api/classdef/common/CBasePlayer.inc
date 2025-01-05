@@ -318,29 +318,29 @@ methodmap CBasePlayer < CBaseCombatCharacter
 	{
 		SetEntPropEnt(this.entindex, Prop_Data, "m_hObserverTarget", pTarget.entindex);
 	}
-	public int GetHideHud()
+	public HideHudFlags_t GetHideHud()
 	{
-		return GetEntProp(this.entindex, Prop_Send, "m_iHideHUD");
+		return view_as<HideHudFlags_t>(GetEntProp(this.entindex, Prop_Send, "m_iHideHUD"));
 	}
-	public void SetHideHud(const int iHideHud)
+	public void SetHideHud(const HideHudFlags_t eHideHud)
 	{
-		SetEntProp(this.entindex, Prop_Send, "m_iHideHUD", iHideHud);
+		SetEntProp(this.entindex, Prop_Send, "m_iHideHUD", eHideHud);
 	}
 	public void ShowCrosshair(const bool bShow)
 	{
-		int iHideHUD = this.GetHideHud();
+		HideHudFlags_t eHideHUD = this.GetHideHud();
 		if (bShow)
 		{
-			this.SetHideHud(iHideHUD & ~HIDEHUD_CROSSHAIR);
+			this.SetHideHud(eHideHUD & ~HIDEHUD_CROSSHAIR);
 		}
 		else
 		{
-			this.SetHideHud(iHideHUD | HIDEHUD_CROSSHAIR);
+			this.SetHideHud(eHideHUD | HIDEHUD_CROSSHAIR);
 		}
 	}
-	public void SetTeam(const int iTeamIndex)
+	public void SetTeam(const Team_t eTeam)
 	{
-		ChangeClientTeam(this.entindex, iTeamIndex);
+		ChangeClientTeam(this.entindex, view_as<int>(eTeam));
 	}
 	public CBaseEntity GetUseEntity()
 	{

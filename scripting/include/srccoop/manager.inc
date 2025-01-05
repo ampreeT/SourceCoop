@@ -270,12 +270,12 @@ methodmap CoopManager
 			if (g_pLevelLump.m_iIntroType == INTRO_FADE)
 			{
 				pPlayer.m_fFlags |= (FL_ATCONTROLS | FL_FROZEN | FL_NOTARGET);	// Freeze controls and angles.
-				Client_ScreenFade(pPlayer.entindex, 0, FFADE_STAYOUT);
+				Client_ScreenFade(pPlayer.entindex, 0, view_as<int>(FFADE_STAYOUT));
 			}
 			else if (g_pLevelLump.m_iIntroType == INTRO_FREEZE)
 			{
 				pPlayer.m_fFlags |= (FL_ATCONTROLS | FL_NOTARGET);				// Freeze controls.
-				Client_ScreenFade(pPlayer.entindex, Conf.FROZEN_FADE_DUR_IN, FFADE_OUT | FFADE_STAYOUT, _,
+				Client_ScreenFade(pPlayer.entindex, Conf.FROZEN_FADE_DUR_IN, view_as<int>(FFADE_OUT | FFADE_STAYOUT), _,
 					Conf.FROZEN_FADE_COLOR[0], Conf.FROZEN_FADE_COLOR[1], Conf.FROZEN_FADE_COLOR[2], Conf.FROZEN_FADE_COLOR[3]);
 			}
 
@@ -561,18 +561,18 @@ methodmap CoopManager
 	 * Must be called after teams had been created.
 	 * Returns -1 on failure / if teams are not to be enforced.
 	 */
-	public static int GetEnforcedTeam()
+	public static Team_t GetEnforcedTeam()
 	{
 		char szTeam[MAX_TEAMNAME];
-		int iTeam;
-
 		g_pConvarCoopTeam.GetString(szTeam, sizeof(szTeam));
+
+		int iTeam;
 		if (!StringToIntEx(szTeam, iTeam))
 		{
 			iTeam = FindTeamByName(szTeam);
 		}
 
-		return (iTeam > TEAM_SPECTATOR) ? iTeam : -1;
+		return (view_as<Team_t>(iTeam) > TEAM_SPECTATOR) ? view_as<Team_t>(iTeam) : TEAM_INVALID;
 	}
 }
 
@@ -619,7 +619,7 @@ public Action Timer_DecrementUntilMapStart(Handle hTimer)
 					pPlayer.m_fFlags &= ~(FL_ATCONTROLS | FL_FROZEN | FL_NOTARGET);
 					if (g_pLevelLump.m_iIntroType == INTRO_FREEZE)
 					{
-						Client_ScreenFade(pPlayer.entindex, Conf.FROZEN_FADE_DUR_OUT, FFADE_PURGE | FFADE_IN, 1,
+						Client_ScreenFade(pPlayer.entindex, Conf.FROZEN_FADE_DUR_OUT, view_as<int>(FFADE_PURGE | FFADE_IN), 1,
 							Conf.FROZEN_FADE_COLOR[0], Conf.FROZEN_FADE_COLOR[1], Conf.FROZEN_FADE_COLOR[2], Conf.FROZEN_FADE_COLOR[3]);
 					}
 				}

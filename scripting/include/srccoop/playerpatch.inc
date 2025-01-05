@@ -735,16 +735,16 @@ public MRESReturn Hook_PlayerChangeTeam(int iClient, DHookParam hParams)
 		if (!CMultiplayRules.IsTeamplay())
 			return MRES_Ignored;
 		
-		int iTeamNum = hParams.Get(1);
-		if (iTeamNum == TEAM_UNASSIGNED || iTeamNum > TEAM_SPECTATOR)
+		Team_t eTeam = hParams.Get(1);
+		if (eTeam == TEAM_UNASSIGNED || eTeam > TEAM_SPECTATOR)
 		{
-			int iEnforcedTeam = CoopManager.GetEnforcedTeam();
-			if (iEnforcedTeam != -1)
+			Team_t eEnforcedTeam = CoopManager.GetEnforcedTeam();
+			if (eEnforcedTeam != TEAM_INVALID)
 			{
-				hParams.Set(1, iEnforcedTeam);
+				hParams.Set(1, eEnforcedTeam);
 				return MRES_ChangedHandled;
 			}
-			if (iTeamNum == TEAM_UNASSIGNED)
+			if (eTeam == TEAM_UNASSIGNED)
 			{
 				hParams.Set(1, TEAM_SCIENTIST);
 				return MRES_ChangedHandled;
@@ -759,8 +759,8 @@ public MRESReturn Hook_PlayerChangeTeamPost(int iClient, Handle hParams)
 	if (CoopManager.IsCoopModeEnabled())
 	{
 		CBasePlayer pPlayer = CBasePlayer(iClient);
-		int iTeamNum = DHookGetParam(hParams, 1);
-		if (iTeamNum == TEAM_SPECTATOR)
+		Team_t eTeam = DHookGetParam(hParams, 1);
+		if (eTeam == TEAM_SPECTATOR)
 		{
 			CBaseEntity pRagdoll = pPlayer.GetRagdoll();
 			if (pRagdoll != NULL_CBASEENTITY)
@@ -770,7 +770,7 @@ public MRESReturn Hook_PlayerChangeTeamPost(int iClient, Handle hParams)
 			ClearNpcMemoryForPlayer(pPlayer);
 		}
 
-		SurvivalManager.OnPlayerChangeTeam(pPlayer, iTeamNum);
+		SurvivalManager.OnPlayerChangeTeam(pPlayer, eTeam);
 	}
 	return MRES_Ignored;
 }

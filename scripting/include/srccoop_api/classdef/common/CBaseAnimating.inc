@@ -143,12 +143,12 @@ methodmap CBaseAnimating < CBaseEntity
 		SetEntProp(this.entindex, Prop_Send, "m_nForceBone", iForceBone);
 	}
 	#if defined SRCCOOP_BLACKMESA
-	public int SelectWeightedSequence(const int iActivity)
+	public int SelectWeightedSequence(const Activity_t eActivity)
 	{
 		// TODO:
 		// This is currently only implemented in Black Mesa but it may be required for others.
 		// Reimplement the logic from scratch.
-		return SDKCall(g_pSelectWeightedSequence, this.entindex, iActivity);
+		return SDKCall(g_pSelectWeightedSequence, this.entindex, eActivity);
 	}
 	#endif
 	public float GetPoseParameter(const int iIndex)
