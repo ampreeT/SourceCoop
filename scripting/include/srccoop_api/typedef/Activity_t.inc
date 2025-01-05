@@ -1,3 +1,5 @@
+#pragma newdecls required
+#pragma semicolon 1
 
 //------------------------------------------------------
 // BMS specific activity list

@@ -1,3 +1,6 @@
+#pragma newdecls required
+#pragma semicolon 1
+
 enum AI_Efficiency_t
 {
 	// Run at full tilt

@@ -1,3 +1,6 @@
+#pragma newdecls required
+#pragma semicolon 1
+
 enum SCOND_t 
 {
 	COND_NONE,				// A way for a function to return no condition to get

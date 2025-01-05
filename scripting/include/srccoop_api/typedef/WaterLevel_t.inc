@@ -1,3 +1,6 @@
+#pragma newdecls required
+#pragma semicolon 1
+
 //-----------------------------------------------------------------------------
 // m_nWaterLevel enumeration
 // Purpose: Identifies how submerged in water a player is.

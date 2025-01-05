@@ -1,3 +1,6 @@
+#pragma newdecls required
+#pragma semicolon 1
+
 enum Sound_t
 {
 	SOUND_NONE				= 0,

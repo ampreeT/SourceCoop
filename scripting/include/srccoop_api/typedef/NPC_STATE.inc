@@ -1,3 +1,6 @@
+#pragma newdecls required
+#pragma semicolon 1
+
 enum NPC_STATE
 {
 	NPC_STATE_INVALID = -1,

@@ -1,3 +1,6 @@
+#pragma newdecls required
+#pragma semicolon 1
+
 enum AmmoType_t
 {
 	AMMO_INVALID = 0,

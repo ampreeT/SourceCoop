@@ -1,3 +1,6 @@
+#pragma newdecls required
+#pragma semicolon 1
+
 //------------------------------------------------------
 // Settings for m_takedamage
 //------------------------------------------------------

@@ -1,3 +1,6 @@
+#pragma newdecls required
+#pragma semicolon 1
+
 // Spectator Movement modes
 enum Obs_Mode
 {

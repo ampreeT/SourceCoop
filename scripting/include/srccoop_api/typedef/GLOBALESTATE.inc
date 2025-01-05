@@ -1,3 +1,6 @@
+#pragma newdecls required
+#pragma semicolon 1
+
 enum GLOBALESTATE
 {
 	GLOBAL_OFF = 0,

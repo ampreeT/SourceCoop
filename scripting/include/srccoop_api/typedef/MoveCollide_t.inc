@@ -1,3 +1,6 @@
+#pragma newdecls required
+#pragma semicolon 1
+
 // edict->movecollide values
 enum MoveCollide_t
 {

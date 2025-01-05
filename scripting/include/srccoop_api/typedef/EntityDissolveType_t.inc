@@ -1,3 +1,6 @@
+#pragma newdecls required
+#pragma semicolon 1
+
 // Entity Dissolve types
 enum EntityDissolveType_t
 {

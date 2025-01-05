@@ -1,3 +1,6 @@
+#pragma newdecls required
+#pragma semicolon 1
+
 //===================================================================================================================
 // Hud Element hiding flags
 enum HideHudFlags_t

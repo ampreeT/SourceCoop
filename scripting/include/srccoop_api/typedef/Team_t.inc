@@ -1,3 +1,6 @@
+#pragma newdecls required
+#pragma semicolon 1
+
 enum Team_t
 {
 	TEAM_ANY = -2,

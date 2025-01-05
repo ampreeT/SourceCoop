@@ -1,3 +1,6 @@
+#pragma newdecls required
+#pragma semicolon 1
+
 enum Collision_Group_t
 {
     COLLISION_GROUP_NONE  = 0,

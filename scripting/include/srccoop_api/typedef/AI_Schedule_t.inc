@@ -1,3 +1,6 @@
+#pragma newdecls required
+#pragma semicolon 1
+
 //=========================================================
 // These are the schedule types
 //=========================================================

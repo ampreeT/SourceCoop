@@ -1,3 +1,6 @@
+#pragma newdecls required
+#pragma semicolon 1
+
 // =======================================
 //  Movement goals 
 //	Used both to store the current movment goal in m_routeGoalType and to or/and with route

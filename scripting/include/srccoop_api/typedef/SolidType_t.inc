@@ -1,4 +1,7 @@
 
+#pragma newdecls required
+#pragma semicolon 1
+
 enum SolidType_t
 {
 	SOLID_NONE = 0,	// no solid model

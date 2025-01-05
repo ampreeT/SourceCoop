@@ -1,3 +1,6 @@
+#pragma newdecls required
+#pragma semicolon 1
+
 // Beam types, encoded as a byte
 enum BeamType_t
 {

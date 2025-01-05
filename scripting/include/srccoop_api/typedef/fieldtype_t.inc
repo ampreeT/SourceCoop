@@ -1,3 +1,6 @@
+#pragma newdecls required
+#pragma semicolon 1
+
 enum fieldtype_t
 {
 	FIELD_VOID = 0,			// No type or value

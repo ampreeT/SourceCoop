@@ -1,3 +1,6 @@
+#pragma newdecls required
+#pragma semicolon 1
+
 enum USE_TYPE
 {
 	USE_OFF,
