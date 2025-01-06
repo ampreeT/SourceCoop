@@ -619,10 +619,86 @@ public MRESReturn Hook_AccumulatePose(Address _this, DHookParam hParams)
 	// NaN Check
 	if (cycle != cycle)
 	{
+		PrintToServer("Got nan");
 		hParams.Set(4, 0.0);
 		return MRES_ChangedHandled;
 	}
 	return MRES_Ignored;
+}
+
+bool g_bAnimOverlayOK = false;
+public MRESReturn Hook_AnimatingOverlay(int _this, DHookReturn hReturn, DHookParam hParams)
+{
+	CBaseAnimatingOverlay pEntity = CBaseAnimatingOverlay(_this);
+	int idx = -1;
+	g_bAnimOverlayOK = AreAllLayersOK(pEntity, idx);
+	if (idx != -1)
+	{
+		PrintToServer("Pre fail @ %d", idx);
+	}
+	FixLayers(pEntity);
+	return MRES_Ignored;
+}
+
+public MRESReturn Hook_AnimatingOverlayPost(int _this, DHookReturn hReturn, DHookParam hParams)
+{
+	CBaseAnimatingOverlay pEntity = CBaseAnimatingOverlay(_this);
+	int idx = -1;
+	if (g_bAnimOverlayOK && !AreAllLayersOK(pEntity, idx))
+	{
+		PrintToServer("Post fail @ %d", idx);
+	}
+	FixLayers(pEntity);
+	return MRES_Ignored;
+}
+
+bool IsLayerOK(CAnimationLayer pLayer)
+{
+	float cycle = pLayer.m_flCycle;
+	if (cycle != cycle)
+	{
+		return false;
+	}
+	return true;
+}
+
+bool AreAllLayersOK(CBaseAnimatingOverlay pEntity, int &idx = -1)
+{
+	for (int i = 0; i < pEntity.GetNumAnimOverlays(); i++)
+	{
+		CAnimationLayer pLayer = pEntity.GetAnimOverlay(i);
+		float cycle = pLayer.m_flCycle;
+		if (cycle != cycle)
+		{
+			idx = i;
+			return false;
+		}
+	}
+	return true;
+}
+
+void FixLayers(CBaseAnimatingOverlay pEntity)
+{
+	for (int i = 0; i < pEntity.GetNumAnimOverlays(); i++)
+	{
+		CAnimationLayer pLayer = pEntity.GetAnimOverlay(i);
+		float cycle = pLayer.m_flCycle;
+		if (cycle != cycle)
+		{
+			PrintToServer("Fixing %d; owner match %d, fin %d, loop %d, seq %d, prev %f, rate %f, act %d, order %d", i,
+				pLayer.GetOwnerEntity() == pEntity, pLayer.m_bSequenceFinished, pLayer.m_bLooping, pLayer.m_nSequence,
+				pLayer.m_flPrevCycle, pLayer.m_flPlaybackRate, pLayer.m_nActivity, pLayer.m_nOrder);
+			pLayer.m_flCycle = 0.0;
+			// pEntity.RemoveLayer(i);
+		}
+		float flPrevCycle = pLayer.m_flPrevCycle;
+		if (flPrevCycle != flPrevCycle)
+		{
+			PrintToServer("Fixed m_flPrevCycle");
+			pLayer.m_flPrevCycle = 0.0;
+			// pEntity.RemoveLayer(i);
+		}
+	}
 }
 
 //------------------------------------------------------

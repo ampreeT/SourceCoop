@@ -119,7 +119,7 @@ methodmap CBaseCombatWeapon < CBaseAnimating
 	{
 		SetEntPropFloat(this.entindex, Prop_Data, "m_flTimeWeaponIdle", flTimeIdle);
 	}
-	public bool SendWeaponAnim(const int iActivity)
+	public bool SendWeaponAnim(const Activity iActivity)
 	{
 		return SDKCall(g_pSendWeaponAnim, this.entindex, iActivity);
 	}
