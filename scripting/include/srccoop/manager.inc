@@ -561,7 +561,7 @@ methodmap CoopManager
 	 * Must be called after teams had been created.
 	 * Returns -1 on failure / if teams are not to be enforced.
 	 */
-	public static Team_t GetEnforcedTeam()
+	public static int GetEnforcedTeam()
 	{
 		char szTeam[MAX_TEAMNAME];
 		g_pConvarCoopTeam.GetString(szTeam, sizeof(szTeam));
@@ -572,7 +572,7 @@ methodmap CoopManager
 			iTeam = FindTeamByName(szTeam);
 		}
 
-		return (view_as<Team_t>(iTeam) > TEAM_SPECTATOR) ? view_as<Team_t>(iTeam) : TEAM_INVALID;
+		return (iTeam > TEAM_SPECTATOR) ? iTeam : TEAM_INVALID;
 	}
 }
 

@@ -263,9 +263,9 @@ methodmap CBaseEntity
 	{
 		return this.OutputAdd("OnUser1", "!self", "kill", _, flTime) && this.AcceptInput("FireUser1");
 	}
-	public Team_t GetTeam()
+	public int GetTeam()
 	{
-		return view_as<Team_t>(GetEntProp(this.entindex, Prop_Data, "m_iTeamNum"));
+		return GetEntProp(this.entindex, Prop_Data, "m_iTeamNum");
 	}
 	public void GetEyePosition(float vec3Buffer[3])
 	{

@@ -338,9 +338,9 @@ methodmap CBasePlayer < CBaseCombatCharacter
 			this.SetHideHud(eHideHUD | HIDEHUD_CROSSHAIR);
 		}
 	}
-	public void SetTeam(const Team_t eTeam)
+	public void SetTeam(const int iTeam)
 	{
-		ChangeClientTeam(this.entindex, view_as<int>(eTeam));
+		ChangeClientTeam(this.entindex, iTeam);
 	}
 	public CBaseEntity GetUseEntity()
 	{

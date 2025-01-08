@@ -4,7 +4,7 @@
 //------------------------------------------------------
 // BMS specific activity list
 //------------------------------------------------------
-enum Activity_t
+enum Activity
 {
 	ACT_INVALID = -1,			// So we have something more succint to check for than '-1'
 	ACT_RESET = 0,				// Set m_Activity to this invalid value to force a reset to m_IdealActivity

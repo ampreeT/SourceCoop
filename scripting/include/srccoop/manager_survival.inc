@@ -166,7 +166,7 @@ methodmap SurvivalManager {
 		return true;
 	}
 	
-	public static void OnPlayerChangeTeam(const CBasePlayer pPlayer, const Team_t eTeam)
+	public static void OnPlayerChangeTeam(const CBasePlayer pPlayer, const int iTeam)
 	{
 		if (SurvivalManager.GetMode())
 		{

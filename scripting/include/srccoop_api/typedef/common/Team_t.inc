@@ -1,7 +1,7 @@
 #pragma newdecls required
 #pragma semicolon 1
 
-enum Team_t
+enum
 {
 	TEAM_ANY = -2,
 	TEAM_INVALID = -1,

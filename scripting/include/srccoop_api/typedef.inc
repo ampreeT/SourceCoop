@@ -115,34 +115,34 @@
 #define SF_PHYSBOX_PREVENT_PLAYER_TOUCH_ENABLE 0x800000		// If set, the player will not cause the object to enable its motion when bumped into
 */
 
-#include <srccoop_api/typedef/Activity_t.inc>
-#include <srccoop_api/typedef/AI_Efficiency_t.inc>
-#include <srccoop_api/typedef/AI_Schedule_t.inc>
-#include <srccoop_api/typedef/AI_SleepFlags_t.inc>
-#include <srccoop_api/typedef/AI_SleepState_t.inc>
-#include <srccoop_api/typedef/AmmoType_t.inc>
-#include <srccoop_api/typedef/BeamType_t.inc>
-#include <srccoop_api/typedef/Class_T.inc>
-#include <srccoop_api/typedef/Collision_Group_t.inc>
-#include <srccoop_api/typedef/Disposition_t.inc>
-#include <srccoop_api/typedef/EntityDissolveType_t.inc>
-#include <srccoop_api/typedef/fieldtype_t.inc>
-#include <srccoop_api/typedef/GLOBALESTATE.inc> 
-#include <srccoop_api/typedef/GoalType_t.inc>
-#include <srccoop_api/typedef/HideHudFlags_t.inc>
-#include <srccoop_api/typedef/LifeState_t.inc>
-#include <srccoop_api/typedef/MoveCollide_t.inc>
-#include <srccoop_api/typedef/NPC_STATE.inc>
-#include <srccoop_api/typedef/Obs_Mode.inc>
-#include <srccoop_api/typedef/SCOND_t.inc>
-#include <srccoop_api/typedef/ScreenFadeFlags_t.inc>
-#include <srccoop_api/typedef/sharedtasks_e.inc>
-#include <srccoop_api/typedef/SolidType_t.inc>
-#include <srccoop_api/typedef/sounds.inc>
-#include <srccoop_api/typedef/TakeDamage_t.inc>
-#include <srccoop_api/typedef/Team_t.inc>
-#include <srccoop_api/typedef/USE_TYPE.inc>
-#include <srccoop_api/typedef/WaterLevel_t.inc>
+#include <srccoop_api/typedef/common/Activity.inc>
+#include <srccoop_api/typedef/common/AI_Efficiency_t.inc>
+#include <srccoop_api/typedef/common/AI_Schedule_t.inc>
+#include <srccoop_api/typedef/common/AI_SleepFlags_t.inc>
+#include <srccoop_api/typedef/common/AI_SleepState_t.inc>
+#include <srccoop_api/typedef/common/AmmoType_t.inc>
+#include <srccoop_api/typedef/common/BeamType_t.inc>
+#include <srccoop_api/typedef/common/Class_T.inc>
+#include <srccoop_api/typedef/common/Collision_Group_t.inc>
+#include <srccoop_api/typedef/common/Disposition_t.inc>
+#include <srccoop_api/typedef/common/EntityDissolveType_t.inc>
+#include <srccoop_api/typedef/common/fieldtype_t.inc>
+#include <srccoop_api/typedef/common/GLOBALESTATE.inc> 
+#include <srccoop_api/typedef/common/GoalType_t.inc>
+#include <srccoop_api/typedef/common/HideHudFlags_t.inc>
+#include <srccoop_api/typedef/common/LifeState_t.inc>
+#include <srccoop_api/typedef/common/MoveCollide_t.inc>
+#include <srccoop_api/typedef/common/NPC_STATE.inc>
+#include <srccoop_api/typedef/common/Obs_Mode.inc>
+#include <srccoop_api/typedef/common/SCOND_t.inc>
+#include <srccoop_api/typedef/common/ScreenFadeFlags_t.inc>
+#include <srccoop_api/typedef/common/sharedtasks_e.inc>
+#include <srccoop_api/typedef/common/SolidType_t.inc>
+#include <srccoop_api/typedef/common/sounds.inc>
+#include <srccoop_api/typedef/common/TakeDamage_t.inc>
+#include <srccoop_api/typedef/common/Team_t.inc>
+#include <srccoop_api/typedef/common/USE_TYPE.inc>
+#include <srccoop_api/typedef/common/WaterLevel_t.inc>
 
 #if defined SRCCOOP_BLACKMESA
 #include <srccoop_api/typedef/bms/gamerules.inc>
