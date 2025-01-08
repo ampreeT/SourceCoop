@@ -82,6 +82,7 @@
 #include <srccoop_api/classdef/bms/CBlackMesaBaseDetonator.inc>
 #include <srccoop_api/classdef/bms/CBlackMesaPlayer.inc>
 #include <srccoop_api/classdef/bms/CBM_MP_GameRules.inc>
+#include <srccoop_api/classdef/bms/CEnv_XenPortalEffect.inc>
 #include <srccoop_api/classdef/bms/CEnvBeamTeam.inc>
 #include <srccoop_api/classdef/bms/CParamsManager.inc>
 #include <srccoop_api/classdef/bms/CPropChargerBase.inc>

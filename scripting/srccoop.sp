@@ -708,6 +708,14 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 	}
 	else // !isNPC
 	{
+		#if defined ENTPATCH_BM_XENPORTAL_PUSH_PLAYERS
+		if (strcmp(szClassname, "env_xen_portal_effect") == 0)
+		{
+			DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_XenPortalEffect_AcceptInput);
+			return;
+		}
+		#endif
+
 		#if defined ENTPATCH_BM_SP_WEAPONS
 		if (strcmp(szClassname, "grenade_frag") == 0)
 		{
