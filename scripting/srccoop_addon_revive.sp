@@ -295,7 +295,7 @@ public void OnPlayerRunCmdPost(int client, int buttons)
 						
 						if (GetVectorDistance(vecEyeOrigin, vecRagdollPosition, false) < 100.0)
 						{
-							TR_TraceRayFilter(vecEyeOrigin, vecEyeAngles, MASK_SOLID, RayType_Infinite, TraceEntityFilter, client);
+							TR_TraceRayFilter(vecEyeOrigin, vecEyeAngles, MASK_SOLID, RayType_Infinite, TraceEntityFilter_IgnoreData, client);
 							TR_GetEndPosition(vecEyeOrigin);
 							if (GetVectorDistance(vecEyeOrigin, vecRagdollPosition, false) < 100.0)
 							{
@@ -339,13 +339,6 @@ public void OnClientDisconnect_Post(int client)
 {
 	ResetReviveStatus(client);
 	g_pRagdollEffectsTimer[client] = null;
-}
-
-public bool TraceEntityFilter(int entity, int mask, any data)
-{
-	if (entity == data)
-		return false;
-	return true;
 }
 
 public void SC_OnPlayerRagdollCreated(CBasePlayer pPlayer, CBaseAnimating pRagdoll)

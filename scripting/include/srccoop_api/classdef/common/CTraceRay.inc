@@ -3,7 +3,7 @@
 
 methodmap CTraceRay < Handle
 {
-	public CTraceRay(const float vecPosition[3], const float vecRayType[3], const int iTraceMask, const RayType eRayType, const TraceEntityFilter fnFilter, const any pData)
+	public CTraceRay(const float vecPosition[3], const float vecRayType[3], const int iTraceMask, const RayType eRayType, const TraceEntityFilter fnFilter, const any pData = -1)
 	{
 		return view_as<CTraceRay>(TR_TraceRayFilterEx(vecPosition, vecRayType, iTraceMask, eRayType, fnFilter, pData));
 	}
@@ -20,4 +20,17 @@ methodmap CTraceRay < Handle
 	{
 		return CBaseEntity(TR_GetEntityIndex(this));
 	}
+}
+
+stock bool TraceEntityFilter_IgnoreData(int iEntIndex, int iMask, any pData)
+{
+	return (iEntIndex != pData);
+}
+
+stock bool TraceEntityFilter_IgnorePlayers(int iEntIndex, int iMask, any pData)
+{
+	CBasePlayer pPlayer = CBasePlayer(iEntIndex);
+	if (pPlayer.IsValid())
+		return false;
+	return (iEntIndex != pData);
 }

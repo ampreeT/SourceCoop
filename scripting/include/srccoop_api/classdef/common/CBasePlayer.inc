@@ -642,8 +642,3 @@ static bool CanOverrideEnvZoomOwner(CBaseEntity pZoomOwner)
 		return false;
 	return !!(view_as<CEnvZoom>(pZoomOwner).m_spawnflags & ENV_ZOOM_OVERRIDE);
 }
-
-static bool TraceEntityFilter_IgnoreData(int iEntIndex, int iMask, any pData)
-{
-	return (iEntIndex != pData);
-}

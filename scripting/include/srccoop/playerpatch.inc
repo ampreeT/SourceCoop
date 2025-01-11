@@ -869,14 +869,14 @@ public void Movement_FindLadder(CBasePlayer pPlayer)
 			continue;
 		
 		// Finally the traces that need to be overridden to ignore players in the way...
-		CTraceRay pTraceRay = new CTraceRay(vecPlayerOrigin, closest, MASK_PLAYERSOLID, RayType_EndPoint, TraceEntityFilter_IgnorePlayers, -1);
+		CTraceRay pTraceRay = new CTraceRay(vecPlayerOrigin, closest, MASK_PLAYERSOLID, RayType_EndPoint, TraceEntityFilter_IgnorePlayers);
 		if (pTraceRay.GetFraction() != 1.0 && pTraceRay.GetEntity() != pLadder)
 		{
 			pTraceRay.Close();
 			
 			AddVectors(vecTmp, vecPlayerOrigin, vecTmp);
 			vecTmp[2] += sizeZ;
-			pTraceRay = new CTraceRay(vecTmp, closest, MASK_PLAYERSOLID, RayType_EndPoint, TraceEntityFilter_IgnorePlayers, -1);
+			pTraceRay = new CTraceRay(vecTmp, closest, MASK_PLAYERSOLID, RayType_EndPoint, TraceEntityFilter_IgnorePlayers);
 			if (pTraceRay.GetFraction() != 1.0 && pTraceRay.GetEntity() != pLadder)
 			{
 				pTraceRay.Close();
@@ -1063,14 +1063,6 @@ void QueryConVarSafeSet(QueryCookie cookie, int client, ConVarQueryResult result
 	{
 		LogMessage("Issuing client commands is not allowed. Please remove \"%s\" from client_console in the map's edt file.", cvarName);
 	}
-}
-
-public bool TraceEntityFilter_IgnorePlayers(int iEntIndex, int iMask, any pData)
-{
-	CBasePlayer pPlayer = CBasePlayer(iEntIndex);
-	if (pPlayer.IsValid())
-		return false;
-	return (iEntIndex != pData);
 }
 
 public void SetMovementPredictionConVars()
