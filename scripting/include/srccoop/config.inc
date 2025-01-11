@@ -16,7 +16,7 @@ enum struct SourceCoopConfig
 	float PORTAL_TOUCH_SIZE;
 	
 	//------------------------------------------------------
-	// MANAGER
+	// COOPMANAGER
 	//------------------------------------------------------
 
 	// Freeze intro - screenfade properties

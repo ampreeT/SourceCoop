@@ -226,16 +226,6 @@ void ToggleGlobalPatches(bool bCoopMode)
 	}
 }
 
-void LoadConfig()
-{
-	GameData pGameConfig = LoadGameConfigFile(SRCCOOP_CONFIG_GAMEDATA_NAME);
-	if (pGameConfig == null)
-		SetFailState("Couldn't load game config: \"%s\"", SRCCOOP_CONFIG_GAMEDATA_NAME);
-	
-	Conf.Initialize(pGameConfig);
-	pGameConfig.Close();
-}
-
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
 	#if defined CHECK_ENGINE
@@ -253,7 +243,7 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 
 public void OnPluginStart()
 {
-	LoadConfig();
+	Conf.Initialize(LoadSourceCoopConfig());
 	LoadGameData();
 	LoadTranslations("common.phrases"); /* reuse some translations (identified by use of capital letters) */
 	LoadTranslations("srccoop.phrases");

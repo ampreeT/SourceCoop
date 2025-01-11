@@ -67,9 +67,7 @@ public void OnPluginStart()
 	LoadTranslations("common.phrases");
 	
 	InitSourceCoopAddon();
-	GameData pConfig = LoadSourceCoopConfig();
-	Conf.Initialize(pConfig);
-	pConfig.Close();
+	Conf.Initialize(LoadSourceCoopConfig());
 	
 	g_pConVarReviveTime = CreateConVar("sourcecoop_revive_time", "4.0", "Sets time that you have to hold E to revive.", _, true, 0.0, false);
 	g_pConVarReviveScore = CreateConVar("sourcecoop_revive_score", "1", "Sets score to give for reviving a player.", _, true, 0.0, false);

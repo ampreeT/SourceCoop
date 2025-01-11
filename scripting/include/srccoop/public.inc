@@ -102,8 +102,16 @@ enum struct SpawnOptions
 }
 
 //------------------------------------------------------
-// Messaging stocks
+// Stocks
 //------------------------------------------------------
+
+stock GameData LoadSourceCoopConfig()
+{
+	GameData pGameConfig = LoadGameConfigFile(SRCCOOP_CONFIG_GAMEDATA_NAME);
+	if (pGameConfig == null)
+		SetFailState("Couldn't load game config: \"%s\"", SRCCOOP_CONFIG_GAMEDATA_NAME);
+	return pGameConfig;
+}
 
 stock void Msg(int client, const char[] msg, any ...)
 {

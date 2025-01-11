@@ -45,14 +45,6 @@ stock GameData InitSourceCoopAddon(bool bCloseGameData = true)
 	return pGameConfig;
 }
 
-stock GameData LoadSourceCoopConfig()
-{
-	GameData pGameConfig = LoadGameConfigFile(SRCCOOP_CONFIG_GAMEDATA_NAME);
-	if (pGameConfig == null)
-		SetFailState("Couldn't load game config: \"%s\"", SRCCOOP_CONFIG_GAMEDATA_NAME);
-	return pGameConfig;
-}
-
 /**
  * Global callback after map config is loaded in OnMapStart.
  *

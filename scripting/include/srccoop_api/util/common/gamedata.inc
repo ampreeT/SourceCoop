@@ -11,7 +11,11 @@
 #endif
 
 // Creates a init func for the struct. Pass in a CONF_TYPE macro for each of the struct's variables.
-#define CONF_INIT(%1) void Initialize(GameData pGameConfig) {%1}
+#define CONF_INIT(%1)\
+void Initialize(GameData pGameConfig, bool bAutoClose = true) {\
+	%1\
+	if (bAutoClose) pGameConfig.Close();\
+}
 
 #define CONF_STR(%1) GetGamedataString(pGameConfig, CONF_PREFIX...#%1, this.%1, sizeof(this.%1));
 #define CONF_FLT(%1) this.%1 = GetGamedataFloat(pGameConfig, CONF_PREFIX...#%1);
