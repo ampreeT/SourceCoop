@@ -241,27 +241,35 @@ methodmap CBaseEntity
 		Format(szBuffer, sizeof(szBuffer), "%f %f %f", vec3Value[0], vec3Value[1], vec3Value[2]);
 		return this.AcceptInputStr(szInput, szBuffer, pActivator, pCaller, iOutputID);
 	}
-	public bool OutputAdd(const char[] szOutput, const char[] szTarget, const char[] szTargetInput, const char[] szParameter = "", const float flDelay = 0.0, const int iTimesToFire = -1)
+	public bool AddOutput(const char[] szOutput, const char[] szTarget, const char[] szTargetInput, const char[] szParameter = "", const float flDelay = 0.0, const int iTimesToFire = -1)
 	{
-		 char szBuffer[256];
-		 Format(szBuffer, sizeof(szBuffer), "%s %s:%s:%s:%f:%d", szOutput, szTarget, szTargetInput, szParameter, flDelay, iTimesToFire);
-		 return this.AcceptInputStr("AddOutput", szBuffer);
+		char szBuffer[256];
+		Format(szBuffer, sizeof(szBuffer), "%s %s:%s:%s:%f:%d", szOutput, szTarget, szTargetInput, szParameter, flDelay, iTimesToFire);
+		return this.AcceptInputStr("AddOutput", szBuffer);
 	}
-	public bool SetKeyValueStr(const char[] szKeyValue, const char[] szValue)
+	public bool KeyValue(const char[] szKeyValue, const char[] szValue)
 	{
 		return DispatchKeyValue(this.entindex, szKeyValue, szValue);
 	}
-	public bool SetKeyValueFloat(const char[] szKeyValue, const float flValue)
+	public bool KeyValueInt(const char[] szKeyValue, const int iValue)
+	{
+		return DispatchKeyValueInt(this.entindex, szKeyValue, iValue);
+	}
+	public bool KeyValueFloat(const char[] szKeyValue, const float flValue)
 	{
 		return DispatchKeyValueFloat(this.entindex, szKeyValue, flValue);
 	}
+	public bool KeyValueVector(const char[] szKeyValue, const float vecValue[3])
+	{
+		return DispatchKeyValueVector(this.entindex, szKeyValue, vecValue);
+	}
 	public bool Kill()
 	{
-		return this.AcceptInputStr("Kill");
+		return this.AcceptInput("Kill");
 	}
 	public bool KillDelayed(const float flDelay)
 	{
-		return this.OutputAdd("OnUser1", "!self", "kill", _, flDelay) && this.AcceptInput("FireUser1");
+		return this.AddOutput("OnUser1", "!self", "kill", _, flDelay) && this.AcceptInput("FireUser1");
 	}
 	public int GetTeam()
 	{
