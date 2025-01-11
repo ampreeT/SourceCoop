@@ -2,8 +2,11 @@
 #pragma semicolon 1
 
 static float g_vec3PlayerShootPosition[MAXPLAYERS + 1][3];
-static bool g_bSetJumpModuleActive[MAXPLAYERS + 1];
 static float g_flPlayerMaxSpeed[MAXPLAYERS + 1];
+
+#if defined PLAYERPATCH_BM_CLIENT_PREDICTION
+static bool g_bSetJumpModuleActive[MAXPLAYERS + 1];
+#endif
 
 //------------------------------------------------------
 // Allow flashlight
@@ -1065,6 +1068,8 @@ void QueryConVarSafeSet(QueryCookie cookie, int client, ConVarQueryResult result
 	}
 }
 
+#if defined PLAYERPATCH_BM_CLIENT_PREDICTION
+
 public void SetMovementPredictionConVars()
 {
 	// Client movement prediction fix.
@@ -1080,6 +1085,8 @@ public void Hook_ConVar_AlwaysRun(const ConVar hConVar, const char[] szOldValue,
 {
 	SetMovementPredictionConVars();
 }
+
+#endif // PLAYERPATCH_BM_CLIENT_PREDICTION
 
 // Clears the player out of NPC memories and clears flags.
 //
