@@ -1,8 +1,3 @@
-#if defined _srccoop_idle_anims_game_included
- #endinput
-#endif
-#define _srccoop_idle_anims_game_included
-
 #pragma newdecls required
 #pragma semicolon 1
 

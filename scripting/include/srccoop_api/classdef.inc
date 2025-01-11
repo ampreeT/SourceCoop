@@ -1,16 +1,10 @@
-#pragma newdecls required
-#pragma semicolon 1
-
 #if defined _srccoop_api_classdef_included
  #endinput
 #endif
 #define _srccoop_api_classdef_included
 
-#include <sdkhooks>
-#include <sdktools>
-#include <sourcescramble>
-#include <srccoop/util/color>
-#include <srccoop_api/typedef>
+#pragma newdecls required
+#pragma semicolon 1
 
 #include <srccoop_api/classdef/common/CBaseEntity.inc>
 #include <srccoop_api/classdef/common/CPointEntity.inc>
@@ -57,6 +51,7 @@
 #include <srccoop_api/classdef/common/CPropVehicle.inc>
 #include <srccoop_api/classdef/common/CPropVehicleDriveable.inc>
 #include <srccoop_api/classdef/common/CRagdollProp.inc>
+#include <srccoop_api/classdef/common/CRevertSaved.inc>
 #include <srccoop_api/classdef/common/CProtoSniper.inc>
 #include <srccoop_api/classdef/common/CSceneEntity.inc>
 #include <srccoop_api/classdef/common/CSniperTarget.inc>

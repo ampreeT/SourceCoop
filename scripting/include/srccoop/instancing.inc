@@ -1,8 +1,3 @@
-#if defined _srccoop_instancing_included
- #endinput
-#endif
-#define _srccoop_instancing_included
-
 #pragma newdecls required
 #pragma semicolon 1
 
@@ -48,9 +43,8 @@ methodmap ItemInstancingManager
 		
 		char szKey[MAX_CHARS_INT(INT_MIN)];
 		IntToString(view_as<int>(pItem), szKey, sizeof(szKey));
-
-		bool _bValue;
-		return g_pPickedUpItems[client].GetValue(szKey, _bValue);
+		
+		return g_pPickedUpItems[client].ContainsKey(szKey);
 	}
 	
 	public static void ClearPickedUpItem(CBaseEntity pItem)

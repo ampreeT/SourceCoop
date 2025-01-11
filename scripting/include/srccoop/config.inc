@@ -1,8 +1,3 @@
-#if defined _srccoop_config_included
- #endinput
-#endif
-#define _srccoop_config_included
-
 #pragma newdecls required
 #pragma semicolon 1
 
@@ -25,7 +20,7 @@ enum struct SourceCoopConfig
 	//------------------------------------------------------
 
 	// Freeze intro - screenfade properties
-	int FROZEN_FADE_COLOR[4];
+	RGBA FROZEN_FADE_COLOR;
 	int FROZEN_FADE_DUR_IN;
 	int FROZEN_FADE_DUR_OUT;
 

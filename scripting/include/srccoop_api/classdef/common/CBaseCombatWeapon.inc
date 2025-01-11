@@ -91,6 +91,12 @@ methodmap CBaseCombatWeapon < CBaseAnimating
 	{
 		SetEntPropFloat(this.entindex, Prop_Send, "m_flNextSecondaryAttack", flNextSecondaryAttack); 
 	}
+	public void DelayNextAttack(float flDelay)
+	{
+		flDelay += GetGameTime();
+		this.SetNextPrimaryAttack(flDelay);
+		this.SetNextSecondaryAttack(flDelay);
+	}
 	public bool CanFireUnderwater()
 	{
 		return GetEntProp(this.entindex, Prop_Data, "m_bFiresUnderwater") != 0;

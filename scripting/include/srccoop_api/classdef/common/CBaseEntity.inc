@@ -9,7 +9,7 @@ static Handle g_pWorldSpaceCenter;
 static Handle g_pIsNPC;
 static Handle g_pSetMinMaxSize;
 
-#define NULL_CBASEENTITY view_as<any>(-1)
+const any NULL_CBASEENTITY = -1;
 
 methodmap CBaseEntity
 {
@@ -259,9 +259,9 @@ methodmap CBaseEntity
 	{
 		return this.AcceptInputStr("Kill");
 	}
-	public bool KillAfterTime(const float flTime)
+	public bool KillDelayed(const float flDelay)
 	{
-		return this.OutputAdd("OnUser1", "!self", "kill", _, flTime) && this.AcceptInput("FireUser1");
+		return this.OutputAdd("OnUser1", "!self", "kill", _, flDelay) && this.AcceptInput("FireUser1");
 	}
 	public int GetTeam()
 	{
@@ -475,6 +475,14 @@ methodmap CBaseEntity
 	{
 		return GetEntProp(this.entindex, Prop_Data, "m_nSimulationTick");
 	}
+	public float GetLocalTime()
+	{
+		return GetEntPropFloat(this.entindex, Prop_Data, "m_flLocalTime");
+	}
+	public void SetLocalTime(const float flTime)
+	{
+		SetEntPropFloat(this.entindex, Prop_Data, "m_flLocalTime", flTime);
+	}
 	public void GetViewOffset(float vec3Buffer[3])
 	{
 		GetEntPropVector(this.entindex, Prop_Data, "m_vecViewOffset", vec3Buffer);
@@ -580,6 +588,14 @@ methodmap CBaseEntity
 	public void SetGroundEntity(const CBaseEntity pGroundEntity)
 	{
 		SetEntPropEnt(this.entindex, Prop_Data, "m_hGroundEntity", pGroundEntity.entindex);
+	}
+	public CBaseEntity GetEffectEntity()
+	{
+		return CBaseEntity(GetEntPropEnt(this.entindex, Prop_Data, "m_hEffectEntity"));
+	}
+	public void SetEffectEntity(const CBaseEntity pEffectEntity)
+	{
+		SetEntPropEnt(this.entindex, Prop_Data, "m_hEffectEntity", pEffectEntity.entindex);
 	}
 	public int GetHealth()
 	{

@@ -1,8 +1,3 @@
-#if defined _srccoop_entitypatch_bm_included
- #endinput
-#endif
-#define _srccoop_entitypatch_bm_included
-
 #pragma newdecls required
 #pragma semicolon 1
 
@@ -875,8 +870,7 @@ public MRESReturn Hook_ToggleIronsights(int _this, Handle hParams)
 		}
 		pPlayer.SetFOV(pWeapon, bWillBeUsingIronsights ? iFOV : 0, 0.5);
 		pWeapon.SetIronsights(bWillBeUsingIronsights);
-
-		PreventWeaponFiring(pWeapon, 0.5);
+		pWeapon.DelayNextAttack(0.5);
 
 		return MRES_Supercede;
 	}

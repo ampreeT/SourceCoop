@@ -1,8 +1,3 @@
-#if defined _srccoop_playerpatch_included
- #endinput
-#endif
-#define _srccoop_playerpatch_included
-
 #pragma newdecls required
 #pragma semicolon 1
 
@@ -90,7 +85,7 @@ public void Hook_PlayerPreThinkPost(int iClient)
 		{
 			if (g_bSetJumpModuleActive[iClient])
 			{
-        		pBlackMesaPlayer.SendConVarValueBool(sv_jump_long_enabled, false);
+        		pBlackMesaPlayer.SendConVarValueInt(sv_jump_long_enabled, false);
 				g_bSetJumpModuleActive[iClient] = false;
 			}
 		}
@@ -98,7 +93,7 @@ public void Hook_PlayerPreThinkPost(int iClient)
 		{
 			if (!g_bSetJumpModuleActive[iClient])
 			{
-        		pBlackMesaPlayer.SendConVarValueBool(sv_jump_long_enabled, sv_jump_long_enabled.BoolValue);
+        		pBlackMesaPlayer.SendConVarValueInt(sv_jump_long_enabled, sv_jump_long_enabled.BoolValue);
 				g_bSetJumpModuleActive[iClient] = true;
 			}
 		}
@@ -111,7 +106,7 @@ public void Hook_PlayerPreThinkPost(int iClient)
 			if (pPlayer.IsCarryingObject())
 			{
 				// fix clientside prediction errors when dropping objects
-				PreventWeaponFiring(pWeapon, 1.0);
+				pWeapon.DelayNextAttack(1.0);
 			}
 			else if (pPlayer.GetWaterLevel() == WL_Eyes)
 			{
@@ -125,7 +120,7 @@ public void Hook_PlayerPreThinkPost(int iClient)
 						{
 							if (!pWeapon.CanFireUnderwater() && pWeapon.GetPrimaryAmmoType() != -1)
 							{
-								PreventWeaponFiring(pWeapon, 0.2);
+								pWeapon.DelayNextAttack(0.2);
 							}
 						}
 					}
@@ -485,7 +480,7 @@ public MRESReturn Hook_PlayerSpawnPost(int iClient, Handle hReturn, Handle hPara
 				// Hide team select
 				pPlayer.SendCommand("hidepanel team");
 				pPlayer.SendCommand("hidepanel deathmatch");
-				pPlayer.SetTeam(TEAM_SCIENTIST);
+				pPlayer.SetTeam(TEAM_TWO);
 				g_bPostTeamSelect[iClient] = true;
 			}
 			else
@@ -585,32 +580,10 @@ void PlayerPatch_ApplyServerRagdoll(const CBasePlayer pPlayer, const CTakeDamage
 	int iRagdollInheritIndex = pPlayer.entindex;
 	#endif
 
-	// TODO:
-	// Move `g_pCreateServerRagdoll` into `CRagdollProp`.
 	pRagdoll = CRagdollProp(SDKCall(g_pCreateServerRagdoll, iRagdollInheritIndex, pPlayer.GetForceBone(), pTakeDamageInfo, COLLISION_GROUP_DEBRIS_TRIGGER, false));
 	if (pRagdoll != NULL_CBASEENTITY)
 	{
 		SDKHook(pRagdoll.entindex, SDKHook_OnTakeDamage, Hook_NoDmg);
-
-		// TODO: If killed by a player, attach ragdoll to barnacle
-		//CBaseEntity pInflictor = pTakeDamageInfo.GetInflictor();
-		//if (pInflictor != NULL_CBASEENTITY)
-		//{
-		//	char szClassname[MAX_CLASSNAME];
-		//	pInflictor.GetClassname(szClassname, sizeof(szClassname));
-		//	if (strcmp(szClassname, "npc_barnacle") == 0)
-		//	{
-		//		CNPC_Barnacle pBarnacle = view_as<CNPC_Barnacle>(pInflictor);
-		//
-		//		float vec3GrabPosition[3];
-		//		pPlayer.GetEyePosition(vec3GrabPosition);
-		//		
-		//		float vec3Position[3];
-		//		pPlayer.GetAbsOrigin(vec3Position);
-		//		pBarnacle.AttachTongueToTarget(pRagdoll, vec3GrabPosition);
-		//		pRagdoll.m_iEFlags |= EFL_IS_BEING_LIFTED_BY_BARNACLE;
-		//	}
-		//}
 
 		pPlayer.SetRagdoll(pRagdoll);
 		pPlayer.SetObserverMode(OBS_MODE_CHASE);
@@ -747,7 +720,7 @@ public MRESReturn Hook_PlayerChangeTeam(int iClient, DHookParam hParams)
 			
 			if (iTeam == TEAM_UNASSIGNED)
 			{
-				hParams.Set(1, TEAM_SCIENTIST);
+				hParams.Set(1, TEAM_TWO);
 				return MRES_ChangedHandled;
 			}
 		}

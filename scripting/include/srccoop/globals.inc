@@ -1,8 +1,3 @@
-#if defined _srccoop_globals_included
- #endinput
-#endif
-#define _srccoop_globals_included
-
 #pragma newdecls required
 #pragma semicolon 1
 

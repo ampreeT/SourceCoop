@@ -1,8 +1,3 @@
-#if defined _srccoop_entitypatch_included
- #endinput
-#endif
-#define _srccoop_entitypatch_included
-
 #pragma newdecls required
 #pragma semicolon 1
 
@@ -1370,10 +1365,8 @@ public MRESReturn Hook_LoadSavedAcceptInput(int _this, Handle hReturn, Handle hP
 			CBasePlayer pActivator = CBasePlayer(iActivator);
 			if (pActivator.IsPlayer())
 			{
-				int r, g, b, a;
-				GetEntityRenderColor(_this, r, g, b, a);
-				float duration = GetEntPropFloat(_this, Prop_Data, "m_Duration");
-				Client_ScreenFade(iActivator, RoundFloat(duration * 1000), view_as<int>(FFADE_OUT | FFADE_STAYOUT), _, r, g, b, a);
+				CRevertSaved pThis = CRevertSaved(_this);
+				pActivator.ScreenFade(RoundFloat(pThis.GetDuration() * 1000), pThis.GetRenderColor(), FFADE_OUT | FFADE_STAYOUT);
 				
 				// This breaks the spectator overlay if the player is already dead
 				if (pActivator.IsAlive())

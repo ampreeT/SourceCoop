@@ -1,8 +1,3 @@
-#if defined _srccoop_manager_included
- #endinput
-#endif
-#define _srccoop_manager_included
-
 #pragma newdecls required
 #pragma semicolon 1
 
@@ -215,7 +210,7 @@ methodmap CoopManager
 			CBaseCombatWeapon pWeapon = pPlayer.GetActiveWeapon();
 			if (pWeapon != NULL_CBASEENTITY)
 			{
-				PreventWeaponFiring(pWeapon, 0.25);
+				pWeapon.DelayNextAttack(0.25);
 			}
 		}
 	}
@@ -270,13 +265,12 @@ methodmap CoopManager
 			if (g_pLevelLump.m_iIntroType == INTRO_FADE)
 			{
 				pPlayer.m_fFlags |= (FL_ATCONTROLS | FL_FROZEN | FL_NOTARGET);	// Freeze controls and angles.
-				Client_ScreenFade(pPlayer.entindex, 0, view_as<int>(FFADE_STAYOUT));
+				pPlayer.ScreenFade(0, RGBA(0, 0, 0, 255), FFADE_STAYOUT);
 			}
 			else if (g_pLevelLump.m_iIntroType == INTRO_FREEZE)
 			{
 				pPlayer.m_fFlags |= (FL_ATCONTROLS | FL_NOTARGET);				// Freeze controls.
-				Client_ScreenFade(pPlayer.entindex, Conf.FROZEN_FADE_DUR_IN, view_as<int>(FFADE_OUT | FFADE_STAYOUT), _,
-					Conf.FROZEN_FADE_COLOR[0], Conf.FROZEN_FADE_COLOR[1], Conf.FROZEN_FADE_COLOR[2], Conf.FROZEN_FADE_COLOR[3]);
+				pPlayer.ScreenFade(Conf.FROZEN_FADE_DUR_IN, Conf.FROZEN_FADE_COLOR, FFADE_OUT | FFADE_STAYOUT);
 			}
 
 			if (g_pLevelLump.m_iIntroType == INTRO_NONE && !data.m_bMapHasDelayedOutput)
@@ -619,8 +613,7 @@ public Action Timer_DecrementUntilMapStart(Handle hTimer)
 					pPlayer.m_fFlags &= ~(FL_ATCONTROLS | FL_FROZEN | FL_NOTARGET);
 					if (g_pLevelLump.m_iIntroType == INTRO_FREEZE)
 					{
-						Client_ScreenFade(pPlayer.entindex, Conf.FROZEN_FADE_DUR_OUT, view_as<int>(FFADE_PURGE | FFADE_IN), 1,
-							Conf.FROZEN_FADE_COLOR[0], Conf.FROZEN_FADE_COLOR[1], Conf.FROZEN_FADE_COLOR[2], Conf.FROZEN_FADE_COLOR[3]);
+						pPlayer.ScreenFade(Conf.FROZEN_FADE_DUR_OUT, Conf.FROZEN_FADE_COLOR, FFADE_PURGE | FFADE_IN, 1);
 					}
 				}
 			}
