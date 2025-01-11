@@ -102,6 +102,11 @@ stock void UpperCaseString(const char[] szInput, char[] szOutput, int iSize)
 	szOutput[x] = '\0';
 }
 
+stock bool StrStartsWith(const char[] str, const char[] prefix, bool caseSensitive = true)
+{
+	return strncmp(str, prefix, strlen(prefix), caseSensitive) == 0;
+}
+
 stock bool StrEndsWith(const char[] str, const char[] suffix, bool caseSensitive = true)
 {
 	return StrEndsWithEx(str, strlen(str), suffix, caseSensitive);
