@@ -1102,7 +1102,7 @@ public void Hook_PlayerWeaponEquipPost(int client, int weapon)
 	}
 }
 
-public MRESReturn Hook_RestoreWorld(Handle hReturn)
+public MRESReturn Hook_RestoreWorld(DHookReturn hReturn)
 {
 	if (CoopManager.IsCoopModeEnabled())
 	{
@@ -1113,7 +1113,7 @@ public MRESReturn Hook_RestoreWorld(Handle hReturn)
 	return MRES_Ignored;
 }
 
-public MRESReturn Hook_RespawnPlayers(Handle hReturn)
+public MRESReturn Hook_RespawnPlayers(DHookReturn hReturn)
 {
 	if (CoopManager.IsCoopModeEnabled())
 	{

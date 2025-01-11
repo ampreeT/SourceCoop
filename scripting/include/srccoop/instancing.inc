@@ -85,7 +85,7 @@ public void Hook_Instancing_ItemSpawn(int iEntIndex)
 }
 
 // Do not allow to to touch-pickup consumed items
-public MRESReturn Hook_Instancing_OnTryPickUpPre(int _this, Handle hReturn, Handle hParams)
+public MRESReturn Hook_Instancing_OnTryPickUpPre(int _this, DHookReturn hReturn, DHookParam hParams)
 {
 	CBasePlayer pPlayer = CBasePlayer(DHookGetParam(hParams, 1));
 	if (pPlayer.IsPlayer())
@@ -101,7 +101,7 @@ public MRESReturn Hook_Instancing_OnTryPickUpPre(int _this, Handle hReturn, Hand
 }
 
 // Store this newly consumed item
-public MRESReturn Hook_Instancing_OnTryPickUpPost(int _this, Handle hReturn, Handle hParams)
+public MRESReturn Hook_Instancing_OnTryPickUpPost(int _this, DHookReturn hReturn, DHookParam hParams)
 {
 	bool bPickedUp = DHookGetReturn(hReturn);
 	if (bPickedUp)

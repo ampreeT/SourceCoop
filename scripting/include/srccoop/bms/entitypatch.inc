@@ -10,7 +10,7 @@ static bool g_pPlayerIronsightClassic[MAXPLAYERS + 1];
 // scientists should classify as allies (in MP, base function returns false when player is not passed in)
 // this allows npcs to pass filter in "player ally only" triggers
 //------------------------------------------------------
-public MRESReturn Hook_IsPlayerAlly(int _this, Handle hReturn, Handle hParams)
+public MRESReturn Hook_IsPlayerAlly(int _this, DHookReturn hReturn, DHookParam hParams)
 {
 	DHookSetReturn(hReturn, true);
 	return MRES_Supercede;
@@ -61,7 +61,7 @@ public void Hook_GargSpawnPost(int iEntIndex)
 // CAI_BaseNPC - npc_gargantua
 // fix the 'ChasePlayer' input by setting a target ent.
 //------------------------------------------------------
-public MRESReturn Hook_GargAcceptInputPost(int _this, Handle hReturn, Handle hParams)
+public MRESReturn Hook_GargAcceptInputPost(int _this, DHookReturn hReturn, DHookParam hParams)
 {
 	if (!DHookIsNullParam(hParams, 1))
 	{
@@ -257,7 +257,7 @@ public void Hook_XenTurretSpawnPost(int iEntIndex)
 //------------------------------------------------------
 CBaseEntity g_pActiveMarionettist[MAXPLAYERS+1] = {view_as<CBaseEntity>(-1), ...};
 
-public MRESReturn Hook_MarionettistAcceptInput(int _this, Handle hReturn, Handle hParams)
+public MRESReturn Hook_MarionettistAcceptInput(int _this, DHookReturn hReturn, DHookParam hParams)
 {
 	if (CoopManager.IsCoopModeEnabled())
 	{
@@ -538,7 +538,7 @@ public MRESReturn Hook_MusicTrackThink(int _this)
 	return MRES_Supercede;
 }
 
-public MRESReturn Hook_MusicTrackAcceptInput(int _this, Handle hReturn, Handle hParams)
+public MRESReturn Hook_MusicTrackAcceptInput(int _this, DHookReturn hReturn, DHookParam hParams)
 {
 	char szInputType[MAX_FORMAT];
 	char szBuffer[MAX_VALUE];
@@ -643,7 +643,7 @@ public MRESReturn Hook_TestGroundMove(Address _this, DHookReturn hReturn, DHookP
 // `env_xen_portal_effect`
 // Fixes xen portals not pushing players.
 //------------------------------------------------------
-public MRESReturn Hook_XenPortalEffect_AcceptInput(int _this, Handle hReturn, Handle hParams)
+public MRESReturn Hook_XenPortalEffect_AcceptInput(int _this, DHookReturn hReturn, DHookParam hParams)
 {
 	char szInputType[MAX_FORMAT];
 	DHookGetParamString(hParams, 1, szInputType, sizeof(szInputType));
@@ -818,7 +818,7 @@ public void Hook_GrenadeFragSpawnPost(const int iEntIndex)
 // weapon_357/weapon_crossbow
 // New constructed logic of toggling ironsights.
 //------------------------------------------------------
-public MRESReturn Hook_ToggleIronsights(int _this, Handle hParams)
+public MRESReturn Hook_ToggleIronsights(int _this, DHookParam hParams)
 {
 	if (CoopManager.IsFeatureEnabled(FT_SP_WEAPONS))
 	{
@@ -881,7 +881,7 @@ public MRESReturn Hook_ToggleIronsights(int _this, Handle hParams)
 // weapon_357
 // Fixes the shooting animation played while using ironsights.
 //------------------------------------------------------
-public MRESReturn Hook_IronsightGetPrimaryAttackActivity(int _this, Handle hReturn)
+public MRESReturn Hook_IronsightGetPrimaryAttackActivity(int _this, DHookReturn hReturn)
 {
 	if (CoopManager.IsFeatureEnabled(FT_SP_WEAPONS))
 	{
@@ -903,7 +903,7 @@ public MRESReturn Hook_IronsightGetPrimaryAttackActivity(int _this, Handle hRetu
 // weapon_crossbow
 // Fixes the shooting animation played while using ironsights.
 //------------------------------------------------------
-public MRESReturn Hook_CrossbowGetPrimaryAttackActivity(int _this, Handle hReturn)
+public MRESReturn Hook_CrossbowGetPrimaryAttackActivity(int _this, DHookReturn hReturn)
 {
 	if (CoopManager.IsFeatureEnabled(FT_SP_WEAPONS))
 	{
@@ -935,7 +935,7 @@ void ConvarQuery_IronsightClassic(QueryCookie hCookie, int iClient, ConVarQueryR
 //------------------------------------------------------
 // Caches the client settings used for ironsights.
 //------------------------------------------------------
-public MRESReturn Hook_IronsightDeployPost_SaveSettings(int _this, Handle hReturn)
+public MRESReturn Hook_IronsightDeployPost_SaveSettings(int _this, DHookReturn hReturn)
 {
 	if (CoopManager.IsFeatureEnabled(FT_SP_WEAPONS))
 	{
@@ -953,7 +953,7 @@ public MRESReturn Hook_IronsightDeployPost_SaveSettings(int _this, Handle hRetur
 // grenade_bolt
 // Disables explosive bolts by blocking the call.
 //------------------------------------------------------
-public MRESReturn Hook_GrenadeBoltAcceptInput(int _this, Handle hReturn, Handle hParams)
+public MRESReturn Hook_GrenadeBoltAcceptInput(int _this, DHookReturn hReturn, DHookParam hParams)
 {
 	if (CoopManager.IsFeatureEnabled(FT_SP_WEAPONS))
 	{
@@ -972,7 +972,7 @@ public MRESReturn Hook_GrenadeBoltAcceptInput(int _this, Handle hReturn, Handle 
 // weapon_crossbow
 // Sets the skin of the crossbow.
 //------------------------------------------------------
-public MRESReturn Hook_CrossbowDeployPost(int _this, Handle hReturn)
+public MRESReturn Hook_CrossbowDeployPost(int _this, DHookReturn hReturn)
 {
 	if (CoopManager.IsFeatureEnabled(FT_SP_WEAPONS))
 	{
@@ -998,7 +998,7 @@ public MRESReturn Hook_CrossbowDeployPost(int _this, Handle hReturn)
 // TODO: Hooking ItemPostFrame with IsMultiplayer = false causes prediction issues.
 // Fix this by not calling IsMultiplayer = false.
 //------------------------------------------------------
-public MRESReturn Hook_CrossbowItemPostFrame(int _this, Handle hReturn)
+public MRESReturn Hook_CrossbowItemPostFrame(int _this, DHookReturn hReturn)
 {
 	if (CoopManager.IsFeatureEnabled(FT_SP_WEAPONS))
 	{
@@ -1026,7 +1026,7 @@ public MRESReturn Hook_CrossbowItemPostFrame(int _this, Handle hReturn)
 // weapon_crossbow
 // See `Hook_CrossbowItemPostFrame` for details.
 //------------------------------------------------------
-public MRESReturn Hook_CrossbowItemPostFramePost(int _this, Handle hReturn)
+public MRESReturn Hook_CrossbowItemPostFramePost(int _this, DHookReturn hReturn)
 {
 	if (CoopManager.IsFeatureEnabled(FT_SP_WEAPONS))
 	{
@@ -1043,7 +1043,7 @@ public MRESReturn Hook_CrossbowItemPostFramePost(int _this, Handle hReturn)
 // - Sets the rearm bool
 // - Sets animations
 //------------------------------------------------------
-public MRESReturn Hook_CrossbowPrimaryAttack(int _this, Handle hReturn, Handle hParams)
+public MRESReturn Hook_CrossbowPrimaryAttack(int _this, DHookReturn hReturn, DHookParam hParams)
 {
 	if (CoopManager.IsFeatureEnabled(FT_SP_WEAPONS))
 	{
@@ -1056,7 +1056,7 @@ public MRESReturn Hook_CrossbowPrimaryAttack(int _this, Handle hReturn, Handle h
 // weapon_crossbow
 // See `Hook_CrossbowPrimaryAttack` for details.
 //------------------------------------------------------
-public MRESReturn Hook_CrossbowPrimaryAttackPost(int _this, Handle hReturn, Handle hParams)
+public MRESReturn Hook_CrossbowPrimaryAttackPost(int _this, DHookReturn hReturn, DHookParam hParams)
 {
 	if (CoopManager.IsFeatureEnabled(FT_SP_WEAPONS))
 	{
@@ -1069,7 +1069,7 @@ public MRESReturn Hook_CrossbowPrimaryAttackPost(int _this, Handle hReturn, Hand
 // weapon_crossbow
 // Fixes the rearm animation when pulling out the crossbow.
 //------------------------------------------------------
-public MRESReturn Hook_CrossbowGetDrawActivity(int _this, Handle hReturn)
+public MRESReturn Hook_CrossbowGetDrawActivity(int _this, DHookReturn hReturn)
 {
 	if (CoopManager.IsFeatureEnabled(FT_SP_WEAPONS))
 	{
@@ -1082,7 +1082,7 @@ public MRESReturn Hook_CrossbowGetDrawActivity(int _this, Handle hReturn)
 // weapon_crossbow
 // See `Hook_CrossbowGetDrawActivity` for details.
 //------------------------------------------------------
-public MRESReturn Hook_CrossbowGetDrawActivityPost(int _this, Handle hReturn)
+public MRESReturn Hook_CrossbowGetDrawActivityPost(int _this, DHookReturn hReturn)
 {
 	if (CoopManager.IsFeatureEnabled(FT_SP_WEAPONS))
 	{
@@ -1096,7 +1096,7 @@ public MRESReturn Hook_CrossbowGetDrawActivityPost(int _this, Handle hReturn)
 // `CWeapon_Crossbow::FireBolt` is only called by `CWeapon_Crossbow::PrimaryAttack` which is hooked.
 // If this gets called with singleplayer being set, this will crash the server.
 //------------------------------------------------------
-public MRESReturn Hook_CrossbowFireBolt(int _this, Handle hReturn, Handle hParams)
+public MRESReturn Hook_CrossbowFireBolt(int _this, DHookReturn hReturn, DHookParam hParams)
 {
 	if (CoopManager.IsFeatureEnabled(FT_SP_WEAPONS))
 	{
@@ -1109,7 +1109,7 @@ public MRESReturn Hook_CrossbowFireBolt(int _this, Handle hReturn, Handle hParam
 // weapon_crossbow
 // See `Hook_CrossbowFireBolt` for details.
 //------------------------------------------------------
-public MRESReturn Hook_CrossbowFireBoltPost(int _this, Handle hReturn, Handle hParams)
+public MRESReturn Hook_CrossbowFireBoltPost(int _this, DHookReturn hReturn, DHookParam hParams)
 {
 	if (CoopManager.IsFeatureEnabled(FT_SP_WEAPONS))
 	{
@@ -1122,7 +1122,7 @@ public MRESReturn Hook_CrossbowFireBoltPost(int _this, Handle hReturn, Handle hP
 // weapon_tau
 // Fixes the tau velocity.
 //------------------------------------------------------
-public MRESReturn Hook_TauFireBeam(int _this, Handle hReturn)
+public MRESReturn Hook_TauFireBeam(int _this, DHookReturn hReturn)
 {
 	if (CoopManager.IsFeatureEnabled(FT_SP_WEAPONS))
 	{
@@ -1135,7 +1135,7 @@ public MRESReturn Hook_TauFireBeam(int _this, Handle hReturn)
 // weapon_tau
 // See `Hook_TauFireBeamPost` for details.
 //------------------------------------------------------
-public MRESReturn Hook_TauFireBeamPost(int _this, Handle hReturn)
+public MRESReturn Hook_TauFireBeamPost(int _this, DHookReturn hReturn)
 {
 	if (CoopManager.IsFeatureEnabled(FT_SP_WEAPONS))
 	{
@@ -1165,7 +1165,7 @@ public MRESReturn Hook_Dissolve(int _this, DHookReturn hReturn, DHookParam hPara
 
 // Switches between using singleplayer and multiplayer weapon values.
 // This will get triggered by the command `params_reload_server`.
-public MRESReturn Hook_CParamsManager_InitInstances(Address _this, Handle hReturn, Handle hParams)
+public MRESReturn Hook_CParamsManager_InitInstances(Address _this, DHookReturn hReturn, DHookParam hParams)
 {
 	// TODO:
 	// Currently, this is getting only called during level init, but

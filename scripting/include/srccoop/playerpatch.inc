@@ -8,7 +8,7 @@ static float g_flPlayerMaxSpeed[MAXPLAYERS + 1];
 //------------------------------------------------------
 // Allow flashlight
 //------------------------------------------------------
-public MRESReturn Hook_FAllowFlashlight(Handle hReturn, Handle hParams)
+public MRESReturn Hook_FAllowFlashlight(DHookReturn hReturn, DHookParam hParams)
 {
 	DHookSetReturn(hReturn, mp_flashlight.BoolValue);
 	return MRES_Supercede;
@@ -333,7 +333,7 @@ public Action PlayerSoundListener(int iClients[MAXPLAYERS], int& iNumClients, ch
 	return Plugin_Continue;
 }
 
-public MRESReturn Hook_SetSuitUpdate(int _this, Handle hParams)
+public MRESReturn Hook_SetSuitUpdate(int _this, DHookParam hParams)
 {
 	if (CoopManager.IsFeatureEnabled(FT_HEV_SOUNDS))
 	{
@@ -342,7 +342,7 @@ public MRESReturn Hook_SetSuitUpdate(int _this, Handle hParams)
 	return MRES_Ignored;
 }
 
-public MRESReturn Hook_SetSuitUpdatePost(int _this, Handle hParams)
+public MRESReturn Hook_SetSuitUpdatePost(int _this, DHookParam hParams)
 {
 	g_bIsMultiplayerOverride = true;
 	return MRES_Ignored;
@@ -353,7 +353,7 @@ public MRESReturn Hook_SetSuitUpdatePost(int _this, Handle hParams)
 // Prevent input of kill to player as this will put the player in a hanging state
 // This can occur in some maps where a trigger is set to kill the !activator and the player so happens to be there
 //------------------------------------------------------
-public MRESReturn Hook_PlayerAcceptInput(int _this, Handle hReturn, Handle hParams)
+public MRESReturn Hook_PlayerAcceptInput(int _this, DHookReturn hReturn, DHookParam hParams)
 {
 	if (!DHookIsNullParam(hParams, 1))
 	{
@@ -384,7 +384,7 @@ public void PlayerPatch_OnClientPutInServer(const int iClient)
 //------------------------------------------------------
 // Player spawn
 //------------------------------------------------------
-public MRESReturn Hook_PlayerSpawn(int _this, Handle hReturn, Handle hParams)
+public MRESReturn Hook_PlayerSpawn(int _this, DHookReturn hReturn, DHookParam hParams)
 {
 	if (CoopManager.IsCoopModeEnabled())
 	{
@@ -405,7 +405,7 @@ public MRESReturn Hook_PlayerSpawn(int _this, Handle hReturn, Handle hParams)
 //------------------------------------------------------
 // Player spawn post
 //------------------------------------------------------
-public MRESReturn Hook_PlayerSpawnPost(int iClient, Handle hReturn, Handle hParams)
+public MRESReturn Hook_PlayerSpawnPost(int iClient, DHookReturn hReturn, DHookParam hParams)
 {
 	if (!CoopManager.IsCoopModeEnabled())
 		return MRES_Ignored;
@@ -683,7 +683,7 @@ public Action Hook_PlayerTakeDamage(int victim, int &attacker, int &inflictor, f
 
 // Fixes hit registration being off by 1 tick.
 // Credits to Xutax_Kamay (https://forums.alliedmods.net/showthread.php?t=315405)
-public MRESReturn Hook_PlayerWeaponShootPosition_Post(int iClient, Handle hReturn)
+public MRESReturn Hook_PlayerWeaponShootPosition_Post(int iClient, DHookReturn hReturn)
 {
 	CBasePlayer pPlayer = CBasePlayer(iClient);
 	// Objects that are carried will call this hook and lag further behind the desired position.
@@ -728,7 +728,7 @@ public MRESReturn Hook_PlayerChangeTeam(int iClient, DHookParam hParams)
 	return MRES_Ignored;
 }
 
-public MRESReturn Hook_PlayerChangeTeamPost(int iClient, Handle hParams)
+public MRESReturn Hook_PlayerChangeTeamPost(int iClient, DHookParam hParams)
 {
 	if (CoopManager.IsCoopModeEnabled())
 	{
@@ -752,7 +752,7 @@ public MRESReturn Hook_PlayerChangeTeamPost(int iClient, Handle hParams)
 //------------------------------------------------------
 // NoBlock
 //------------------------------------------------------
-public MRESReturn Hook_PlayerShouldCollide(int _this, Handle hReturn, Handle hParams)
+public MRESReturn Hook_PlayerShouldCollide(int _this, DHookReturn hReturn, DHookParam hParams)
 {
 	if (CoopManager.IsFeatureEnabled(FT_NOBLOCK))
 	{
@@ -770,7 +770,7 @@ public MRESReturn Hook_PlayerShouldCollide(int _this, Handle hReturn, Handle hPa
 // Pickup_ForcePlayerToDropThisObject
 // reconstructed to avoid crash on UTIL_GetLocalPlayer nullptr
 //------------------------------------------------------
-public MRESReturn Hook_ForcePlayerToDropThisObject(Handle hParams)
+public MRESReturn Hook_ForcePlayerToDropThisObject(DHookParam hParams)
 {
 	if (!DHookIsNullParam(hParams, 1))
 	{
