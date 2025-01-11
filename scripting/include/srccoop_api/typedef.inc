@@ -138,7 +138,6 @@
 #include <srccoop_api/typedef/common/AI_SleepState_t.inc>
 #include <srccoop_api/typedef/common/AmmoType_t.inc>
 #include <srccoop_api/typedef/common/BeamType_t.inc>
-#include <srccoop_api/typedef/common/Class_T.inc>
 #include <srccoop_api/typedef/common/Collision_Group_t.inc>
 #include <srccoop_api/typedef/common/Disposition_t.inc>
 #include <srccoop_api/typedef/common/EntityDissolveType_t.inc>
@@ -161,10 +160,12 @@
 #include <srccoop_api/typedef/common/WaterLevel_t.inc>
 
 #if defined SRCCOOP_BLACKMESA
+#include <srccoop_api/typedef/bms/Class_T.inc>
 #include <srccoop_api/typedef/bms/gamerules.inc>
 #include <srccoop_api/typedef/bms/Activity.inc>
 #endif
 
 #if defined SRCCOOP_HL2DM
+#include <srccoop_api/typedef/hl2dm/Class_T.inc>
 #include <srccoop_api/typedef/hl2dm/Activity.inc>
 #endif
