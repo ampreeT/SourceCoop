@@ -1129,7 +1129,7 @@ public MRESReturn Hook_BaseNpcUpdateSleepState(int _this, DHookParam hParams)
 		// Don't let an NPC sleep if they're running a script!
 		if (!pBaseNPC.IsInAScript() && pBaseNPC.GetState() != NPC_STATE_SCRIPT)
 		{
-			if (pBaseNPC.HasSleepFlags(AI_SLEEP_FLAG_AUTO_PVS))
+			if (pBaseNPC.m_SleepFlags & AI_SLEEP_FLAG_AUTO_PVS)
 			{
 				if (!pBaseNPC.HasCondition(view_as<int>(COND_IN_PVS)))
 				{
@@ -1138,13 +1138,13 @@ public MRESReturn Hook_BaseNpcUpdateSleepState(int _this, DHookParam hParams)
 				}
 			}
 
-			if (pBaseNPC.HasSleepFlags(AI_SLEEP_FLAG_AUTO_PVS_AFTER_PVS))
+			if (pBaseNPC.m_SleepFlags & AI_SLEEP_FLAG_AUTO_PVS_AFTER_PVS)
 			{
 				if (pBaseNPC.HasCondition(view_as<int>(COND_IN_PVS)))
 				{
 					// OK, we're in the player's PVS. Now switch to regular old AUTO_PVS sleep rules.
-					pBaseNPC.AddSleepFlags(AI_SLEEP_FLAG_AUTO_PVS);
-					pBaseNPC.RemoveSleepFlags(AI_SLEEP_FLAG_AUTO_PVS_AFTER_PVS);
+					pBaseNPC.m_SleepFlags |= AI_SLEEP_FLAG_AUTO_PVS;
+					pBaseNPC.m_SleepFlags &= ~AI_SLEEP_FLAG_AUTO_PVS_AFTER_PVS;
 				}
 			}
 		}
