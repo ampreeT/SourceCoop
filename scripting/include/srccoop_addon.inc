@@ -41,6 +41,7 @@ stock GameData InitSourceCoopAddon(bool bCloseGameData = true)
 	if (bCloseGameData)
 	{
 		CloseHandle(pGameConfig);
+        return null;
 	}
 	return pGameConfig;
 }
