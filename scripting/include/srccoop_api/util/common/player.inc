@@ -153,7 +153,7 @@ stock CanTeleportResult CanTeleportPlayer(CBasePlayer pPlayer, float vecOrigin[3
 	return CAN_TP_NO;
 }
 
-static bool CanTeleportPlayer_Offset(float vecOrigin[3], float yaw, float distance, float z)
+static stock bool CanTeleportPlayer_Offset(float vecOrigin[3], float yaw, float distance, float z)
 {
 	float newPos[3], angles[3];
 	newPos = vecOrigin; angles[1] = yaw;
@@ -175,7 +175,7 @@ static bool CanTeleportPlayer_Offset(float vecOrigin[3], float yaw, float distan
   	return false;
 }
 
-static bool CanTeleportPlayer_TraceFilter(int entity, int mask, any data)
+static stock bool CanTeleportPlayer_TraceFilter(int entity, int mask, any data)
 {
 	CBaseEntity pEntity = CBaseEntity(entity);
 	if (pEntity.IsPlayer() || pEntity.IsPickupItem())
