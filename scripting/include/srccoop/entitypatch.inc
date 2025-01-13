@@ -586,7 +586,6 @@ public MRESReturn Hook_SpeedmodAcceptInput(int _this, DHookReturn hReturn, DHook
 			DHookGetParamString(hParams, 1, szInputType, sizeof(szInputType));
 			if (strcmp(szInputType, "ModifySpeedAll", false) == 0) // new input
 			{
-				fieldtype_t fieldType = DHookGetParamObjectPtrVar(hParams, 4, 16, ObjectValueType_Int);
 				char szParam[32];
 				DHookGetParamObjectPtrString(hParams, 4, 0, ObjectValueType_String, szParam, sizeof(szParam));
 				bHookSkip = true;
