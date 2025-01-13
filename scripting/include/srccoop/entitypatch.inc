@@ -149,7 +149,6 @@ public MRESReturn Hook_UTIL_GetLocalPlayer(DHookReturn hReturn)
 				return MRES_Supercede;
 			}
 		}
-		// LogDebug("Overriding UTIL_GetLocalPlayer");
 		DHookSetReturn(hReturn, pPlayer.entindex);
 		return MRES_Supercede;
 	}
@@ -491,7 +490,6 @@ public MRESReturn Hook_PointTeleportAcceptInput(int _this, DHookReturn hReturn, 
 public MRESReturn Hook_PointViewcontrolAcceptInput(int _this, DHookReturn hReturn, DHookParam hParams)
 {
 	static bool bHookSkip = false;
-	LogDebug("Hook_PointViewcontrolAcceptInput ent=%d", _this);
 	if (!bHookSkip)
 	{
 		if (!DHookIsNullParam(hParams, 1))
@@ -499,7 +497,6 @@ public MRESReturn Hook_PointViewcontrolAcceptInput(int _this, DHookReturn hRetur
 			CBaseEntity pThis = CBaseEntity(_this);
 			char szInputType[MAX_FORMAT];
 			DHookGetParamString(hParams, 1, szInputType, sizeof(szInputType));
-			LogDebug("Hook_PointViewcontrolAcceptInput szInputType=%s", szInputType);
 
 			if (strcmp(szInputType, "Disable", false) == 0)
 			{
@@ -547,7 +544,6 @@ public MRESReturn Hook_PointViewcontrolAcceptInput(int _this, DHookReturn hRetur
 				}
 				else
 				{
-					LogDebug("Hook_PointViewcontrolAcceptInput activator not a player > EnableAll > MRES_Supercede");
 					AcceptEntityInput(_this, "EnableAll");
 					DHookSetReturn(hReturn, true);
 					return MRES_Supercede;
@@ -563,12 +559,10 @@ public MRESReturn Hook_PointViewcontrolAcceptInput(int _this, DHookReturn hRetur
 					}
 				}
 				DHookSetReturn(hReturn, true);
-				LogDebug("Hook_PointViewcontrolAcceptInput MRES_Supercede");
 				return MRES_Supercede;
 			}
 		}
 	}
-	LogDebug("Hook_PointViewcontrolAcceptInput MRES_Ignored");
 	return MRES_Ignored;
 }
 
@@ -590,13 +584,11 @@ public MRESReturn Hook_SpeedmodAcceptInput(int _this, DHookReturn hReturn, DHook
 		{
 			char szInputType[MAX_FORMAT];
 			DHookGetParamString(hParams, 1, szInputType, sizeof(szInputType));
-			LogDebug("Hook_SpeedmodAcceptInput szInputType=%s", szInputType);
 			if (strcmp(szInputType, "ModifySpeedAll", false) == 0) // new input
 			{
 				fieldtype_t fieldType = DHookGetParamObjectPtrVar(hParams, 4, 16, ObjectValueType_Int);
 				char szParam[32];
 				DHookGetParamObjectPtrString(hParams, 4, 0, ObjectValueType_String, szParam, sizeof(szParam));
-				LogDebug("Hook_SpeedmodAcceptInput ft=%d, %s", fieldType, szParam);
 				bHookSkip = true;
 				for (int i = 1; i <= MaxClients; i++)
 				{
@@ -707,7 +699,6 @@ public MRESReturn Hook_ClientCommandAcceptInput(int _this, DHookReturn hReturn, 
 			
 			char szParam[MAX_FORMAT];
 			DHookGetParamObjectPtrString(hParams, 4, 0, ObjectValueType_String, szParam, sizeof(szParam));
-			LogDebug("Hook_ClientCommandAcceptInput input=%s, param=%s", szInput, szParam);
 			TrimString(szParam);
 			
 			if (CoopManager.IsFeatureEnabled(FT_AUTODETECT_MAP_END))
@@ -916,7 +907,6 @@ public MRESReturn Hook_ResolveNames(int _this)
 //------------------------------------------------------
 public MRESReturn Hook_CanSelectSchedule(DHookReturn hReturn)
 {
-	LogDebug("Hook_CanSelectSchedule");
 	// ToDo: acutally check conditions as in original code
 	DHookSetReturn(hReturn, true);
 	return MRES_Supercede;
@@ -928,7 +918,6 @@ public MRESReturn Hook_CanSelectSchedule(DHookReturn hReturn)
 //------------------------------------------------------
 public MRESReturn Hook_AIConditionsThink(int _this)
 {
-	LogDebug("Hook_AIConditionsThink");
 	CAI_ScriptConditions pThis = CAI_ScriptConditions(_this);
 	CBasePlayer pLocalPlayerOverride = NULL_CBASEENTITY;
 
