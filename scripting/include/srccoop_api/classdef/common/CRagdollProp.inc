@@ -11,14 +11,17 @@ methodmap CRagdollProp < CBaseAnimating
 		StartPrepSDKCall(SDKCall_Static);
 		if (!PrepSDKCall_SetFromConf(hGameConfig, SDKConf_Signature, szCreateServerRagdoll))
 			LogMessage("Could not obtain gamedata signature %s", szCreateServerRagdoll);
-		PrepSDKCall_SetReturnInfo(SDKType_CBaseEntity, SDKPass_Pointer);
-		PrepSDKCall_AddParameter(SDKType_CBaseEntity, SDKPass_Pointer); // CBaseAnimating *pAnimating
-		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain); // int forceBone
-		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain); // const CTakeDamageInfo &info
-		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain); // int collisionGroup
-		PrepSDKCall_AddParameter(SDKType_Bool, SDKPass_Plain); // bool bUseLRURetirement
-		if (!(g_pCreateServerRagdoll = EndPrepSDKCall()))
-			SetFailState("Could not prep SDK call %s", szCreateServerRagdoll);
+		else
+		{
+			PrepSDKCall_SetReturnInfo(SDKType_CBaseEntity, SDKPass_Pointer);
+			PrepSDKCall_AddParameter(SDKType_CBaseEntity, SDKPass_Pointer); // CBaseAnimating *pAnimating
+			PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain); // int forceBone
+			PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain); // const CTakeDamageInfo &info
+			PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain); // int collisionGroup
+			PrepSDKCall_AddParameter(SDKType_Bool, SDKPass_Plain); // bool bUseLRURetirement
+			if (!(g_pCreateServerRagdoll = EndPrepSDKCall()))
+				SetFailState("Could not prep SDK call %s", szCreateServerRagdoll);
+		}
 	}
 	public CRagdollProp(const int iEntIndex = -1)
 	{
