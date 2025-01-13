@@ -1,8 +1,3 @@
-#if defined _srccoop_included
-	#endinput
-#endif
-#define _srccoop_included
-
 #pragma newdecls required
 #pragma semicolon 1
 
@@ -142,22 +137,19 @@
 // Includes
 //------------------------------------------------------
 
-
 #include <sourcemod>
 #include <sdktools>
 #include <sdkhooks>
 #include <regex>
 #include <dhooks>
 #include <topmenus>
-#include <sourcescramble>
 
+#include <sourcescramble>
 #include <logdebug>
 
-#include <srccoop/util/assert>
 #include <srccoop/typedef>
 #include <srccoop/public>
-#include <srccoop_api/classdef>
-#include <srccoop/utils>
+#include <srccoop_api>
 #include <srccoop/config>
 #include <srccoop/features>
 #include <srccoop/globals>
@@ -168,9 +160,9 @@
 #include <srccoop/manager_persistence>
 #include <srccoop/entitypatch>
 #if defined SRCCOOP_BLACKMESA
-#include <srccoop/blackmesa/entitypatch>
-#include <srccoop/blackmesa/deathnotice>
-#include <srccoop/blackmesa/idle_anims>
+#include <srccoop/bms/entitypatch>
+#include <srccoop/bms/deathnotice>
+#include <srccoop/bms/idle_anims>
 #elseif defined SRCCOOP_HL2DM
 #include <srccoop/hl2dm/deathnotice>
 #endif

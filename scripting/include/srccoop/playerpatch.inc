@@ -1,19 +1,17 @@
-#if defined _srccoop_playerpatch_included
- #endinput
-#endif
-#define _srccoop_playerpatch_included
-
 #pragma newdecls required
 #pragma semicolon 1
 
 static float g_vec3PlayerShootPosition[MAXPLAYERS + 1][3];
-static bool g_bSetJumpModuleActive[MAXPLAYERS + 1];
 static float g_flPlayerMaxSpeed[MAXPLAYERS + 1];
+
+#if defined PLAYERPATCH_BM_CLIENT_PREDICTION
+static bool g_bSetJumpModuleActive[MAXPLAYERS + 1];
+#endif
 
 //------------------------------------------------------
 // Allow flashlight
 //------------------------------------------------------
-public MRESReturn Hook_FAllowFlashlight(Handle hReturn, Handle hParams)
+public MRESReturn Hook_FAllowFlashlight(DHookReturn hReturn, DHookParam hParams)
 {
 	DHookSetReturn(hReturn, mp_flashlight.BoolValue);
 	return MRES_Supercede;
@@ -90,7 +88,7 @@ public void Hook_PlayerPreThinkPost(int iClient)
 		{
 			if (g_bSetJumpModuleActive[iClient])
 			{
-        		pBlackMesaPlayer.SendConVarValueBool(sv_jump_long_enabled, false);
+        		pBlackMesaPlayer.SendConVarValueInt(sv_jump_long_enabled, false);
 				g_bSetJumpModuleActive[iClient] = false;
 			}
 		}
@@ -98,7 +96,7 @@ public void Hook_PlayerPreThinkPost(int iClient)
 		{
 			if (!g_bSetJumpModuleActive[iClient])
 			{
-        		pBlackMesaPlayer.SendConVarValueBool(sv_jump_long_enabled, sv_jump_long_enabled.BoolValue);
+        		pBlackMesaPlayer.SendConVarValueInt(sv_jump_long_enabled, sv_jump_long_enabled.BoolValue);
 				g_bSetJumpModuleActive[iClient] = true;
 			}
 		}
@@ -111,7 +109,7 @@ public void Hook_PlayerPreThinkPost(int iClient)
 			if (pPlayer.IsCarryingObject())
 			{
 				// fix clientside prediction errors when dropping objects
-				PreventWeaponFiring(pWeapon, 1.0);
+				pWeapon.DelayNextAttack(1.0);
 			}
 			else if (pPlayer.GetWaterLevel() == WL_Eyes)
 			{
@@ -125,7 +123,7 @@ public void Hook_PlayerPreThinkPost(int iClient)
 						{
 							if (!pWeapon.CanFireUnderwater() && pWeapon.GetPrimaryAmmoType() != -1)
 							{
-								PreventWeaponFiring(pWeapon, 0.2);
+								pWeapon.DelayNextAttack(0.2);
 							}
 						}
 					}
@@ -338,7 +336,7 @@ public Action PlayerSoundListener(int iClients[MAXPLAYERS], int& iNumClients, ch
 	return Plugin_Continue;
 }
 
-public MRESReturn Hook_SetSuitUpdate(int _this, Handle hParams)
+public MRESReturn Hook_SetSuitUpdate(int _this, DHookParam hParams)
 {
 	if (CoopManager.IsFeatureEnabled(FT_HEV_SOUNDS))
 	{
@@ -347,7 +345,7 @@ public MRESReturn Hook_SetSuitUpdate(int _this, Handle hParams)
 	return MRES_Ignored;
 }
 
-public MRESReturn Hook_SetSuitUpdatePost(int _this, Handle hParams)
+public MRESReturn Hook_SetSuitUpdatePost(int _this, DHookParam hParams)
 {
 	g_bIsMultiplayerOverride = true;
 	return MRES_Ignored;
@@ -358,7 +356,7 @@ public MRESReturn Hook_SetSuitUpdatePost(int _this, Handle hParams)
 // Prevent input of kill to player as this will put the player in a hanging state
 // This can occur in some maps where a trigger is set to kill the !activator and the player so happens to be there
 //------------------------------------------------------
-public MRESReturn Hook_PlayerAcceptInput(int _this, Handle hReturn, Handle hParams)
+public MRESReturn Hook_PlayerAcceptInput(int _this, DHookReturn hReturn, DHookParam hParams)
 {
 	if (!DHookIsNullParam(hParams, 1))
 	{
@@ -389,7 +387,7 @@ public void PlayerPatch_OnClientPutInServer(const int iClient)
 //------------------------------------------------------
 // Player spawn
 //------------------------------------------------------
-public MRESReturn Hook_PlayerSpawn(int _this, Handle hReturn, Handle hParams)
+public MRESReturn Hook_PlayerSpawn(int _this, DHookReturn hReturn, DHookParam hParams)
 {
 	if (CoopManager.IsCoopModeEnabled())
 	{
@@ -410,7 +408,7 @@ public MRESReturn Hook_PlayerSpawn(int _this, Handle hReturn, Handle hParams)
 //------------------------------------------------------
 // Player spawn post
 //------------------------------------------------------
-public MRESReturn Hook_PlayerSpawnPost(int iClient, Handle hReturn, Handle hParams)
+public MRESReturn Hook_PlayerSpawnPost(int iClient, DHookReturn hReturn, DHookParam hParams)
 {
 	if (!CoopManager.IsCoopModeEnabled())
 		return MRES_Ignored;
@@ -485,7 +483,7 @@ public MRESReturn Hook_PlayerSpawnPost(int iClient, Handle hReturn, Handle hPara
 				// Hide team select
 				pPlayer.SendCommand("hidepanel team");
 				pPlayer.SendCommand("hidepanel deathmatch");
-				pPlayer.SetTeam(TEAM_SCIENTIST);
+				pPlayer.SetTeam(TEAM_TWO);
 				g_bPostTeamSelect[iClient] = true;
 			}
 			else
@@ -565,8 +563,9 @@ void PlayerPatch_ApplyServerRagdoll(const CBasePlayer pPlayer, const CTakeDamage
 		return;
 	}
 	
+	CBaseAnimating pSourceEntity = pPlayer;
+	
 	#if defined SRCCOOP_BLACKMESA
-	int iRagdollInheritIndex;
 	if (g_pIdle[pPlayer.entindex].m_pModel.IsValid())
 	{
 		// Player is currently using model for idle animations.
@@ -574,43 +573,18 @@ void PlayerPatch_ApplyServerRagdoll(const CBasePlayer pPlayer, const CTakeDamage
 		// The model that was parented is cleared since `CreateServerRagdoll` will not work otherwise.
 		pPlayer.m_fEffects |= EF_NODRAW;
 		g_pIdle[pPlayer.entindex].m_pModel.ClearParent();
-		iRagdollInheritIndex = g_pIdle[pPlayer.entindex].m_pModel.entindex;
+		pSourceEntity = g_pIdle[pPlayer.entindex].m_pModel;
 	}
 	else
 	{
-		pPlayer.m_fEffects &= ~EF_NODRAW;
-		iRagdollInheritIndex = pPlayer.entindex;
+		pSourceEntity.m_fEffects &= ~EF_NODRAW;
 	}
-	#else
-	int iRagdollInheritIndex = pPlayer.entindex;
 	#endif
 
-	// TODO:
-	// Move `g_pCreateServerRagdoll` into `CRagdollProp`.
-	pRagdoll = CRagdollProp(SDKCall(g_pCreateServerRagdoll, iRagdollInheritIndex, pPlayer.GetForceBone(), pTakeDamageInfo, COLLISION_GROUP_DEBRIS_TRIGGER, false));
+	pRagdoll = CreateServerRagdoll(pSourceEntity, pPlayer.GetForceBone(), pTakeDamageInfo, COLLISION_GROUP_DEBRIS_TRIGGER, false);
 	if (pRagdoll != NULL_CBASEENTITY)
 	{
 		SDKHook(pRagdoll.entindex, SDKHook_OnTakeDamage, Hook_NoDmg);
-
-		// TODO: If killed by a player, attach ragdoll to barnacle
-		//CBaseEntity pInflictor = pTakeDamageInfo.GetInflictor();
-		//if (pInflictor != NULL_CBASEENTITY)
-		//{
-		//	char szClassname[MAX_CLASSNAME];
-		//	pInflictor.GetClassname(szClassname, sizeof(szClassname));
-		//	if (strcmp(szClassname, "npc_barnacle") == 0)
-		//	{
-		//		CNPC_Barnacle pBarnacle = view_as<CNPC_Barnacle>(pInflictor);
-		//
-		//		float vec3GrabPosition[3];
-		//		pPlayer.GetEyePosition(vec3GrabPosition);
-		//		
-		//		float vec3Position[3];
-		//		pPlayer.GetAbsOrigin(vec3Position);
-		//		pBarnacle.AttachTongueToTarget(pRagdoll, vec3GrabPosition);
-		//		pRagdoll.m_iEFlags |= EFL_IS_BEING_LIFTED_BY_BARNACLE;
-		//	}
-		//}
 
 		pPlayer.SetRagdoll(pRagdoll);
 		pPlayer.SetObserverMode(OBS_MODE_CHASE);
@@ -710,7 +684,7 @@ public Action Hook_PlayerTakeDamage(int victim, int &attacker, int &inflictor, f
 
 // Fixes hit registration being off by 1 tick.
 // Credits to Xutax_Kamay (https://forums.alliedmods.net/showthread.php?t=315405)
-public MRESReturn Hook_PlayerWeaponShootPosition_Post(int iClient, Handle hReturn)
+public MRESReturn Hook_PlayerWeaponShootPosition_Post(int iClient, DHookReturn hReturn)
 {
 	CBasePlayer pPlayer = CBasePlayer(iClient);
 	// Objects that are carried will call this hook and lag further behind the desired position.
@@ -747,7 +721,7 @@ public MRESReturn Hook_PlayerChangeTeam(int iClient, DHookParam hParams)
 			
 			if (iTeam == TEAM_UNASSIGNED)
 			{
-				hParams.Set(1, TEAM_SCIENTIST);
+				hParams.Set(1, TEAM_TWO);
 				return MRES_ChangedHandled;
 			}
 		}
@@ -755,7 +729,7 @@ public MRESReturn Hook_PlayerChangeTeam(int iClient, DHookParam hParams)
 	return MRES_Ignored;
 }
 
-public MRESReturn Hook_PlayerChangeTeamPost(int iClient, Handle hParams)
+public MRESReturn Hook_PlayerChangeTeamPost(int iClient, DHookParam hParams)
 {
 	if (CoopManager.IsCoopModeEnabled())
 	{
@@ -779,7 +753,7 @@ public MRESReturn Hook_PlayerChangeTeamPost(int iClient, Handle hParams)
 //------------------------------------------------------
 // NoBlock
 //------------------------------------------------------
-public MRESReturn Hook_PlayerShouldCollide(int _this, Handle hReturn, Handle hParams)
+public MRESReturn Hook_PlayerShouldCollide(int _this, DHookReturn hReturn, DHookParam hParams)
 {
 	if (CoopManager.IsFeatureEnabled(FT_NOBLOCK))
 	{
@@ -797,7 +771,7 @@ public MRESReturn Hook_PlayerShouldCollide(int _this, Handle hReturn, Handle hPa
 // Pickup_ForcePlayerToDropThisObject
 // reconstructed to avoid crash on UTIL_GetLocalPlayer nullptr
 //------------------------------------------------------
-public MRESReturn Hook_ForcePlayerToDropThisObject(Handle hParams)
+public MRESReturn Hook_ForcePlayerToDropThisObject(DHookParam hParams)
 {
 	if (!DHookIsNullParam(hParams, 1))
 	{
@@ -896,14 +870,14 @@ public void Movement_FindLadder(CBasePlayer pPlayer)
 			continue;
 		
 		// Finally the traces that need to be overridden to ignore players in the way...
-		CTraceRay pTraceRay = new CTraceRay(vecPlayerOrigin, closest, MASK_PLAYERSOLID, RayType_EndPoint, TraceEntityFilter_IgnorePlayers, -1);
+		CTraceRay pTraceRay = new CTraceRay(vecPlayerOrigin, closest, MASK_PLAYERSOLID, RayType_EndPoint, TraceEntityFilter_IgnorePlayers);
 		if (pTraceRay.GetFraction() != 1.0 && pTraceRay.GetEntity() != pLadder)
 		{
 			pTraceRay.Close();
 			
 			AddVectors(vecTmp, vecPlayerOrigin, vecTmp);
 			vecTmp[2] += sizeZ;
-			pTraceRay = new CTraceRay(vecTmp, closest, MASK_PLAYERSOLID, RayType_EndPoint, TraceEntityFilter_IgnorePlayers, -1);
+			pTraceRay = new CTraceRay(vecTmp, closest, MASK_PLAYERSOLID, RayType_EndPoint, TraceEntityFilter_IgnorePlayers);
 			if (pTraceRay.GetFraction() != 1.0 && pTraceRay.GetEntity() != pLadder)
 			{
 				pTraceRay.Close();
@@ -1092,13 +1066,7 @@ void QueryConVarSafeSet(QueryCookie cookie, int client, ConVarQueryResult result
 	}
 }
 
-public bool TraceEntityFilter_IgnorePlayers(int iEntIndex, int iMask, any pData)
-{
-	CBasePlayer pPlayer = CBasePlayer(iEntIndex);
-	if (pPlayer.IsValid())
-		return false;
-	return (iEntIndex != pData);
-}
+#if defined PLAYERPATCH_BM_CLIENT_PREDICTION
 
 public void SetMovementPredictionConVars()
 {
@@ -1115,6 +1083,8 @@ public void Hook_ConVar_AlwaysRun(const ConVar hConVar, const char[] szOldValue,
 {
 	SetMovementPredictionConVars();
 }
+
+#endif // PLAYERPATCH_BM_CLIENT_PREDICTION
 
 // Clears the player out of NPC memories and clears flags.
 //

@@ -1,8 +1,3 @@
-#if defined _srccoop_manager_changelevel_included
- #endinput
-#endif
-#define _srccoop_manager_changelevel_included
-
 #pragma newdecls required
 #pragma semicolon 1
 

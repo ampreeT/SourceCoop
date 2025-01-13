@@ -1,14 +1,14 @@
-#if defined _srccoop_public_included
- #endinput
-#endif
-#define _srccoop_public_included
-
 #pragma newdecls required
 #pragma semicolon 1
+
+// Purpose:
+// SourceCoop definitions and functionality shared with its addons
+
 
 //------------------------------------------------------
 // Prefix tags / colors for printing messages
 //------------------------------------------------------
+
 #define SRCCOOP_CHAT_COLOR_PRI "\x07e69c12"
 #define SRCCOOP_CHAT_COLOR_SEC "\x07eb6f28"
 #define SRCCOOP_CHAT_COLOR_TER "\x07e8b454"
@@ -61,11 +61,6 @@
 #define SRCCOOP_CONFIG_GAMEDATA_NAME "srccoop_config.games"
 #define SRCCOOP_LIBRARY "SRCCOOP" /* The library name registered by the core plugin */
 
-#define CHAR_BIT 8
-#define FLT_MAX 2147483647.0
-#define INT_MIN -2147483648
-#define INT_MAX 2147483647
-
 enum IntroType
 {
 	INTRO_NONE = 0,
@@ -75,8 +70,8 @@ enum IntroType
 
 enum CoopConfigLocation
 {
-	CCL_SM_DATA = 0, /* "Path_SM/data/srccoop" | Uses default filesystem */
-	CCL_MAPS /* "maps" | Uses valve filesystem */
+	CCL_SM_DATA = 0,       /* "Path_SM/data/srccoop" | Uses default filesystem */
+	CCL_MAPS               /* "maps" | Uses valve filesystem */
 }
 
 enum SurvivalMode
@@ -104,4 +99,104 @@ enum struct SpawnOptions
 		this.vecAngles = { 0.0, 0.0, 0.0 };
 		this.bUnstuck = true;
 	}
+}
+
+//------------------------------------------------------
+// Stocks
+//------------------------------------------------------
+
+stock GameData LoadSourceCoopConfig()
+{
+	GameData pGameConfig = LoadGameConfigFile(SRCCOOP_CONFIG_GAMEDATA_NAME);
+	if (pGameConfig == null)
+		SetFailState("Couldn't load game config: \"%s\"", SRCCOOP_CONFIG_GAMEDATA_NAME);
+	return pGameConfig;
+}
+
+stock void Msg(int client, const char[] msg, any ...)
+{
+	int len = strlen(msg) + 255;
+	char[] formatMsg = new char[len];
+	SetGlobalTransTarget(client);
+	VFormat(formatMsg, len, msg, 3);
+	ReplaceMsgColors(formatMsg, len);
+ 	PrintToChat(client, "%s%s", SRCCOOP_CHAT_TAG, formatMsg);
+}
+
+stock void MsgReply(int client, const char[] msg, any ...)
+{
+	int len = strlen(msg) + 255;
+	char[] formatMsg = new char[len];
+	SetGlobalTransTarget(client);
+	VFormat(formatMsg, len, msg, 3);
+	if (client && GetCmdReplySource() == SM_REPLY_TO_CHAT)
+	{
+		ReplaceMsgColors(formatMsg, len);
+		ReplyToCommand(client, "%s%s", SRCCOOP_CHAT_TAG, formatMsg);
+	}
+	else
+	{
+		PurgeMsgColors(formatMsg, len);
+		ReplyToCommand(client, "%s%s", SRCCOOP_CONSOLE_TAG, formatMsg);
+	}
+}
+
+stock void MsgAll(const char[] msg, any ...)
+{
+	int len = strlen(msg) + 255;
+	char[] formatMsg = new char[len];
+	SetGlobalTransTarget(LANG_SERVER);
+	VFormat(formatMsg, len, msg, 2);
+	PurgeMsgColors(formatMsg, len);
+	PrintToServer("%s(chat) %s", SRCCOOP_CONSOLE_TAG, formatMsg);
+	for (int i = 1; i <= MaxClients; i++)
+	{
+		if (IsClientInGame(i))
+		{
+			SetGlobalTransTarget(i);
+			VFormat(formatMsg, len, msg, 2);
+			ReplaceMsgColors(formatMsg, len);
+ 			PrintToChat(i, "%s%s", SRCCOOP_CHAT_TAG, formatMsg);
+		}
+	}
+}
+
+stock void MsgAllNoSrv(const char[] msg, any ...)
+{
+	int len = strlen(msg) + 255;
+	char[] formatMsg = new char[len];
+	for (int i = 1; i <= MaxClients; i++)
+	{
+		if (IsClientInGame(i))
+		{
+			SetGlobalTransTarget(i);
+			VFormat(formatMsg, len, msg, 2);
+			ReplaceMsgColors(formatMsg, len);
+ 			PrintToChat(i, "%s%s", SRCCOOP_CHAT_TAG, formatMsg);
+		}
+	}
+}
+
+stock void MsgSrv(const char[] msg, any ...)
+{
+	int len = strlen(msg) + 255;
+	char[] formatMsg = new char[len];
+	SetGlobalTransTarget(LANG_SERVER);
+	VFormat(formatMsg, len, msg, 2);
+	PurgeMsgColors(formatMsg, len);
+	PrintToServer("%s%s", SRCCOOP_CONSOLE_TAG, formatMsg);
+}
+
+stock void ReplaceMsgColors(char[] msg, int maxLen)
+{
+	ReplaceString(msg, maxLen, "{pri}", SRCCOOP_CHAT_COLOR_PRI, false);
+	ReplaceString(msg, maxLen, "{sec}", SRCCOOP_CHAT_COLOR_SEC, false);
+	ReplaceString(msg, maxLen, "{ter}", SRCCOOP_CHAT_COLOR_TER, false);
+}
+
+stock void PurgeMsgColors(char[] msg, int maxLen)
+{
+	ReplaceString(msg, maxLen, "{pri}", "", false);
+	ReplaceString(msg, maxLen, "{sec}", "", false);
+	ReplaceString(msg, maxLen, "{ter}", "", false);
 }
