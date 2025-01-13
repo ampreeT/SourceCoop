@@ -24,9 +24,9 @@ methodmap CBaseCombatCharacter < CBaseFlex
 		return view_as<CBaseCombatCharacter>(CBaseFlex(iEntIndex));
 	}
 
-	public int GetLifeState()
+	public LifeState_t GetLifeState()
 	{
-		return GetEntProp(this.entindex, Prop_Data, "m_lifeState");
+		return view_as<LifeState_t>(GetEntProp(this.entindex, Prop_Data, "m_lifeState"));
 	}
 	public bool IsAlive()
 	{
@@ -90,13 +90,13 @@ methodmap CBaseCombatCharacter < CBaseFlex
 	{
 		SetEntPropEnt(this.entindex, Prop_Send, "m_hMyWeapons", pWeapon.entindex, iIndex);
 	}
-	public int GetAmmoFromIndex(const int iIndex)
+	public int GetAmmoFromIndex(const AmmoType_t eAmmoType)
 	{
-		return GetEntProp(this.entindex, Prop_Send, "m_iAmmo", _, iIndex);
+		return GetEntProp(this.entindex, Prop_Send, "m_iAmmo", _, view_as<int>(eAmmoType));
 	}
-	public void SetAmmoFromIndex(const int iIndex, const int iAmmoCount)
+	public void SetAmmoFromIndex(const AmmoType_t eAmmoType, const int iAmmoCount)
 	{
-		SetEntProp(this.entindex, Prop_Send, "m_iAmmo", iAmmoCount, _, iIndex);
+		SetEntProp(this.entindex, Prop_Send, "m_iAmmo", iAmmoCount, _, view_as<int>(eAmmoType));
 	}
 	public float GetNextAttack()
 	{

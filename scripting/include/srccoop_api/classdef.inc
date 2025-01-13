@@ -1,15 +1,10 @@
-#pragma newdecls required
-#pragma semicolon 1
-
 #if defined _srccoop_api_classdef_included
  #endinput
 #endif
 #define _srccoop_api_classdef_included
 
-#include <sdkhooks>
-#include <sdktools>
-#include <sourcescramble>
-#include <srccoop/util/color>
+#pragma newdecls required
+#pragma semicolon 1
 
 #include <srccoop_api/classdef/common/CBaseEntity.inc>
 #include <srccoop_api/classdef/common/CPointEntity.inc>
@@ -35,6 +30,7 @@
 #include <srccoop_api/classdef/common/CEnvBeam.inc>
 #include <srccoop_api/classdef/common/CEnvZoom.inc>
 #include <srccoop_api/classdef/common/CFuncLadder.inc>
+#include <srccoop_api/classdef/common/CGameMovement.inc>
 #include <srccoop_api/classdef/common/CGlobalState.inc>
 #include <srccoop_api/classdef/common/CGlobalVars.inc>
 #include <srccoop_api/classdef/common/CInfoTarget.inc>
@@ -55,6 +51,7 @@
 #include <srccoop_api/classdef/common/CPropVehicle.inc>
 #include <srccoop_api/classdef/common/CPropVehicleDriveable.inc>
 #include <srccoop_api/classdef/common/CRagdollProp.inc>
+#include <srccoop_api/classdef/common/CRevertSaved.inc>
 #include <srccoop_api/classdef/common/CProtoSniper.inc>
 #include <srccoop_api/classdef/common/CSceneEntity.inc>
 #include <srccoop_api/classdef/common/CSniperTarget.inc>
@@ -80,6 +77,7 @@
 #include <srccoop_api/classdef/bms/CBlackMesaBaseDetonator.inc>
 #include <srccoop_api/classdef/bms/CBlackMesaPlayer.inc>
 #include <srccoop_api/classdef/bms/CBM_MP_GameRules.inc>
+#include <srccoop_api/classdef/bms/CEnv_XenPortalEffect.inc>
 #include <srccoop_api/classdef/bms/CEnvBeamTeam.inc>
 #include <srccoop_api/classdef/bms/CParamsManager.inc>
 #include <srccoop_api/classdef/bms/CPropChargerBase.inc>
@@ -100,6 +98,7 @@ stock void InitClassdef(const GameData hGameConfig)
 	CBaseCombatWeapon.InitClassdef(hGameConfig);
 	CBaseCombatCharacter.InitClassdef(hGameConfig);
 	CBaseViewModel.InitClassdef(hGameConfig);
+	CRagdollProp.InitClassdef(hGameConfig);
 	CPlayerInfoManager.InitClassdef(hGameConfig);
 	AI_CriteriaSet.InitClassdef(hGameConfig);
 	IServerGameClients.InitClassdef(hGameConfig);

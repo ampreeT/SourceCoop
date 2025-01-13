@@ -1,8 +1,3 @@
-#if defined _srccoop_manager_survival_included
- #endinput
-#endif
-#define _srccoop_manager_survival_included
-
 #pragma newdecls required
 #pragma semicolon 1
 
@@ -147,7 +142,7 @@ methodmap SurvivalManager {
 					ShowVGUIPanel(client, "specgui", null);
 					
 					// Remove previous fades
-					Client_ScreenFade(client, 1500, FFADE_IN|FFADE_PURGE, 1, 0, 0, 0, 255);
+					pPlayer.ScreenFade(1500, RGBA(0, 0, 0, 255), FFADE_IN | FFADE_PURGE, 1);
 					
 					SetHudTextParams(0.016, 0.04, 5.0, 255, 255, 255, 255, 1, 1.0, 1.0, 1.0);
 					if (SurvivalManager.GetRespawnAtCheckpoints() && CCoopSpawnSystem.CountCheckpoints(true, true))
@@ -166,7 +161,7 @@ methodmap SurvivalManager {
 		return true;
 	}
 	
-	public static void OnPlayerChangeTeam(CBasePlayer pPlayer, int iTeamNum)
+	public static void OnPlayerChangeTeam(const CBasePlayer pPlayer, const int iTeam)
 	{
 		if (SurvivalManager.GetMode())
 		{
@@ -298,7 +293,9 @@ methodmap SurvivalManager {
 			{
 				CBasePlayer pPlayer = CBasePlayer(i);
 				if (pPlayer.GetTeam() != TEAM_SPECTATOR)
-					Client_ScreenFade(i, 1000, FFADE_OUT|FFADE_STAYOUT, _, 0, 0, 0, 255);
+				{
+					pPlayer.ScreenFade(1000, RGBA(0, 0, 0, 255), FFADE_OUT | FFADE_STAYOUT);
+				}
 				
 				#if defined SRCCOOP_BLACKMESA
 				if (!IsTranslatedForLanguage("survival game over", GetClientLanguage(i)))

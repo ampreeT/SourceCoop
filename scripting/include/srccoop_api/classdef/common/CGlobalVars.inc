@@ -16,9 +16,8 @@ methodmap CGlobalVarsBase
 	}
 	public void SetMaxPlayers(const int iMaxPlayers)
 	{
-		assert(this, "Invalid state")
-		assert1(IsInBounds(iMaxPlayers, 0, MaxClients), "Invalid maxplayers [%d]", iMaxPlayers)
-		
+		if (!IsInBounds(iMaxPlayers, 0, MaxClients))
+			ThrowError("Invalid maxplayers [%d]", iMaxPlayers);
 		StoreToAddress(this.GetAddress() + 0x14, iMaxPlayers, NumberType_Int32);
 	}
 }

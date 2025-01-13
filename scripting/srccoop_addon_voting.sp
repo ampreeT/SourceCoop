@@ -1,5 +1,5 @@
 #include <sourcemod>
-#include <srccoop_api>
+#include <srccoop_addon>
 
 #pragma newdecls required
 #pragma semicolon 1

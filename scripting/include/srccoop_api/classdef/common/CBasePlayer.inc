@@ -55,6 +55,10 @@ methodmap CBasePlayer < CBaseCombatCharacter
 		int iEntIndex = this.entindex;
 		return iEntIndex != -1 && IsClientInGame(iEntIndex);
 	}
+	public bool IsBot()
+	{
+		return IsFakeClient(this.entindex);
+	}
 	public bool IsAlive()
 	{
 		return IsPlayerAlive(this.entindex);
@@ -144,7 +148,7 @@ methodmap CBasePlayer < CBaseCombatCharacter
 		if (pItem != NULL_CBASEENTITY && pItem.GetOwner() == NULL_CBASEENTITY)
 		{
 			// this would drop on the ground if player cant pick up any more
-			pItem.KillAfterTime(0.1);
+			pItem.KillDelayed(0.1);
 		}
 		return pItem;
 	}
@@ -314,29 +318,29 @@ methodmap CBasePlayer < CBaseCombatCharacter
 	{
 		SetEntPropEnt(this.entindex, Prop_Data, "m_hObserverTarget", pTarget.entindex);
 	}
-	public int GetHideHud()
+	public HideHudFlags_t GetHideHud()
 	{
-		return GetEntProp(this.entindex, Prop_Send, "m_iHideHUD");
+		return view_as<HideHudFlags_t>(GetEntProp(this.entindex, Prop_Send, "m_iHideHUD"));
 	}
-	public void SetHideHud(const int iHideHud)
+	public void SetHideHud(const HideHudFlags_t eHideHud)
 	{
-		SetEntProp(this.entindex, Prop_Send, "m_iHideHUD", iHideHud);
+		SetEntProp(this.entindex, Prop_Send, "m_iHideHUD", eHideHud);
 	}
 	public void ShowCrosshair(const bool bShow)
 	{
-		int iHideHUD = this.GetHideHud();
+		HideHudFlags_t eHideHUD = this.GetHideHud();
 		if (bShow)
 		{
-			this.SetHideHud(iHideHUD & ~HIDEHUD_CROSSHAIR);
+			this.SetHideHud(eHideHUD & ~HIDEHUD_CROSSHAIR);
 		}
 		else
 		{
-			this.SetHideHud(iHideHUD | HIDEHUD_CROSSHAIR);
+			this.SetHideHud(eHideHUD | HIDEHUD_CROSSHAIR);
 		}
 	}
-	public void SetTeam(const int iTeamIndex)
+	public void SetTeam(const int iTeam)
 	{
-		ChangeClientTeam(this.entindex, iTeamIndex);
+		ChangeClientTeam(this.entindex, iTeam);
 	}
 	public CBaseEntity GetUseEntity()
 	{
@@ -366,6 +370,27 @@ methodmap CBasePlayer < CBaseCombatCharacter
 	public void SendCommand(const char[] szCommand)
 	{
 		ClientCommand(this.entindex, szCommand);
+	}
+	public bool SendConVarValueStr(const ConVar hConVar, const char[] szValue)
+	{
+		if (this.IsBot())
+		{
+			// TODO: Make the array length a constant.
+			char szConVar[48];
+			hConVar.GetName(szConVar, sizeof(szConVar));
+			SetFakeClientConVar(this.entindex, szConVar, szValue);
+			return true;
+		}
+		else
+		{
+			return SendConVarValue(this.entindex, hConVar, szValue);
+		}
+	}
+	public bool SendConVarValueInt(const ConVar hConVar, const int iValue)
+	{
+		char szValue[MAX_CHARS_INT(INT_MIN)];
+		IntToString(iValue, szValue, sizeof(szValue));
+		return this.SendConVarValueStr(hConVar, szValue);
 	}
 	public void PlayGameSound(const char[] szSound)
 	{
@@ -545,6 +570,42 @@ methodmap CBasePlayer < CBaseCombatCharacter
 	{
 		SetEntPropFloat(this.entindex, Prop_Data, "m_flLaggedMovementValue", flValue);
 	}
+	public int GetTickBase()
+	{
+		return GetEntProp(this.entindex, Prop_Send, "m_nTickBase");
+	}
+	public void SetTickBase(const int iTickBase)
+	{
+		SetEntProp(this.entindex, Prop_Send, "m_nTickBase", iTickBase);
+	}
+	public bool ScreenFade(int iDuration, RGBA color, ScreenFadeFlags_t eFadeFlags, int iHoldtime = -1, int iMessageFlags = USERMSG_RELIABLE)
+	{
+		Handle hMessage = StartMessageOne("Fade", this.entindex, iMessageFlags);
+		
+		if (!hMessage)
+			return false;
+
+		if (GetFeatureStatus(FeatureType_Native, "GetUserMessageType") == FeatureStatus_Available && GetUserMessageType() == UM_Protobuf)
+		{
+			PbSetInt(hMessage,   "duration",   iDuration);
+			PbSetInt(hMessage,   "hold_time",  iHoldtime);
+			PbSetInt(hMessage,   "flags",      view_as<int>(eFadeFlags));
+			PbSetColor(hMessage, "clr",        color.ToArray());
+		}
+		else
+		{
+			BfWriteShort(hMessage,	iDuration);                     // Fade duration
+			BfWriteShort(hMessage,	iHoldtime);                     // Fade hold time
+			BfWriteShort(hMessage,	view_as<int>(eFadeFlags));      // What to do
+			BfWriteByte(hMessage,	color.r);                       // Color R
+			BfWriteByte(hMessage,	color.g);                       // Color G
+			BfWriteByte(hMessage,	color.b);                       // Color B
+			BfWriteByte(hMessage,	color.a);                       // Color Alpha
+		}
+		EndMessage();
+
+		return true;
+	}
 }
 
 // hermite basis function for smooth interpolation
@@ -580,9 +641,4 @@ static bool CanOverrideEnvZoomOwner(CBaseEntity pZoomOwner)
 	if (!pZoomOwner.GetClassname(szClassname, sizeof(szClassname)) || strcmp(szClassname, "env_zoom") != 0)
 		return false;
 	return !!(view_as<CEnvZoom>(pZoomOwner).m_spawnflags & ENV_ZOOM_OVERRIDE);
-}
-
-static bool TraceEntityFilter_IgnoreData(int iEntIndex, int iMask, any pData)
-{
-	return (iEntIndex != pData);
 }

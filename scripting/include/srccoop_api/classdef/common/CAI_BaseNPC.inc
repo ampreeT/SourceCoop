@@ -148,25 +148,16 @@ methodmap CAI_BaseNPC < CBaseCombatCharacter
 	{
 		return GetEntPropFloat(this.entindex, Prop_Data, "m_flWakeRadius");
 	}
-	public int GetSleepFlags()
+	property AI_SleepFlags_t m_SleepFlags
 	{
-		return GetEntProp(this.entindex, Prop_Data, "m_SleepFlags");
-	}
-	public int SetSleepFlags(const int iSleepFlags)
-	{
-		SetEntProp(this.entindex, Prop_Data, "m_SleepFlags", iSleepFlags);
-	}
-	public bool HasSleepFlags(const int iSleepFlags)
-	{
-		return (this.GetSleepFlags() & iSleepFlags) == iSleepFlags;
-	}
-	public void AddSleepFlags(const int iSleepFlags)
-	{
-		this.SetSleepFlags(this.GetSleepFlags() | iSleepFlags);
-	}
-	public void RemoveSleepFlags(const int iSleepFlags)
-	{
-		this.SetSleepFlags(this.GetSleepFlags() & ~iSleepFlags);
+		public get()
+		{
+			return view_as<AI_SleepFlags_t>(GetEntProp(this.entindex, Prop_Data, "m_SleepFlags"));
+		}
+		public set(const AI_SleepFlags_t eSleepFlags)
+		{
+			SetEntProp(this.entindex, Prop_Data, "m_SleepFlags", eSleepFlags);
+		}
 	}
 	public AI_SleepState_t GetSleepState()
 	{
@@ -202,7 +193,7 @@ methodmap CAI_BaseNPC < CBaseCombatCharacter
 	{
 		SetEntPropEnt(this.entindex, Prop_Data, "m_hEnemy", pEntity.entindex);
 	}
-	public int GetSoundInterests()
+	public Sound_t GetSoundInterests()
 	{
 		return SDKCall(g_pGetSoundInterests, this);
 	}
@@ -284,10 +275,14 @@ methodmap CAI_BaseNPC < CBaseCombatCharacter
 	{
 		return GetEntProp(this.entindex, Prop_Data, "iTaskInterrupt");
 	}
+	public GoalType_t GetGoalType()
+	{
+		return view_as<GoalType_t>(GetEntProp(this.entindex, Prop_Data, "m_goalType"));
+	}
 	public bool IsMoving()
 	{
 		// CAI_BaseNPC::IsMoving( void ) ==> GetNavigator()->IsGoalSet() ==> GetPath()->GoalType() != GOALTYPE_NONE
-		return GetEntProp(this.entindex, Prop_Data, "m_goalType") != GOALTYPE_NONE;
+		return this.GetGoalType() != GOALTYPE_NONE;
 	}
 	public bool ShouldPlayerAvoid()
 	{

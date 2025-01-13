@@ -1,8 +1,3 @@
-#if defined _srccoop_features_included
- #endinput
-#endif
-#define _srccoop_features_included
-
 #pragma newdecls required
 #pragma semicolon 1
 

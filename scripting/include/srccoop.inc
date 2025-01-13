@@ -1,8 +1,3 @@
-#if defined _srccoop_included
-	#endinput
-#endif
-#define _srccoop_included
-
 #pragma newdecls required
 #pragma semicolon 1
 
@@ -111,6 +106,7 @@
 	#define ENTPATCH_BM_SNARK_NEST
 	#define ENTPATCH_BM_SP_WEAPONS
 	#define ENTPATCH_BM_DISSOLVE
+	#define ENTPATCH_BM_XENPORTAL_PUSH_PLAYERS
 
 	#define PLAYERPATCH_SUIT_SOUNDS
 	#define PLAYERPATCH_PICKUP_FORCEPLAYERTODROPTHISOBJECT
@@ -119,6 +115,7 @@
 	#define PLAYERPATCH_OVERRIDE_DEATH_OBSMODE
 	#define PLAYERPATCH_FINDLADDER
 	#define PLAYERPATCH_HITREG
+	#define PLAYERPATCH_BM_CLIENT_PREDICTION
 
 	#define GAMEPATCH_UTIL_GETLOCALPLAYER
 	#define GAMEPATCH_IS_MULTIPLAYER
@@ -140,26 +137,19 @@
 // Includes
 //------------------------------------------------------
 
-
 #include <sourcemod>
 #include <sdktools>
 #include <sdkhooks>
 #include <regex>
 #include <dhooks>
 #include <topmenus>
-#include <sourcescramble>
 
+#include <sourcescramble>
 #include <logdebug>
 
-#include <srccoop/util/assert>
 #include <srccoop/typedef>
-#if defined SRCCOOP_BLACKMESA
-#include <srccoop/blackmesa/typedef>
-#endif
-#include <srccoop/typedef_game>
 #include <srccoop/public>
-#include <srccoop_api/classdef>
-#include <srccoop/utils>
+#include <srccoop_api>
 #include <srccoop/config>
 #include <srccoop/features>
 #include <srccoop/globals>
@@ -170,9 +160,9 @@
 #include <srccoop/manager_persistence>
 #include <srccoop/entitypatch>
 #if defined SRCCOOP_BLACKMESA
-#include <srccoop/blackmesa/entitypatch>
-#include <srccoop/blackmesa/deathnotice>
-#include <srccoop/blackmesa/idle_anims>
+#include <srccoop/bms/entitypatch>
+#include <srccoop/bms/deathnotice>
+#include <srccoop/bms/idle_anims>
 #elseif defined SRCCOOP_HL2DM
 #include <srccoop/hl2dm/deathnotice>
 #endif

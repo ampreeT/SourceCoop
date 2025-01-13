@@ -1,0 +1,15 @@
+#pragma newdecls required
+#pragma semicolon 1
+
+// Entity Dissolve types
+enum EntityDissolveType_t
+{
+	ENTITY_DISSOLVE_NORMAL = 0,
+	ENTITY_DISSOLVE_ELECTRICAL,
+	ENTITY_DISSOLVE_ELECTRICAL_LIGHT,
+#if defined SRCCOOP_BLACKMESA
+	ENTITY_DISSOLVE_FADE,
+	ENTITY_DISSOLVE_REMOVE_NOW,
+#endif
+	ENTITY_DISSOLVE_CORE
+}

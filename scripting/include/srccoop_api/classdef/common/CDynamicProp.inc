@@ -16,7 +16,7 @@ methodmap CDynamicProp < CBreakableProp
 		CDynamicProp pDynamicProp = CDynamicProp.Create();
 		if (pDynamicProp != NULL_CBASEENTITY)
 		{
-			pDynamicProp.SetKeyValueStr("model", szModelName);
+			pDynamicProp.KeyValue("model", szModelName);
 			pDynamicProp.Spawn();
 			pDynamicProp.Activate();
 		}

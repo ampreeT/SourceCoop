@@ -91,6 +91,12 @@ methodmap CBaseCombatWeapon < CBaseAnimating
 	{
 		SetEntPropFloat(this.entindex, Prop_Send, "m_flNextSecondaryAttack", flNextSecondaryAttack); 
 	}
+	public void DelayNextAttack(float flDelay)
+	{
+		flDelay += GetGameTime();
+		this.SetNextPrimaryAttack(flDelay);
+		this.SetNextSecondaryAttack(flDelay);
+	}
 	public bool CanFireUnderwater()
 	{
 		return GetEntProp(this.entindex, Prop_Data, "m_bFiresUnderwater") != 0;
@@ -119,9 +125,9 @@ methodmap CBaseCombatWeapon < CBaseAnimating
 	{
 		SetEntPropFloat(this.entindex, Prop_Data, "m_flTimeWeaponIdle", flTimeIdle);
 	}
-	public bool SendWeaponAnim(const Activity iActivity)
+	public bool SendWeaponAnim(const Activity eActivity)
 	{
-		return SDKCall(g_pSendWeaponAnim, this.entindex, iActivity);
+		return SDKCall(g_pSendWeaponAnim, this.entindex, eActivity);
 	}
 	public bool IsReloading()
 	{

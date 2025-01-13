@@ -1,8 +1,3 @@
-#if defined _srccoop_checkpoint_included
- #endinput
-#endif
-#define _srccoop_checkpoint_included
-
 #pragma newdecls required
 #pragma semicolon 1
 
@@ -397,7 +392,7 @@ enum struct CCoopEquipment
 		for (int i = 0; i < MAX_AMMO_TYPES; i++)
 		{
 			if (this.m_iAmmoCount[i] >= 0)
-				pPlayer.SetAmmoFromIndex(i, this.m_iAmmoCount[i]);
+				pPlayer.SetAmmoFromIndex(view_as<AmmoType_t>(i), this.m_iAmmoCount[i]);
 		}
 
 		if (this.m_szActiveWeapon[0] != '\0')
@@ -455,9 +450,9 @@ enum struct CCoopEquipment
 		}
 		#endif // SRCCOOP_BLACKMESA
 
-		for (int iAmmo = 0; iAmmo < MAX_AMMO_TYPES; iAmmo++)
+		for (int iAmmoType = 0; iAmmoType < MAX_AMMO_TYPES; ++iAmmoType)
 		{
-			this.m_iAmmoCount[iAmmo] = pPlayer.GetAmmoFromIndex(iAmmo);
+			this.m_iAmmoCount[iAmmoType] = pPlayer.GetAmmoFromIndex(view_as<AmmoType_t>(iAmmoType));
 		}
 	}
 }
