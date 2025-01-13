@@ -741,13 +741,6 @@
 					}
 				}
 			}
-			"CBaseAnimatingOverlay::StudioFrameAdvance"
-			{
-				"signature"	"CBaseAnimatingOverlay::StudioFrameAdvance"
-				"callconv"	"thiscall"
-				"return"	"void"
-				"this"		"entity"
-			}
 			"CAI_MoveProbe::TestGroundMove"
 			{
 				"signature"	"CAI_MoveProbe::TestGroundMove"
@@ -1041,10 +1034,6 @@
 			"CBoneSetup::AccumulatePose" // void CBoneSetup::AccumulatePose(Vector *, Quaternion *, int, float, float, float, CIKContext *)
 			{
 				"linux" 	"@_ZN10CBoneSetup14AccumulatePoseEP6VectorP10QuaternionifffP10CIKContext"
-			}
-			"CBaseAnimatingOverlay::StudioFrameAdvance"
-			{
-				"linux" 	"@_ZN21CBaseAnimatingOverlay18StudioFrameAdvanceEv"
 			}
 			"CAI_MoveProbe::TestGroundMove" // bool CAI_MoveProbe::TestGroundMove( const Vector &vecActualStart, const Vector &vecDesiredEnd, unsigned int collisionMask, float pctToCheckStandPositions, unsigned flags, AIMoveTrace_t *pMoveTrace )
 			{

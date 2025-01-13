@@ -191,7 +191,6 @@ void LoadGameData()
 	if (g_serverOS == OS_Linux)
 	{
 		LoadDHookDetour(pGameConfig, hkAccumulatePose, "CBoneSetup::AccumulatePose", Hook_AccumulatePose);
-		LoadDHookDetour(pGameConfig, hkAnimatingOverlay, "CBaseAnimatingOverlay::StudioFrameAdvance", Hook_AnimatingOverlay, Hook_AnimatingOverlayPost);
 		LoadDHookDetour(pGameConfig, hkTestGroundMove, "CAI_MoveProbe::TestGroundMove", Hook_TestGroundMove);
 	}
 	#endif
@@ -984,16 +983,24 @@ public void Hook_EntitySpawnPost(int iEntIndex)
 		CBaseEntity pEntity = CBaseEntity(iEntIndex);
 
 		#if defined SRCCOOP_BLACKMESA
-		// fix linux physics crashes
 		if (g_serverOS == OS_Linux)
 		{
+			// fix NPC sliding (likely caused by desync in CBaseAnimatingOverlay animations started outside of PVS)
+			// this is verifiable on linux server on bm_c1a2c by issuing cl_fullupdate when the guard starts sliding
+			if (pEntity.IsNPC())
+			{
+				pEntity.edictFlags |= FL_EDICT_ALWAYS;
+			}
+
+			// fix linux physics crashes
 			static char szModel[PLATFORM_MAX_PATH];
 			if (pEntity.GetModelName(szModel, sizeof(szModel)) && strncmp(szModel, "models/gibs/humans/", 19) == 0)
 			{
 				SDKHook(iEntIndex, SDKHook_OnTakeDamage, Hook_NoDmg);
 			}
 		}
-		#endif
+		#endif // SRCCOOP_BLACKMESA
+
 		CoopManager.EntitySpawnPost(pEntity);
 	}
 }

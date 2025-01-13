@@ -101,7 +101,7 @@ methodmap CBaseEntity
 	{
 		public get()
 		{
-			return GetEntityAddress(this.entindex);
+			return (this == NULL_CBASEENTITY) ? Address_Null : GetEntityAddress(this.entindex);
 		}
 	}
 	property int edictFlags

@@ -5,6 +5,7 @@ static stock const int MAX_OVERLAYS = 15;
 
 enum AnimLayerFlags
 {
+	ANIM_LAYER_NONE			= 0x0000,
 	ANIM_LAYER_ACTIVE		= 0x0001,
 	ANIM_LAYER_AUTOKILL		= 0x0002,
 	ANIM_LAYER_KILLME		= 0x0004,
@@ -15,7 +16,7 @@ enum AnimLayerFlags
 
 static int offs_m_fFlags = 0;               //0x0000
 static int offs_m_bSequenceFinished = 4;    //0x0004
-static int offs_m_bLooping = 6;             //0x0006
+static int offs_m_bLooping = 5;             //0x0005
 static int offs_m_nSequence = 8;            //0x0008
 static int offs_m_flCycle = 12;             //0x000C
 static int offs_m_flPrevCycle = 16;         //0x0010
@@ -57,13 +58,13 @@ methodmap CAnimationLayer
 	}
 	property bool m_bSequenceFinished
 	{
-		public get() {return LoadFromAddress(this.address + offs_m_bSequenceFinished, NumberType_Int16);}
-		public set(bool value) {StoreToAddress(this.address + offs_m_bSequenceFinished, value, NumberType_Int16);}
+		public get() {return LoadFromAddress(this.address + offs_m_bSequenceFinished, NumberType_Int8);}
+		public set(bool value) {StoreToAddress(this.address + offs_m_bSequenceFinished, value, NumberType_Int8);}
 	}
 	property bool m_bLooping
 	{
-		public get() {return LoadFromAddress(this.address + offs_m_bLooping, NumberType_Int16);}
-		public set(bool value) {StoreToAddress(this.address + offs_m_bLooping, value, NumberType_Int16);}
+		public get() {return LoadFromAddress(this.address + offs_m_bLooping, NumberType_Int8);}
+		public set(bool value) {StoreToAddress(this.address + offs_m_bLooping, value, NumberType_Int8);}
 	}
 	property int m_nSequence
 	{
@@ -191,6 +192,10 @@ methodmap CAnimationLayer
 		Address pOwner = this.m_pOwnerEntity;
 		return (pOwner ? CBaseAnimatingOverlay(GetEntityFromAddress(pOwner)) : NULL_CBASEENTITY);
 	}
+	public void SetOwnerEntity(CBaseAnimatingOverlay pOverlay)
+	{
+		this.m_pOwnerEntity = pOverlay.address;
+	}
 	public void NetworkStateChanged()
 	{
 		CBaseAnimatingOverlay pEntity = this.GetOwnerEntity();
@@ -198,6 +203,29 @@ methodmap CAnimationLayer
 		{
 			ChangeEdictState(pEntity.entindex);
 		}
+	}
+
+	public void Init(CBaseAnimatingOverlay pOverlay)
+	{
+		this.SetOwnerEntity(pOverlay);
+		this.m_fFlags = ANIM_LAYER_NONE;
+		this.m_flWeight = 0.0;
+		this.m_flCycle = 0.0;
+		this.m_flPrevCycle = 0.0;
+		this.m_bSequenceFinished = false;
+		this.m_nActivity = ACT_INVALID;
+		this.m_nSequence = 0;
+		this.m_nPriority = 0;
+		this.m_nOrder = MAX_OVERLAYS;
+		this.m_flBlendIn = 0.0;
+		this.m_flBlendOut = 0.0;
+		this.m_flKillRate = 100.0;
+		this.m_flKillDelay = 0.0;
+		this.m_flPlaybackRate = 1.0;
+		this.m_flLastEventCheck = 0.0;
+		this.m_flLastAccess = GetGameTime();
+		this.m_flLayerAnimtime = 0.0;
+		this.m_flLayerFadeOuttime = 0.0;
 	}
 
 	// Inline methods per SSDK13
@@ -312,7 +340,26 @@ methodmap CBaseAnimatingOverlay < CBaseAnimating
 		}
 
 		pLayer.m_flKillDelay = flKillDelay;
-
 		pLayer.KillMe();
+	}
+	public void FastRemoveLayer(int iLayer)
+	{
+		if (!this.IsValidLayer(iLayer))
+			return;
+
+		int iCount = this.GetNumAnimOverlays();
+		CAnimationLayer pLayerToRemove = this.GetAnimOverlay(iLayer);
+		
+		// shift the other layers down in order
+		for (int i = 0; i < iCount; i++)
+		{
+			CAnimationLayer pLayer = this.GetAnimOverlay(i);
+			if (pLayer.IsActive() && pLayer.m_nOrder > pLayerToRemove.m_nOrder)
+			{
+				pLayer.m_nOrder--;
+			}
+		}
+
+		pLayerToRemove.Init(this);
 	}
 }
