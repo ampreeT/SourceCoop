@@ -563,8 +563,9 @@ void PlayerPatch_ApplyServerRagdoll(const CBasePlayer pPlayer, const CTakeDamage
 		return;
 	}
 	
+	CBaseAnimating pSourceEntity = pPlayer;
+	
 	#if defined SRCCOOP_BLACKMESA
-	int iRagdollInheritIndex;
 	if (g_pIdle[pPlayer.entindex].m_pModel.IsValid())
 	{
 		// Player is currently using model for idle animations.
@@ -572,18 +573,15 @@ void PlayerPatch_ApplyServerRagdoll(const CBasePlayer pPlayer, const CTakeDamage
 		// The model that was parented is cleared since `CreateServerRagdoll` will not work otherwise.
 		pPlayer.m_fEffects |= EF_NODRAW;
 		g_pIdle[pPlayer.entindex].m_pModel.ClearParent();
-		iRagdollInheritIndex = g_pIdle[pPlayer.entindex].m_pModel.entindex;
+		pSourceEntity = g_pIdle[pPlayer.entindex].m_pModel;
 	}
 	else
 	{
-		pPlayer.m_fEffects &= ~EF_NODRAW;
-		iRagdollInheritIndex = pPlayer.entindex;
+		pSourceEntity.m_fEffects &= ~EF_NODRAW;
 	}
-	#else
-	int iRagdollInheritIndex = pPlayer.entindex;
 	#endif
 
-	pRagdoll = CRagdollProp(SDKCall(g_pCreateServerRagdoll, iRagdollInheritIndex, pPlayer.GetForceBone(), pTakeDamageInfo, COLLISION_GROUP_DEBRIS_TRIGGER, false));
+	pRagdoll = CreateServerRagdoll(pSourceEntity, pPlayer.GetForceBone(), pTakeDamageInfo, COLLISION_GROUP_DEBRIS_TRIGGER, false);
 	if (pRagdoll != NULL_CBASEENTITY)
 	{
 		SDKHook(pRagdoll.entindex, SDKHook_OnTakeDamage, Hook_NoDmg);

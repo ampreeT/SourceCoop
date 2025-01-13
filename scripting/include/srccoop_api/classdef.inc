@@ -97,6 +97,7 @@ stock void InitClassdef(const GameData hGameConfig)
 	CBaseCombatWeapon.InitClassdef(hGameConfig);
 	CBaseCombatCharacter.InitClassdef(hGameConfig);
 	CBaseViewModel.InitClassdef(hGameConfig);
+	CRagdollProp.InitClassdef(hGameConfig);
 	CPlayerInfoManager.InitClassdef(hGameConfig);
 	AI_CriteriaSet.InitClassdef(hGameConfig);
 	IServerGameClients.InitClassdef(hGameConfig);

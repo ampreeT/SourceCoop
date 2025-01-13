@@ -42,9 +42,6 @@ ConVar sv_long_jump_manacost;
 // ----------------------------
 // SDK Calls
 // ----------------------------
-#if defined PLAYERPATCH_SERVERSIDE_RAGDOLLS
-Handle g_pCreateServerRagdoll;
-#endif
 
 // ----------------------------
 // DHooks
