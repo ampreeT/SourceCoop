@@ -181,24 +181,21 @@ methodmap CAnimationLayer
 		public get() {return LoadFromAddress(this.address + offs_m_flLastAccess, NumberType_Int32);}
 		public set(float value) {StoreToAddress(this.address + offs_m_flLastAccess, value, NumberType_Int32);}
 	}
-	property Address m_pOwnerEntity
+	property CBaseAnimatingOverlay m_pOwnerEntity
 	{
-		public get() {return LoadFromAddress(this.address + offs_m_pOwnerEntity, NumberType_Int32);}
-		public set(Address value) {StoreToAddress(this.address + offs_m_pOwnerEntity, value, NumberType_Int32);}
+		public get()
+		{
+			return CBaseAnimatingOverlay(GetEntityFromAddress(LoadFromAddress(this.address + offs_m_pOwnerEntity, NumberType_Int32)));
+		}
+		public set(CBaseAnimatingOverlay pOverlay)
+		{
+			StoreToAddress(this.address + offs_m_pOwnerEntity, pOverlay.address, NumberType_Int32);
+		}
 	}
-	
-	public CBaseAnimatingOverlay GetOwnerEntity()
-	{
-		Address pOwner = this.m_pOwnerEntity;
-		return (pOwner ? CBaseAnimatingOverlay(GetEntityFromAddress(pOwner)) : NULL_CBASEENTITY);
-	}
-	public void SetOwnerEntity(CBaseAnimatingOverlay pOverlay)
-	{
-		this.m_pOwnerEntity = pOverlay.address;
-	}
+
 	public void NetworkStateChanged()
 	{
-		CBaseAnimatingOverlay pEntity = this.GetOwnerEntity();
+		CBaseAnimatingOverlay pEntity = this.m_pOwnerEntity;
 		if (pEntity != NULL_CBASEENTITY)
 		{
 			ChangeEdictState(pEntity.entindex);
@@ -207,7 +204,7 @@ methodmap CAnimationLayer
 
 	public void Init(CBaseAnimatingOverlay pOverlay)
 	{
-		this.SetOwnerEntity(pOverlay);
+		this.m_pOwnerEntity = pOverlay;
 		this.m_fFlags = ANIM_LAYER_NONE;
 		this.m_flWeight = 0.0;
 		this.m_flCycle = 0.0;
