@@ -986,12 +986,14 @@ public void Hook_EntitySpawnPost(int iEntIndex)
 		#if defined SRCCOOP_BLACKMESA
 		if (g_serverOS == OS_Linux)
 		{
+			#if defined ENTPATCH_NPC_ALWAYS_TRANSMIT
 			// fix NPC sliding (likely caused by desync in CBaseAnimatingOverlay animations started outside of PVS)
 			// this is verifiable on linux server on bm_c1a2c by issuing cl_fullupdate when the guard starts sliding
 			if (pEntity.IsNPC())
 			{
 				pEntity.edictFlags |= FL_EDICT_ALWAYS;
 			}
+			#endif
 
 			// fix linux physics crashes
 			static char szModel[PLATFORM_MAX_PATH];
