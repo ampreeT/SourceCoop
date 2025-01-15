@@ -925,8 +925,8 @@ public MRESReturn Hook_AIConditionsThink(int _this)
 		int count;
 		float vecMidpoint[3], vecOrigin[3];
 
-		CUtlVector pElementsList = CUtlVector(GetEntityAddress(_this) + FindDataMapInfo(_this, "m_ElementList"));
-		int len = pElementsList.m_Size();
+		CUtlVector pElementsList = CUtlVector(pThis.address + FindDataMapInfo(_this, "m_ElementList"));
+		int len = pElementsList.Count();
 
 		for (int i = 0; i < len; i++)
 		{
@@ -934,7 +934,7 @@ public MRESReturn Hook_AIConditionsThink(int _this)
 			// 4 - CSimTimer		m_Timer
 			// 12 - CSimTimer		m_Timeout
 			// == 20
-			Address conditionsElement = pElementsList.GetAt(i, 20);
+			Address conditionsElement = pElementsList.Get(i, 20);
 			if (!conditionsElement)
 				continue;
 			

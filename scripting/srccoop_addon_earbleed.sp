@@ -93,10 +93,10 @@ public MRESReturn Hook_SetPlayerDSP(DHookParam hParams)
 	int dspType = hParams.Get(2);
 	if (35 <= dspType <= 37)
 	{
-		int len = pRecipients.m_Size();
+		int len = pRecipients.Count();
 		for (int i = 0; i < len; i++)
 		{
-			int client = pRecipients.GetAtPtr(i);
+			int client = pRecipients.GetPtr(i);
 			if ((0 < client <= MaxClients) && IsClientInGame(client)
 				&& !IsFakeClient(client) && ShouldRing(client))
 			{

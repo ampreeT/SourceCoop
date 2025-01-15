@@ -71,6 +71,30 @@ stock void SetBitOnInt(int& i, const int iBitIndex, const bool bSetBit)
 	}
 }
 
+stock int NumberTypeToBytes(NumberType eNumberType)
+{
+	switch (eNumberType)
+	{
+		case NumberType_Int8: return 1;
+		case NumberType_Int16: return 2;
+		case NumberType_Int32: return 4;
+	}
+	ThrowError("Unknown NumberType %d", eNumberType);
+	return 0;
+}
+
+stock NumberType BytesToNumberType(int iBytes)
+{
+	switch (iBytes)
+	{
+		case 1: return NumberType_Int8;
+		case 2: return NumberType_Int16;
+		case 4: return NumberType_Int32;
+	}
+	ThrowError("%d bytes not convertible to NumberType", iBytes);
+	return NumberType_Int32;
+}
+
 // The following are attributed to github.com/nosoop/stocksoup
 
 /**

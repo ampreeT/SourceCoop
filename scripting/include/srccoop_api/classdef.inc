@@ -94,6 +94,7 @@ stock void InitClassdef(const GameData hGameConfig)
 	IServerTools.InitClassdef(hGameConfig);
 	CAI_BaseNPC.InitClassdef(hGameConfig);
 	CBaseAnimating.InitClassdef(hGameConfig);
+	CBaseAnimatingOverlay.InitClassdef(hGameConfig);
 	CBaseCombatWeapon.InitClassdef(hGameConfig);
 	CBaseCombatCharacter.InitClassdef(hGameConfig);
 	CBaseViewModel.InitClassdef(hGameConfig);

@@ -1,6 +1,8 @@
 #pragma newdecls required
 #pragma semicolon 1
 
+// Reference: https://github.com/Scags/SM-Memory/blob/main/pawn/sourcemod/scripting/include/smmem/vec.inc
+
 methodmap CUtlVector
 {
 	public CUtlVector(Address addr)
@@ -9,46 +11,62 @@ methodmap CUtlVector
 	}
 
 	// Part of CUtlMemory
-	public any m_pMemory()
+	property any m_pMemory
 	{
-		return Deref(this);
+		public get() {return Deref(this);}
 	}
-
-	public int m_nAllocationCount()
+	property int m_nAllocationCount
 	{
-		return Deref(this + 4);
+		public get() {return Deref(this + 4);}
 	}
-
-	public int m_nGrowSize()
+	property int m_nGrowSize
 	{
-		return Deref(this + 8);
+		public get() {return Deref(this + 8);}
 	}
-
 	// Part of CUtlVector
-	public int m_Size()
+	property int m_Size
 	{
-		return Deref(this + 12);
+		public get() {return Deref(this + 12);}
+	}
+	property any m_pElements
+	{
+		public get() {return Deref(this + 16);}
 	}
 
-	public any m_pElements()
+	public int Count()
 	{
-		return Deref(this + 16);
+		return this.m_Size;
 	}
 
-	public any GetAt(int i, int elSize = 4)
+	/**
+	 * Returns data at the specified index.
+	 * @param i index
+	 * @param iEntrySize The size of each entry in bytes.
+	 */
+	public any Get(int i, int iEntrySize = 4)
 	{
-		return this.m_pElements() + i * elSize;
+		return this.m_pElements + i * iEntrySize;
 	}
 
-	public any GetAtPtr(int i)
+	/**
+	 * Gets dereferenced value of a pointer at the specified index.
+	 * Only usable for lists of pointers.
+	 * @param i index
+	 */
+	public any GetPtr(int i)
 	{
-		return Deref(this.m_pElements() + i * 4);
+		return Deref(this.m_pElements + i * 4);
 	}
 
-	/** ToDo: Is this optimal? */
-	public void SetAt(int i, any data, int elSize = 4)
+	/**
+	 * Sets data at the specified index.
+	 * @param i           index
+	 * @param data        value to set
+	 * @param iEntrySize  The size of each entry in bytes. Allowed values are 1, 2, 4.
+	 */
+	public void Set(int i, any data, int iEntrySize = 4)
 	{
-		StoreToAddress(this.m_pElements() + i * elSize, data, NumberType_Int32);
+		StoreToAddress(this.m_pElements + i * iEntrySize, data, BytesToNumberType(iEntrySize));
 	}
 }
 
