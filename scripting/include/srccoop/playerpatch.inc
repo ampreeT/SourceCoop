@@ -1096,6 +1096,14 @@ static void ClearNpcMemoryForPlayer(const CBasePlayer pPlayer)
 		CBaseEntity pEntity = CBaseEntity(iEntIndex);
 		if (pEntity.IsNPC())
 		{
+			#if defined SRCCOOP_BLACKMESA
+			if (pEntity.IsClassname("npc_abrams"))
+			{
+				// causes a crash in CNPC_Abrams::AimMiniTurret2
+				continue;
+			}
+			#endif
+
 			CAI_BaseNPC pNPC = view_as<CAI_BaseNPC>(pEntity);
 			pNPC.ForgetEntity(pPlayer);
 		}
