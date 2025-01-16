@@ -84,6 +84,7 @@
 #include <srccoop_api/classdef/bms/CBM_MP_GameRules.inc>
 #include <srccoop_api/classdef/bms/CEnv_XenPortalEffect.inc>
 #include <srccoop_api/classdef/bms/CEnvBeamTeam.inc>
+#include <srccoop_api/classdef/bms/CNPC_Beneathticle.inc>
 #include <srccoop_api/classdef/bms/CParamsManager.inc>
 #include <srccoop_api/classdef/bms/CPropChargerBase.inc>
 #include <srccoop_api/classdef/bms/CSpriteTeam.inc>

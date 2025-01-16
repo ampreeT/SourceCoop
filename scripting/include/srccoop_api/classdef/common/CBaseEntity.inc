@@ -170,6 +170,17 @@ methodmap CBaseEntity
 			SetEntProp(this.entindex, Prop_Data, "m_usSolidFlags", eSolidFlags);
 		}
 	}
+	property int m_ubInterpolationFrame
+	{
+		public get()
+		{
+			return GetEntProp(this.entindex, Prop_Send, "m_ubInterpolationFrame");
+		}
+		public set(const int iInterpolationFrame)
+		{
+			SetEntProp(this.entindex, Prop_Send, "m_ubInterpolationFrame", iInterpolationFrame);
+		}
+	}
 	public bool IsValid()
 	{
 		return (this != NULL_CBASEENTITY) && IsValidEntity(view_as<int>(this));
@@ -447,6 +458,14 @@ methodmap CBaseEntity
 	{
 		SetEntProp(this.entindex, Prop_Data, "m_nSolidType", eSolidType);
 	}
+	public int GetLastThinkTick()
+	{
+		return GetEntProp(this.entindex, Prop_Data, "m_nLastThinkTick");
+	}
+	public void SetLastThinkTick(const int iTick)
+	{
+		SetEntProp(this.entindex, Prop_Data, "m_nLastThinkTick", iTick);
+	}
 	public int GetNextThinkTick()
 	{
 		return GetEntProp(this.entindex, Prop_Data, "m_nNextThinkTick");
@@ -708,6 +727,26 @@ methodmap CBaseEntity
 	public void StopSound(const int iChannel, const char[] szName)
 	{
 		StopSound(this.entindex, iChannel, szName);
+	}
+	// TODO: Should this be in here? This is suppose to be `void CCollisionProperty::MarkSurroundingBoundsDirty()`.
+	public void MarkSurroundingBoundsDirty()
+	{
+		// The `SetCollisionBounds` implementation calls into `MarkSurroundingBoundsDirty` if `m_vecMins` or `m_vecMaxs` are not equal to the new values.
+		// This is set to `FLT_MAX` as it is unlikely the game is going to use these values.
+		// https://github.com/ValveSoftware/source-sdk-2013/blob/0d8dceea4310fde5706b3ce1c70609d72a38efdf/mp/src/game/shared/collisionproperty.cpp#L704
+		float vec3Mins[3];
+		this.GetMins(vec3Mins);
+		
+		float vec3Maxs[3];
+		this.GetMaxs(vec3Maxs);
+
+		this.SetMins({ FLT_MAX, FLT_MAX, FLT_MAX });
+		this.SetMaxs({ FLT_MAX, FLT_MAX, FLT_MAX });
+		this.SetCollisionBounds(vec3Mins, vec3Maxs);
+	}
+	public void IncrementInterpolationFrame()
+	{
+		this.m_ubInterpolationFrame = (this.m_ubInterpolationFrame + 1) % NOINTERP_PARITY_MAX;
 	}
 }
 

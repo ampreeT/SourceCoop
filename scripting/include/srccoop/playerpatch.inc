@@ -113,24 +113,6 @@ public void Hook_PlayerPreThinkPost(int iClient)
 				// fix clientside prediction errors when dropping objects
 				PreventWeaponFiring(pWeapon, 1.0);
 			}
-			else if (pPlayer.GetWaterLevel() == WL_Eyes)
-			{
-				// fix clientside firing weapons when dragged by beneathticle
-				CBaseEntity pParent = pPlayer.GetParent();
-				if (pParent.IsValid())
-				{
-					if (HasEntProp(pParent.entindex, Prop_Data, "m_hPrey"))
-					{
-						if (GetEntPropEnt(pParent.entindex, Prop_Data, "m_hPrey") == pPlayer.entindex)
-						{
-							if (!pWeapon.CanFireUnderwater() && pWeapon.GetPrimaryAmmoType() != -1)
-							{
-								PreventWeaponFiring(pWeapon, 0.2);
-							}
-						}
-					}
-				}
-			}
 		}
 		#endif // SRCCOOP_BLACKMESA
 	}

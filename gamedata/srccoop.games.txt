@@ -913,6 +913,19 @@
 				"return"	"void"
 				"this"		"entity"
 			}
+			"Activity_ListFromString"
+			{
+				"signature"	"Activity_ListFromString"
+				"callconv"	"cdecl"
+				"return"	"void"
+				"arguments"
+				{
+					"szActivityName"
+					{
+						"type"	"charptr"
+					}
+				}
+			}
 		}
 	}
 	
@@ -1112,6 +1125,10 @@
 			{
 				"windows"	"\x55\x8B\xEC\x83\xEC\x10\x53\x8B\xD9\x8B\x8B\x9C\x03\x00\x00"
 				"linux"		"@_ZN20CAI_ScriptedSequence11StartScriptEv"
+			}
+			"Activity_ListFromString"
+			{
+				"linux"		"@_ZL14ListFromStringPKc"
 			}
 		}
 
@@ -1460,6 +1477,16 @@
 			{
 				"windows"	"285"
 				"linux"		"286"
+			}
+			"CBaseAnimating::StudioFrameAdvance"	// CBaseAnimating::StudioFrameAdvance()
+			{
+				"windows"	"205"
+				"linux"		"206"
+			}
+			"CAI_BaseNPC::SetActivity"	// CAI_BaseNPC::SetActivity(Activity)
+			{
+				"windows"	"417"	// might be wrong..
+				"linux"		"418"
 			}
 		}
 	}
