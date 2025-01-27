@@ -7,11 +7,6 @@
  * Define NO_DEBUG before including this file to completely disable all debugging
  */
 
-#if defined _logdebug_included
- #endinput
-#endif
-#define _logdebug_included
-
 #pragma newdecls required
 #pragma semicolon 1
 

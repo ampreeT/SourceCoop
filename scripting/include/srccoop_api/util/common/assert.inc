@@ -1,8 +1,3 @@
-#if defined _srccoop_util_assert_included
- #endinput
-#endif
-#define _srccoop_util_assert_included
-
 #pragma newdecls required
 #pragma semicolon 1
 

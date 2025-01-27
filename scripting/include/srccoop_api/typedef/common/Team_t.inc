@@ -7,6 +7,6 @@ enum
 	TEAM_INVALID = -1,
 	TEAM_UNASSIGNED = 0,
 	TEAM_SPECTATOR = 1,
-	TEAM_MARINES = 2,
-	TEAM_SCIENTIST = 3,
+	TEAM_ONE = 2, // Marine, Combine
+	TEAM_TWO = 3, // Scientist, Rebels
 }

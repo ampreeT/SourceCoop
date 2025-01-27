@@ -1,6 +1,8 @@
 #pragma newdecls required
 #pragma semicolon 1
 
+// ToDo: This is not an enum. Look this up at runtime.
+
 enum AmmoType_t
 {
 	AMMO_INVALID = 0,

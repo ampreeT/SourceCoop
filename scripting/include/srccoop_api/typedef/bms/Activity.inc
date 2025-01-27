@@ -1,9 +1,6 @@
 #pragma newdecls required
 #pragma semicolon 1
 
-//------------------------------------------------------
-// BMS specific activity list
-//------------------------------------------------------
 enum Activity
 {
 	ACT_INVALID = -1,			// So we have something more succint to check for than '-1'

@@ -1,16 +1,32 @@
-#pragma newdecls required
-#pragma semicolon 1
-
 #if defined _srccoop_api_typedef_included
  #endinput
 #endif
 #define _srccoop_api_typedef_included
+
+#pragma newdecls required
+#pragma semicolon 1
 
 #include <sdktools_trace>
 
 //------------------------------------------------------
 // Base definitions
 //------------------------------------------------------
+#if !defined CHAR_BIT
+ #define CHAR_BIT 8
+#endif
+
+#if !defined FLT_MAX
+ #define FLT_MAX 2147483647.0
+#endif
+
+#if !defined INT_MIN
+ #define INT_MIN cellmin
+#endif
+
+#if !defined INT_MAX
+ #define INT_MAX cellmax
+#endif
+
 #define MAX_WEAPONS     48
 #define MAX_AMMO_TYPES  32
 #define MAX_VIEWMODELS  2
@@ -19,6 +35,7 @@
 #define MAX_CLASSNAME   48
 #define MAX_MODELNAME   256
 #define MAX_TEAMNAME    32
+#define ENTITYSTRING_LENGTH 2097152
 
 #define ACHIEVEMENT_PREFIX "ACHIEVEMENT_EVENT_"
 
@@ -118,14 +135,12 @@
 #define SF_PHYSBOX_PREVENT_PLAYER_TOUCH_ENABLE 0x800000		// If set, the player will not cause the object to enable its motion when bumped into
 */
 
-#include <srccoop_api/typedef/common/Activity.inc>
 #include <srccoop_api/typedef/common/AI_Efficiency_t.inc>
 #include <srccoop_api/typedef/common/AI_Schedule_t.inc>
 #include <srccoop_api/typedef/common/AI_SleepFlags_t.inc>
 #include <srccoop_api/typedef/common/AI_SleepState_t.inc>
 #include <srccoop_api/typedef/common/AmmoType_t.inc>
 #include <srccoop_api/typedef/common/BeamType_t.inc>
-#include <srccoop_api/typedef/common/Class_T.inc>
 #include <srccoop_api/typedef/common/Collision_Group_t.inc>
 #include <srccoop_api/typedef/common/Disposition_t.inc>
 #include <srccoop_api/typedef/common/EntityDissolveType_t.inc>
@@ -148,5 +163,12 @@
 #include <srccoop_api/typedef/common/WaterLevel_t.inc>
 
 #if defined SRCCOOP_BLACKMESA
+#include <srccoop_api/typedef/bms/Class_T.inc>
 #include <srccoop_api/typedef/bms/gamerules.inc>
+#include <srccoop_api/typedef/bms/Activity.inc>
+#endif
+
+#if defined SRCCOOP_HL2DM
+#include <srccoop_api/typedef/hl2dm/Class_T.inc>
+#include <srccoop_api/typedef/hl2dm/Activity.inc>
 #endif

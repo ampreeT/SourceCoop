@@ -1,8 +1,3 @@
-#if defined _srccoop_entitypatch_included
- #endinput
-#endif
-#define _srccoop_entitypatch_included
-
 #pragma newdecls required
 #pragma semicolon 1
 
@@ -133,7 +128,7 @@ void PopSinglePlayerOverride()
 //------------------------------------------------------
 // UTIL_GetLocalPlayer
 //------------------------------------------------------
-public MRESReturn Hook_UTIL_GetLocalPlayer(Handle hReturn)
+public MRESReturn Hook_UTIL_GetLocalPlayer(DHookReturn hReturn)
 {
 	CBaseEntity pOverrideEntity = g_pLocalPlayerEntity[g_iLocalPlayerStackPointer];
 	if (pOverrideEntity.IsValid())
@@ -154,7 +149,6 @@ public MRESReturn Hook_UTIL_GetLocalPlayer(Handle hReturn)
 				return MRES_Supercede;
 			}
 		}
-		// LogDebug("Overriding UTIL_GetLocalPlayer");
 		DHookSetReturn(hReturn, pPlayer.entindex);
 		return MRES_Supercede;
 	}
@@ -168,7 +162,7 @@ public MRESReturn Hook_UTIL_GetLocalPlayer(Handle hReturn)
 //------------------------------------------------------
 // CMultiplayRules::IsMultiplayer
 //------------------------------------------------------
-public MRESReturn Hook_IsMultiplayer(Handle hReturn)
+public MRESReturn Hook_IsMultiplayer(DHookReturn hReturn)
 {
 	DHookSetReturn(hReturn, g_bIsMultiplayerOverride);
 	return MRES_Supercede;
@@ -179,7 +173,7 @@ public MRESReturn Hook_IsMultiplayer(Handle hReturn)
 // Lets mappers use custom npc models
 // (Using keyvalues proves most reliable against BM overriding models with its character manifest file before Spawn())
 //------------------------------------------------------
-public MRESReturn Hook_BaseNPCKeyValuePost(int _this, Handle hReturn, Handle hParams)
+public MRESReturn Hook_BaseNPCKeyValuePost(int _this, DHookReturn hReturn, DHookParam hParams)
 {
 	CBaseEntity pEntity = CBaseEntity(_this);
 	
@@ -200,7 +194,7 @@ public MRESReturn Hook_BaseNPCKeyValuePost(int _this, Handle hReturn, Handle hPa
 	return MRES_Ignored;
 }
 
-public MRESReturn BaseNPCSetModelBlock(int _this, Handle hParams)
+public MRESReturn BaseNPCSetModelBlock(int _this, DHookParam hParams)
 {
 	return MRES_Supercede;
 }
@@ -236,7 +230,7 @@ public MRESReturn Hook_Physics_RunThinkFunctions(DHookParam hParams)
 // CAI_BaseNPC
 // Fix UpdateEnemyMemory input when player string is passed as parameter
 //------------------------------------------------------
-public MRESReturn Hook_BaseNPCAcceptInput(int _this, Handle hReturn, Handle hParams)
+public MRESReturn Hook_BaseNPCAcceptInput(int _this, DHookReturn hReturn, DHookParam hParams)
 {
 	if (!DHookIsNullParam(hParams, 1))
 	{
@@ -272,7 +266,7 @@ public MRESReturn Hook_BaseNPCAcceptInput(int _this, Handle hReturn, Handle hPar
 // Scene entities
 // fix findnamedentity returning sp player ( nullptr )
 //------------------------------------------------------
-public MRESReturn Hook_FindNamedEntity(int _this, Handle hReturn, Handle hParams)
+public MRESReturn Hook_FindNamedEntity(int _this, DHookReturn hReturn, DHookParam hParams)
 {
 	if (!DHookIsNullParam(hParams, 1) && !DHookIsNullParam(hParams, 2))
 	{
@@ -303,7 +297,7 @@ public MRESReturn Hook_FindNamedEntity(int _this, Handle hReturn, Handle hParams
 // NPCs that use the response system https://developer.valvesoftware.com/wiki/Response_System
 // The original function calls `AI_GetSinglePlayer()` which will end up returning null.
 //------------------------------------------------------
-public MRESReturn Hook_ExpresserHost_DoModifyOrAppendCriteriaPost(Handle hParams)
+public MRESReturn Hook_ExpresserHost_DoModifyOrAppendCriteriaPost(DHookParam hParams)
 {
 	CBaseEntity pSpeaker = CBaseEntity(DHookGetParam(hParams, 1));
 	CBasePlayer pPlayer = GetNearestPlayerPreferAlive(pSpeaker, true);
@@ -350,7 +344,7 @@ public void Hook_ChangelevelSpawn(int iEntIndex)
 	}
 }
 
-public MRESReturn Hook_ChangelevelAcceptInput(int _this, Handle hReturn, Handle hParams)
+public MRESReturn Hook_ChangelevelAcceptInput(int _this, DHookReturn hReturn, DHookParam hParams)
 {
 	if (CoopManager.IsCoopModeEnabled())
 	{
@@ -424,7 +418,7 @@ public Action ChangelevelEffects(Handle timer, CChangelevel pChangelevel)
 // Does not work in BM
 // Other games benefit from our custom map series logic
 //------------------------------------------------------
-public MRESReturn Hook_GameEndAcceptInput(int _this, Handle hReturn, Handle hParams)
+public MRESReturn Hook_GameEndAcceptInput(int _this, DHookReturn hReturn, DHookParam hParams)
 {
 	if (!CoopManager.IsCoopModeEnabled())
 	{
@@ -458,7 +452,7 @@ public Action Hook_AutosaveSpawn(int iEntIndex)
 // CPointTeleport - point_teleport
 // multiplayer support
 //------------------------------------------------------
-public MRESReturn Hook_PointTeleportAcceptInput(int _this, Handle hReturn, Handle hParams)
+public MRESReturn Hook_PointTeleportAcceptInput(int _this, DHookReturn hReturn, DHookParam hParams)
 {
 	if (!DHookIsNullParam(hParams, 1))
 	{
@@ -493,10 +487,9 @@ public MRESReturn Hook_PointTeleportAcceptInput(int _this, Handle hReturn, Handl
 // CTriggerCamera - point_viewcontrol
 // multiplayer support
 //------------------------------------------------------
-public MRESReturn Hook_PointViewcontrolAcceptInput(int _this, Handle hReturn, Handle hParams)
+public MRESReturn Hook_PointViewcontrolAcceptInput(int _this, DHookReturn hReturn, DHookParam hParams)
 {
 	static bool bHookSkip = false;
-	LogDebug("Hook_PointViewcontrolAcceptInput ent=%d", _this);
 	if (!bHookSkip)
 	{
 		if (!DHookIsNullParam(hParams, 1))
@@ -504,7 +497,6 @@ public MRESReturn Hook_PointViewcontrolAcceptInput(int _this, Handle hReturn, Ha
 			CBaseEntity pThis = CBaseEntity(_this);
 			char szInputType[MAX_FORMAT];
 			DHookGetParamString(hParams, 1, szInputType, sizeof(szInputType));
-			LogDebug("Hook_PointViewcontrolAcceptInput szInputType=%s", szInputType);
 
 			if (strcmp(szInputType, "Disable", false) == 0)
 			{
@@ -552,7 +544,6 @@ public MRESReturn Hook_PointViewcontrolAcceptInput(int _this, Handle hReturn, Ha
 				}
 				else
 				{
-					LogDebug("Hook_PointViewcontrolAcceptInput activator not a player > EnableAll > MRES_Supercede");
 					AcceptEntityInput(_this, "EnableAll");
 					DHookSetReturn(hReturn, true);
 					return MRES_Supercede;
@@ -568,12 +559,10 @@ public MRESReturn Hook_PointViewcontrolAcceptInput(int _this, Handle hReturn, Ha
 					}
 				}
 				DHookSetReturn(hReturn, true);
-				LogDebug("Hook_PointViewcontrolAcceptInput MRES_Supercede");
 				return MRES_Supercede;
 			}
 		}
 	}
-	LogDebug("Hook_PointViewcontrolAcceptInput MRES_Ignored");
 	return MRES_Ignored;
 }
 
@@ -586,7 +575,7 @@ public Action OnEndFollowBlocker(const char[] output, int caller, int activator,
 // CMovementSpeedMod - player_speedmod
 // multiplayer support
 //------------------------------------------------------
-public MRESReturn Hook_SpeedmodAcceptInput(int _this, Handle hReturn, Handle hParams)
+public MRESReturn Hook_SpeedmodAcceptInput(int _this, DHookReturn hReturn, DHookParam hParams)
 {
 	static bool bHookSkip = false;
 	if (!bHookSkip)
@@ -595,13 +584,10 @@ public MRESReturn Hook_SpeedmodAcceptInput(int _this, Handle hReturn, Handle hPa
 		{
 			char szInputType[MAX_FORMAT];
 			DHookGetParamString(hParams, 1, szInputType, sizeof(szInputType));
-			LogDebug("Hook_SpeedmodAcceptInput szInputType=%s", szInputType);
 			if (strcmp(szInputType, "ModifySpeedAll", false) == 0) // new input
 			{
-				fieldtype_t fieldType = DHookGetParamObjectPtrVar(hParams, 4, 16, ObjectValueType_Int);
 				char szParam[32];
 				DHookGetParamObjectPtrString(hParams, 4, 0, ObjectValueType_String, szParam, sizeof(szParam));
-				LogDebug("Hook_SpeedmodAcceptInput ft=%d, %s", fieldType, szParam);
 				bHookSkip = true;
 				for (int i = 1; i <= MaxClients; i++)
 				{
@@ -624,7 +610,7 @@ public MRESReturn Hook_SpeedmodAcceptInput(int _this, Handle hReturn, Handle hPa
 // CEnvZoom - env_zoom
 // multiplayer support
 //------------------------------------------------------
-public MRESReturn Hook_EnvZoomAcceptInput(int _this, Handle hReturn, Handle hParams)
+public MRESReturn Hook_EnvZoomAcceptInput(int _this, DHookReturn hReturn, DHookParam hParams)
 {
 	static bool bHookSkip = false;
 	if (!bHookSkip)
@@ -695,7 +681,7 @@ public MRESReturn Hook_EnvZoomAcceptInput(int _this, Handle hReturn, Handle hPar
 // point_clientcommand
 // multiplayer support
 //------------------------------------------------------
-public MRESReturn Hook_ClientCommandAcceptInput(int _this, Handle hReturn, Handle hParams)
+public MRESReturn Hook_ClientCommandAcceptInput(int _this, DHookReturn hReturn, DHookParam hParams)
 {
 	static bool bHookSkip = false;
 	if (!bHookSkip)
@@ -712,7 +698,6 @@ public MRESReturn Hook_ClientCommandAcceptInput(int _this, Handle hReturn, Handl
 			
 			char szParam[MAX_FORMAT];
 			DHookGetParamObjectPtrString(hParams, 4, 0, ObjectValueType_String, szParam, sizeof(szParam));
-			LogDebug("Hook_ClientCommandAcceptInput input=%s, param=%s", szInput, szParam);
 			TrimString(szParam);
 			
 			if (CoopManager.IsFeatureEnabled(FT_AUTODETECT_MAP_END))
@@ -773,7 +758,7 @@ public MRESReturn Hook_ClientCommandAcceptInput(int _this, Handle hReturn, Handl
 // point_servercommand
 // treat changelevel command as natural mapchange
 //------------------------------------------------------
-public MRESReturn Hook_ServerCommandAcceptInput(int _this, Handle hReturn, Handle hParams)
+public MRESReturn Hook_ServerCommandAcceptInput(int _this, DHookReturn hReturn, DHookParam hParams)
 {
 	if (CoopManager.IsCoopModeEnabled())
 	{
@@ -812,7 +797,7 @@ public MRESReturn Hook_ServerCommandAcceptInput(int _this, Handle hReturn, Handl
 // env_credits
 // multiplayer support
 //------------------------------------------------------
-public MRESReturn Hook_EnvCreditsAcceptInput(int _this, Handle hReturn, Handle hParams)
+public MRESReturn Hook_EnvCreditsAcceptInput(int _this, DHookReturn hReturn, DHookParam hParams)
 {
 	if (!DHookIsNullParam(hParams, 1))
 	{
@@ -919,9 +904,8 @@ public MRESReturn Hook_ResolveNames(int _this)
 // CAI_LeadBehavior
 // multiplayer support for ai_goal_lead
 //------------------------------------------------------
-public MRESReturn Hook_CanSelectSchedule(Handle hReturn)
+public MRESReturn Hook_CanSelectSchedule(DHookReturn hReturn)
 {
-	LogDebug("Hook_CanSelectSchedule");
 	// ToDo: acutally check conditions as in original code
 	DHookSetReturn(hReturn, true);
 	return MRES_Supercede;
@@ -933,7 +917,6 @@ public MRESReturn Hook_CanSelectSchedule(Handle hReturn)
 //------------------------------------------------------
 public MRESReturn Hook_AIConditionsThink(int _this)
 {
-	LogDebug("Hook_AIConditionsThink");
 	CAI_ScriptConditions pThis = CAI_ScriptConditions(_this);
 	CBasePlayer pLocalPlayerOverride = NULL_CBASEENTITY;
 
@@ -942,8 +925,8 @@ public MRESReturn Hook_AIConditionsThink(int _this)
 		int count;
 		float vecMidpoint[3], vecOrigin[3];
 
-		CUtlVector pElementsList = CUtlVector(GetEntityAddress(_this) + FindDataMapInfo(_this, "m_ElementList"));
-		int len = pElementsList.m_Size();
+		CUtlVector pElementsList = CUtlVector(pThis.address + FindDataMapInfo(_this, "m_ElementList"));
+		int len = pElementsList.Count();
 
 		for (int i = 0; i < len; i++)
 		{
@@ -951,7 +934,7 @@ public MRESReturn Hook_AIConditionsThink(int _this)
 			// 4 - CSimTimer		m_Timer
 			// 12 - CSimTimer		m_Timeout
 			// == 20
-			Address conditionsElement = pElementsList.GetAt(i, 20);
+			Address conditionsElement = pElementsList.Get(i, 20);
 			if (!conditionsElement)
 				continue;
 			
@@ -1066,7 +1049,7 @@ public MRESReturn Hook_SetPlayerAvoidState(int _this)
 //
 // - [Source SDK 2013](https://github.com/ValveSoftware/source-sdk-2013/blob/0d8dceea4310fde5706b3ce1c70609d72a38efdf/mp/src/game/server/ai_basenpc.cpp#L3353)
 //
-public MRESReturn Hook_BaseNpcUpdateSleepState(int _this, Handle hParams)
+public MRESReturn Hook_BaseNpcUpdateSleepState(int _this, DHookParam hParams)
 {
 	// TODO: does bInPVS work for any and all players?
 	CAI_BaseNPC pBaseNPC = CAI_BaseNPC(_this);
@@ -1134,7 +1117,7 @@ public MRESReturn Hook_BaseNpcUpdateSleepState(int _this, Handle hParams)
 		// Don't let an NPC sleep if they're running a script!
 		if (!pBaseNPC.IsInAScript() && pBaseNPC.GetState() != NPC_STATE_SCRIPT)
 		{
-			if (pBaseNPC.HasSleepFlags(AI_SLEEP_FLAG_AUTO_PVS))
+			if (pBaseNPC.m_SleepFlags & AI_SLEEP_FLAG_AUTO_PVS)
 			{
 				if (!pBaseNPC.HasCondition(view_as<int>(COND_IN_PVS)))
 				{
@@ -1143,13 +1126,13 @@ public MRESReturn Hook_BaseNpcUpdateSleepState(int _this, Handle hParams)
 				}
 			}
 
-			if (pBaseNPC.HasSleepFlags(AI_SLEEP_FLAG_AUTO_PVS_AFTER_PVS))
+			if (pBaseNPC.m_SleepFlags & AI_SLEEP_FLAG_AUTO_PVS_AFTER_PVS)
 			{
 				if (pBaseNPC.HasCondition(view_as<int>(COND_IN_PVS)))
 				{
 					// OK, we're in the player's PVS. Now switch to regular old AUTO_PVS sleep rules.
-					pBaseNPC.AddSleepFlags(AI_SLEEP_FLAG_AUTO_PVS);
-					pBaseNPC.RemoveSleepFlags(AI_SLEEP_FLAG_AUTO_PVS_AFTER_PVS);
+					pBaseNPC.m_SleepFlags |= AI_SLEEP_FLAG_AUTO_PVS;
+					pBaseNPC.m_SleepFlags &= ~AI_SLEEP_FLAG_AUTO_PVS_AFTER_PVS;
 				}
 			}
 		}
@@ -1195,7 +1178,7 @@ public bool HasAnyPlayerWalkedIntoWakeRadius(CAI_BaseNPC pBaseNPC)
 //
 // - [Source SDK 2013](https://github.com/ValveSoftware/source-sdk-2013/blob/0d8dceea4310fde5706b3ce1c70609d72a38efdf/mp/src/game/server/ai_basenpc_schedule.cpp#L3191)
 //
-public MRESReturn Hook_BaseNPCRunTask(int _this, Handle hParams)
+public MRESReturn Hook_BaseNPCRunTask(int _this, DHookParam hParams)
 {
 	CAI_BaseNPC pEntity = CAI_BaseNPC(_this);
 	Task_t pTask = DHookGetParam(hParams, 1);
@@ -1215,7 +1198,7 @@ public MRESReturn Hook_BaseNPCRunTask(int _this, Handle hParams)
 	return MRES_Ignored;
 }
 
-public MRESReturn Hook_BaseNPCRunTaskPost(int _this, Handle hParams)
+public MRESReturn Hook_BaseNPCRunTaskPost(int _this, DHookParam hParams)
 {
 	PopSinglePlayerOverride();
 	return MRES_Ignored;
@@ -1230,7 +1213,7 @@ public MRESReturn Hook_BaseNPCRunTaskPost(int _this, Handle hParams)
 //
 // - [Source SDK 2013](https://github.com/ValveSoftware/source-sdk-2013/blob/0d8dceea4310fde5706b3ce1c70609d72a38efdf/mp/src/game/server/hl2/proto_sniper.cpp#L1385)
 //
-public MRESReturn Hook_ProtoSniperSelectSchedule(int _this, Handle hReturn)
+public MRESReturn Hook_ProtoSniperSelectSchedule(int _this, DHookReturn hReturn)
 {
 	CProtoSniper pSniper = CProtoSniper(_this);
 	
@@ -1352,7 +1335,7 @@ public Action Hook_NoDmg(int victim, int &attacker, int &inflictor, float &damag
 // player_loadsaved
 // multiplayer support
 //------------------------------------------------------
-public MRESReturn Hook_LoadSavedAcceptInput(int _this, Handle hReturn, Handle hParams)
+public MRESReturn Hook_LoadSavedAcceptInput(int _this, DHookReturn hReturn, DHookParam hParams)
 {
 	if (!CoopManager.IsCoopModeEnabled())
 	{
@@ -1370,10 +1353,8 @@ public MRESReturn Hook_LoadSavedAcceptInput(int _this, Handle hReturn, Handle hP
 			CBasePlayer pActivator = CBasePlayer(iActivator);
 			if (pActivator.IsPlayer())
 			{
-				int r, g, b, a;
-				GetEntityRenderColor(_this, r, g, b, a);
-				float duration = GetEntPropFloat(_this, Prop_Data, "m_Duration");
-				Client_ScreenFade(iActivator, RoundFloat(duration * 1000), view_as<int>(FFADE_OUT | FFADE_STAYOUT), _, r, g, b, a);
+				CRevertSaved pThis = CRevertSaved(_this);
+				pActivator.ScreenFade(RoundFloat(pThis.GetDuration() * 1000), pThis.GetRenderColor(), FFADE_OUT | FFADE_STAYOUT);
 				
 				// This breaks the spectator overlay if the player is already dead
 				if (pActivator.IsAlive())
@@ -1394,7 +1375,7 @@ public MRESReturn Hook_LoadSavedAcceptInput(int _this, Handle hReturn, Handle hP
 // Survival mode hook
 // May need to hook logic_active_autosave at some point if it is used, most maps do not use it though
 //------------------------------------------------------
-public MRESReturn Hook_LogicAutosaveAcceptInput(int _this, Handle hReturn, Handle hParams)
+public MRESReturn Hook_LogicAutosaveAcceptInput(int _this, DHookReturn hReturn, DHookParam hParams)
 {
 	if (!CoopManager.IsCoopModeEnabled())
 	{
@@ -1424,7 +1405,7 @@ public MRESReturn Hook_LogicAutosaveAcceptInput(int _this, Handle hReturn, Handl
 // func_trackautochange
 // Prevent track from being blocked by players and forced to go back down
 //------------------------------------------------------
-public MRESReturn Hook_TrackChangeBlocked(int _this, Handle hReturn, Handle hParams)
+public MRESReturn Hook_TrackChangeBlocked(int _this, DHookReturn hReturn, DHookParam hParams)
 {
 	if (!DHookIsNullParam(hParams, 1))
 	{
@@ -1446,7 +1427,7 @@ public MRESReturn Hook_TrackChangeBlocked(int _this, Handle hReturn, Handle hPar
 // Prevent trains from being blocked by players
 // Moves players up if not blocked, otherwise kills blocking player
 //------------------------------------------------------
-public MRESReturn Hook_TrackTrainBlocked(int _this, Handle hReturn, Handle hParams)
+public MRESReturn Hook_TrackTrainBlocked(int _this, DHookReturn hReturn, DHookParam hParams)
 {
 	static float vecOriginAdjusted[3];
 	

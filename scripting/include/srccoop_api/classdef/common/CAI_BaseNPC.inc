@@ -159,25 +159,16 @@ methodmap CAI_BaseNPC < CBaseCombatCharacter
 	{
 		return GetEntPropFloat(this.entindex, Prop_Data, "m_flWakeRadius");
 	}
-	public AI_SleepFlags_t GetSleepFlags()
+	property AI_SleepFlags_t m_SleepFlags
 	{
-		return view_as<AI_SleepFlags_t>(GetEntProp(this.entindex, Prop_Data, "m_SleepFlags"));
-	}
-	public int SetSleepFlags(const AI_SleepFlags_t eSleepFlags)
-	{
-		SetEntProp(this.entindex, Prop_Data, "m_SleepFlags", eSleepFlags);
-	}
-	public bool HasSleepFlags(const AI_SleepFlags_t eSleepFlags)
-	{
-		return (this.GetSleepFlags() & eSleepFlags) == eSleepFlags;
-	}
-	public void AddSleepFlags(const AI_SleepFlags_t eSleepFlags)
-	{
-		this.SetSleepFlags(this.GetSleepFlags() | eSleepFlags);
-	}
-	public void RemoveSleepFlags(const AI_SleepFlags_t eSleepFlags)
-	{
-		this.SetSleepFlags(this.GetSleepFlags() & ~eSleepFlags);
+		public get()
+		{
+			return view_as<AI_SleepFlags_t>(GetEntProp(this.entindex, Prop_Data, "m_SleepFlags"));
+		}
+		public set(const AI_SleepFlags_t eSleepFlags)
+		{
+			SetEntProp(this.entindex, Prop_Data, "m_SleepFlags", eSleepFlags);
+		}
 	}
 	public AI_SleepState_t GetSleepState()
 	{

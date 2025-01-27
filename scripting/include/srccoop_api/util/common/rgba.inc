@@ -1,11 +1,6 @@
 #pragma newdecls required
 #pragma semicolon 1
 
-#if defined _srccoop_api_color_included
- #endinput
-#endif
-#define _srccoop_api_color_included
-
 methodmap RGBA
 {
 	public RGBA(const int r, const int g, const int b, const int a)
@@ -39,5 +34,15 @@ methodmap RGBA
 		{
 			return (view_as<int>(this) >> 24) & 0xFF;
 		}
+	}
+	
+	public int[] ToArray()
+	{
+		int arr[4];
+		arr[0] = this.r;
+		arr[1] = this.g;
+		arr[2] = this.b;
+		arr[3] = this.a;
+		return arr;
 	}
 }

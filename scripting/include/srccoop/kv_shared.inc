@@ -1,8 +1,3 @@
-#if defined _srccoop_kv_shared_included
- #endinput
-#endif
-#define _srccoop_kv_shared_included
-
 #pragma newdecls required
 #pragma semicolon 1
 

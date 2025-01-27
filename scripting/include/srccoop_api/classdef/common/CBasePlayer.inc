@@ -148,7 +148,7 @@ methodmap CBasePlayer < CBaseCombatCharacter
 		if (pItem != NULL_CBASEENTITY && pItem.GetOwner() == NULL_CBASEENTITY)
 		{
 			// this would drop on the ground if player cant pick up any more
-			pItem.KillAfterTime(0.1);
+			pItem.KillDelayed(0.1);
 		}
 		return pItem;
 	}
@@ -388,13 +388,9 @@ methodmap CBasePlayer < CBaseCombatCharacter
 	}
 	public bool SendConVarValueInt(const ConVar hConVar, const int iValue)
 	{
-		char szValue[13];
+		char szValue[MAX_CHARS_INT(INT_MIN)];
 		IntToString(iValue, szValue, sizeof(szValue));
 		return this.SendConVarValueStr(hConVar, szValue);
-	}
-	public bool SendConVarValueBool(const ConVar hConVar, const int bValue)
-	{
-		return this.SendConVarValueInt(hConVar, view_as<int>(bValue));
 	}
 	public void PlayGameSound(const char[] szSound)
 	{
@@ -582,6 +578,34 @@ methodmap CBasePlayer < CBaseCombatCharacter
 	{
 		SetEntProp(this.entindex, Prop_Send, "m_nTickBase", iTickBase);
 	}
+	public bool ScreenFade(int iDuration, RGBA color, ScreenFadeFlags_t eFadeFlags, int iHoldtime = -1, int iMessageFlags = USERMSG_RELIABLE)
+	{
+		Handle hMessage = StartMessageOne("Fade", this.entindex, iMessageFlags);
+		
+		if (!hMessage)
+			return false;
+
+		if (GetFeatureStatus(FeatureType_Native, "GetUserMessageType") == FeatureStatus_Available && GetUserMessageType() == UM_Protobuf)
+		{
+			PbSetInt(hMessage,   "duration",   iDuration);
+			PbSetInt(hMessage,   "hold_time",  iHoldtime);
+			PbSetInt(hMessage,   "flags",      view_as<int>(eFadeFlags));
+			PbSetColor(hMessage, "clr",        color.ToArray());
+		}
+		else
+		{
+			BfWriteShort(hMessage,	iDuration);                     // Fade duration
+			BfWriteShort(hMessage,	iHoldtime);                     // Fade hold time
+			BfWriteShort(hMessage,	view_as<int>(eFadeFlags));      // What to do
+			BfWriteByte(hMessage,	color.r);                       // Color R
+			BfWriteByte(hMessage,	color.g);                       // Color G
+			BfWriteByte(hMessage,	color.b);                       // Color B
+			BfWriteByte(hMessage,	color.a);                       // Color Alpha
+		}
+		EndMessage();
+
+		return true;
+	}
 }
 
 // hermite basis function for smooth interpolation
@@ -617,9 +641,4 @@ static bool CanOverrideEnvZoomOwner(CBaseEntity pZoomOwner)
 	if (!pZoomOwner.GetClassname(szClassname, sizeof(szClassname)) || strcmp(szClassname, "env_zoom") != 0)
 		return false;
 	return !!(view_as<CEnvZoom>(pZoomOwner).m_spawnflags & ENV_ZOOM_OVERRIDE);
-}
-
-static bool TraceEntityFilter_IgnoreData(int iEntIndex, int iMask, any pData)
-{
-	return (iEntIndex != pData);
 }

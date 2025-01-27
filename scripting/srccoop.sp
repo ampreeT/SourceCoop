@@ -237,16 +237,6 @@ void ToggleGlobalPatches(bool bCoopMode)
 	}
 }
 
-void LoadConfig()
-{
-	GameData pGameConfig = LoadGameConfigFile(SRCCOOP_CONFIG_GAMEDATA_NAME);
-	if (pGameConfig == null)
-		SetFailState("Couldn't load game config: \"%s\"", SRCCOOP_CONFIG_GAMEDATA_NAME);
-	
-	Conf.Initialize(pGameConfig);
-	pGameConfig.Close();
-}
-
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
 	#if defined CHECK_ENGINE
@@ -264,7 +254,7 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 
 public void OnPluginStart()
 {
-	LoadConfig();
+	Conf.Initialize(LoadSourceCoopConfig());
 	LoadGameData();
 	LoadTranslations("common.phrases"); /* reuse some translations (identified by use of capital letters) */
 	LoadTranslations("srccoop.phrases");
@@ -274,8 +264,10 @@ public void OnPluginStart()
 	#if defined GAMEPATCH_TEAMSELECT_UI
 	g_pConvarDisableTeamSelect = CreateConVar("sourcecoop_disable_teamselect", "1", "Whether to skip the team select screen and spawn in instantly.", _, true, 0.0, true, 1.0);
 	#endif
-	g_pConvarCoopRespawnTime = CreateConVar("sourcecoop_respawntime", "2.0", "Sets player respawn time in seconds.", _, true, 0.1);
+	#if defined SRCCOOP_BLACKMESA
 	g_pConvarCleanHud = CreateConVar("sourcecoop_clean_hud", "1", "Whether to hide non-essential hud elements. (Black Mesa: hides status at top of the screen)", _, true, 0.0, true, 1.0);
+	#endif
+	g_pConvarCoopRespawnTime = CreateConVar("sourcecoop_respawntime", "2.0", "Sets player respawn time in seconds.", _, true, 0.1);
 	g_pConvarStartWaitPeriod = CreateConVar("sourcecoop_start_wait_period", "15.0", "The max number of seconds to wait since first player spawned in to start the map. ", _, true, 0.0);
 	g_pConvarStartWaitMode = CreateConVar("sourcecoop_start_wait_mode", "2", "\n0 = The timer is not skipped (exceptions are maps without an intro_type or delayed outputs set).\n1 = The timer is skipped when all players enter the game.\n2 = The timer is skipped when player count matches the previous map's player count.", _, true, 0.0, true, 2.0);
 	g_pConvarEndWaitPeriod = CreateConVar("sourcecoop_end_wait_period", "60.0", "The max number of seconds to wait since first player triggered a changelevel. The timer speed increases each time a new player finishes the level.", _, true, 0.0);
@@ -291,11 +283,13 @@ public void OnPluginStart()
 	mp_forcerespawn = FindConVar("mp_forcerespawn");
 
 	// Black Mesa ConVars.
+	#if defined SRCCOOP_BLACKMESA
 	sv_always_run = FindConVar("sv_always_run");
 	sv_speed_sprint = FindConVar("sv_speed_sprint");
 	sv_speed_walk = FindConVar("sv_speed_walk");
 	sv_jump_long_enabled = FindConVar("sv_jump_long_enabled");
 	sv_long_jump_manacost = FindConVar("sv_long_jump_manacost");
+	#endif
 
 	#if defined PLAYERPATCH_BM_CLIENT_PREDICTION
 	sv_always_run.Flags &= ~FCVAR_REPLICATED;
@@ -1028,16 +1022,26 @@ public void Hook_EntitySpawnPost(int iEntIndex)
 		CBaseEntity pEntity = CBaseEntity(iEntIndex);
 
 		#if defined SRCCOOP_BLACKMESA
-		// fix linux physics crashes
 		if (g_serverOS == OS_Linux)
 		{
+			#if defined ENTPATCH_NPC_ALWAYS_TRANSMIT
+			// fix NPC sliding (likely caused by desync in CBaseAnimatingOverlay animations started outside of PVS)
+			// this is verifiable on linux server on bm_c1a2c by issuing cl_fullupdate when the guard starts sliding
+			if (pEntity.IsNPC())
+			{
+				pEntity.edictFlags |= FL_EDICT_ALWAYS;
+			}
+			#endif
+
+			// fix linux physics crashes
 			static char szModel[PLATFORM_MAX_PATH];
 			if (pEntity.GetModelName(szModel, sizeof(szModel)) && strncmp(szModel, "models/gibs/humans/", 19) == 0)
 			{
 				SDKHook(iEntIndex, SDKHook_OnTakeDamage, Hook_NoDmg);
 			}
 		}
-		#endif
+		#endif // SRCCOOP_BLACKMESA
+
 		CoopManager.EntitySpawnPost(pEntity);
 	}
 }
@@ -1123,7 +1127,7 @@ public void Hook_PlayerWeaponEquipPost(int client, int weapon)
 	}
 }
 
-public MRESReturn Hook_RestoreWorld(Handle hReturn)
+public MRESReturn Hook_RestoreWorld(DHookReturn hReturn)
 {
 	if (CoopManager.IsCoopModeEnabled())
 	{
@@ -1134,7 +1138,7 @@ public MRESReturn Hook_RestoreWorld(Handle hReturn)
 	return MRES_Ignored;
 }
 
-public MRESReturn Hook_RespawnPlayers(Handle hReturn)
+public MRESReturn Hook_RespawnPlayers(DHookReturn hReturn)
 {
 	if (CoopManager.IsCoopModeEnabled())
 	{

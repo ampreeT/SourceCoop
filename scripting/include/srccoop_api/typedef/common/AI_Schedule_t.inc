@@ -105,11 +105,13 @@ enum AI_Schedule_t
 	// ======================================
 	// IMPORTANT: This must be the last enum
 	// ======================================
-	LAST_SHARED_SCHEDULE,
+	LAST_SHARED_SCHEDULE
+}
 
-    // `npc_sniper` schedules
-    // TODO: Find a better way to inherit enums.
-	SCHED_PSNIPER_SCAN = LAST_SHARED_SCHEDULE,
+// `npc_sniper` schedules
+enum
+{
+	SCHED_PSNIPER_SCAN = view_as<int>(LAST_SHARED_SCHEDULE),
 	SCHED_PSNIPER_CAMP,
 	SCHED_PSNIPER_ATTACK,
 	SCHED_PSNIPER_RELOAD,
@@ -121,5 +123,5 @@ enum AI_Schedule_t
 	SCHED_PSNIPER_SWEEP_TARGET_NOINTERRUPT,
 	SCHED_PSNIPER_SNAPATTACK,
 	SCHED_PSNIPER_NO_CLEAR_SHOT,
-	SCHED_PSNIPER_PLAYER_DEAD,
+	SCHED_PSNIPER_PLAYER_DEAD
 }

@@ -1,8 +1,3 @@
-#if defined _srccoop_instancing_included
- #endinput
-#endif
-#define _srccoop_instancing_included
-
 #pragma newdecls required
 #pragma semicolon 1
 
@@ -48,9 +43,8 @@ methodmap ItemInstancingManager
 		
 		char szKey[MAX_CHARS_INT(INT_MIN)];
 		IntToString(view_as<int>(pItem), szKey, sizeof(szKey));
-
-		bool _bValue;
-		return g_pPickedUpItems[client].GetValue(szKey, _bValue);
+		
+		return g_pPickedUpItems[client].ContainsKey(szKey);
 	}
 	
 	public static void ClearPickedUpItem(CBaseEntity pItem)
@@ -91,7 +85,7 @@ public void Hook_Instancing_ItemSpawn(int iEntIndex)
 }
 
 // Do not allow to to touch-pickup consumed items
-public MRESReturn Hook_Instancing_OnTryPickUpPre(int _this, Handle hReturn, Handle hParams)
+public MRESReturn Hook_Instancing_OnTryPickUpPre(int _this, DHookReturn hReturn, DHookParam hParams)
 {
 	CBasePlayer pPlayer = CBasePlayer(DHookGetParam(hParams, 1));
 	if (pPlayer.IsPlayer())
@@ -107,7 +101,7 @@ public MRESReturn Hook_Instancing_OnTryPickUpPre(int _this, Handle hReturn, Hand
 }
 
 // Store this newly consumed item
-public MRESReturn Hook_Instancing_OnTryPickUpPost(int _this, Handle hReturn, Handle hParams)
+public MRESReturn Hook_Instancing_OnTryPickUpPost(int _this, DHookReturn hReturn, DHookParam hParams)
 {
 	bool bPickedUp = DHookGetReturn(hReturn);
 	if (bPickedUp)

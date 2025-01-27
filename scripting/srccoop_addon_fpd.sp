@@ -3,7 +3,7 @@
 #include <sourcemod>
 #include <clientprefs>
 
-#include <srccoop_api>
+#include <srccoop_addon>
 
 #pragma newdecls required
 #pragma semicolon 1
@@ -225,7 +225,7 @@ public void SC_OnPlayerRagdollCreated(CBasePlayer pPlayer, CBaseAnimating pRagdo
 	int fadeDuration = g_pConvarFadeToBlackLength.IntValue;
 	if (fadeDuration)
 	{
-		Client_ScreenFade(pPlayer.entindex, fadeDuration, view_as<int>(FFADE_OUT | FFADE_STAYOUT));
+		pPlayer.ScreenFade(fadeDuration, RGBA(0, 0, 0, 255), FFADE_OUT | FFADE_STAYOUT);
 	}
 }
 
