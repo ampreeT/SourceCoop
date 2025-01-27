@@ -36,21 +36,7 @@ void LoadGameData()
 	}
 	
 	// Calls
-	#if defined PLAYERPATCH_SERVERSIDE_RAGDOLLS
-	char szCreateServerRagdoll[] = "CreateServerRagdoll";
-	StartPrepSDKCall(SDKCall_Static);
-	if (!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Signature, szCreateServerRagdoll))
-		SetFailState("Could not obtain gamedata signature %s", szCreateServerRagdoll);
-	PrepSDKCall_SetReturnInfo(SDKType_CBaseEntity, SDKPass_Pointer);
-	PrepSDKCall_AddParameter(SDKType_CBaseEntity, SDKPass_Pointer); // CBaseAnimating *pAnimating
-	PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain); // int forceBone
-	PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain); // const CTakeDamageInfo &info
-	PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain); // int collisionGroup
-	PrepSDKCall_AddParameter(SDKType_Bool, SDKPass_Plain); // bool bUseLRURetirement
-	if (!(g_pCreateServerRagdoll = EndPrepSDKCall()))
-		SetFailState("Could not prep SDK call %s", szCreateServerRagdoll);
-	#endif
-
+	
 	LoadDHookVirtual(pGameConfig, hkLevelInit, "CServerGameDLL::LevelInit");
 	if (hkLevelInit.HookRaw(Hook_Pre, IServerGameDLL.Get().GetAddress(), Hook_OnLevelInit) == INVALID_HOOK_ID)
 		SetFailState("Could not hook CServerGameDLL::LevelInit");
