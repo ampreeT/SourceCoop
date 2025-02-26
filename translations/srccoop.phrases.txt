@@ -12,6 +12,7 @@
 		"#format"		"{1:s}" // version
 		"en"			"This server runs {ter}SourceCoop v{1}{pri}\nPress {sec}={pri} or type {sec}/{ter}coopmenu{pri} for extra options."
 		"ru"			"Сервер использует {ter}SourceCoop v{1}{pri}\nНажмите {sec}={pri} или введите {sec}/{ter}coopmenu{pri} для дополнительных функций."
+		"zho"			"此伺服器運作 {ter}SourceCoop v{1}{pri}\n按下 {sec}={pri} 或輸入 {sec}/{ter}coopmenu{pri} 以顯示額外選項。"
 	}
 
 	"map start"
@@ -19,24 +20,28 @@
 		"#format"		"{1:s}" // map name
 		"en"			"Co-op map {1} has begun"
 		"ru"			"Начался кооператив на уровне {1}"
+		"zho"			"合作模式地圖 {1} 已開始。"
 	}
 
 	"changing map"
 	{
 		"en"			"Changing map"
 		"ru"			"Смена уровня"
+		"zho"			"正在更換地圖。"
 	}
 
 	"player"
 	{
 		"en"			"player"
 		"ru"			"игрок"
+		"zho"			"玩家"
 	}
 
 	"players"
 	{
 		"en"			"players"
 		"ru"			"игроков"
+		"zho"			"玩家們"
 	}
 
 	"feature enabled"
@@ -44,6 +49,7 @@
 		"#format"		"{1:s}" // feature
 		"en"			"Enabled feature {1}"
 		"ru"			"Включена опция {1}"
+		"zho"			"已啟用功能 {1}"
 	}
 
 	"feature disabled"
@@ -51,6 +57,7 @@
 		"#format"		"{1:s}" // feature
 		"en"			"Disabled feature {1}"
 		"ru"			"Выключена опция {1}"
+		"zho"			"已停用功能 {1}"
 	}
 
 	"feature unknown"
@@ -58,78 +65,91 @@
 		"#format"		"{1:s}" // feature
 		"en"			"Unknown feature: {1}"
 		"ru"			"Неизвестная опция: {1}"
+		"zho"			"未知功能: {1}"
 	}
 
 	"menu unavailable"
 	{
 		"en"			"Coop menu is currently unavailable."
 		"ru"			"Кооперативное меню сейчас недоступно."
+		"zho"			"合作模式選單目前無法使用。"
 	}
 
 	"menu title"
 	{
 		"en"			"SourceCoop Menu"
 		"ru"			"SourceCoop Меню"
+		"zho"			"SourceCoop 選單"
 	}
 
 	"menu category player"
 	{
 		"en"			"Player settings"
 		"ru"			"Настройки игрока"
+		"zho"			"玩家設定"
 	}
 
 	"menu category sounds"
 	{
 		"en"			"Sound settings"
 		"ru"			"Настройки звука"
+		"zho"			"聲音設定"
 	}
 
 	"menu category votes"
 	{
 		"en"			"Votes"
 		"ru"			"Голосование"
+		"zho"			"投票"
 	}
 
 	"menu category other"
 	{
 		"en"			"Other"
 		"ru"			"Прочее"
+		"zho"			"其他"
 	}
 
 	"checkpoint reached"
 	{
 		"en"			"Checkpoint reached"
 		"ru"			"Контрольная точка достигнута"
+		"zho"			"已到達檢查點"
 	}
 
 	"survival respawn hint checkpoint"
 	{
 		"en"			"You will respawn at the next survival checkpoint"
 		"ru"			"Вы возродитесь на следующей контрольной точке"
+		"zho"			"你將在下一個生存檢查點重生。"
 	}
 
 	"survival respawn hint no checkpoint"
 	{
 		"en"			"You will respawn once everyone is dead"
 		"ru"			"Вы возродитесь, как только все погибнут"
+		"zho"			"當所有人都死亡後，你將重生。"
 	}
 
 	"survival restart last checkpoint"
 	{
 		"en"			"Try again! Starting at last checkpoint..."
 		"ru"			"Попробуйте еще раз! Запуск последней контрольной точки..."
+		"zho"			"再試一次！從最後一個檢查點開始..."
 	}
 
 	"survival game over"
 	{
 		"en"			"ASSIGNMENT: TERMINATED\nSUBJECT: FREEMAN\nREASON: FAILURE TO PRESERVE MISSION-CRITICAL PERSONNEL"
 		"ru"			"ЗАДАНИЕ: ПРЕРВАНО\nСУБЪЕКТ: ФРИМЕН\nПРИЧИНА: ГИБЕЛЬ ЛЮДЕЙ,\nНЕОБХОДИМЫХ ДЛЯ ВЫПОЛНЕНИЯ ЗАДАНИЯ"
+		"zho"			"任務：終止\n目標：弗里曼\n原因：未能保護任務關鍵人員"
 	}
 
 	"equipment saved"
 	{
 		"en"			"Saved equipment successfully."
 		"ru"			"Снаряжение успешно сохранено."
+		"zho"			"設備已成功儲存。"
 	}
 
 	"equipment export fail"
@@ -137,12 +157,14 @@
 		"#format"		"{1:s}" // filepath
 		"en"			"Issue occurred when saving equipment to file: {1}"
 		"ru"			"Возникла ошибка при сохранении снаряжения в файл: {1}"
+		"zho"			"儲存設備到檔案時發生錯誤: {1}"
 	}
 
 	"equipment export no players"
 	{
 		"en"			"No valid players found. Save cancelled."
 		"ru"			"Не найдено ни одного действующего игрока. Сохранение отменено."
+		"zho"			"未找到有效的玩家，儲存已取消。"
 	}
 
 	"equipment import file not found"
@@ -150,6 +172,7 @@
 		"#format"		"{1:s}" // filepath
 		"en"			"Could not find specified save file: {1}"
 		"ru"			"Невозможно найти указанный файл сохранения: {1}"
+		"zho"			"無法找到指定的儲存檔案: {1}"
 	}
 
 	"equipment import fail"
@@ -157,6 +180,7 @@
 		"#format"		"{1:s}" // filepath
 		"en"			"The save file is in incorrect format: {1}"
 		"ru"			"Файл сохранения имеет неверный формат: {1}"
+		"zho"			"儲存檔案格式不正確: {1}"
 	}
 
 	"equipment loaded"
@@ -164,6 +188,7 @@
 		"#format"		"{1:N}" // player
 		"en"			"Loaded player state for: {1}"
 		"ru"			"Загружено состояние игрока: {1}"
+		"zho"			"已載入玩家狀態: {1}"
 	}
 
 	"equipment not loaded"
@@ -171,12 +196,14 @@
 		"#format"		"{1:N},{2:s}" // player, error message
 		"en"			"Failed to load data for player: {1}. {2}"
 		"ru"			"Не удалось загрузить данные игрока: {1}. {2}"
+		"zho"			"無法載入玩家資料: {1}. {2}"
 	}
 
 	"equipment load unknown steamid"
 	{
 		"en"			"SteamID is unknown."
 		"ru"			"SteamID неизвестен."
+		"zho"			"SteamID 未知。"
 	}
 
 	"equipment load player not found"
@@ -184,6 +211,7 @@
 		"#format"		"{1:s}" // steamid
 		"en"			"Save data not found for SteamID: {1}"
 		"ru"			"Не найдены сохраненные данные для SteamID: {1}"
+		"zho"			"未找到該 SteamID 的儲存資料: {1}"
 	}
 
 	"equipment load missing section"
@@ -191,29 +219,34 @@
 		"#format"		"{1:s}" // section
 		"en"			"Missing section \"{1}\" in save file!"
 		"ru"			"Отсутствует секция \"{1}\" в файле сохранения!"
+		"zho"			"在儲存檔案中 \"{1}\" 缺少區段!"
 	}
 
 	"equipment cleared"
 	{
 		"en"			"Cleared player state successfully."
 		"ru"			"Состояние игрока успешно очищено."
+		"zho"			"成功清除玩家狀態。"
 	}
 
 	"entity suicided"
 	{
 		"#format"		"{1:s}" // attacker
 		"en"			"{1} suicided!"
+		"zho"			"{1} 自殺了！"
 	}
 	
 	"entity killed entity with weapon"
 	{
 		"#format"		"{1:s},{2:s},{3:s}" // attacker, victim, weapon
 		"en"			"{1} killed {2} with {3}!"
+		"zho"			"{1} 用 {2} 殺死了 {3}!"
 	}
 
 	"entity killed entity"
 	{
 		"#format"		"{1:s},{2:s}" // attacker, victim
 		"en"			"{1} killed {2}!"
+		"zho"			"{1} 殺死 {2}!"
 	}
 }
