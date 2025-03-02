@@ -11,18 +11,21 @@
 	{
 		"en"			"Thirdperson mode is currently disabled."
 		"ru"			"Режим от третьего лица отключен."
+		"zho"			"第三人稱模式目前已關閉。"
 	}
 
 	"thirdperson enter"
 	{
 		"en"			"You are now in thirdperson mode."
 		"ru"			"Вы в режиме от третьего лица."
+		"zho"			"你現在處於第三人稱模式。"
 	}
 
 	"thirdperson exit"
 	{
 		"en"			"You are no longer in thirdperson mode."
 		"ru"			"Вы теперь не от третьего лица."
+		"zho"			"你不再處於第三人稱模式。"
 	}
 
 	/* Menu */
@@ -31,6 +34,7 @@
 	{
 		"en"			"Toggle thirdperson"
 		"ru"			"Переключить режим третьего лица."
+		"zho"			"切換第三人稱模式"
 	}
 
 }
