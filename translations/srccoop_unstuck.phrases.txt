@@ -11,6 +11,7 @@
 	{
 		"en"			"Unstuck is currently unavailable."
 		"ru"			"Перемещение сейчас невозможно."
+		"zho"			"解除卡點功能目前無法使用。"
 	}
 
 	"cooldown"
@@ -18,24 +19,28 @@
 		"#format"		"{1:1.0f}"
 		"en"			"You cannot unstuck for another {ter}{1}{pri} seconds!"
 		"ru"			"Вы не можете переместиться в течение {ter}{1}{pri} секунд!"
+		"zho"			"您無法解除卡點，請再等待 {ter}{1}{pri} 秒！"
 	}
 
 	"falling"
 	{
 		"en"			"Can't unstuck while falling."
 		"ru"			"Нельзя переместиться во время падения."
+		"zho"			"在墜落時無法解除卡點。"
 	}
 
 	"success"
 	{
 		"en"			"Moved to the active checkpoint."
 		"ru"			"Перемещен на активную контрольную точку."
+		"zho"			"已移動到目前檢查點。"
 	}
 
 	"failure"
 	{
 		"en"			"Unable to find a place to put you."
 		"ru"			"Невозможно найти место для перемещения."
+		"zho"			"無法找到適合的位置來放置您。"
 	}
 
 }
