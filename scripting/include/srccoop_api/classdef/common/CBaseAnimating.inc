@@ -2,6 +2,7 @@
 #pragma semicolon 1
 
 static Handle g_pGetSequenceLinearMotion;
+static Handle g_pStudioFrameAdvance;
 
 #if defined SRCCOOP_BLACKMESA
 static Handle g_pSelectWeightedSequence;
@@ -22,6 +23,15 @@ methodmap CBaseAnimating < CBaseEntity
 			if (!(g_pGetSequenceLinearMotion = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szGetSequenceLinearMotion);
 		}
 		
+		char szStudioFrameAdvance[] = "CBaseAnimating::StudioFrameAdvance";
+		StartPrepSDKCall(SDKCall_Entity);
+		if (!PrepSDKCall_SetFromConf(hGameConfig, SDKConf_Virtual, szStudioFrameAdvance))
+			LogMessage("Could not obtain gamedata offset %s", szStudioFrameAdvance);
+		else
+		{
+			if (!(g_pStudioFrameAdvance = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szStudioFrameAdvance);
+		}
+
 		// This function is virtual only in Black Mesa.
 		#if defined SRCCOOP_BLACKMESA
 		char szSelectWeightedSequence[] = "CBaseAnimating::SelectWeightedSequence";
@@ -153,11 +163,11 @@ methodmap CBaseAnimating < CBaseEntity
 	#endif
 	public float GetPoseParameter(const int iIndex)
 	{
-		return GetEntPropFloat(this.entindex, Prop_Data, "m_flPoseParameter", iIndex);
+		return GetEntPropFloat(this.entindex, Prop_Send, "m_flPoseParameter", iIndex);
 	}
 	public void SetPoseParameter(const int iIndex, const float flPoseParameter)
 	{
-		SetEntPropFloat(this.entindex, Prop_Data, "m_flPoseParameter", flPoseParameter, iIndex);
+		SetEntPropFloat(this.entindex, Prop_Send, "m_flPoseParameter", flPoseParameter, iIndex);
 	}
 	public bool IsSequenceFinished()
 	{
@@ -174,5 +184,9 @@ methodmap CBaseAnimating < CBaseEntity
 	public void SetAnimationTime(const float flAnimationTime)
 	{
 		SetEntPropFloat(this.entindex, Prop_Data, "m_flAnimTime", flAnimationTime);
+	}
+	public void StudioFrameAdvance()
+	{
+		SDKCall(g_pStudioFrameAdvance, this.entindex);
 	}
 }
