@@ -136,6 +136,7 @@ static void Hook_Instancing_ItemDeleted(int iEntity)
 	ItemInstancingManager.ClearPickedUpItem(CBaseEntity(iEntity));
 }
 
+#if defined SRCCOOP_BLACKMESA
 // Do not allow to touch-pickup consumed items.
 //
 static MRESReturn Hook_Instancing_OnTryPickUpPre(int _this, DHookReturn hReturn, DHookParam hParams)
@@ -171,6 +172,7 @@ static MRESReturn Hook_Instancing_OnTryPickUpPost(int _this, DHookReturn hReturn
 	}
 	return MRES_Ignored;
 }
+#endif
 
 static Action Hook_Instancing_Item_Use(int iEntIndex, int iActivator, int iCaller, UseType eType, float flValue)
 {
@@ -181,12 +183,14 @@ static Action Hook_Instancing_Item_Use(int iEntIndex, int iActivator, int iCalle
 	return Plugin_Continue;
 }
 
+#if defined SRCCOOP_BLACKMESA
 // Never transmit the original healthkit object as it will be visible in the world.
 //
 static Action Hook_Instancing_Item_NeverTransmit(int iEntity, int iClient)
 {
 	return Plugin_Stop;
 }
+#endif
 
 // Do not transmit picked up items.
 //
