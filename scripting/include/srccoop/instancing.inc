@@ -86,7 +86,7 @@ public void Hook_Instancing_Item_SpawnPost(const int iEntIndex)
 	else
 	#endif
 	{
-		//#if defined SRCCOOP_BLACKMESA
+		#if defined SRCCOOP_BLACKMESA
 		if (strcmp(szClassname, "item_battery", false) == 0)
 		{
 			// TODO: Create a methodmap.
@@ -122,7 +122,7 @@ public void Hook_Instancing_Item_SpawnPost(const int iEntIndex)
 				SDKHook(pBatteryLight.entindex, SDKHook_SetTransmit, Hook_Instancing_ItemParent_Transmit);
 			}
 		}
-		//#endif
+		#endif
 		SDKHook(iEntIndex, SDKHook_SetTransmit, Hook_Instancing_Item_Transmit);
 		SDKHook(iEntIndex, SDKHook_Use, Hook_Instancing_Item_Use);
 	}
@@ -214,6 +214,7 @@ static Action Hook_Instancing_ItemParent_Transmit(int iEntIndex, int iClient)
 	return Plugin_Continue;
 }
 
+#if defined SRCCOOP_BLACKMESA
 // Fixes healthkits not being dropped on pickup unlike other items.
 //
 static Action Hook_Instancing_HealthKit_OnPlayerPickup(const char[] szOutput, int iCaller, int iActivator, float flDelay)
@@ -238,6 +239,7 @@ static Action Hook_Instancing_HealthKit_OnPlayerPickup(const char[] szOutput, in
 	}
 	return Plugin_Continue;
 }
+#endif
 
 // Fixes the incorrect sprite position and sprite transmission on the ammo canister.
 //
