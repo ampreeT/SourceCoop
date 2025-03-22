@@ -743,6 +743,7 @@ public MRESReturn Hook_PlayerChangeTeamPost(int iClient, DHookParam hParams)
 				pRagdoll.Kill();
 			}
 			ClearNpcMemoryForPlayer(pPlayer);
+			ItemInstancingManager.ClearAllPickedUpItemsForPlayer(pPlayer);
 		}
 
 		SurvivalManager.OnPlayerChangeTeam(pPlayer, iTeam);
