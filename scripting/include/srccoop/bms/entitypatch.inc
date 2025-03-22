@@ -594,10 +594,10 @@ public Action Hook_SuitTouchPickup(const char[] szOutput, int iCaller, int iActi
 	CItemSuit pCaller = CItemSuit(iCaller);
 	if (pCaller.m_spawnflags & SF_BOOTSEQUENCE)
 	{
-		CBasePlayer pPlayer = CBasePlayer(iActivator);
-		if (pPlayer.IsValid())
+		CBaseEntity pActivator = CBaseEntity(iActivator);
+		if (pActivator != NULL_CBASEENTITY && pActivator.IsPlayer())
 		{
-			pPlayer.StartAdmireGlovesAnimation();
+			view_as<CBasePlayer>(pActivator).StartAdmireGlovesAnimation();
 		}
 	}
 	
