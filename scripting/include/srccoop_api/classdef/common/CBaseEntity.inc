@@ -11,7 +11,7 @@ static Handle g_pSetMinMaxSize;
 
 const any NULL_CBASEENTITY = -1;
 
-static StringMap g_pEntityData;
+//static StringMap g_pEntityData;
 
 methodmap CBaseEntity
 {
@@ -72,6 +72,7 @@ methodmap CBaseEntity
 			if (!(g_pSetMinMaxSize = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szSetMinMaxSize);
 		}
 
+		/*
 		g_pEntityData = new StringMap();
 		DHookAddEntityListener(ListenType_Created, Hook_CBaseEntity_OnCreated);
 		DHookAddEntityListener(ListenType_Deleted, Hook_CBaseEntity_OnDeleted);
@@ -81,6 +82,7 @@ methodmap CBaseEntity
 		{
 			Hook_CBaseEntity_OnCreated(iEntIndex);
 		}
+		*/
 	}
 	public CBaseEntity(const int iEntIndex = -1)
 	{
@@ -745,6 +747,7 @@ methodmap CBaseEntity
 	{
 		StopSound(this.entindex, iChannel, szName);
 	}
+	/*
 	public any GetUserData(const char[] szKey)
 	{
 		StringMap pEntityData;
@@ -766,6 +769,7 @@ methodmap CBaseEntity
     	g_pEntityData.GetValue(szEntityKey, pEntityData);
 		pEntityData.SetValue(szKey, data);
 	}
+	*/
 }
 
 static bool TraceEntityFilter_FVisibleAiLosEnabled(int iEntIndex, int iMask, int iThisEntIndex)
@@ -870,6 +874,7 @@ enum SolidFlags_t
 	FSOLID_TRIGGER_TOUCH_DEBRIS = 0x0200,	// This trigger will touch debris objects
 }
 
+/*
 static void Hook_CBaseEntity_OnCreated(const int iEntIndex)
 {
     char szKey[MAX_CHARS_INT(INT_MIN)];
@@ -883,3 +888,4 @@ static void Hook_CBaseEntity_OnDeleted(const int iEntIndex)
     IntToString(CBaseEntity(iEntIndex).entref, szKey, sizeof(szKey));
     g_pEntityData.Remove(szKey);
 }
+*/
