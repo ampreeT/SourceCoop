@@ -1161,11 +1161,11 @@
 			"CLagCompensationManager::RestoreEntityFromRecords::SetPoseParameter"
 			{
 				"signature" "CLagCompensationManager::RestoreEntityFromRecords"
-				"linux" // nop out everything related to SetPoseParameter call (exclude first 'mov' and 'add' after jump)
+				"linux" // nop out everything related to SetPoseParameter call (exclude first 'movss', 'mov' and 'add' after jump)
 				{
-					"offset"	"78Fh"
-					"verify"	"F3 2A 2A 2A 2A 2A 89 2A 2A 2A 89 2A 2A E8 2A 2A 2A 2A DD 2A"
-					"patch"		"90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90"
+					"offset"	"765h"
+					"verify"	"89 2A 2A 2A 89 2A 2A E8 2A 2A 2A 2A DD 2A"
+					"patch"		"90 90 90 90 90 90 90 90 90 90 90 90 90 90"
 				}
 				"windows" // nop from jump start up to SetPoseParameter call
 				{
@@ -1179,8 +1179,8 @@
 				"signature" "CLagCompensationManager::BacktrackEntity"
 				"linux" // nop from jump start up until 'add'
 				{
-					"offset"	"6D0h"
-					"verify"	"89 2A 2A 2A 8B 2A 2A 2A 2A 2A F3 2A 2A 2A 2A 2A 2A 2A 89 2A 2A 2A F3 2A 2A 2A 2A 2A 89 2A 2A E8 2A 2A 2A 2A DD 2A"
+					"offset"	"6C8h"
+					"verify"	"F3 2A 2A 2A 2A 2A 2A 2A 89 2A 2A 2A 8B 2A 2A 2A 2A 2A 89 2A 2A 2A F3 2A 2A 2A 2A 2A 89 2A 2A E8 2A 2A 2A 2A DD 2A"
 					"patch"		"90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90"
 				}
 				// on win, the SetPoseParameter here is not the same call as in RestoreEntityFromRecords,
@@ -1198,7 +1198,7 @@
 				"signature" "CBM_MP_GameRules::Activate"
 				"linux" // nop [mov,mov,call] (ConVar::SetValue)
 				{
-					"offset"	"12Eh"
+					"offset"	"130h"
 					"verify"	"C7 44 24 04 20 03 00 00 89 34 24 E8 2A 2A 2A 2A"
 					"patch"		"90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90"
 				}
