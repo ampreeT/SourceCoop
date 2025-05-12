@@ -1003,13 +1003,6 @@ public void Hook_EntitySpawnPost(int iEntIndex)
 				pEntity.edictFlags |= FL_EDICT_ALWAYS;
 			}
 			#endif
-
-			// fix linux physics crashes
-			static char szModel[PLATFORM_MAX_PATH];
-			if (pEntity.GetModelName(szModel, sizeof(szModel)) && strncmp(szModel, "models/gibs/humans/", 19) == 0)
-			{
-				SDKHook(iEntIndex, SDKHook_OnTakeDamage, Hook_NoDmg);
-			}
 		}
 		#endif // SRCCOOP_BLACKMESA
 
