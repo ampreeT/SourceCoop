@@ -167,8 +167,10 @@ DynamicDetour hkPhysics_RunThinkFunctions;
 DynamicDetour hkDissolve;
 #endif
 
-#if defined GAMEPATCH_UTIL_FINDCLIENTINPVSGUTS
+#if defined GAMEPATCH_UTIL_FINDCLIENT
 DynamicDetour hkUtilFindClientInPVSGuts;
+DynamicDetour hkUtilFindClientInPVS;
+DynamicDetour hkUtilFindClientInVisibilityPVS;
 #endif
 
 #if defined ENTPATCH_SCRIPTED_SEQUENCE

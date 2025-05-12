@@ -13,7 +13,7 @@
 	{
 		"en"			"Skip intro"
 		"ru"			"Пропуск интро"
-		"zho			"跳過介紹動畫"
+		"zho"			"跳過介紹動畫"
 	}
 
 	"RestartMapVote"
