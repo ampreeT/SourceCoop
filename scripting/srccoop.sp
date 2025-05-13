@@ -1033,6 +1033,7 @@ public void Hook_EntitySpawnPost(int iEntIndex)
 }
 
 // Postpone items' Spawn() until Gamerules IsMultiplayer() gets hooked in OnMapStart()
+#if defined SRCCOOP_BLACKMESA
 static Action Hook_Item_OnSpawn(int iEntIndex)
 {
 	SDKUnhook(iEntIndex, SDKHook_Spawn, Hook_Item_OnSpawn);
@@ -1049,6 +1050,7 @@ static Action Hook_Item_OnSpawn(int iEntIndex)
 
 	return Plugin_Stop;
 }
+#endif
 
 static void SpawnPostponedItem(const CItem pItem)
 {
