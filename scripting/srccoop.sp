@@ -155,8 +155,17 @@ void LoadGameData()
 	LoadDHookDetour(pGameConfig, hkDissolve, "CBaseAnimating::Dissolve", Hook_Dissolve);
 	#endif
 	
-	#if defined GAMEPATCH_UTIL_FINDCLIENTINPVSGUTS
-	LoadDHookDetour(pGameConfig, hkUtilFindClientInPVSGuts, "UTIL_FindClientInPVSGuts", Hook_UTIL_FindClientInPVSGuts);
+	#if defined GAMEPATCH_UTIL_FINDCLIENT
+	if (g_serverOS == OS_Windows)
+	{
+		LoadDHookDetour(pGameConfig, hkUtilFindClientInPVSGuts, "UTIL_FindClientInPVSGuts", Hook_UTIL_FindClient);
+	}
+	else if (g_serverOS == OS_Linux)
+	{
+		// `UTIL_FindClientInPVSGuts` is inlined on Linux into these functions.
+		LoadDHookDetour(pGameConfig, hkUtilFindClientInPVS, "UTIL_FindClientInPVS", Hook_UTIL_FindClient);
+		LoadDHookDetour(pGameConfig, hkUtilFindClientInVisibilityPVS, "UTIL_FindClientInVisibilityPVS", Hook_UTIL_FindClient);
+	}
 	#endif
 
 	#if defined ENTPATCH_SCRIPTED_SEQUENCE
@@ -1016,13 +1025,6 @@ public void Hook_EntitySpawnPost(int iEntIndex)
 				pEntity.edictFlags |= FL_EDICT_ALWAYS;
 			}
 			#endif
-
-			// fix linux physics crashes
-			static char szModel[PLATFORM_MAX_PATH];
-			if (pEntity.GetModelName(szModel, sizeof(szModel)) && strncmp(szModel, "models/gibs/humans/", 19) == 0)
-			{
-				SDKHook(iEntIndex, SDKHook_OnTakeDamage, Hook_NoDmg);
-			}
 		}
 		#endif // SRCCOOP_BLACKMESA
 

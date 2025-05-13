@@ -10,11 +10,13 @@
 	"earbleed disabled"
 	{
 		"en"			"Explosion ringing sound effect disabled."
+		"zho"			"爆炸回響音效已禁用。"
 	}
 
 	"earbleed enabled"
 	{
 		"en"			"Explosion ringing sound effect enabled."
+		"zho"			"爆炸回響音效已啟用。"
 	}
 
 	/* Menu */
@@ -22,11 +24,13 @@
 	"disable earbleed"
 	{
 		"en"			"Disable earbleed"
+		"zho"			"禁用耳膜出血音效"
 	}
 
 	"enable earbleed"
 	{
 		"en"			"Enable earbleed"
+		"zho"			"啟用耳膜出血音效"
 	}
 
 }
