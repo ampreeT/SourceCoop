@@ -23,6 +23,20 @@ void LoadGameData()
 	// Init SDKCalls for classdef
 	InitClassdef(pGameConfig);
 
+	// TODO: Move this.
+	char szActivityListFromString[] = "Activity_ListFromString";
+	StartPrepSDKCall(SDKCall_Static);
+	if (!PrepSDKCall_SetFromConf(pGameConfig, SDKConf_Signature, szActivityListFromString))
+		LogMessage("Could not obtain gamedata signature %s", szActivityListFromString);
+	else
+	{
+		PrepSDKCall_AddParameter(SDKType_String, SDKPass_Pointer);
+		PrepSDKCall_SetReturnInfo(SDKType_PlainOldData, SDKPass_Plain);
+		if (!(g_hActivityListFromString = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szActivityListFromString);
+	}
+	
+	// Calls
+	
 	LoadDHookVirtual(pGameConfig, hkLevelInit, "CServerGameDLL::LevelInit");
 	if (hkLevelInit.HookRaw(Hook_Pre, IServerGameDLL.Get().GetAddress(), Hook_OnLevelInit) == INVALID_HOOK_ID)
 		SetFailState("Could not hook CServerGameDLL::LevelInit");
@@ -626,6 +640,16 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 		if (strcmp(szClassname, "npc_sniper", false) == 0)
 		{
 			DHookEntity(hkProtoSniperSelectSchedule, false, iEntIndex, _, Hook_ProtoSniperSelectSchedule);
+			return;
+		}
+		#endif
+
+		#if defined ENTPATCH_BM_BENEATHTICLE_CUSTOM_THINK
+		if (strcmp(szClassname, "npc_beneathticle", false) == 0)
+		{
+			SDKHook(iEntIndex, SDKHook_SpawnPost, Hook_Beneathticle_SpawnPost);
+			DHookEntity(hkThink, false, iEntIndex, _, Hook_Beneathticle_Think);
+			DHookEntity(hkEvent_Killed, true, iEntIndex, _, Hook_Beneathticle_KilledPost);
 			return;
 		}
 		#endif

@@ -6,6 +6,7 @@ static Handle g_pGetSoundInterests;
 static Handle g_pHearingSensitivity;
 static Handle g_pUpdateEnemyMemory;
 static Handle g_pShouldPlayerAvoid;
+static Handle g_pSetActivity;
 
 enum CAI_BaseNPC_SpawnFlags
 {
@@ -82,6 +83,16 @@ methodmap CAI_BaseNPC < CBaseCombatCharacter
 		{
 			PrepSDKCall_SetReturnInfo(SDKType_Bool, SDKPass_Plain);
 			if (!(g_pShouldPlayerAvoid = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szShouldPlayerAvoid);
+		}
+
+		char szSetActivity[] = "CAI_BaseNPC::SetActivity";
+		StartPrepSDKCall(SDKCall_Entity);
+		if (!PrepSDKCall_SetFromConf(hGameConfig, SDKConf_Virtual, szSetActivity))
+			LogMessage("Could not obtain gamedata offset %s", szSetActivity);
+		else
+		{
+			PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
+			if (!(g_pSetActivity = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szSetActivity);
 		}
 	}
 	public CAI_BaseNPC(const int iEntIndex = -1)
@@ -324,5 +335,18 @@ methodmap CAI_BaseNPC < CBaseCombatCharacter
 		pEntity.SetTargetname(g_szPlaceholderName);
 		this.AcceptInputStr("ForgetEntity", g_szPlaceholderName);
 		pEntity.SetTargetname(szTargetname);
+	}
+	public Activity GetActivity()
+	{
+		int iTranslatedActivityOffset = FindDataMapInfo(this.entindex, "m_translatedActivity");
+		if (iTranslatedActivityOffset == -1)
+			ThrowError("Unable to retrieve offset %s", "m_translatedActivity");
+
+		// m_translatedActivity - sizeof(m_Activity) (0x4) = m_Activity
+		return view_as<Activity>(LoadFromAddress(this.address + iTranslatedActivityOffset - 0x4, NumberType_Int32));
+	}
+	public void SetActivity(const Activity eActivity)
+	{
+		SDKCall(g_pSetActivity, this.entindex, eActivity);
 	}
 }

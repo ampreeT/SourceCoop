@@ -87,6 +87,9 @@
 #define		FCAP_WCEDIT_POSITION		0x40000000		// Can change position and update Hammer in edit mode
 #define		FCAP_DONT_SAVE				0x80000000		// Don't save this
 
+#define NOINTERP_PARITY_MAX			4
+#define NOINTERP_PARITY_MAX_BITS	2
+
 // If these spawnflags need to be used, turn these into enums and move them into the respective classdef file.
 /*
 //------------------------------------------------------

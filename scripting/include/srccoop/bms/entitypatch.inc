@@ -852,7 +852,7 @@ public MRESReturn Hook_ToggleIronsights(int _this, DHookParam hParams)
 				{
 					if (bWillBeUsingIronsights || !bIsRearming)
 					{
-						pWeapon.SendWeaponAnim(bWillBeUsingIronsights ? ACT_VM_IDLE_TO_IS : ACT_VM_IS_TO_IDLE);
+						pWeapon.SendWeaponAnim(bWillBeUsingIronsights ? GetActivityFromName("ACT_VM_IDLE_TO_IS") : GetActivityFromName("ACT_VM_IS_TO_IDLE"));
 					}
 				}
 			}
@@ -864,7 +864,7 @@ public MRESReturn Hook_ToggleIronsights(int _this, DHookParam hParams)
 
 			if (!g_pPlayerIronsightClassic[pPlayer.entindex])
 			{
-				pWeapon.SendWeaponAnim(bWillBeUsingIronsights ? ACT_VM_IDLE_TO_IS : ACT_VM_IS_TO_IDLE);
+				pWeapon.SendWeaponAnim(bWillBeUsingIronsights ? GetActivityFromName("ACT_VM_IDLE_TO_IS") : GetActivityFromName("ACT_VM_IS_TO_IDLE"));
 				pPlayer.ShowCrosshair(!bWillBeUsingIronsights);
 			}
 		}
@@ -891,7 +891,7 @@ public MRESReturn Hook_IronsightGetPrimaryAttackActivity(int _this, DHookReturn 
 			CBasePlayer pPlayer = view_as<CBasePlayer>(pWeapon.GetOwner());
 			if (pPlayer.IsValid() && !g_pPlayerIronsightClassic[pPlayer.entindex])
 			{
-				DHookSetReturn(hReturn, ACT_VM_PRIMARYATTACK_IS);
+				DHookSetReturn(hReturn, GetActivityFromName("ACT_VM_PRIMARYATTACK_IS"));
 				return MRES_Supercede;
 			}
 		}
@@ -910,7 +910,7 @@ public MRESReturn Hook_CrossbowGetPrimaryAttackActivity(int _this, DHookReturn h
 		CBlackMesaBaseCombatWeaponIronsights pWeapon = CBlackMesaBaseCombatWeaponIronsights(_this);
 		if (pWeapon.IsInIronsights())
 		{
-			DHookSetReturn(hReturn, ACT_VM_PRIMARYATTACK);
+			DHookSetReturn(hReturn, GetActivityFromName("ACT_VM_PRIMARYATTACK"));
 			return MRES_Supercede;
 		}
 	}
@@ -1012,9 +1012,9 @@ public MRESReturn Hook_CrossbowItemPostFrame(int _this, DHookReturn hReturn)
 			if (pViewModel.IsValid())
 			{
 				// Switch to idle animation so the scope does not block the view.
-				if (pViewModel.GetSequence() == pViewModel.SelectWeightedSequence(ACT_VM_IDLE_TO_IS) && pViewModel.GetCycle() >= 0.55)
+				if (pViewModel.GetSequence() == pViewModel.SelectWeightedSequence(GetActivityFromName("ACT_VM_IDLE_TO_IS")) && pViewModel.GetCycle() >= 0.55)
 				{
-					pWeapon.SendWeaponAnim(ACT_VM_IDLE);
+					pWeapon.SendWeaponAnim(GetActivityFromName("ACT_VM_IDLE"));
 				}
 			}
 		}
@@ -1172,5 +1172,214 @@ public MRESReturn Hook_CParamsManager_InitInstances(Address _this, DHookReturn h
 	// we also need to call this if the feature is turned on/off mid-round.
 	CParamsManager pParamsManager = CParamsManager.FromAddress(_this);
 	pParamsManager.SetMultiplayer(!CoopManager.IsFeatureEnabled(FT_SP_WEAPONS));
+	return MRES_Ignored;
+}
+
+//------------------------------------------------------
+// `npc_beneathticle`
+// Fixes the pose parameter when spawning with the custom think implementation.
+//------------------------------------------------------
+public void Hook_Beneathticle_SpawnPost(const int iEntIndex)
+{
+	CNPC_Beneathticle pBeneathticle = CNPC_Beneathticle(iEntIndex);
+	pBeneathticle.SetTongueLength(pBeneathticle.GetTongueLengthOverride());
+}
+
+//------------------------------------------------------
+// `npc_beneathticle`
+// New AI implementation of beneathticles.
+// The original implementation suffers from:
+// 
+// - Players are parented to a beneathticle attachment which causes viewangle snapping in singleplayer and multiplayer
+// - Server crash when a beneathticle pulling a player is deleted
+// - Players can go under the map if their origin z is lower than the beneathticles and attempts colliding
+// - Beneathticles can grab objects other than players causing a issue with the player viewentity being bugged when a ragdoll is killed
+// - Several client prediction errors
+// - When no longer grabbing a player, beneathticle tongue pose parameter never resets to the original value
+//------------------------------------------------------
+public MRESReturn Hook_Beneathticle_Think(int _this)
+{
+	static const float g_flBeneathticleGrabRadius = 48.0;
+	static const float g_flBeneathticleTongueOriginOffset = 24.0;
+	static const float g_flBeneathticleAttackDistance = 64.0;
+
+	CNPC_Beneathticle pBeneathticle = CNPC_Beneathticle(_this);
+	
+	// Advances the frame of the activity that is playing.
+	pBeneathticle.StudioFrameAdvance();
+	// Unknown if this is needed.
+	pBeneathticle.IncrementInterpolationFrame();
+	// Fixes the hitboxes.
+	pBeneathticle.MarkSurroundingBoundsDirty();
+
+	if (pBeneathticle.GetLifeState() != LIFE_ALIVE)
+	{
+		MsgAll("%i %f", pBeneathticle.GetLifeState(), pBeneathticle.GetCycle());
+	}
+
+	if (!pBeneathticle.IsAlive())
+	{
+		if (pBeneathticle.GetCycle() == 1.0)
+		{
+			MsgAll("Never thinking again... :(");
+			// End the think when the animation is done playing.
+			pBeneathticle.SetNextThink(FLT_MAX);
+		}
+		else
+		{
+			// Think as fast as possible to keep a smooth animation.
+			pBeneathticle.SetNextThink(GetGameTime() + 0.0);
+		}
+		return MRES_Supercede;
+	}
+
+	CBasePlayer pEnemy = view_as<CBasePlayer>(pBeneathticle.GetEnemy());
+
+	float flTimeSinceLastTick = TICKS_TO_TIME(GetGameTickCount() - pBeneathticle.GetLastThinkTick());
+	float flTongueLength = pBeneathticle.GetTongueLength();
+	float flTongueTravelDistance = pBeneathticle.GetTonguePullSpeed() * flTimeSinceLastTick;
+	
+	// Find a player to pull.
+	if (pEnemy == NULL_CBASEENTITY)
+	{
+		float vec3BeneathticlePosition[3];
+		pBeneathticle.GetAbsOrigin(vec3BeneathticlePosition);
+		
+		for (int i = 1; i <= MaxClients; ++i)
+		{
+			CBasePlayer pPlayer = CBasePlayer(i);
+			if (pPlayer != NULL_CBASEENTITY && pPlayer.IsAlive() && !(pPlayer.m_fFlags & FL_NOTARGET) && pPlayer.GetMoveType() != MOVETYPE_NOCLIP)
+			{
+				float vec3PlayerPosition[3];
+				pPlayer.GetAbsOrigin(vec3PlayerPosition);
+				
+				// Check whether the player is within the height range of the tongue.
+				if ((vec3PlayerPosition[2] > vec3BeneathticlePosition[2]) && (vec3PlayerPosition[2] < (vec3BeneathticlePosition[2] + flTongueLength)))
+				{
+					float vec2BeneathticlePosition[3];
+					vec2BeneathticlePosition[0] = vec3BeneathticlePosition[0];
+					vec2BeneathticlePosition[1] = vec3BeneathticlePosition[1];
+					vec2BeneathticlePosition[2] = vec3PlayerPosition[2];
+
+					// Check whether the player is within range to touch the tongue.
+					if (GetVectorDistance(vec3PlayerPosition, vec2BeneathticlePosition) < g_flBeneathticleGrabRadius)
+					{
+						// TODO: Play sound.
+
+						// Found new player!
+						// Take his height difference and make that the new tongue length.
+						flTongueLength = vec3PlayerPosition[2] - vec3BeneathticlePosition[2];
+						pBeneathticle.SetTongueLength(flTongueLength);
+						pBeneathticle.SetEnemy(pPlayer);
+						pEnemy = pPlayer;
+
+						// Play animation.
+						pBeneathticle.SetActivity(GetActivityFromName("ACT_BENEATHICLE_SLURP"));	// ACT_BENEATHICLE_BITE_PLAYER
+						pBeneathticle.SetCycle(0.0);
+
+						// Prevents client-side prediction errors for movement while being pulled down.
+						pPlayer.m_fFlags |= FL_ATCONTROLS;
+						// Removes the view jitter when being pulled down.
+						pPlayer.SetMoveType(MOVETYPE_FLY);
+						// Remove the view jitter while being pulled down.
+						pPlayer.SetLaggedMovement(0.0);
+
+						// TODO: Prevent crouching on the client as the bounding size can cause the player to become stuck.
+
+						break;
+					}
+				}
+			}
+		}
+	}
+
+	// Pulling/eating a player.
+	if (pEnemy != NULL_CBASEENTITY && pEnemy.IsAlive() && pEnemy.GetMoveType() != MOVETYPE_NOCLIP)
+	{
+		float flEnemyTravelDistance = flTongueTravelDistance * 1.5;
+
+		// Set the new tongue length.
+		flTongueLength -= flTongueTravelDistance;
+		flTongueLength = Max(g_flBeneathticleAttackDistance, flTongueLength);
+		pBeneathticle.SetTongueLength(flTongueLength);
+
+		// Setup for moving the player into the tongue.
+		float vec3EnemyPosition[3];
+		pEnemy.GetAbsOrigin(vec3EnemyPosition);
+
+		float vec3TonguePosition[3];
+		pBeneathticle.GetAbsOrigin(vec3TonguePosition);
+		vec3TonguePosition[2] += flTongueLength;
+
+		// Offset for the enemy position.
+		vec3TonguePosition[2] -= g_flBeneathticleTongueOriginOffset;
+
+		float vec3NewPosition[3];
+		SubtractVectors(vec3TonguePosition, vec3EnemyPosition, vec3NewPosition);
+
+		// TODO:
+		// Teleporting will not work
+		if (GetVectorLength(vec3NewPosition) > flEnemyTravelDistance)
+		{
+			// Smooth into the new position.
+			GetVectorAngles(vec3NewPosition, vec3NewPosition);
+			GetAngleVectors(vec3NewPosition, vec3NewPosition, NULL_VECTOR, NULL_VECTOR);
+			ScaleVector(vec3NewPosition, flEnemyTravelDistance);
+			AddVectors(vec3EnemyPosition, vec3NewPosition, vec3NewPosition);
+			pEnemy.Teleport(vec3NewPosition);
+		}
+		else
+		{
+			// Overshoot so use direct position.
+			pEnemy.Teleport(vec3TonguePosition);
+		}
+
+		// Immediately start the next think as soon as possible.
+		pBeneathticle.SetNextThink(GetGameTime() + 0.0);
+	}
+	else
+	{
+		if (pEnemy != NULL_CBASEENTITY)
+		{
+			// Allow the player to move again.
+			pEnemy.m_fFlags &= ~FL_ATCONTROLS;
+			pEnemy.SetLaggedMovement(1.0);
+			
+			pBeneathticle.SetEnemy(NULL_CBASEENTITY);
+			pBeneathticle.SetActivity(GetActivityFromName("ACT_IDLE"));
+			pBeneathticle.SetCycle(0.0);
+		}
+		
+		float flTongueLengthOverride = pBeneathticle.GetTongueLengthOverride();
+		if (flTongueLength != flTongueLengthOverride)
+		{
+			// Set the new tongue length.
+			flTongueLength += flTongueTravelDistance;
+			flTongueLength = Min(pBeneathticle.GetTongueLengthOverride(), flTongueLength);
+			pBeneathticle.SetTongueLength(flTongueLength);
+
+			// Immediately start the next think as soon as possible.
+			pBeneathticle.SetNextThink(GetGameTime() + 0.0);
+		}
+		else
+		{
+			// Limit thinking while not grabbing a target or adjusting the tongue length.
+			// If the idle animation is too slow, then readjust this value.
+			pBeneathticle.SetNextThink(GetGameTime() + 0.2);
+		}
+	}
+
+	return MRES_Supercede;
+}
+
+public MRESReturn Hook_Beneathticle_KilledPost(int _this, DHookParam hParams)
+{
+	CNPC_Beneathticle pBeneathticle = CNPC_Beneathticle(_this);
+	
+	// TODO: Don't call the original?
+	
+	// Fix the death activity as it does not set cycle.
+	//pBeneathticle.SetActivity(GetActivityFromName)
+	//pBeneathticle.StudioFrameAdvance();
 	return MRES_Ignored;
 }

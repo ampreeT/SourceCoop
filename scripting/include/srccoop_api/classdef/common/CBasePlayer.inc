@@ -558,7 +558,7 @@ methodmap CBasePlayer < CBaseCombatCharacter
 			pViewModel.m_fEffects &= ~EF_NODRAW;
 			pViewModel.SetModel(g_szModelNameProxy);
 			pViewModel.SetModelIndex(iModelIndex);
-			pViewModel.SendViewModelMatchingSequence(pViewModel.SelectWeightedSequence(ACT_VM_DRAW));
+			pViewModel.SendViewModelMatchingSequence(pViewModel.SelectWeightedSequence(GetActivityFromName("ACT_VM_DRAW")));
 		}
 		#endif
 	}
