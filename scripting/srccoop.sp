@@ -406,8 +406,8 @@ public void OnMapStart()
 	
 	for (int i = 0; i < g_pPostponedSpawns.Length; i++)
 	{
-		CBaseEntity pEntity = g_pPostponedSpawns.Get(i);
-		RequestFrame(SpawnPostponedItem, pEntity);
+		CItem pItem = g_pPostponedSpawns.Get(i);
+		RequestFrame(SpawnPostponedItem, pItem);
 	}
 
 	g_pPostponedSpawns.Clear();
@@ -587,15 +587,11 @@ public void OnMapEnd()
 public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 {
 	if (g_bTempDontHookEnts)
-	{
 		return;
-	}
 
 	CBaseEntity pEntity = CBaseEntity(iEntIndex);
-	if (!pEntity.IsValid())
-	{
+	if (pEntity == NULL_CBASEENTITY)
 		return;
-	}
 
 	SDKHook(iEntIndex, SDKHook_Spawn, Hook_FixupBrushModels);
 	SDKHook(iEntIndex, SDKHook_SpawnPost, Hook_EntitySpawnPost);
@@ -825,9 +821,9 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 			#endif
 
 			#if defined SRCCOOP_BLACKMESA
-			if (CoopManager.IsFeatureEnabled(FT_INSTANCE_ITEMS))
+			if (CoopManager.IsCoopModeEnabled())
 			{
-				RequestFrame(Instancing_Sprite_OnCreated, pEntity);
+				RequestFrame(Hook_AmmoCanister_Sprite_OnCreated, view_as<CSprite>(pEntity));
 			}
 			#endif
 
@@ -908,11 +904,17 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 		{
 			if (pEntity.IsPickupItem())
 			{
-				if (CoopManager.IsFeatureEnabled(FT_INSTANCE_ITEMS))
+				if (CoopManager.IsCoopModeEnabled())
 				{
 					SDKHook(iEntIndex, SDKHook_Spawn, Hook_Item_OnSpawn);
 				}
 
+				if (strcmp(szClassname, "item_battery") == 0)
+				{
+					RequestFrame(Hook_Battery_OnCreated, view_as<CItem>(pEntity));
+					return;
+				}
+				
 				#if defined ENTPATCH_BM_SNARK_NEST
 				if (strcmp(szClassname, "item_weapon_snark") == 0)
 				{
@@ -925,6 +927,7 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 				{
 					DHookEntity(hkOnTryPickUp, true, iEntIndex, _, Hook_OnEquipmentTryPickUpPost);
 					pEntity.HookOutput("OnPlayerPickup", Hook_SuitTouchPickup);
+					return;
 				}
 			}
 			return;
@@ -1028,32 +1031,37 @@ public void Hook_EntitySpawnPost(int iEntIndex)
 }
 
 // Postpone items' Spawn() until Gamerules IsMultiplayer() gets hooked in OnMapStart()
-public Action Hook_Item_OnSpawn(int iEntIndex)
+static Action Hook_Item_OnSpawn(int iEntIndex)
 {
 	SDKUnhook(iEntIndex, SDKHook_Spawn, Hook_Item_OnSpawn);
 	
-	CBaseEntity pEntity = CBaseEntity(iEntIndex);
+	CItem pItem = CItem(iEntIndex);
 	if (g_bMapStarted)
 	{
-		RequestFrame(SpawnPostponedItem, pEntity);
+		RequestFrame(SpawnPostponedItem, pItem);
 	}
 	else
 	{
-		g_pPostponedSpawns.Push(pEntity);
+		g_pPostponedSpawns.Push(pItem);
 	}
 
 	return Plugin_Stop;
 }
 
-static void SpawnPostponedItem(const CBaseEntity pEntity)
+static void SpawnPostponedItem(const CItem pItem)
 {
-	if (pEntity.IsValid())
+	if (pItem.IsValid())
 	{
-		SDKHook(pEntity.entindex, SDKHook_SpawnPost, Hook_Instancing_Item_SpawnPost);
+		// TODO: Hooks on Spawn/SpawnPost will get called twice since this is hooked with SDKHooks.
 		g_bIsMultiplayerOverride = false; // IsMultiplayer=false will spawn items with physics
-		pEntity.Spawn();
+		pItem.Spawn();
 		g_bIsMultiplayerOverride = true;
-		pEntity.SetCollisionGroup(COLLISION_GROUP_WEAPON);
+
+		ItemInstancingManager.OnItemSpawnPost(pItem);
+
+		pItem.SetCollisionGroup(COLLISION_GROUP_WEAPON);
+		pItem.m_spawnflags &= ~SF_ITEM_HARDRESPAWN;
+		pItem.KeyValue("respawntime", "0");
 	}
 }
 

@@ -22,6 +22,39 @@ methodmap ItemInstancingManager
 	{
 		ItemInstancingManager.ClearAllPickedUpItemsForPlayer(pPlayer);
 	}
+	public static void OnItemSpawnPost(const CItem pItem)
+	{
+		if (!CoopManager.IsFeatureEnabled(FT_INSTANCE_ITEMS))
+			return;
+
+		#if defined SRCCOOP_BLACKMESA
+		DHookEntity(hkOnTryPickUp, false, pItem.entindex, _, Hook_Instancing_OnTryPickUpPre);
+		DHookEntity(hkOnTryPickUp, true, pItem.entindex, _, Hook_Instancing_OnTryPickUpPost);
+
+		char szClassname[MAX_CLASSNAME];
+		pItem.GetClassname(szClassname, sizeof(szClassname));
+		if (strcmp(szClassname, "item_healthkit", false) == 0 || strcmp(szClassname, "item_healthvial", false) == 0)
+		{
+			// Always hide the original healthkit model.
+			SDKHook(pItem.entindex, SDKHook_SetTransmit, Hook_Instancing_Item_NeverTransmit);
+
+			// Fix up the tranmission on the healthkit ragdoll.
+			CItem_HealthKit pHealthKit = view_as<CItem_HealthKit>(pItem);
+			CRagdollProp pRagdoll = pHealthKit.GetRagdollMimic();
+			if (pRagdoll != NULL_CBASEENTITY)
+			{
+				pHealthKit.HookOutput("OnPlayerPickup", Hook_Instancing_HealthKit_OnPlayerPickup);
+				SDKHook(pRagdoll.entindex, SDKHook_SetTransmit, Hook_Instancing_Item_Transmit);
+				SDKHook(pRagdoll.entindex, SDKHook_Use, Hook_Instancing_Item_Use);
+			}
+		}
+		else
+		#endif
+		{
+			SDKHook(pItem.entindex, SDKHook_SetTransmit, Hook_Instancing_Item_Transmit);
+			SDKHook(pItem.entindex, SDKHook_Use, Hook_Instancing_Item_Use);
+		}
+	}
 	
 	public static void AddPickedUpItem(const CBasePlayer pPlayer, const CBaseEntity pItem)
 	{
@@ -58,79 +91,6 @@ methodmap ItemInstancingManager
 	}
 }
 
-public void Hook_Instancing_Item_SpawnPost(const int iEntIndex)
-{
-	CItem pItem = CItem(iEntIndex);
-	
-	#if defined SRCCOOP_BLACKMESA
-	DHookEntity(hkOnTryPickUp, false, iEntIndex, _, Hook_Instancing_OnTryPickUpPre);
-	DHookEntity(hkOnTryPickUp, true, iEntIndex, _, Hook_Instancing_OnTryPickUpPost);
-
-	char szClassname[MAX_CLASSNAME];
-	pItem.GetClassname(szClassname, sizeof(szClassname));
-	if (strcmp(szClassname, "item_healthkit", false) == 0 || strcmp(szClassname, "item_healthvial", false) == 0)
-	{
-		// Always hide the original healthkit model.
-		SDKHook(iEntIndex, SDKHook_SetTransmit, Hook_Instancing_Item_NeverTransmit);
-		
-		// Fix up the tranmission on the healthkit ragdoll.
-		CItem_HealthKit pHealthKit = view_as<CItem_HealthKit>(pItem);
-		CRagdollProp pRagdoll = pHealthKit.GetRagdollMimic();
-		if (pRagdoll != NULL_CBASEENTITY)
-		{
-			pHealthKit.HookOutput("OnPlayerPickup", Hook_Instancing_HealthKit_OnPlayerPickup);
-			SDKHook(pRagdoll.entindex, SDKHook_SetTransmit, Hook_Instancing_Item_Transmit);
-			SDKHook(pRagdoll.entindex, SDKHook_Use, Hook_Instancing_Item_Use);
-		}
-	}
-	else
-	#endif
-	{
-		#if defined SRCCOOP_BLACKMESA
-		if (strcmp(szClassname, "item_battery", false) == 0)
-		{
-			// TODO: Create a methodmap.
-			CBaseEntity pBatteryLight = CBaseEntity.Create("newLight_Point");
-			if (pBatteryLight != NULL_CBASEENTITY)
-			{
-				float vec3Position[3];
-				pItem.GetAbsOrigin(vec3Position);
-				float vec3Angles[3];
-				pItem.GetAbsAngles(vec3Angles);
-				
-				pBatteryLight.KeyValue("lightcolor", "20 181 214 255");
-				pBatteryLight.KeyValue("style", "1");	// Flicker A
-				pBatteryLight.KeyValue("Intensity", "256");
-				pBatteryLight.KeyValue("texName", "lights/lightcookie_battery.vtf");
-				pBatteryLight.KeyValue("bTexLight", "1");
-				pBatteryLight.KeyValue("SpecMultiplier", "0");
-				pBatteryLight.KeyValue("lighttype", "2");
-				pBatteryLight.KeyValue("range", "30");
-				pBatteryLight.Spawn();
-				
-				pBatteryLight.SetOrigin(vec3Position);
-				pBatteryLight.SetAngles(vec3Angles);
-				pBatteryLight.SetParent(pItem);
-
-				pBatteryLight.AcceptInput("TurnOn");
-
-				// Without modifying these flags, the light's parent will be forced to always transmit which
-				// is not intended behavior.
-				pBatteryLight.edictFlags &= ~FL_EDICT_ALWAYS;
-				pBatteryLight.edictFlags |= FL_EDICT_PVSCHECK;
-
-				SDKHook(pBatteryLight.entindex, SDKHook_SetTransmit, Hook_Instancing_ItemParent_Transmit);
-			}
-		}
-		#endif
-		SDKHook(iEntIndex, SDKHook_SetTransmit, Hook_Instancing_Item_Transmit);
-		SDKHook(iEntIndex, SDKHook_Use, Hook_Instancing_Item_Use);
-	}
-
-	pItem.m_spawnflags &= ~SF_ITEM_HARDRESPAWN;
-	pItem.KeyValue("respawntime", "0");			// TODO: Make this a wrapper function.
-}
-
 static void Hook_Instancing_ItemDeleted(int iEntity)
 {
 	ItemInstancingManager.ClearPickedUpItem(CBaseEntity(iEntity));
@@ -142,7 +102,7 @@ static void Hook_Instancing_ItemDeleted(int iEntity)
 static MRESReturn Hook_Instancing_OnTryPickUpPre(int _this, DHookReturn hReturn, DHookParam hParams)
 {
 	CBaseEntity pEntity = CBaseEntity(DHookGetParam(hParams, 1));
-	if (pEntity.IsPlayer())
+	if (pEntity != NULL_CBASEENTITY && pEntity.IsPlayer())
 	{
 		CBasePlayer pPlayer = view_as<CBasePlayer>(pEntity);
 		CBaseEntity pItem = CBaseEntity(_this);
@@ -207,7 +167,7 @@ static Action Hook_Instancing_Item_Transmit(int iEntIndex, int iClient)
 
 // Fixes parented objects transmitting while the parent item is not transmitting.
 //
-static Action Hook_Instancing_ItemParent_Transmit(int iEntIndex, int iClient)
+public Action Hook_Instancing_ItemParent_Transmit(int iEntIndex, int iClient)
 {
 	CBaseEntity pEntity = CBaseEntity(iEntIndex);
 	CBaseEntity pParent = pEntity.GetParent();
@@ -244,51 +204,3 @@ static Action Hook_Instancing_HealthKit_OnPlayerPickup(const char[] szOutput, in
 	return Plugin_Continue;
 }
 #endif
-
-// Fixes the incorrect sprite position and sprite transmission on the ammo canister.
-//
-public void Instancing_Sprite_OnCreated(const CBaseEntity pEntity)
-{
-	if (pEntity.IsValid())
-	{
-		CBaseEntity pParent = pEntity.GetParent();
-		if (pParent != NULL_CBASEENTITY)
-		{
-			char szClassname[MAX_CLASSNAME];
-			pParent.GetClassname(szClassname, sizeof(szClassname));
-			if (strcmp(szClassname, "item_ammo_canister") == 0)
-			{
-				char szModelName[MAX_MODELNAME];
-				pParent.GetModelName(szModelName, sizeof(szModelName));
-
-				// Fix sprite position as it is centered on the model.
-				pEntity.ClearParent();
-				pParent.SetModel(szModelName);
-				pEntity.SetParent(pParent);
-				pEntity.SetParentAttachment("w_weaponbox_dlight");
-
-				// Fix sprite instancing.
-				SDKHook(pEntity.entindex, SDKHook_SetTransmit, Hook_Instancing_ItemParent_Transmit);
-
-				/*
-				// TODO: Find out another way of drawing the light.
-				// This is commented out as the light will still appear with the `SetTransmit` hook returning `Plugin_Stop`.
-				CBaseEntity pDynamicLight = CBaseEntity.Create("light_dynamic");
-				if (pDynamicLight != NULL_CBASEENTITY)
-				{
-					// TODO: Create methodmap `CDynamicLight` and replace these calls.
-					pDynamicLight.SetRenderColor(RGBA(255, 160, 0, 255));
-					pDynamicLight.KeyValue("brightness", "2");
-					pDynamicLight.KeyValue("distance", "16");
-					pDynamicLight.KeyValue("style", "1");
-					pDynamicLight.Spawn();
-					pDynamicLight.AcceptInput("TurnOn");
-					pDynamicLight.SetParent(pParent);
-					pDynamicLight.SetParentAttachment("w_weaponbox_dlight");
-					SDKHook(pDynamicLight.entindex, SDKHook_SetTransmit, Hook_Instancing_ItemParent_Transmit);
-				}
-				*/
-			}
-		}
-	}
-}

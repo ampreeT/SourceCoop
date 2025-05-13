@@ -340,7 +340,7 @@ public void Hook_ChangelevelSpawn(int iEntIndex)
 	if (!(pEntity.m_spawnflags & SF_CHANGELEVEL_NOTOUCH))
 	{
 		SDKHook(pEntity.entindex, SDKHook_Touch, Hook_ChangelevelOnTouch);
-		CreateTimer(Conf.CHANGELEVEL_EFFECT_PERIOD, ChangelevelEffects, pEntity, TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT);
+		CreateTimer(Conf.CHANGELEVEL_EFFECT_PERIOD, ChangelevelEffects, pEntity, TIMER_FLAG_NO_MAPCHANGE | TIMER_REPEAT);
 	}
 }
 
@@ -1350,16 +1350,17 @@ public MRESReturn Hook_LoadSavedAcceptInput(int _this, DHookReturn hReturn, DHoo
 		if (!DHookIsNullParam(hParams, 2))
 		{
 			int iActivator = DHookGetParam(hParams, 2);
-			CBasePlayer pActivator = CBasePlayer(iActivator);
-			if (pActivator.IsPlayer())
+			CBaseEntity pActivator = CBaseEntity(iActivator);
+			if (pActivator != NULL_CBASEENTITY && pActivator.IsPlayer())
 			{
+				CBasePlayer pPlayer = view_as<CBasePlayer>(pActivator);
 				CRevertSaved pThis = CRevertSaved(_this);
-				pActivator.ScreenFade(RoundFloat(pThis.GetDuration() * 1000), pThis.GetRenderColor(), FFADE_OUT | FFADE_STAYOUT);
+				pPlayer.ScreenFade(RoundFloat(pThis.GetDuration() * 1000), pThis.GetRenderColor(), FFADE_OUT | FFADE_STAYOUT);
 				
 				// This breaks the spectator overlay if the player is already dead
-				if (pActivator.IsAlive())
+				if (pPlayer.IsAlive())
 				{
-					pActivator.Suicide();
+					pPlayer.Suicide();
 				}
 			}
 		}
@@ -1373,7 +1374,7 @@ public MRESReturn Hook_LoadSavedAcceptInput(int _this, DHookReturn hReturn, DHoo
 //------------------------------------------------------
 // logic_autosave
 // Survival mode hook
-// May need to hook logic_active_autosave at some point if it is used, most maps do not use it though
+// TODO: May need to hook logic_active_autosave at some point if it is used, most maps do not use it though
 //------------------------------------------------------
 public MRESReturn Hook_LogicAutosaveAcceptInput(int _this, DHookReturn hReturn, DHookParam hParams)
 {
