@@ -1485,12 +1485,11 @@ public MRESReturn Hook_DispatchEffect(DHookParam hParams)
 }
 
 //------------------------------------------------------
-// `UTIL_FindClientInPVSGuts` which is called by `UTIL_FindClientInPVS`.
 // Fixes `nullptr` being returned due to the function only checking one new client every function call.
 // - NPC dialogue should always work on `+use` even if other players are out of PVS of the NPC.
 // - NPC pose parameters should not ever reset anymore due out of PVS player.
 //------------------------------------------------------
-public MRESReturn Hook_UTIL_FindClientInPVSGuts(DHookReturn hReturn, DHookParam hParams)
+public MRESReturn Hook_UTIL_FindClient(DHookReturn hReturn, DHookParam hParams)
 {
 	// Naive solution with fast execution.
 	// The original implementation below this implementation causes issues with NPCs doing nothing.

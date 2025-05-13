@@ -888,6 +888,32 @@
 					}
 				}
 			}
+			"UTIL_FindClientInPVS"
+			{
+				"signature"	"UTIL_FindClientInPVS"
+				"callconv"	"cdecl"
+				"return"	"edict"
+				"arguments"
+				{
+					"pEdict"
+					{
+						"type"	"edict"
+					}
+				}
+			}
+			"UTIL_FindClientInVisibilityPVS"
+			{
+				"signature"	"UTIL_FindClientInVisibilityPVS"
+				"callconv"	"cdecl"
+				"return"	"edict"
+				"arguments"
+				{
+					"pEdict"
+					{
+						"type"	"edict"
+					}
+				}
+			}
 			"CParamsManager::InitInstances"
 			{
 				"signature"	"CParamsManager::InitInstances"
@@ -1018,7 +1044,7 @@
 			}
 			"CAI_BaseNPC::UpdateSleepState"	// void CAI_BaseNPC::UpdateSleepState( bool bInPVS )
 			{
-				"windows"	"\x55\x8B\xEC\x56\x8B\xF1\x83\xBE\x8C\x09\x00\x00\x00\x2A\x2A\x2A\x2A\x2A\x2A\xA1\xD0\x91" // str: "CAI_BaseNPC::UpdateSleepState called with NULL pLocalPlayer\n"
+				"windows"	"\x55\x8B\xEC\x56\x8B\xF1\x83\xBE\x2A\x2A\x2A\x2A\x00\x0F\x8E" // str: "CAI_BaseNPC::UpdateSleepState called with NULL pLocalPlayer\n"
 				"linux"		"@_ZN11CAI_BaseNPC16UpdateSleepStateEb"
 			}
 			"CBaseEntity::SetNextThink" // void SetNextThink( float nextThinkTime, const char *szContext = NULL );
@@ -1028,7 +1054,7 @@
 			}
 			"CreateServerRagdoll" // CBaseEntity CreateServerRagdoll(CBaseAnimating *, int, const CTakeDamageInfo *, int, bool)
 			{
-				"windows"	"\x53\x8B\xDC\x83\xEC\x08\x83\xE4\xF0\x83\xC4\x04\x55\x8B\x6B\x04\x89\x6C\x24\x04\x8B\xEC\xB8\x78\x30\x00\x00"
+				"windows"	"\x53\x8B\xDC\x83\xEC\x08\x83\xE4\xF0\x83\xC4\x04\x55\x8B\x6B\x2A\x89\x6C\x24\x2A\x8B\xEC\xB8\xE8\x30\x00\x00"	// str: "animated_follower", "changeparent", "prop_ragdoll"
 				"linux" 	"@_Z19CreateServerRagdollP14CBaseAnimatingiRK15CTakeDamageInfoib"
 			}
 			"CBoneSetup::AccumulatePose" // void CBoneSetup::AccumulatePose(Vector *, Quaternion *, int, float, float, float, CIKContext *)
@@ -1098,10 +1124,18 @@
 				"windows"	"\x55\x8B\xEC\x81\xEC\x08\x08\x00\x00\xA1\x2A\x2A\x2A\x2A\x33\xC5\x89\x45\xFC\x56" // str: "%s.cfg\n"
 				"linux"		"@_ZN16CBM_MP_GameRules8ActivateEv"
 			}
+			// On Linux, this is inlined within `UTIL_FindClientInPVS` and `UTIL_FindClientInVisibilityPVS`
 			"UTIL_FindClientInPVSGuts"	// UTIL_FindClientInPVSGuts(edict_t*, unsigned char*, int)
 			{
 				"windows"	"\x55\x8B\xEC\x83\xEC\x18\x56\xE8\x2A\x2A\x2A\x2A\x8B\xF0\x85\xF6\x75"
-				"linux"		"@_ZL24UTIL_FindClientInPVSGutsP7edict_tPhj.constprop.66"
+			}
+			"UTIL_FindClientInPVS"	// UTIL_FindClientInPVS(edict_t*)
+			{
+				"linux"		"@_Z20UTIL_FindClientInPVSP7edict_t"
+			}
+			"UTIL_FindClientInVisibilityPVS"	// UTIL_FindClientInVisibilityPVS(edict_t*)
+			{
+				"linux"		"@_Z30UTIL_FindClientInVisibilityPVSP7edict_t"
 			}
 			"CParamsManager::InitInstances"	// CParamsManager::InitInstances(CParamsManager *,char *,bool)
 			{
@@ -1127,11 +1161,11 @@
 			"CLagCompensationManager::RestoreEntityFromRecords::SetPoseParameter"
 			{
 				"signature" "CLagCompensationManager::RestoreEntityFromRecords"
-				"linux" // nop out everything related to SetPoseParameter call (exclude first 'mov' and 'add' after jump)
+				"linux" // nop out everything related to SetPoseParameter call (exclude first 'movss', 'mov' and 'add' after jump)
 				{
-					"offset"	"78Fh"
-					"verify"	"F3 2A 2A 2A 2A 2A 89 2A 2A 2A 89 2A 2A E8 2A 2A 2A 2A DD 2A"
-					"patch"		"90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90"
+					"offset"	"765h"
+					"verify"	"89 2A 2A 2A 89 2A 2A E8 2A 2A 2A 2A DD 2A"
+					"patch"		"90 90 90 90 90 90 90 90 90 90 90 90 90 90"
 				}
 				"windows" // nop from jump start up to SetPoseParameter call
 				{
@@ -1145,8 +1179,8 @@
 				"signature" "CLagCompensationManager::BacktrackEntity"
 				"linux" // nop from jump start up until 'add'
 				{
-					"offset"	"6D0h"
-					"verify"	"89 2A 2A 2A 8B 2A 2A 2A 2A 2A F3 2A 2A 2A 2A 2A 2A 2A 89 2A 2A 2A F3 2A 2A 2A 2A 2A 89 2A 2A E8 2A 2A 2A 2A DD 2A"
+					"offset"	"6C8h"
+					"verify"	"F3 2A 2A 2A 2A 2A 2A 2A 89 2A 2A 2A 8B 2A 2A 2A 2A 2A 89 2A 2A 2A F3 2A 2A 2A 2A 2A 89 2A 2A E8 2A 2A 2A 2A DD 2A"
 					"patch"		"90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90"
 				}
 				// on win, the SetPoseParameter here is not the same call as in RestoreEntityFromRecords,
@@ -1164,7 +1198,7 @@
 				"signature" "CBM_MP_GameRules::Activate"
 				"linux" // nop [mov,mov,call] (ConVar::SetValue)
 				{
-					"offset"	"12Eh"
+					"offset"	"130h"
 					"verify"	"C7 44 24 04 20 03 00 00 89 34 24 E8 2A 2A 2A 2A"
 					"patch"		"90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90"
 				}
@@ -1629,11 +1663,6 @@
 			{
 				"windows"	"\x8A\x41\x1D\xC3"
 				"linux"		"@_ZNK16CRecipientFilter20IgnorePredictionCullEv"
-			}
-			"UTIL_FindClientInPVSGuts"	// UTIL_FindClientInPVSGuts(edict_t*, unsigned char*, int)
-			{
-				"windows"	"\x55\x8B\xEC\x83\xEC\x18\x56\xE8\x2A\x2A\x2A\x2A\x8B\xF0\x85\xF6\x0F\x84\x2A\x2A\x2A\x2A\x8B\x4E\x0C"
-				"linux"		"\x55\x89\xE5\x57\x89\xD7\x56\x89\xC6\x53\x83\xEC\x2C"
 			}
 		}
 
