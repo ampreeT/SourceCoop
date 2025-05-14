@@ -54,6 +54,9 @@ methodmap ItemInstancingManager
 			SDKHook(pItem.entindex, SDKHook_SetTransmit, Hook_Instancing_Item_Transmit);
 			SDKHook(pItem.entindex, SDKHook_Use, Hook_Instancing_Item_Use);
 		}
+		
+		pItem.m_spawnflags &= ~SF_ITEM_HARDRESPAWN;
+		pItem.KeyValue("respawntime", "0");
 	}
 	
 	public static void AddPickedUpItem(const CBasePlayer pPlayer, const CBaseEntity pItem)

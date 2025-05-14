@@ -708,14 +708,14 @@ public void Timer_SetTripmineSpriteColor(Handle timer, CSpriteTeam pSpriteTeam)
 		return;
 	
 	CEnvBeamTeam pBeamTeam = pTripmine.GetBeam();
-	if (pBeamTeam != NULL_CBASEENTITY)
+	if (pBeamTeam == NULL_CBASEENTITY)
 		return;
 	
 	// Check if a player created this tripmine.
 	// TODO:
 	// This should assign a team color if a player disconnected before the tripmine is active.
 	CBlackMesaPlayer pOwner = pSpriteTeam.GetOwner();
-	if (pTripmine.GetTeam() != TEAM_UNASSIGNED || pOwner == NULL_CBASEENTITY)
+	if (pTripmine.GetTeam() != TEAM_UNASSIGNED || pOwner != NULL_CBASEENTITY)
 		return;
 	
 	CSprite pSprite = CSprite.Create();

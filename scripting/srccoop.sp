@@ -916,12 +916,12 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 				if (CoopManager.IsCoopModeEnabled())
 				{
 					SDKHook(iEntIndex, SDKHook_Spawn, Hook_Item_OnSpawn);
-				}
-
-				if (strcmp(szClassname, "item_battery") == 0)
-				{
-					RequestFrame(Hook_Battery_OnCreated, view_as<CItem>(pEntity));
-					return;
+					
+					if (strcmp(szClassname, "item_battery") == 0)
+					{
+						RequestFrame(Hook_Battery_OnCreated, view_as<CItem>(pEntity));
+						return;
+					}
 				}
 				
 				#if defined ENTPATCH_BM_SNARK_NEST
@@ -1064,8 +1064,6 @@ static void SpawnPostponedItem(const CItem pItem)
 		ItemInstancingManager.OnItemSpawnPost(pItem);
 
 		pItem.SetCollisionGroup(COLLISION_GROUP_WEAPON);
-		pItem.m_spawnflags &= ~SF_ITEM_HARDRESPAWN;
-		pItem.KeyValue("respawntime", "0");
 	}
 }
 
