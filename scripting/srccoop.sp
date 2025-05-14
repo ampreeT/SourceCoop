@@ -917,11 +917,13 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 				{
 					SDKHook(iEntIndex, SDKHook_Spawn, Hook_Item_OnSpawn);
 					
+					#if defined ENTPATCH_BM_BATTERY_DLIGHT
 					if (strcmp(szClassname, "item_battery") == 0)
 					{
 						RequestFrame(Hook_Battery_OnCreated, view_as<CItem>(pEntity));
 						return;
 					}
+					#endif
 				}
 				
 				#if defined ENTPATCH_BM_SNARK_NEST
