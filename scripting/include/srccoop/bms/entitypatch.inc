@@ -1239,11 +1239,6 @@ public void Hook_Battery_OnCreated(const CItem pItem)
 	if (pBatteryLight == NULL_CBASEENTITY)
 		return;
 
-	float vec3Position[3];
-	pItem.GetAbsOrigin(vec3Position);
-	float vec3Angles[3];
-	pItem.GetAbsAngles(vec3Angles);
-
 	pBatteryLight.KeyValue("lightcolor", "20 181 214 255");
 	pBatteryLight.KeyValue("style", "1");	// Flicker A
 	pBatteryLight.KeyValue("Intensity", "256");
@@ -1254,9 +1249,8 @@ public void Hook_Battery_OnCreated(const CItem pItem)
 	pBatteryLight.KeyValue("range", "30");
 	pBatteryLight.Spawn();
 
-	pBatteryLight.SetOrigin(vec3Position);
-	pBatteryLight.SetAngles(vec3Angles);
 	pBatteryLight.SetParent(pItem);
+	pBatteryLight.Teleport({0.0, 0.0, 6.0}, vec3_origin);
 
 	pBatteryLight.AcceptInput("TurnOn");
 
