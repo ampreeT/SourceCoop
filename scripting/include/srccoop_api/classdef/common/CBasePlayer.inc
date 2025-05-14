@@ -460,6 +460,14 @@ methodmap CBasePlayer < CBaseCombatCharacter
 	{
 		return GetEntProp(this.entindex, Prop_Data, "m_iDefaultFOV");
 	}
+	public bool IsZooming()
+	{
+		return GetEntProp(this.entindex, Prop_Data, "m_bZooming") != 0;
+	}
+	public void SetZooming(const bool bZooming)
+	{
+		SetEntProp(this.entindex, Prop_Data, "m_bZooming", bZooming);
+	}
 	public int GetFOV()
 	{
 		int iFOV = GetEntProp(this.entindex, Prop_Data, "m_iFOV");
