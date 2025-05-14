@@ -19,6 +19,7 @@ enum SourceCoopFeature
 	FT_KEEP_EQUIPMENT						=	(1 << 13),
 	FT_TRANSFER_PLAYER_STATE				=	(1 << 14),
 	FT_SP_WEAPONS							=	(1 << 15),
+	FT_ENABLE_TIMELIMIT						=	(1 << 16),
 }
 
 methodmap FeatureMap < StringMap
@@ -39,6 +40,7 @@ methodmap FeatureMap < StringMap
 		pMap.SetValue("KEEP_EQUIPMENT", FT_KEEP_EQUIPMENT);
 		pMap.SetValue("TRANSFER_PLAYER_STATE", FT_TRANSFER_PLAYER_STATE);
 		pMap.SetValue("SP_WEAPONS", FT_SP_WEAPONS);
+		pMap.SetValue("ENABLE_TIMELIMIT", FT_ENABLE_TIMELIMIT);
 		
 		return view_as<FeatureMap>(pMap);
 	}

@@ -186,7 +186,7 @@ methodmap CoopManager
 			CBM_MP_GameRules.SetStateEndTime(STATE_WARMUP, GetGameTime() + iSecondsToWait + 1.0);
 			#endif
 		}
-		else
+		else if (!CoopManager.IsFeatureEnabled(FT_ENABLE_TIMELIMIT))
 		{
 			#if defined SRCCOOP_BLACKMESA
 			CBM_MP_GameRules.SetCurrentState(STATE_ROUND);
