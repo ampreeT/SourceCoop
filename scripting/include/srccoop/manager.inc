@@ -152,10 +152,6 @@ methodmap CoopManager
 	public static void SetIntroTimeOnHud(const int iSecondsToWait)
 	{
 		bool bShouldShow = iSecondsToWait > -1;
-		
-		#if defined SRCCOOP_BLACKMESA
-		CBM_MP_GameRules.SetStateEndTime(STATE_WARMUP, bShouldShow ? (GetGameTime() + iSecondsToWait + 1.0) : 0.0);
-		#endif
 
 		if (bShouldShow)
 		{
@@ -184,6 +180,18 @@ methodmap CoopManager
 			{
 				EmitSoundToAll(Conf.SND_1, .volume = Conf.SND_TICK_VOL);
 			}
+
+			#if defined SRCCOOP_BLACKMESA
+			CBM_MP_GameRules.SetCurrentState(STATE_WARMUP);
+			CBM_MP_GameRules.SetStateEndTime(STATE_WARMUP, GetGameTime() + iSecondsToWait + 1.0);
+			#endif
+		}
+		else if (!CoopManager.IsFeatureEnabled(FT_ENABLE_TIMELIMIT))
+		{
+			#if defined SRCCOOP_BLACKMESA
+			CBM_MP_GameRules.SetCurrentState(STATE_ROUND);
+			CBM_MP_GameRules.SetStateEndTime(STATE_ROUND, view_as<float>(INT_MAX));
+			#endif
 		}
 	}
 
