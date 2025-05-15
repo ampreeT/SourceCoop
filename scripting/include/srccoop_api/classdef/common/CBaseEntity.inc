@@ -11,6 +11,8 @@ static Handle g_pSetMinMaxSize;
 
 const any NULL_CBASEENTITY = -1;
 
+//static StringMap g_pEntityData;
+
 methodmap CBaseEntity
 {
 	public static void InitClassdef(const GameData hGameConfig)
@@ -69,6 +71,18 @@ methodmap CBaseEntity
 			PrepSDKCall_AddParameter(SDKType_Vector, SDKPass_ByRef);
 			if (!(g_pSetMinMaxSize = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szSetMinMaxSize);
 		}
+
+		/*
+		g_pEntityData = new StringMap();
+		DHookAddEntityListener(ListenType_Created, Hook_CBaseEntity_OnCreated);
+		DHookAddEntityListener(ListenType_Deleted, Hook_CBaseEntity_OnDeleted);
+
+		int iEntIndex = -1;
+		while ((iEntIndex = FindEntityByClassname(iEntIndex, "*")) != -1)
+		{
+			Hook_CBaseEntity_OnCreated(iEntIndex);
+		}
+		*/
 	}
 	public CBaseEntity(const int iEntIndex = -1)
 	{
@@ -379,7 +393,7 @@ methodmap CBaseEntity
 	{
 		SetEntPropVector(this.entindex, Prop_Data, "m_vecAbsVelocity", vec3Velocity);
 	}
-	public void HookOutput(const char[] szOutput, const EntityOutput pCallback, const bool bOnce)
+	public void HookOutput(const char[] szOutput, const EntityOutput pCallback, const bool bOnce = false)
 	{
 		HookSingleEntityOutput(this.entindex, szOutput, pCallback, bOnce);
 	}
@@ -733,6 +747,29 @@ methodmap CBaseEntity
 	{
 		StopSound(this.entindex, iChannel, szName);
 	}
+	/*
+	public any GetUserData(const char[] szKey)
+	{
+		StringMap pEntityData;
+		{
+    		char szEntityKey[MAX_CHARS_INT(INT_MIN)];
+    		IntToString(this.entref, szEntityKey, sizeof(szEntityKey));
+    		g_pEntityData.GetValue(szEntityKey, pEntityData);
+		}
+
+		any data;
+    	pEntityData.GetValue(szKey, data);
+		return data;
+	}
+	public void SetUserData(const char[] szKey, const any data)
+	{
+		StringMap pEntityData;
+    	char szEntityKey[MAX_CHARS_INT(INT_MIN)];
+    	IntToString(this.entref, szEntityKey, sizeof(szEntityKey));
+    	g_pEntityData.GetValue(szEntityKey, pEntityData);
+		pEntityData.SetValue(szKey, data);
+	}
+	*/
 }
 
 static bool TraceEntityFilter_FVisibleAiLosEnabled(int iEntIndex, int iMask, int iThisEntIndex)
@@ -836,3 +873,19 @@ enum SolidFlags_t
 	FSOLID_ROOT_PARENT_ALIGNED = 0x0100,	// Collisions are defined in root parent's local coordinate space
 	FSOLID_TRIGGER_TOUCH_DEBRIS = 0x0200,	// This trigger will touch debris objects
 }
+
+/*
+static void Hook_CBaseEntity_OnCreated(const int iEntIndex)
+{
+    char szKey[MAX_CHARS_INT(INT_MIN)];
+    IntToString(CBaseEntity(iEntIndex).entref, szKey, sizeof(szKey));
+    g_pEntityData.SetValue(szKey, new StringMap());
+}
+
+static void Hook_CBaseEntity_OnDeleted(const int iEntIndex)
+{
+    char szKey[MAX_CHARS_INT(INT_MIN)];
+    IntToString(CBaseEntity(iEntIndex).entref, szKey, sizeof(szKey));
+    g_pEntityData.Remove(szKey);
+}
+*/

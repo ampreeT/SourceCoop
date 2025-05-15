@@ -95,10 +95,7 @@ methodmap CoopManager
 		// https://github.com/ValveSoftware/source-sdk-2013/blob/0d8dceea4310fde5706b3ce1c70609d72a38efdf/mp/src/game/server/world.cpp#L681
 		char szChapterTitle[64];
 		CWorld().GetChapterTitle(szChapterTitle, sizeof(szChapterTitle));
-		if (strlen(szChapterTitle) > 0)
-		{
-			strcopy(data.m_szChapterTitle, sizeof(data.m_szChapterTitle), szChapterTitle);
-		}
+		strcopy(data.m_szChapterTitle, sizeof(data.m_szChapterTitle), szChapterTitle);
 	}
 
 	public static void EntitySpawnPost(CBaseEntity pEntity)

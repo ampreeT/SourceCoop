@@ -415,8 +415,8 @@ public void OnMapStart()
 	
 	for (int i = 0; i < g_pPostponedSpawns.Length; i++)
 	{
-		CBaseEntity pEnt = g_pPostponedSpawns.Get(i);
-		RequestFrame(SpawnPostponedItem, pEnt);
+		CItem pItem = g_pPostponedSpawns.Get(i);
+		RequestFrame(SpawnPostponedItem, pItem);
 	}
 
 	g_pPostponedSpawns.Clear();
@@ -510,6 +510,15 @@ public void OnClientPutInServer(int client)
 	#if defined SRCCOOP_HL2DM && defined PLAYERPATCH_SERVERSIDE_RAGDOLLS
 	DHookEntity(hkCreateRagdollEntity, false, client, _, Hook_CreateRagdollEntity);
 	#endif
+
+	// `item_ammo_canister` has a client side dlight that will
+	// always appear even if the ammo canister is not being transmitted.
+	// If this ConVar is set too late, then the dlight will have already been
+	// created on the client in a frozen spot.
+	#if defined SRCCOOP_BLACKMESA
+	CBasePlayer pPlayer = CBasePlayer(client);
+	pPlayer.SendCommand("cl_ammo_box_dlights 0");
+	#endif
 }
 
 public void OnClientAuthorized(int client, const char[] auth)
@@ -587,15 +596,11 @@ public void OnMapEnd()
 public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 {
 	if (g_bTempDontHookEnts)
-	{
 		return;
-	}
 
 	CBaseEntity pEntity = CBaseEntity(iEntIndex);
-	if (!pEntity.IsValid())
-	{
+	if (pEntity == NULL_CBASEENTITY)
 		return;
-	}
 
 	SDKHook(iEntIndex, SDKHook_Spawn, Hook_FixupBrushModels);
 	SDKHook(iEntIndex, SDKHook_SpawnPost, Hook_EntitySpawnPost);
@@ -818,13 +823,21 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 		}
 		#endif
 		
-		#if defined ENTPATCH_ENV_SPRITE
 		if (strcmp(szClassname, "env_sprite") == 0)
 		{
+			#if defined ENTPATCH_ENV_SPRITE
 			SDKHook(iEntIndex, SDKHook_SpawnPost, Hook_EnvSpriteSpawnPost);
+			#endif
+
+			#if defined SRCCOOP_BLACKMESA
+			if (CoopManager.IsCoopModeEnabled())
+			{
+				RequestFrame(Hook_AmmoCanister_Sprite_OnCreated, view_as<CSprite>(pEntity));
+			}
+			#endif
+
 			return;
 		}
-		#endif
 		
 		#if defined ENTPATCH_AI_SCRIPT_CONDITIONS
 		if (strcmp(szClassname, "ai_script_conditions") == 0)
@@ -900,10 +913,19 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 		{
 			if (pEntity.IsPickupItem())
 			{
-				if (CoopManager.IsFeatureEnabled(FT_INSTANCE_ITEMS))
+				if (CoopManager.IsCoopModeEnabled())
 				{
-					SDKHook(iEntIndex, SDKHook_Spawn, Hook_ItemSpawnDelay);
+					SDKHook(iEntIndex, SDKHook_Spawn, Hook_Item_OnSpawn);
+					
+					#if defined ENTPATCH_BM_BATTERY_DLIGHT
+					if (strcmp(szClassname, "item_battery") == 0)
+					{
+						RequestFrame(Hook_Battery_OnCreated, view_as<CItem>(pEntity));
+						return;
+					}
+					#endif
 				}
+				
 				#if defined ENTPATCH_BM_SNARK_NEST
 				if (strcmp(szClassname, "item_weapon_snark") == 0)
 				{
@@ -911,10 +933,12 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 					return;
 				}
 				#endif
+
 				if (strcmp(szClassname, "item_suit") == 0)
 				{
 					DHookEntity(hkOnTryPickUp, true, iEntIndex, _, Hook_OnEquipmentTryPickUpPost);
-					HookSingleEntityOutput(iEntIndex, "OnPlayerPickup", Hook_SuitTouchPickup);
+					pEntity.HookOutput("OnPlayerPickup", Hook_SuitTouchPickup);
+					return;
 				}
 			}
 			return;
@@ -1011,32 +1035,37 @@ public void Hook_EntitySpawnPost(int iEntIndex)
 }
 
 // Postpone items' Spawn() until Gamerules IsMultiplayer() gets hooked in OnMapStart()
-public Action Hook_ItemSpawnDelay(int iEntIndex)
+#if defined SRCCOOP_BLACKMESA
+static Action Hook_Item_OnSpawn(int iEntIndex)
 {
-	SDKUnhook(iEntIndex, SDKHook_Spawn, Hook_ItemSpawnDelay);
+	SDKUnhook(iEntIndex, SDKHook_Spawn, Hook_Item_OnSpawn);
 	
-	CBaseEntity pEntity = CBaseEntity(iEntIndex);
+	CItem pItem = CItem(iEntIndex);
 	if (g_bMapStarted)
 	{
-		RequestFrame(SpawnPostponedItem, pEntity);
+		RequestFrame(SpawnPostponedItem, pItem);
 	}
 	else
 	{
-		g_pPostponedSpawns.Push(pEntity);
+		g_pPostponedSpawns.Push(pItem);
 	}
 
 	return Plugin_Stop;
 }
+#endif
 
-public void SpawnPostponedItem(CBaseEntity pEntity)
+static void SpawnPostponedItem(const CItem pItem)
 {
-	if (pEntity.IsValid())
+	if (pItem.IsValid())
 	{
-		SDKHook(pEntity.entindex, SDKHook_SpawnPost, Hook_Instancing_ItemSpawn);
+		// TODO: Hooks on Spawn/SpawnPost will get called twice since this is hooked with SDKHooks.
 		g_bIsMultiplayerOverride = false; // IsMultiplayer=false will spawn items with physics
-		pEntity.Spawn();
+		pItem.Spawn();
 		g_bIsMultiplayerOverride = true;
-		pEntity.SetCollisionGroup(COLLISION_GROUP_WEAPON);
+
+		ItemInstancingManager.OnItemSpawnPost(pItem);
+
+		pItem.SetCollisionGroup(COLLISION_GROUP_WEAPON);
 	}
 }
 
