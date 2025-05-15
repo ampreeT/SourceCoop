@@ -95,10 +95,7 @@ methodmap CoopManager
 		// https://github.com/ValveSoftware/source-sdk-2013/blob/0d8dceea4310fde5706b3ce1c70609d72a38efdf/mp/src/game/server/world.cpp#L681
 		char szChapterTitle[64];
 		CWorld().GetChapterTitle(szChapterTitle, sizeof(szChapterTitle));
-		if (strlen(szChapterTitle) > 0)
-		{
-			strcopy(data.m_szChapterTitle, sizeof(data.m_szChapterTitle), szChapterTitle);
-		}
+		strcopy(data.m_szChapterTitle, sizeof(data.m_szChapterTitle), szChapterTitle);
 	}
 
 	public static void EntitySpawnPost(CBaseEntity pEntity)
@@ -152,10 +149,6 @@ methodmap CoopManager
 	public static void SetIntroTimeOnHud(const int iSecondsToWait)
 	{
 		bool bShouldShow = iSecondsToWait > -1;
-		
-		#if defined SRCCOOP_BLACKMESA
-		CBM_MP_GameRules.SetStateEndTime(STATE_WARMUP, bShouldShow ? (GetGameTime() + iSecondsToWait + 1.0) : 0.0);
-		#endif
 
 		if (bShouldShow)
 		{
@@ -184,6 +177,18 @@ methodmap CoopManager
 			{
 				EmitSoundToAll(Conf.SND_1, .volume = Conf.SND_TICK_VOL);
 			}
+
+			#if defined SRCCOOP_BLACKMESA
+			CBM_MP_GameRules.SetCurrentState(STATE_WARMUP);
+			CBM_MP_GameRules.SetStateEndTime(STATE_WARMUP, GetGameTime() + iSecondsToWait + 1.0);
+			#endif
+		}
+		else if (!CoopManager.IsFeatureEnabled(FT_ENABLE_TIMELIMIT))
+		{
+			#if defined SRCCOOP_BLACKMESA
+			CBM_MP_GameRules.SetCurrentState(STATE_ROUND);
+			CBM_MP_GameRules.SetStateEndTime(STATE_ROUND, view_as<float>(INT_MAX));
+			#endif
 		}
 	}
 

@@ -93,7 +93,6 @@ Set-Content -Path "./Black Mesa Dedicated Server/bms/mapcycle.txt" -Value $map_c
 # Create a `server.cfg` with ideal default settings.
 $server_cfg = @'
 // SourceCoop settings.
-mp_timelimit 0      // Prevents map switch from round timers.
 mp_fraglimit 0      // Prevents the match from ending when a player has a high enough score.
 mp_teamplay 1       // Enables the scientist team.
 mp_friendlyfire 0   // Disables friendly fire.

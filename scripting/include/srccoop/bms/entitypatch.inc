@@ -35,7 +35,7 @@ public void Hook_BoneFollowerVPhysicsUpdatePost(int iEntIndex)
 {
 	CBaseEntity pEntity = CBaseEntity(iEntIndex);
 	CBaseEntity pOwner = pEntity.GetOwner();
-	if (pOwner.IsValid())
+	if (pOwner != NULL_CBASEENTITY)
 	{
 		char szOwnerClass[MAX_CLASSNAME];
 		pOwner.GetClassname(szOwnerClass, sizeof(szOwnerClass));
@@ -131,7 +131,7 @@ public MRESReturn Hook_PropRadiationChargerThink(int _this)
 	for (int i = 1; i <= MaxClients; ++i)
 	{
 		CBlackMesaPlayer pPlayer = CBlackMesaPlayer(i);
-		if (pPlayer != NULL_CBASEENTITY)
+		if (pPlayer != NULL_CBASEENTITY && pPlayer.IsAlive())
 		{
 			float vec3PlayerPosition[3];
 			pPlayer.GetAbsOrigin(vec3PlayerPosition);
@@ -179,7 +179,7 @@ public MRESReturn Hook_PropHevChargerThink(int _this)
 	for (int i = 1; i <= MaxClients; ++i)
 	{
 		CBlackMesaPlayer pPlayer = CBlackMesaPlayer(i);
-		if (pPlayer != NULL_CBASEENTITY)
+		if (pPlayer != NULL_CBASEENTITY && pPlayer.IsAlive())
 		{
 			float vec3PlayerPosition[3];
 			pPlayer.GetAbsOrigin(vec3PlayerPosition);
@@ -275,7 +275,7 @@ public MRESReturn Hook_MarionettistAcceptInput(int _this, DHookReturn hReturn, D
 					{
 						int iActivator = DHookGetParam(hParams, 2);
 						CBaseEntity pActivator = CBaseEntity(iActivator);
-						if (pActivator.IsPlayer())
+						if (pActivator != NULL_CBASEENTITY && pActivator.IsPlayer())
 						{
 							MarionettistManipulate(_this, iActivator, view_as<CBasePlayer>(pActivator));
 							DHookSetReturn(hReturn, true);
@@ -474,10 +474,10 @@ public MRESReturn Hook_WeaponSetModel(int _this, DHookParam hParams)
 	if (!DHookIsNullParam(hParams, 1))
 	{
 		CBaseCombatWeapon pWeapon = CBaseCombatWeapon(_this);
-		if (pWeapon.IsValid())
+		if (pWeapon != NULL_CBASEENTITY)
 		{
 			CBaseCombatCharacter pOwner = pWeapon.GetOwner();
-			if (pOwner.IsValid() && !pOwner.IsPlayer())
+			if (pOwner != NULL_CBASEENTITY && !pOwner.IsPlayer())
 			{
 				static const char szWeaponModel[][][] =
 				{
@@ -594,10 +594,10 @@ public Action Hook_SuitTouchPickup(const char[] szOutput, int iCaller, int iActi
 	CItemSuit pCaller = CItemSuit(iCaller);
 	if (pCaller.m_spawnflags & SF_BOOTSEQUENCE)
 	{
-		CBasePlayer pPlayer = CBasePlayer(iActivator);
-		if (pPlayer.IsValid())
+		CBaseEntity pActivator = CBaseEntity(iActivator);
+		if (pActivator != NULL_CBASEENTITY && pActivator.IsPlayer())
 		{
-			pPlayer.StartAdmireGlovesAnimation();
+			view_as<CBasePlayer>(pActivator).StartAdmireGlovesAnimation();
 		}
 	}
 	
@@ -704,26 +704,26 @@ public void Timer_SetTripmineSpriteColor(Handle timer, CSpriteTeam pSpriteTeam)
 		return;
 
 	CBlackMesaBaseDetonator pTripmine = pSpriteTeam.GetTripmine();
-	if (!pTripmine.IsValid())
+	if (pTripmine == NULL_CBASEENTITY)
 		return;
 	
 	CEnvBeamTeam pBeamTeam = pTripmine.GetBeam();
-	if (!pBeamTeam.IsValid())
+	if (pBeamTeam == NULL_CBASEENTITY)
 		return;
 	
 	// Check if a player created this tripmine.
 	// TODO:
 	// This should assign a team color if a player disconnected before the tripmine is active.
 	CBlackMesaPlayer pOwner = pSpriteTeam.GetOwner();
-	if (pTripmine.GetTeam() != TEAM_UNASSIGNED || pOwner.IsValid())
+	if (pTripmine.GetTeam() != TEAM_UNASSIGNED || pOwner != NULL_CBASEENTITY)
 		return;
 	
 	CSprite pSprite = CSprite.Create();
-	if (!pSprite.IsValid())
+	if (pSprite == NULL_CBASEENTITY)
 		return;
 	
 	CEnvBeam pBeam = CEnvBeam.Create();
-	if (!pBeam.IsValid())
+	if (pBeam == NULL_CBASEENTITY)
 	{
 		pSprite.Kill();
 		return;
@@ -888,8 +888,8 @@ public MRESReturn Hook_IronsightGetPrimaryAttackActivity(int _this, DHookReturn 
 		CBlackMesaBaseCombatWeaponIronsights pWeapon = CBlackMesaBaseCombatWeaponIronsights(_this);
 		if (pWeapon.IsInIronsights())
 		{
-			CBasePlayer pPlayer = view_as<CBasePlayer>(pWeapon.GetOwner());
-			if (pPlayer.IsValid() && !g_pPlayerIronsightClassic[pPlayer.entindex])
+			CBaseCombatCharacter pOwner = pWeapon.GetOwner();
+			if (pOwner != NULL_CBASEENTITY && pOwner.IsPlayer() && !g_pPlayerIronsightClassic[pOwner.entindex])
 			{
 				DHookSetReturn(hReturn, ACT_VM_PRIMARYATTACK_IS);
 				return MRES_Supercede;
@@ -940,10 +940,10 @@ public MRESReturn Hook_IronsightDeployPost_SaveSettings(int _this, DHookReturn h
 	if (CoopManager.IsFeatureEnabled(FT_SP_WEAPONS))
 	{
 		CBaseCombatWeapon pWeapon = CBaseCombatWeapon(_this);
-		CBasePlayer pPlayer = view_as<CBasePlayer>(pWeapon.GetOwner());
-		if (pPlayer.IsValid())
+		CBaseCombatCharacter pOwner = pWeapon.GetOwner();
+		if (pOwner != NULL_CBASEENTITY && pOwner.IsPlayer())
 		{
-			pPlayer.QueryConvar("cl_ironsight_classic", ConvarQuery_IronsightClassic);
+			view_as<CBasePlayer>(pOwner).QueryConvar("cl_ironsight_classic", ConvarQuery_IronsightClassic);
 		}
 	}
 	return MRES_Ignored;
@@ -977,11 +977,12 @@ public MRESReturn Hook_CrossbowDeployPost(int _this, DHookReturn hReturn)
 	if (CoopManager.IsFeatureEnabled(FT_SP_WEAPONS))
 	{
 		CBaseCombatWeapon pWeapon = CBaseCombatWeapon(_this);
-		CBasePlayer pPlayer = view_as<CBasePlayer>(pWeapon.GetOwner());
-		if (pPlayer.IsValid())
+		CBaseCombatCharacter pOwner = pWeapon.GetOwner();
+		if (pOwner != NULL_CBASEENTITY && pOwner.IsPlayer())
 		{
+			CBasePlayer pPlayer = view_as<CBasePlayer>(pOwner);
 			CPredictedViewModel pViewModel = pPlayer.GetViewModel();
-			if (pViewModel.IsValid())
+			if (pViewModel != NULL_CBASEENTITY)
 			{
 				pViewModel.SetSkin(0);
 			}
@@ -1005,11 +1006,12 @@ public MRESReturn Hook_CrossbowItemPostFrame(int _this, DHookReturn hReturn)
 		g_bIsMultiplayerOverride = false;
 
 		CBaseCombatWeapon pWeapon = CBaseCombatWeapon(_this);
-		CBasePlayer pPlayer = view_as<CBasePlayer>(pWeapon.GetOwner());
-		if (pPlayer.IsValid())
+		CBaseCombatCharacter pOwner = pWeapon.GetOwner();
+		if (pOwner != NULL_CBASEENTITY && pOwner.IsPlayer())
 		{
+			CBasePlayer pPlayer = view_as<CBasePlayer>(pOwner);
 			CPredictedViewModel pViewModel = pPlayer.GetViewModel();
-			if (pViewModel.IsValid())
+			if (pViewModel != NULL_CBASEENTITY)
 			{
 				// Switch to idle animation so the scope does not block the view.
 				if (pViewModel.GetSequence() == pViewModel.SelectWeightedSequence(ACT_VM_IDLE_TO_IS) && pViewModel.GetCycle() >= 0.55)
@@ -1173,4 +1175,91 @@ public MRESReturn Hook_CParamsManager_InitInstances(Address _this, DHookReturn h
 	CParamsManager pParamsManager = CParamsManager.FromAddress(_this);
 	pParamsManager.SetMultiplayer(!CoopManager.IsFeatureEnabled(FT_SP_WEAPONS));
 	return MRES_Ignored;
+}
+
+// Fixes the incorrect sprite position on the ammo canister.
+//
+public void Hook_AmmoCanister_Sprite_OnCreated(const CSprite pSprite)
+{
+	if (!pSprite.IsValid())
+		return;
+
+	CBaseEntity pParent = pSprite.GetParent();
+	if (pParent == NULL_CBASEENTITY)
+		return;
+	
+	char szClassname[MAX_CLASSNAME];
+	pParent.GetClassname(szClassname, sizeof(szClassname));
+	if (strcmp(szClassname, "item_ammo_canister") != 0)
+		return;
+	
+	char szModelName[MAX_MODELNAME];
+	pParent.GetModelName(szModelName, sizeof(szModelName));
+
+	// Fix sprite position as it is centered on the model.
+	pSprite.ClearParent();
+	pParent.SetModel(szModelName);
+	pSprite.SetParent(pParent);
+	pSprite.SetParentAttachment("w_weaponbox_dlight");
+
+	if (CoopManager.IsFeatureEnabled(FT_INSTANCE_ITEMS))
+	{
+		SDKHook(pSprite.entindex, SDKHook_SetTransmit, Hook_Instancing_ItemParent_Transmit);
+	}
+
+	/*
+	// TODO: Find out another way of drawing the light.
+	// This is commented out as the light will still appear with the `SetTransmit` hook returning `Plugin_Stop`.
+	CBaseEntity pDynamicLight = CBaseEntity.Create("light_dynamic");
+	if (pDynamicLight != NULL_CBASEENTITY)
+	{
+		// TODO: Create methodmap `CDynamicLight` and replace these calls.
+		pDynamicLight.SetRenderColor(RGBA(255, 160, 0, 255));
+		pDynamicLight.KeyValue("brightness", "2");
+		pDynamicLight.KeyValue("distance", "16");
+		pDynamicLight.KeyValue("style", "1");
+		pDynamicLight.Spawn();
+		pDynamicLight.AcceptInput("TurnOn");
+		pDynamicLight.SetParent(pParent);
+		pDynamicLight.SetParentAttachment("w_weaponbox_dlight");
+		SDKHook(pDynamicLight.entindex, SDKHook_SetTransmit, Hook_Instancing_ItemParent_Transmit);
+	}
+	*/
+}
+
+// Fixes the missing dynamic light on the battery.
+//
+public void Hook_Battery_OnCreated(const CItem pItem)
+{
+	if (!pItem.IsValid())
+		return;
+	
+	// TODO: Create a methodmap.
+	CBaseEntity pBatteryLight = CBaseEntity.Create("newLight_Point");
+	if (pBatteryLight == NULL_CBASEENTITY)
+		return;
+
+	pBatteryLight.KeyValue("lightcolor", "20 181 214 255");
+	pBatteryLight.KeyValue("style", "1");	// Flicker A
+	pBatteryLight.KeyValue("Intensity", "256");
+	pBatteryLight.KeyValue("texName", "lights/lightcookie_battery.vtf");
+	pBatteryLight.KeyValue("bTexLight", "1");
+	pBatteryLight.KeyValue("SpecMultiplier", "0");
+	pBatteryLight.KeyValue("lighttype", "2");
+	pBatteryLight.KeyValue("range", "30");
+	pBatteryLight.Spawn();
+
+	pBatteryLight.SetParent(pItem);
+	pBatteryLight.Teleport({0.0, 0.0, 6.0}, vec3_origin);
+
+	pBatteryLight.AcceptInput("TurnOn");
+
+	// Without modifying these flags, the light's parent will be forced to always transmit.
+	pBatteryLight.edictFlags &= ~FL_EDICT_ALWAYS;
+	pBatteryLight.edictFlags |= FL_EDICT_PVSCHECK;
+
+	if (CoopManager.IsFeatureEnabled(FT_INSTANCE_ITEMS))
+	{
+		SDKHook(pBatteryLight.entindex, SDKHook_SetTransmit, Hook_Instancing_ItemParent_Transmit);
+	}
 }

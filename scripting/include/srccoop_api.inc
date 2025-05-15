@@ -21,6 +21,7 @@
 
 #endif
 
+#include <dhooks>
 #include <sdkhooks>
 #include <sdktools>
 #include <sourcescramble>
