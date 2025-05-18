@@ -103,7 +103,7 @@ public void Hook_PlayerPreThinkPost(int iClient)
 		#endif
 		
 		#if defined SRCCOOP_BLACKMESA
-		CBaseCombatWeapon pWeapon = pPlayer.GetActiveWeapon();
+		CBlackMesaBaseCombatWeapon pWeapon = view_as<CBlackMesaBaseCombatWeapon>(pPlayer.GetActiveWeapon());
 		if (pWeapon != NULL_CBASEENTITY)
 		{
 			static bool g_bDisableAttack[MAXPLAYERS + 1];
@@ -124,6 +124,7 @@ public void Hook_PlayerPreThinkPost(int iClient)
 			}
 			g_bDisableAttack[iClient] = bDisableAttack;
 
+			// Fix gluon laser still emitting while zoomed.
 			if (bIsZooming && pWeapon.IsClassname("weapon_gluon"))
 			{
 				CWeapon_Gluon pGluon = view_as<CWeapon_Gluon>(pWeapon);
@@ -136,6 +137,7 @@ public void Hook_PlayerPreThinkPost(int iClient)
 
 			// TODO: Remove this when new beneathticle AI is added.
 			// The player is parented to the beneathticle which causes this bug.
+			// This solution will still cause prediction issues when the players ping is high enough.
 			if (pPlayer.GetWaterLevel() == WL_Eyes)
 			{
 				// fix clientside firing weapons when dragged by beneathticle
