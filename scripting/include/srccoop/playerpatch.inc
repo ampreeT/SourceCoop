@@ -106,16 +106,41 @@ public void Hook_PlayerPreThinkPost(int iClient)
 		CBaseCombatWeapon pWeapon = pPlayer.GetActiveWeapon();
 		if (pWeapon != NULL_CBASEENTITY)
 		{
-			if (pPlayer.IsCarryingObject())
+			static bool g_bDisableAttack[MAXPLAYERS + 1];
+
+			// Fixes prediction errors with weapons.
+			bool bIsZooming = pPlayer.IsZooming();
+			bool bDisableAttack = !g_pCoopManagerData.m_bStarted || bIsZooming || pPlayer.IsCarryingObject();
+			if (bDisableAttack)
 			{
-				// fix clientside prediction errors when dropping objects
-				pWeapon.DelayNextAttack(1.0);
+				pPlayer.SetNextAttack(FLT_MAX);
 			}
-			else if (pPlayer.GetWaterLevel() == WL_Eyes)
+			else
+			{
+				if (g_bDisableAttack[iClient])
+				{
+					pPlayer.SetNextAttack(GetGameTime() + 0.35);
+				}
+			}
+			g_bDisableAttack[iClient] = bDisableAttack;
+
+			if (bIsZooming && pWeapon.IsClassname("weapon_gluon"))
+			{
+				CWeapon_Gluon pGluon = view_as<CWeapon_Gluon>(pWeapon);
+				if (pGluon.GetFiringState() != 0)
+				{
+					pGluon.SetFiringState(0);
+					StopSound(iClient, SNDCHAN_WEAPON, ")weapons/gluon/special1.wav");
+				}
+			}
+
+			// TODO: Remove this when new beneathticle AI is added.
+			// The player is parented to the beneathticle which causes this bug.
+			if (pPlayer.GetWaterLevel() == WL_Eyes)
 			{
 				// fix clientside firing weapons when dragged by beneathticle
 				CBaseEntity pParent = pPlayer.GetParent();
-				if (pParent.IsValid())
+				if (pParent != NULL_CBASEENTITY)
 				{
 					if (HasEntProp(pParent.entindex, Prop_Data, "m_hPrey"))
 					{
@@ -144,7 +169,7 @@ public void Hook_PlayerPreThinkPost(int iClient)
 				{
 					pPlayer.SetGroundEntity(NULL_CBASEENTITY);
 					pPlayer.SetButtons(0);
-					DispatchSpawn(iClient);
+					pPlayer.Spawn();
 				}
 			}
 		}
@@ -182,8 +207,8 @@ public MRESReturn Hook_PlayerStartObserverMode(int iClient, DHookReturn hReturn,
 	if (!CoopManager.IsCoopModeEnabled())
 		return MRES_Ignored;
 	
-	Obs_Mode mode = hParams.Get(1);
-	if (mode == OBS_MODE_FREEZECAM || mode == OBS_MODE_DEATHCAM)
+	Obs_Mode eObserverMode = hParams.Get(1);
+	if (eObserverMode == OBS_MODE_FREEZECAM || eObserverMode == OBS_MODE_DEATHCAM)
 	{
 		hParams.Set(1, OBS_MODE_CHASE);
 		return MRES_Handled;
@@ -196,8 +221,8 @@ public MRESReturn Hook_PlayerStartObserverMode(int iClient, DHookReturn hReturn,
 //------------------------------------------------------
 public Action OnPlayerRunCmd(int iClient, int &iButtons, int &iImpulse, float fVel[3], float fAngles[3], int &iWeapon, int& subtype, int& cmdnum, int& tickcount, int& seed, int mouse[2])
 {
-	CBasePlayer pClient = CBasePlayer(iClient);
-	pClient.GetEyePosition(g_vec3PlayerShootPosition[iClient]);
+	CBasePlayer pPlayer = CBasePlayer(iClient);
+	pPlayer.GetEyePosition(g_vec3PlayerShootPosition[iClient]);
 
 	if (IsFakeClient(iClient) || !CoopManager.IsCoopModeEnabled())
 		return Plugin_Continue;
@@ -206,24 +231,22 @@ public Action OnPlayerRunCmd(int iClient, int &iButtons, int &iImpulse, float fV
 		g_bPostTeamSelect[iClient] = true;
 	
 	// Spectator fixes; Credits: harper
-	Obs_Mode iObsMode = view_as<Obs_Mode>(GetEntProp(iClient, Prop_Send, "m_iObserverMode"));
-	if (iObsMode > OBS_MODE_DEATHCAM)
+	Obs_Mode eObserverMode = pPlayer.GetObserverMode();
+	if (eObserverMode > OBS_MODE_DEATHCAM)
 	{
 		// hide bugged ctrl menu
 		if (g_bPostTeamSelect[iClient] && tickcount % 10 == 0)
 			ShowVGUIPanel(iClient, "specmenu", _, false);
 
-		CBasePlayer pTarget = CBasePlayer(GetEntPropEnt(iClient, Prop_Send, "m_hObserverTarget"));
+		CBaseEntity pTarget = pPlayer.GetObserverTarget();
 
 		// Make sure target is not an info_observer_menu
 		// force free-look where appropriate - this removes the extra (pointless) third person spec mode
-		if (iObsMode == OBS_MODE_POI && pTarget != pClient && (!pTarget.IsValid() || pTarget.IsPlayer()))
+		if (eObserverMode == OBS_MODE_POI && pTarget != pPlayer && (pPlayer == NULL_CBASEENTITY || pTarget.IsPlayer()))
 		{
-			SetEntProp(iClient, Prop_Data, "m_iObserverMode", OBS_MODE_ROAMING);
+			pPlayer.SetObserverMode(OBS_MODE_ROAMING);
 		}
 	}
-
-	CoopManager.OnPlayerRunCmd(pClient);
 
 	if (g_iAddButtons[iClient])
 	{
@@ -236,7 +259,7 @@ public Action OnPlayerRunCmd(int iClient, int &iButtons, int &iImpulse, float fV
 	// By using m_afButtonPressed, this is actually ignored by the game code if players mount ladders the normal way as it calls ::SwallowUseKey()
 	if ((GetEntProp(iClient, Prop_Data, "m_afButtonPressed") & IN_USE) && (GetEntProp(iClient, Prop_Data, "m_afButtonLast") & IN_USE) == 0)
 	{
-		Movement_FindLadder(CBasePlayer(iClient));
+		Movement_FindLadder(pPlayer);
 	}
 	#endif
 	
@@ -625,7 +648,7 @@ public void PlayerPatch_OnClientDisconnect(CBasePlayer pPlayer)
 		#if defined SRCCOOP_HL2DM && defined PLAYERPATCH_SERVERSIDE_RAGDOLLS
 		// prevent hl2dm crash with serverside ragdolls
 		CBaseEntity pRagdoll = pPlayer.GetRagdoll();
-		if (pRagdoll.IsValid())
+		if (pRagdoll != NULL_CBASEENTITY)
 		{
 			pRagdoll.Kill();
 		}
@@ -636,12 +659,12 @@ public void PlayerPatch_OnClientDisconnect(CBasePlayer pPlayer)
 //------------------------------------------------------
 // Player TraceAttack hook
 //------------------------------------------------------
-public Action Hook_PlayerTraceAttack(int victim, int &attacker, int &inflictor, float &damage, int &damagetype, int &ammotype, int hitbox, int hitgroup)
+public Action Hook_PlayerTraceAttack(int iVictim, int& iAttacker, int& iInflictor, float& flDamage, int& iDamageType, int& iAmmoType, int iHitbox, int iHitgroup)
 {
 	if (CoopManager.IsCoopModeEnabled() && !mp_friendlyfire.BoolValue)
 	{
 		// Disable FF
-		if (attacker != victim && CBasePlayer(attacker).IsPlayer())
+		if (iAttacker != iVictim && CBaseEntity(iAttacker).IsPlayer())
 		{
 			return Plugin_Handled;
 		}
@@ -652,7 +675,7 @@ public Action Hook_PlayerTraceAttack(int victim, int &attacker, int &inflictor, 
 //------------------------------------------------------
 // Player TakeDamage hook
 //------------------------------------------------------
-public Action Hook_PlayerTakeDamage(int victim, int &attacker, int &inflictor, float &damage, int &damagetype)
+public Action Hook_PlayerTakeDamage(int iVictim, int& iAttacker, int& iInflictor, float& flDamage, int& iDamageType)
 {
 	if (!CoopManager.IsCoopModeEnabled())
 		return Plugin_Continue;
@@ -660,13 +683,13 @@ public Action Hook_PlayerTakeDamage(int victim, int &attacker, int &inflictor, f
 	if (!mp_friendlyfire.BoolValue)
 	{
 		// Disable FF from other sources such as the tau cannon
-		if (attacker != victim && CBasePlayer(attacker).IsPlayer())
+		if (iAttacker != iVictim && CBaseEntity(iAttacker).IsPlayer())
 		{
 			return Plugin_Handled;
 		}
 	}
 
-	CBaseEntity pInflictor = CBaseEntity(inflictor);
+	CBaseEntity pInflictor = CBaseEntity(iInflictor);
 	if (pInflictor != NULL_CBASEENTITY)
 	{
 		// Disable telefragging (CTriggerTeleport::TelefragEntities)
@@ -809,7 +832,7 @@ public MRESReturn Hook_ForcePlayerToDropThisObject(DHookParam hParams)
 public void Movement_FindLadder(CBasePlayer pPlayer)
 {
 	// If we don't have a valid player, don't run
-	if (!pPlayer.IsValid() || pPlayer.GetLadder().IsValid())
+	if (pPlayer.GetLadder() != NULL_CBASEENTITY)
 		return;
 	
 	static float flMaxDist = 64.0;

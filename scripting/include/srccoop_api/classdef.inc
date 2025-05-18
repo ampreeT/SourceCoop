@@ -84,6 +84,7 @@
 #include <srccoop_api/classdef/bms/CPropChargerBase.inc>
 #include <srccoop_api/classdef/bms/CSpriteTeam.inc>
 #include <srccoop_api/classdef/bms/CWeapon_Crossbow.inc>
+#include <srccoop_api/classdef/bms/CWeapon_Gluon.inc>
 #include <srccoop_api/classdef/bms/CWeapon_Satchel.inc>
 #endif
 

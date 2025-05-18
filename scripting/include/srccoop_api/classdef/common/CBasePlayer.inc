@@ -468,6 +468,10 @@ methodmap CBasePlayer < CBaseCombatCharacter
 	{
 		SetEntProp(this.entindex, Prop_Data, "m_bZooming", bZooming);
 	}
+	public float GetFOVTime()
+	{
+		return GetEntPropFloat(this.entindex, Prop_Data, "m_flFOVTime");
+	}
 	public int GetFOV()
 	{
 		int iFOV = GetEntProp(this.entindex, Prop_Data, "m_iFOV");
@@ -480,7 +484,7 @@ methodmap CBasePlayer < CBaseCombatCharacter
 		if (flFOVRate == 0.0)
 			return iFOV;
 		
-		float flDeltaTime = (GetGameTime() - GetEntPropFloat(this.entindex, Prop_Data, "m_flFOVTime")) / flFOVRate;
+		float flDeltaTime = (GetGameTime() - this.GetFOVTime()) / flFOVRate;
 		if (flDeltaTime >= 1.0)
 		{
 			SetEntProp(this.entindex, Prop_Data, "m_iFOVStart", iFOV);
@@ -613,6 +617,14 @@ methodmap CBasePlayer < CBaseCombatCharacter
 		EndMessage();
 
 		return true;
+	}
+	public bool IsPredictingWeapons()
+	{
+		return GetEntProp(this.entindex, Prop_Data, "m_bPredictWeapons") != 0;
+	}
+	public void SetPredictingWeapons(const bool bPredictWeapons)
+	{
+		SetEntProp(this.entindex, Prop_Data, "m_bPredictWeapons", bPredictWeapons);
 	}
 }
 

@@ -545,20 +545,6 @@
 				"return"	"int"
 				"this"		"entity"
 			}
-			"CWeapon_Crossbow::FireBolt"
-			{
-				"offset"	"CWeapon_Crossbow::FireBolt"
-				"hooktype"	"entity"
-				"return"	"bool"
-				"this"		"entity"
-				"arguments"
-				{
-					"bUnknown"
-					{
-						"type"	"bool"
-					}
-				}
-			}
 			"CTempEntsSystem::DispatchEffect"
 			{
 				"offset"	"CTempEntsSystem::DispatchEffect"
@@ -1449,11 +1435,6 @@
 			{
 				"windows"	"299"
 				"linux"		"300"
-			}
-			"CWeapon_Crossbow::FireBolt"	// CWeapon_Crossbow::FireBolt(bool)
-			{
-				"windows"	"423"
-				"linux"		"424"
 			}
 			"CBaseViewModel::SendViewModelMatchingSequence"	// CBaseViewModel::SendViewModelMatchingSequence(int)
 			{
