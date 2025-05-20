@@ -113,7 +113,6 @@ void LoadGameData()
 	LoadDHookVirtual(pGameConfig, hkBaseCombatWeaponPrimaryAttack, "CBaseCombatWeapon::PrimaryAttack");
 	LoadDHookVirtual(pGameConfig, hkBaseCombatWeaponGetPrimaryAttackActivity, "CBaseCombatWeapon::GetPrimaryAttackActivity");
 	LoadDHookVirtual(pGameConfig, hkBaseCombatWeaponGetDrawActivity, "CBaseCombatWeapon::GetDrawActivity");
-	LoadDHookVirtual(pGameConfig, hkCrossbowFireBolt, "CWeapon_Crossbow::FireBolt");
 	LoadDHookDetour(pGameConfig, hkToggleIronsights, "CBlackMesaBaseWeaponIronSights::ToggleIronSights", Hook_ToggleIronsights);
 	LoadDHookDetour(pGameConfig, hkTauFireBeam, "CWeapon_Tau::FireBeam", Hook_TauFireBeam, Hook_TauFireBeamPost);
 	LoadDHookDetour(pGameConfig, hkParamsManagerInitInstances, "CParamsManager::InitInstances", Hook_CParamsManager_InitInstances);
@@ -730,16 +729,12 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 
 		if (strcmp(szClassname, "weapon_crossbow") == 0)
 		{
-			DHookEntity(hkBaseCombatWeaponItemPostFrame, false, iEntIndex, _, Hook_CrossbowItemPostFrame);
 			DHookEntity(hkBaseCombatWeaponItemPostFrame, true, iEntIndex, _, Hook_CrossbowItemPostFramePost);
 			DHookEntity(hkBaseCombatWeaponDeploy, false, iEntIndex, _, Hook_IronsightDeployPost_SaveSettings);
 			DHookEntity(hkBaseCombatWeaponDeploy, true, iEntIndex, _, Hook_CrossbowDeployPost);
 			DHookEntity(hkBaseCombatWeaponPrimaryAttack, false, iEntIndex, _, Hook_CrossbowPrimaryAttack);
 			DHookEntity(hkBaseCombatWeaponPrimaryAttack, true, iEntIndex, _, Hook_CrossbowPrimaryAttackPost);
 			DHookEntity(hkBaseCombatWeaponGetDrawActivity, false, iEntIndex, _, Hook_CrossbowGetDrawActivity);
-			DHookEntity(hkBaseCombatWeaponGetDrawActivity, true, iEntIndex, _, Hook_CrossbowGetDrawActivityPost);
-			DHookEntity(hkCrossbowFireBolt, false, iEntIndex, _, Hook_CrossbowFireBolt);
-			DHookEntity(hkCrossbowFireBolt, true, iEntIndex, _, Hook_CrossbowFireBoltPost);
 			DHookEntity(hkBaseCombatWeaponGetPrimaryAttackActivity, false, iEntIndex, _, Hook_CrossbowGetPrimaryAttackActivity);
 			return;
 		}

@@ -208,18 +208,6 @@ methodmap CoopManager
 		}
 	}
 	
-	public static void OnPlayerRunCmd(CBasePlayer pPlayer)
-	{
-		if (!data.m_bStarted)
-		{
-			CBaseCombatWeapon pWeapon = pPlayer.GetActiveWeapon();
-			if (pWeapon != NULL_CBASEENTITY)
-			{
-				pWeapon.DelayNextAttack(0.25);
-			}
-		}
-	}
-
 	public static void OnPlayerSpawned(CBasePlayer pPlayer)
 	{
 		bool bDefaultTeleport = g_pSpawnOptions.bUseSpawnSystem;
