@@ -1604,3 +1604,150 @@ public void Hook_Barnacle_OnRelease(const char[] szOutput, const int iCaller, co
 		pPlayer.SetLaggedMovement(1.0);
 	}
 }
+
+#if defined ENTPATCH_TRIGGER_COOP
+//------------------------------------------------------
+// trigger_coop
+// Touch function
+//------------------------------------------------------
+public Action Hook_TriggerCoopTouch(int _this, int _other)
+{
+	CBaseTrigger pThis = CBaseTrigger(_this);
+	if (pThis.IsEnabled())
+	{
+		int iPlayersInVolume, iLivingPlayers;
+		for (int i = 1; i <= MaxClients; i++)
+		{
+			if (IsClientInGame(i) && !IsFakeClient(i) && IsPlayerAlive(i))
+			{
+				if (pThis.IsTouching(i))
+				{
+					iPlayersInVolume++;
+				}
+				iLivingPlayers++;
+			}
+		}
+		
+		float flPercentage = GetEntPropFloat(_this, Prop_Data, "m_flSpeed");
+		
+		// CountType 0 - Number of players
+		/*
+		if (iPlayersInVolume >= flPercentage && pThis.GetHealth() < iPlayersInVolume)
+		{
+			pThis.SetHealth(iPlayersInVolume);
+			pThis.AcceptInputStr("FireUser1", "", CBaseEntity(_other));
+		}
+		else if (iPlayersInVolume < flPercentage && pThis.GetHealth() >= iPlayersInVolume)
+		{
+			pThis.SetHealth(iPlayersInVolume);
+			pThis.AcceptInputStr("FireUser2", "", CBaseEntity(_other));
+		}
+		if (iPlayersInVolume == iLivingPlayers)
+		{
+			pThis.AcceptInputStr("FireUser3", "", CBaseEntity(_other));
+		}
+		*/
+		
+		// CountType 1 - Percentage
+		float flTotalPercentage = (iPlayersInVolume / iLivingPlayers)  * 100.0;
+		if (flTotalPercentage >= flPercentage)
+		{
+			pThis.SetHealth(iPlayersInVolume);
+			pThis.AcceptInputStr("FireUser1", "", CBaseEntity(_other));
+		}
+		if (iPlayersInVolume == iLivingPlayers)
+		{
+			pThis.AcceptInputStr("FireUser3", "", CBaseEntity(_other));
+		}
+		
+		if (pThis.GetHealth() > iPlayersInVolume)
+		{
+			pThis.SetHealth(iPlayersInVolume);
+			pThis.AcceptInputStr("FireUser2", "", CBaseEntity(_other));
+		}
+	}
+	return Plugin_Continue;
+}
+
+//------------------------------------------------------
+// trigger_coop - KeyValue(char)
+// Remapping output keyvalues to ones we can use
+//------------------------------------------------------
+public MRESReturn Hook_TriggerCoopKeyValue(int _this, DHookReturn hReturn, DHookParam hParams)
+{
+	// TODO:
+	// CountType
+	// UseHud - Probably a HudMsg of #/# players required
+	
+	static char szKey[MAX_FORMAT];
+	DHookGetParamString(hParams, 1, szKey, sizeof(szKey));
+	if (StrEqual(szKey, "OnPlayersIn"))
+	{
+		DHookSetParamString(hParams, 1, "OnUser1");
+		return MRES_Handled;
+	}
+	else if (StrEqual(szKey, "OnPlayersOut"))
+	{
+		DHookSetParamString(hParams, 1, "OnUser2");
+		return MRES_Handled;
+	}
+	else if (StrEqual(szKey, "OnAllPlayersIn"))
+	{
+		DHookSetParamString(hParams, 1, "OnUser3");
+		return MRES_Handled;
+	}
+	else if (StrEqual(szKey, "PlayerValue"))
+	{
+		DHookSetParamString(hParams, 1, "speed");
+		return MRES_Handled;
+	}
+	return MRES_Ignored;
+}
+
+//------------------------------------------------------
+// trigger_coop
+// Implementation of inputs to trigger_coop
+//------------------------------------------------------
+public MRESReturn Hook_TriggerCoopAcceptInput(int _this, DHookReturn hReturn, DHookParam hParams)
+{
+	if (!DHookIsNullParam(hParams, 1))
+	{
+		char szInputType[MAX_FORMAT];
+		DHookGetParamString(hParams, 1, szInputType, sizeof(szInputType));
+		if (strcmp(szInputType, "TeleportPlayersNotTouching", false) == 0)
+		{
+			CBaseTrigger pThis = CBaseTrigger(_this);
+			
+			float vTargetOrigin[3], vTargetAngles[3];
+			char szTarget[64];
+			pThis.GetTarget(szTarget, sizeof(szTarget));
+			CBaseEntity pTarget = CBaseEntity(FindEntityByTargetname(-1, szTarget));
+			if (pTarget == NULL_CBASEENTITY)
+			{
+				char szTargetname[MAX_VALUE];
+				pThis.GetTargetname(szTargetname, sizeof(szTargetname));
+				PrintToServer("trigger_coop: '%s' has invalid target: '%s'", szTargetname, szTarget);
+				return MRES_Ignored;
+			}
+			pTarget.GetAbsOrigin(vTargetOrigin);
+			pTarget.GetAbsAngles(vTargetAngles);
+			
+			for (int i = 1; i <= MaxClients; i++)
+			{
+				if (IsClientInGame(i) && !IsFakeClient(i) && IsPlayerAlive(i))
+				{
+					if (!pThis.IsTouching(i))
+					{
+						CBasePlayer pPlayer = CBasePlayer(i);
+						pPlayer.Teleport(vTargetOrigin, vTargetAngles, vec3_origin);
+					}
+				}
+			}
+			
+			DHookSetReturn(hReturn, true);
+			return MRES_Supercede;
+		}
+	}
+	return MRES_Ignored;
+}
+#endif // ENTPATCH_TRIGGER_COOP

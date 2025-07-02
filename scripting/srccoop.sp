@@ -1000,6 +1000,17 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 			return;
 		}
 		#endif
+		
+		#if defined ENTPATCH_TRIGGER_COOP
+		if (strcmp(szClassname, "trigger_coop") == 0)
+		{
+			SDKHook(iEntIndex, SDKHook_Touch, Hook_TriggerCoopTouch);
+			SDKHook(iEntIndex, SDKHook_EndTouch, Hook_TriggerCoopTouch);
+			DHookEntity(hkKeyValue_char, false, iEntIndex, _, Hook_TriggerCoopKeyValue);
+			DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_TriggerCoopAcceptInput);
+			return;
+		}
+		#endif
 
 		// if some explosions turn out to be damaging all players except one, this is the fix
 		// if (strcmp(szClassname, "env_explosion") == 0)

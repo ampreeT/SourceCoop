@@ -1,6 +1,8 @@
 #pragma newdecls required
 #pragma semicolon 1
 
+static Handle g_pBaseTriggerIsTouching;
+
 enum CBaseTrigger_SpawnFlags
 {
 	SF_TRIGGER_ALLOW_CLIENTS				= 0x01,		// Players can fire this trigger
@@ -20,6 +22,20 @@ enum CBaseTrigger_SpawnFlags
 
 methodmap CBaseTrigger < CBaseToggle
 {
+	public static void InitClassdef(const GameData hGameConfig)
+	{
+		char szIsTouching[] = "CBaseTrigger::IsTouching";
+		StartPrepSDKCall(SDKCall_Entity);
+		if (!PrepSDKCall_SetFromConf(hGameConfig, SDKConf_Virtual, szIsTouching))
+			LogMessage("Could not obtain gamedata signature %s", szIsTouching);
+		else
+		{
+			PrepSDKCall_SetReturnInfo(SDKType_Bool, SDKPass_Plain);
+			PrepSDKCall_AddParameter(SDKType_CBaseEntity, SDKPass_Pointer);
+			if (!(g_pBaseTriggerIsTouching = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szIsTouching);
+		}
+	}
+
 	public CBaseTrigger(const int iEntIndex = -1)
 	{
 		return view_as<CBaseTrigger>(CBaseToggle(iEntIndex));
@@ -69,5 +85,10 @@ methodmap CBaseTrigger < CBaseToggle
 		this.GetModelName(szBuffer, sizeof(szBuffer));
 		this.SetModel(szBuffer); // initialize the model from name
 		this.m_fEffects |= EF_NODRAW;
+	}
+	// void CBaseTrigger::IsTouching(const CBaseEntity *pOther) from SDK
+	public bool IsTouching(const int iEntIndex )
+	{
+		return SDKCall(g_pBaseTriggerIsTouching, this.entindex, iEntIndex);
 	}
 }
