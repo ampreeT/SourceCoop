@@ -11,7 +11,8 @@ static Handle g_pSetMinMaxSize;
 
 const any NULL_CBASEENTITY = -1;
 
-//static StringMap g_pEntityData;
+const any NO_ENTITY_DATA = -1;
+static StringMap g_pEntityData;
 
 methodmap CBaseEntity
 {
@@ -72,17 +73,16 @@ methodmap CBaseEntity
 			if (!(g_pSetMinMaxSize = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szSetMinMaxSize);
 		}
 
-		/*
 		g_pEntityData = new StringMap();
-		DHookAddEntityListener(ListenType_Created, Hook_CBaseEntity_OnCreated);
+		// We don't want to store a StringMap for every single entity, only the ones that we have custom data for
+		//DHookAddEntityListener(ListenType_Created, Hook_CBaseEntity_OnCreated);
 		DHookAddEntityListener(ListenType_Deleted, Hook_CBaseEntity_OnDeleted);
 
-		int iEntIndex = -1;
-		while ((iEntIndex = FindEntityByClassname(iEntIndex, "*")) != -1)
-		{
-			Hook_CBaseEntity_OnCreated(iEntIndex);
-		}
-		*/
+		//int iEntIndex = -1;
+		//while ((iEntIndex = FindEntityByClassname(iEntIndex, "*")) != -1)
+		//{
+		//	Hook_CBaseEntity_OnCreated(iEntIndex);
+		//}
 	}
 	public CBaseEntity(const int iEntIndex = -1)
 	{
@@ -747,13 +747,15 @@ methodmap CBaseEntity
 	{
 		StopSound(this.entindex, iChannel, szName);
 	}
-	/*
 	public any GetUserData(const char[] szKey)
 	{
 		StringMap pEntityData;
 		{
     		char szEntityKey[MAX_CHARS_INT(INT_MIN)];
     		IntToString(this.entref, szEntityKey, sizeof(szEntityKey));
+    		if (!g_pEntityData.ContainsKey(szEntityKey))
+    			return NO_ENTITY_DATA;
+    		
     		g_pEntityData.GetValue(szEntityKey, pEntityData);
 		}
 
@@ -766,10 +768,13 @@ methodmap CBaseEntity
 		StringMap pEntityData;
     	char szEntityKey[MAX_CHARS_INT(INT_MIN)];
     	IntToString(this.entref, szEntityKey, sizeof(szEntityKey));
+    	
+    	// Create new mapping if it doesn't exist
+    	if (!g_pEntityData.ContainsKey(szEntityKey))
+		    g_pEntityData.SetValue(szEntityKey, new StringMap());
     	g_pEntityData.GetValue(szEntityKey, pEntityData);
 		pEntityData.SetValue(szKey, data);
 	}
-	*/
 }
 
 static bool TraceEntityFilter_FVisibleAiLosEnabled(int iEntIndex, int iMask, int iThisEntIndex)
@@ -877,15 +882,15 @@ enum SolidFlags_t
 /*
 static void Hook_CBaseEntity_OnCreated(const int iEntIndex)
 {
-    char szKey[MAX_CHARS_INT(INT_MIN)];
-    IntToString(CBaseEntity(iEntIndex).entref, szKey, sizeof(szKey));
-    g_pEntityData.SetValue(szKey, new StringMap());
-}
-
-static void Hook_CBaseEntity_OnDeleted(const int iEntIndex)
-{
-    char szKey[MAX_CHARS_INT(INT_MIN)];
-    IntToString(CBaseEntity(iEntIndex).entref, szKey, sizeof(szKey));
-    g_pEntityData.Remove(szKey);
+	char szKey[MAX_CHARS_INT(INT_MIN)];
+	IntToString(CBaseEntity(iEntIndex).entref, szKey, sizeof(szKey));
+	g_pEntityData.SetValue(szKey, new StringMap());
 }
 */
+static void Hook_CBaseEntity_OnDeleted(const int iEntIndex)
+{
+	char szKey[MAX_CHARS_INT(INT_MIN)];
+	IntToString(CBaseEntity(iEntIndex).entref, szKey, sizeof(szKey));
+	if (g_pEntityData.ContainsKey(szKey))
+		g_pEntityData.Remove(szKey);
+}

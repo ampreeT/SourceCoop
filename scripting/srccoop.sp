@@ -1004,6 +1004,8 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 		#if defined ENTPATCH_TRIGGER_COOP
 		if (strcmp(szClassname, "trigger_coop") == 0)
 		{
+			// Init as 1, keyvalues can change this later on, but most situations percent of players (1) is the intended functionality
+			pEntity.SetUserData("m_nCountType", 1);
 			SDKHook(iEntIndex, SDKHook_Touch, Hook_TriggerCoopTouch);
 			SDKHook(iEntIndex, SDKHook_EndTouch, Hook_TriggerCoopTouch);
 			DHookEntity(hkKeyValue_char, false, iEntIndex, _, Hook_TriggerCoopKeyValue);

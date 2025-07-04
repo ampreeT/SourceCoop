@@ -1615,56 +1615,85 @@ public Action Hook_TriggerCoopTouch(int _this, int _other)
 	CBaseTrigger pThis = CBaseTrigger(_this);
 	if (pThis.IsEnabled())
 	{
-		int iPlayersInVolume, iLivingPlayers;
+		static char szStatus[32];
+		ArrayList hPlayersInArr = new ArrayList(MaxClients+1);
+		int iLivingPlayers;
+		bool bUseHud = pThis.GetUserData("m_bUseHud");
 		for (int i = 1; i <= MaxClients; i++)
 		{
-			if (IsClientInGame(i) && !IsFakeClient(i) && IsPlayerAlive(i))
+			if (IsClientInGame(i) && IsPlayerAlive(i)) // !IsFakeClient(i)
 			{
 				if (pThis.IsTouching(i))
 				{
-					iPlayersInVolume++;
+					hPlayersInArr.Push(i);
 				}
 				iLivingPlayers++;
 			}
 		}
 		
-		float flPercentage = GetEntPropFloat(_this, Prop_Data, "m_flSpeed");
+		int iPlayerValue = pThis.GetUserData("m_iPlayerValue");
 		
 		// CountType 0 - Number of players
-		/*
-		if (iPlayersInVolume >= flPercentage && pThis.GetHealth() < iPlayersInVolume)
+		if (pThis.GetUserData("m_nCountType") == 0)
 		{
-			pThis.SetHealth(iPlayersInVolume);
-			pThis.AcceptInputStr("FireUser1", "", CBaseEntity(_other));
+			if (bUseHud)
+			{
+				Format(szStatus, sizeof(szStatus), "%i/%i players required", hPlayersInArr.Length, iPlayerValue);
+				for (int i = 0; i < hPlayersInArr.Length; i++)
+				{
+					SetHudTextParams(-1.0, 0.9, 0.5, 255, 255, 255, 255, 1, 1.0, 1.0, 1.0);
+					ShowHudText(hPlayersInArr.Get(i), 2, "%s", szStatus);
+				}
+			}
+			if (hPlayersInArr.Length >= iPlayerValue && pThis.GetHealth() < hPlayersInArr.Length)
+			{
+				pThis.SetHealth(hPlayersInArr.Length);
+				pThis.AcceptInputStr("FireUser1", "", CBaseEntity(_other));
+			}
+			else if (hPlayersInArr.Length < iPlayerValue && pThis.GetHealth() >= hPlayersInArr.Length)
+			{
+				pThis.SetHealth(hPlayersInArr.Length);
+				pThis.AcceptInputStr("FireUser2", "", CBaseEntity(_other));
+			}
+			if (hPlayersInArr.Length == iLivingPlayers)
+			{
+				pThis.AcceptInputStr("FireUser3", "", CBaseEntity(_other));
+			}
 		}
-		else if (iPlayersInVolume < flPercentage && pThis.GetHealth() >= iPlayersInVolume)
+		else
 		{
-			pThis.SetHealth(iPlayersInVolume);
-			pThis.AcceptInputStr("FireUser2", "", CBaseEntity(_other));
+			// CountType 1 - Percentage
+			float flTotalPercentage = (hPlayersInArr.Length / iLivingPlayers)  * 100.0;
+			if (bUseHud)
+			{
+				// Tried view_as<float>() (float) and float(), everything is set to 0.0 on return
+				float flPlayerValue = 0.0 + iPlayerValue;
+				float flLivingPlayers = 0.0 + iLivingPlayers;
+				// 0.5 is rounding down, had to add 0.01...
+				Format(szStatus, sizeof(szStatus), "%i/%i players required", hPlayersInArr.Length, RoundFloat(flLivingPlayers * (flPlayerValue * 0.01) + 0.01));
+				for (int i = 0; i < hPlayersInArr.Length; i++)
+				{
+					SetHudTextParams(-1.0, 0.9, 0.5, 255, 255, 255, 255, 1, 1.0, 1.0, 1.0);
+					ShowHudText(hPlayersInArr.Get(i), 2, "%s", szStatus);
+				}
+			}
+			if (flTotalPercentage >= iPlayerValue)
+			{
+				pThis.SetHealth(hPlayersInArr.Length);
+				pThis.AcceptInputStr("FireUser1", "", CBaseEntity(_other));
+			}
+			if (hPlayersInArr.Length == iLivingPlayers)
+			{
+				pThis.AcceptInputStr("FireUser3", "", CBaseEntity(_other));
+			}
+			
+			if (pThis.GetHealth() > hPlayersInArr.Length && flTotalPercentage < iPlayerValue)
+			{
+				pThis.SetHealth(hPlayersInArr.Length);
+				pThis.AcceptInputStr("FireUser2", "", CBaseEntity(_other));
+			}
 		}
-		if (iPlayersInVolume == iLivingPlayers)
-		{
-			pThis.AcceptInputStr("FireUser3", "", CBaseEntity(_other));
-		}
-		*/
-		
-		// CountType 1 - Percentage
-		float flTotalPercentage = (iPlayersInVolume / iLivingPlayers)  * 100.0;
-		if (flTotalPercentage >= flPercentage)
-		{
-			pThis.SetHealth(iPlayersInVolume);
-			pThis.AcceptInputStr("FireUser1", "", CBaseEntity(_other));
-		}
-		if (iPlayersInVolume == iLivingPlayers)
-		{
-			pThis.AcceptInputStr("FireUser3", "", CBaseEntity(_other));
-		}
-		
-		if (pThis.GetHealth() > iPlayersInVolume)
-		{
-			pThis.SetHealth(iPlayersInVolume);
-			pThis.AcceptInputStr("FireUser2", "", CBaseEntity(_other));
-		}
+		CloseHandle(hPlayersInArr);
 	}
 	return Plugin_Continue;
 }
@@ -1675,31 +1704,35 @@ public Action Hook_TriggerCoopTouch(int _this, int _other)
 //------------------------------------------------------
 public MRESReturn Hook_TriggerCoopKeyValue(int _this, DHookReturn hReturn, DHookParam hParams)
 {
-	// TODO:
-	// CountType
-	// UseHud - Probably a HudMsg of #/# players required
-	
+	CBaseEntity pThis = CBaseEntity(_this);
 	static char szKey[MAX_FORMAT];
+	static char szVal[MAX_VALUE];
 	DHookGetParamString(hParams, 1, szKey, sizeof(szKey));
-	if (StrEqual(szKey, "OnPlayersIn"))
+	DHookGetParamString(hParams, 2, szVal, sizeof(szVal));
+	
+	if (StrEqual(szKey, "OnPlayersIn", false))
 	{
 		DHookSetParamString(hParams, 1, "OnUser1");
-		return MRES_Handled;
 	}
-	else if (StrEqual(szKey, "OnPlayersOut"))
+	else if (StrEqual(szKey, "OnPlayersOut", false))
 	{
 		DHookSetParamString(hParams, 1, "OnUser2");
-		return MRES_Handled;
 	}
-	else if (StrEqual(szKey, "OnAllPlayersIn"))
+	else if (StrEqual(szKey, "OnAllPlayersIn", false))
 	{
 		DHookSetParamString(hParams, 1, "OnUser3");
-		return MRES_Handled;
 	}
-	else if (StrEqual(szKey, "PlayerValue"))
+	else if (StrEqual(szKey, "PlayerValue", false))
 	{
-		DHookSetParamString(hParams, 1, "speed");
-		return MRES_Handled;
+		pThis.SetUserData("m_iPlayerValue", StringToInt(szVal));
+	}
+	else if (StrEqual(szKey, "CountType", false))
+	{
+		pThis.SetUserData("m_nCountType", StringToInt(szVal));
+	}
+	else if (StrEqual(szKey, "UseHud", false))
+	{
+		pThis.SetUserData("m_bUseHud", StringToInt(szVal));
 	}
 	return MRES_Ignored;
 }

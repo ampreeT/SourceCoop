@@ -87,7 +87,7 @@ methodmap CBaseTrigger < CBaseToggle
 		this.m_fEffects |= EF_NODRAW;
 	}
 	// void CBaseTrigger::IsTouching(const CBaseEntity *pOther) from SDK
-	public bool IsTouching(const int iEntIndex )
+	public bool IsTouching(const int iEntIndex)
 	{
 		return SDKCall(g_pBaseTriggerIsTouching, this.entindex, iEntIndex);
 	}
