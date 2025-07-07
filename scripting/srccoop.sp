@@ -1006,6 +1006,8 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 		{
 			// Init as 1, keyvalues can change this later on, but most situations percent of players (1) is the intended functionality
 			pEntity.SetUserData("m_nCountType", 1);
+			pEntity.SetUserData("m_iFiredPlayersIn", 0);
+			pEntity.SetUserData("m_iPlayerValue", 50);
 			SDKHook(iEntIndex, SDKHook_Touch, Hook_TriggerCoopTouch);
 			SDKHook(iEntIndex, SDKHook_EndTouch, Hook_TriggerCoopTouch);
 			DHookEntity(hkKeyValue_char, false, iEntIndex, _, Hook_TriggerCoopKeyValue);

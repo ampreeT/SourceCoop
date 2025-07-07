@@ -43,7 +43,9 @@ methodmap CEntityFactoryDictionary
 		if (g_pInstallFactory != INVALID_HANDLE && g_pFindFactory != INVALID_HANDLE && g_pGetEntityFactory != INVALID_HANDLE)
 		{
 			// Static mappings:
+#if defined ENTPATCH_TRIGGER_COOP
 			CEntityFactoryDictionary.InstallClassMapping("trigger_coop", "trigger_multiple");
+#endif
 			
 			char szSMPath[PLATFORM_MAX_PATH];
 			BuildPath(Path_SM, szSMPath, sizeof(szSMPath), "configs");

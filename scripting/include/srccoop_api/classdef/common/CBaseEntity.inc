@@ -751,28 +751,28 @@ methodmap CBaseEntity
 	{
 		StringMap pEntityData;
 		{
-    		char szEntityKey[MAX_CHARS_INT(INT_MIN)];
-    		IntToString(this.entref, szEntityKey, sizeof(szEntityKey));
-    		if (!g_pEntityData.ContainsKey(szEntityKey))
-    			return NO_ENTITY_DATA;
-    		
-    		g_pEntityData.GetValue(szEntityKey, pEntityData);
+			char szEntityKey[MAX_CHARS_INT(INT_MIN)];
+			IntToString(this.entref, szEntityKey, sizeof(szEntityKey));
+			if (!g_pEntityData.ContainsKey(szEntityKey))
+				return NO_ENTITY_DATA;
+
+			g_pEntityData.GetValue(szEntityKey, pEntityData);
 		}
 
 		any data;
-    	pEntityData.GetValue(szKey, data);
+		pEntityData.GetValue(szKey, data);
 		return data;
 	}
 	public void SetUserData(const char[] szKey, const any data)
 	{
 		StringMap pEntityData;
-    	char szEntityKey[MAX_CHARS_INT(INT_MIN)];
-    	IntToString(this.entref, szEntityKey, sizeof(szEntityKey));
-    	
-    	// Create new mapping if it doesn't exist
-    	if (!g_pEntityData.ContainsKey(szEntityKey))
-		    g_pEntityData.SetValue(szEntityKey, new StringMap());
-    	g_pEntityData.GetValue(szEntityKey, pEntityData);
+		char szEntityKey[MAX_CHARS_INT(INT_MIN)];
+		IntToString(this.entref, szEntityKey, sizeof(szEntityKey));
+		
+		// Create new mapping if it doesn't exist
+		if (!g_pEntityData.ContainsKey(szEntityKey))
+			g_pEntityData.SetValue(szEntityKey, new StringMap());
+		g_pEntityData.GetValue(szEntityKey, pEntityData);
 		pEntityData.SetValue(szKey, data);
 	}
 }

@@ -1621,7 +1621,7 @@ public Action Hook_TriggerCoopTouch(int _this, int _other)
 		bool bUseHud = pThis.GetUserData("m_bUseHud");
 		for (int i = 1; i <= MaxClients; i++)
 		{
-			if (IsClientInGame(i) && IsPlayerAlive(i)) // !IsFakeClient(i)
+			if (IsClientInGame(i) && !IsFakeClient(i) && IsPlayerAlive(i))
 			{
 				if (pThis.IsTouching(i))
 				{
@@ -1632,6 +1632,7 @@ public Action Hook_TriggerCoopTouch(int _this, int _other)
 		}
 		
 		int iPlayerValue = pThis.GetUserData("m_iPlayerValue");
+		int iFiredPlayersIn = pThis.GetUserData("m_iFiredPlayersIn");
 		
 		// CountType 0 - Number of players
 		if (pThis.GetUserData("m_nCountType") == 0)
@@ -1645,14 +1646,14 @@ public Action Hook_TriggerCoopTouch(int _this, int _other)
 					ShowHudText(hPlayersInArr.Get(i), 2, "%s", szStatus);
 				}
 			}
-			if (hPlayersInArr.Length >= iPlayerValue && pThis.GetHealth() < hPlayersInArr.Length)
+			if (hPlayersInArr.Length >= iPlayerValue)
 			{
-				pThis.SetHealth(hPlayersInArr.Length);
+				pThis.SetUserData("m_iFiredPlayersIn", 1);
 				pThis.AcceptInputStr("FireUser1", "", CBaseEntity(_other));
 			}
-			else if (hPlayersInArr.Length < iPlayerValue && pThis.GetHealth() >= hPlayersInArr.Length)
+			else if (hPlayersInArr.Length < iPlayerValue && iFiredPlayersIn)
 			{
-				pThis.SetHealth(hPlayersInArr.Length);
+				pThis.SetUserData("m_iFiredPlayersIn", 0);
 				pThis.AcceptInputStr("FireUser2", "", CBaseEntity(_other));
 			}
 			if (hPlayersInArr.Length == iLivingPlayers)
@@ -1679,18 +1680,17 @@ public Action Hook_TriggerCoopTouch(int _this, int _other)
 			}
 			if (flTotalPercentage >= iPlayerValue)
 			{
-				pThis.SetHealth(hPlayersInArr.Length);
+				pThis.SetUserData("m_iFiredPlayersIn", 1);
 				pThis.AcceptInputStr("FireUser1", "", CBaseEntity(_other));
+			}
+			else if (flTotalPercentage < iPlayerValue && iFiredPlayersIn)
+			{
+				pThis.SetUserData("m_iFiredPlayersIn", 0);
+				pThis.AcceptInputStr("FireUser2", "", CBaseEntity(_other));
 			}
 			if (hPlayersInArr.Length == iLivingPlayers)
 			{
 				pThis.AcceptInputStr("FireUser3", "", CBaseEntity(_other));
-			}
-			
-			if (pThis.GetHealth() > hPlayersInArr.Length && flTotalPercentage < iPlayerValue)
-			{
-				pThis.SetHealth(hPlayersInArr.Length);
-				pThis.AcceptInputStr("FireUser2", "", CBaseEntity(_other));
 			}
 		}
 		CloseHandle(hPlayersInArr);
