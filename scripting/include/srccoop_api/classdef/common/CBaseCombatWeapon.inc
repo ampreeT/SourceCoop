@@ -3,6 +3,10 @@
 
 static Handle g_pSendWeaponAnim;
 
+static int g_iOffset_Activity = -1;
+static int g_iOffset_IdealSequence = -1;
+static int g_iOffset_IdealActivity = -1;
+
 enum CBaseCombatWeapon_SpawnFlags
 {
 	SF_ITEM_NORESPAWN = (1 << 30),
@@ -132,5 +136,51 @@ methodmap CBaseCombatWeapon < CBaseAnimating
 	public bool IsReloading()
 	{
 		return GetEntProp(this.entindex, Prop_Data, "m_bInReload") != 0;
+	}
+	public Activity GetActivity()
+	{
+		LazyInitializeOffsets(this);
+		return view_as<Activity>(LoadFromAddress(this.address + g_iOffset_Activity, NumberType_Int32));
+	}
+	public void SetActivity(const Activity eActivity)
+	{
+		LazyInitializeOffsets(this);
+		StoreToAddress(this.address + g_iOffset_Activity, eActivity, NumberType_Int32);
+	}
+	public int GetIdealSequence()
+	{
+		LazyInitializeOffsets(this);
+		return LoadFromAddress(this.address + g_iOffset_IdealSequence, NumberType_Int32);
+	}
+	public void SetIdealSequence(const int iIdealSequence)
+	{
+		LazyInitializeOffsets(this);
+		StoreToAddress(this.address + g_iOffset_IdealSequence, iIdealSequence, NumberType_Int32);
+	}
+	public Activity GetIdealActivity()
+	{
+		LazyInitializeOffsets(this);
+		return view_as<Activity>(LoadFromAddress(this.address + g_iOffset_IdealActivity, NumberType_Int32));
+	}
+	public void SetIdealActivity(const Activity eActivity)
+	{
+		LazyInitializeOffsets(this);
+		StoreToAddress(this.address + g_iOffset_IdealActivity, eActivity, NumberType_Int32);
+	}
+}
+
+static void LazyInitializeOffsets(const CBaseCombatWeapon pWeapon)
+{
+	if (g_iOffset_Activity == -1 || g_iOffset_IdealSequence == -1 || g_iOffset_IdealActivity == -1)
+	{
+		char szNetworkName[128];
+		pWeapon.GetNetClassname(szNetworkName, sizeof(szNetworkName));
+		int iOffset = FindSendPropInfo(szNetworkName, "m_iWorldModelIndex");
+		if (iOffset == -1)
+			ThrowError("Unable to retrieve offset %s", "m_iWorldModelIndex");
+		
+		g_iOffset_Activity = iOffset + 8;
+		g_iOffset_IdealSequence = iOffset + 12;
+		g_iOffset_IdealActivity = iOffset + 16;
 	}
 }
