@@ -119,7 +119,7 @@ The script installation will automatically go through the process of installing 
 
 </details>
 
-A visual step-by-step guide for Black Mesa is also available on <a href="https://steamcommunity.com/sharedfiles/filedetails/?id=2200247356"><img src="images/icon-steam-small.png" height="16px"> Steam</a>.
+A step-by-step guide for Black Mesa is also available on <a href="https://steamcommunity.com/sharedfiles/filedetails/?id=2200247356"><img src="images/icon-steam-small.png" height="16px"> Steam</a>.
 
 <a id="port-forwarding"></a>
 ### 🛜 Port Forwarding
