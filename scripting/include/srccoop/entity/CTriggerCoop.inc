@@ -189,7 +189,7 @@ static MRESReturn Hook_KeyValue(int _this, DHookReturn hReturn, DHookParam hPara
 	}
 	else if (StrEqual(szKey, "UseHud", false))
 	{
-		pThis.SetUseHud(StringToInt(szVal));
+		pThis.SetUseHud(!!StringToInt(szVal));
 	}
 	return MRES_Ignored;
 }
