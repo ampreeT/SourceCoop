@@ -295,10 +295,6 @@ public void OnPluginStart()
 	DnManager.Initialize();
 	InitializeMenus();
 	
-	#if defined SRCCOOP_BLACKMESA
-	IdleAnims_Initialize();
-	#endif
-	
 	g_CoopMapStartFwd = new GlobalForward("SC_OnCoopMapStart", ET_Ignore);
 	g_CoopMapConfigLoadedFwd = new GlobalForward("SC_OnCoopMapConfigLoaded", ET_Ignore, Param_Cell, Param_Cell);
 	g_OnPlayerRagdollCreatedFwd = new GlobalForward("SC_OnPlayerRagdollCreated", ET_Ignore, Param_Cell, Param_Cell);
@@ -494,10 +490,6 @@ public void OnClientPutInServer(int client)
 	DHookEntity(hkAcceptInput, false, client, _, Hook_PlayerAcceptInput);
 	DHookEntity(hkEvent_Killed, false, client, _, Hook_PlayerKilled);
 	DHookEntity(hkEvent_Killed, true, client, _, Hook_PlayerKilledPost);
-
-	#if defined SRCCOOP_BLACKMESA
-	DHookEntity(hkSetModel, true, client, _, IdleAnims_Hook_PlayerSetModel_Post);
-	#endif
 
 	#if defined PLAYERPATCH_RESTORE_MP_FORCERESPAWN
 	DHookEntity(hkForceRespawn, false, client, _, Hook_PlayerForceRespawn);
