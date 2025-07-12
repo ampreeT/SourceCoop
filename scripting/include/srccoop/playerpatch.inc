@@ -55,10 +55,6 @@ public void Hook_PlayerPreThinkPost(int iClient)
 	if (!CoopManager.IsCoopModeEnabled())
 		return;
 	
-	#if defined SRCCOOP_BLACKMESA
-	IdleAnims_Hook_PlayerPreThinkPost(iClient);
-	#endif
-	
 	CBasePlayer pPlayer = CBasePlayer(iClient);
 	if (pPlayer.IsAlive())
 	{
@@ -563,25 +559,11 @@ void PlayerPatch_ApplyServerRagdoll(const CBasePlayer pPlayer, const CTakeDamage
 		return;
 	}
 	
-	CBaseAnimating pSourceEntity = pPlayer;
-	
 	#if defined SRCCOOP_BLACKMESA
-	if (g_pIdle[pPlayer.entindex].m_pModel.IsValid())
-	{
-		// Player is currently using model for idle animations.
-		// The nodraw is required for hiding the player the tick he dies.
-		// The model that was parented is cleared since `CreateServerRagdoll` will not work otherwise.
-		pPlayer.m_fEffects |= EF_NODRAW;
-		g_pIdle[pPlayer.entindex].m_pModel.ClearParent();
-		pSourceEntity = g_pIdle[pPlayer.entindex].m_pModel;
-	}
-	else
-	{
-		pSourceEntity.m_fEffects &= ~EF_NODRAW;
-	}
+	pPlayer.m_fEffects &= ~EF_NODRAW;
 	#endif
 
-	pRagdoll = CreateServerRagdoll(pSourceEntity, pPlayer.GetForceBone(), pTakeDamageInfo, COLLISION_GROUP_DEBRIS_TRIGGER, false);
+	pRagdoll = CreateServerRagdoll(pPlayer, pPlayer.GetForceBone(), pTakeDamageInfo, COLLISION_GROUP_DEBRIS_TRIGGER, false);
 	if (pRagdoll != NULL_CBASEENTITY)
 	{
 		SDKHook(pRagdoll.entindex, SDKHook_OnTakeDamage, Hook_NoDmg);

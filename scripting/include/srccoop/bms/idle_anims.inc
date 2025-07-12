@@ -1,6 +1,10 @@
 #pragma newdecls required
 #pragma semicolon 1
 
+// Note:
+// Currently unused
+// Unarmed animations were fixed in Black Mesa by 2025-06-30 game patch.
+
 enum IdleAnimType
 {
 	IdleAnimType_None = 0,
