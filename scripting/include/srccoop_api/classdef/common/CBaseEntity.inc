@@ -11,7 +11,7 @@ static Handle g_pSetMinMaxSize;
 
 const any NULL_CBASEENTITY = -1;
 
-static StringMap g_pEntityData;
+static IntMap g_hEntityData;
 
 methodmap CBaseEntity
 {
@@ -72,7 +72,7 @@ methodmap CBaseEntity
 			if (!(g_pSetMinMaxSize = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szSetMinMaxSize);
 		}
 
-		g_pEntityData = new StringMap();
+		g_hEntityData = new IntMap();
 		DHookAddEntityListener(ListenType_Deleted, Hook_CBaseEntity_OnDeleted);
 	}
 	public CBaseEntity(const int iEntIndex = -1)
@@ -738,30 +738,63 @@ methodmap CBaseEntity
 	{
 		StopSound(this.entindex, iChannel, szName);
 	}
-	public any GetUserData(const char[] szKey, const any iDefaultValue = -1)
+	public any GetUserData(const char[] szKey, const any defaultValue = -1)
 	{
-		char szEntityKey[MAX_CHARS_INT(INT_MIN)];
-		IntToString(this.entref, szEntityKey, sizeof(szEntityKey));
-
-		StringMap pEntityData;
-		if (!g_pEntityData.GetValue(szEntityKey, pEntityData))
-			return iDefaultValue;
+		StringMap hEntityData;
+		if (!g_hEntityData.GetValue(this.entref, hEntityData))
+			return defaultValue;
 
 		any data;
-		return pEntityData.GetValue(szKey, data) ? data : iDefaultValue;
+		return hEntityData.GetValue(szKey, data) ? data : defaultValue;
+	}
+	public bool GetUserDataString(const char[] szKey, char[] szData, const int iMaxLength, const char[] szDefaultValue = "")
+	{
+		StringMap hEntityData;
+		if (g_hEntityData.GetValue(this.entref, hEntityData)
+			&& hEntityData.GetString(szKey, szData, iMaxLength))
+			return true;
+		
+		strcopy(szData, iMaxLength, szDefaultValue);
+		return false;
+	}
+	public bool GetUserDataArray(const char[] szKey, any[] arrData, const int iMaxLength)
+	{
+		StringMap hEntityData;
+		if (g_hEntityData.GetValue(this.entref, hEntityData)
+			&& hEntityData.GetArray(szKey, arrData, iMaxLength))
+			return true;
+		
+		return false;
 	}
 	public void SetUserData(const char[] szKey, const any data)
 	{
-		char szEntityKey[MAX_CHARS_INT(INT_MIN)];
-		IntToString(this.entref, szEntityKey, sizeof(szEntityKey));
-		
-		StringMap pEntityData;
-		if (!g_pEntityData.GetValue(szEntityKey, pEntityData))
+		StringMap hEntityData;
+		if (!g_hEntityData.GetValue(this.entref, hEntityData))
 		{
-			pEntityData = new StringMap();
-			g_pEntityData.SetValue(szEntityKey, pEntityData);
+			hEntityData = new StringMap();
+			g_hEntityData.SetValue(this.entref, hEntityData);
 		}
-		pEntityData.SetValue(szKey, data);
+		hEntityData.SetValue(szKey, data);
+	}
+	public void SetUserDataString(const char[] szKey, const char[] szData)
+	{
+		StringMap hEntityData;
+		if (!g_hEntityData.GetValue(this.entref, hEntityData))
+		{
+			hEntityData = new StringMap();
+			g_hEntityData.SetValue(this.entref, hEntityData);
+		}
+		hEntityData.SetString(szKey, szData);
+	}
+	public void SetUserDataArray(const char[] szKey, const any[] arrData, const int iNumItems)
+	{
+		StringMap hEntityData;
+		if (!g_hEntityData.GetValue(this.entref, hEntityData))
+		{
+			hEntityData = new StringMap();
+			g_hEntityData.SetValue(this.entref, hEntityData);
+		}
+		hEntityData.SetArray(szKey, arrData, iNumItems);
 	}
 }
 
@@ -783,6 +816,18 @@ static bool TraceEntityFilter_FVisible(int iEntIndex, int iMask, int iThisEntInd
 	return iEntIndex != iThisEntIndex;
 
 	//return CBaseEntity(iEntity).GetCollisionGroup() != COLLISION_GROUP_NONE;
+}
+
+static void Hook_CBaseEntity_OnDeleted(const int iEntIndex)
+{
+	StringMap hEntityData;
+	int iKey = CBaseEntity(iEntIndex).entref;
+
+	if (g_hEntityData.GetValue(iKey, hEntityData))
+	{
+		hEntityData.Close();
+		g_hEntityData.Remove(iKey);
+	}
 }
 
 enum EntityEffectFlags
@@ -865,17 +910,4 @@ enum SolidFlags_t
 	FSOLID_USE_TRIGGER_BOUNDS = 0x0080,		// Uses a special trigger bounds separate from the normal OBB
 	FSOLID_ROOT_PARENT_ALIGNED = 0x0100,	// Collisions are defined in root parent's local coordinate space
 	FSOLID_TRIGGER_TOUCH_DEBRIS = 0x0200,	// This trigger will touch debris objects
-}
-
-static void Hook_CBaseEntity_OnDeleted(const int iEntIndex)
-{
-	char szEntityKey[MAX_CHARS_INT(INT_MIN)];
-	IntToString(CBaseEntity(iEntIndex).entref, szEntityKey, sizeof(szEntityKey));
-
-	StringMap pEntityData;
-	if (g_pEntityData.GetValue(szEntityKey, pEntityData))
-	{
-		pEntityData.Close();
-		g_pEntityData.Remove(szEntityKey);
-	}
 }
