@@ -59,6 +59,21 @@
 				"windows"	"32"
 				"linux"		"33"
 			}
+			"CServerTools::GetEntityFactoryDictionary" // CServerTools::GetEntityFactoryDictionary()
+			{
+				"windows"	"23"
+				"linux"		"24"
+			}
+			"CEntityFactoryDictionary::InstallFactory" // CEntityFactoryDictionary::InstallFactory(IEntityFactory*, char const*)
+			{
+				"windows"	"0"
+				"linux"		"0"
+			}
+			"CEntityFactoryDictionary::FindFactory" // CEntityFactoryDictionary::FindFactory(char const*)
+			{
+				"windows"	"3"
+				"linux"		"3"
+			}
 			"sizeof(CSound)"
 			{
 				"windows"	"52"
@@ -78,22 +93,6 @@
 				"library"		"server"
 				"windows"		"@CreateInterface"
 				"linux"			"@CreateInterface"
-			}
-			
-			"EntityFactoryDictionary" // EntityFactoryDictionary()
-			{
-				"windows"	"\xA1\x2A\x2A\x2A\x2A\xA8\x01\x75\x2A\x83\xC8\x01\xB9\x2A\x2A\x2A\x2A\xA3\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x68\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x83\xC4\x04\xB8\x2A\x2A\x2A\x2A"
-				"linux"		"@_Z23EntityFactoryDictionaryv"
-			}
-			"CEntityFactoryDictionary::FindFactory" // IEntityFactory *CEntityFactoryDictionary::FindFactory(const char *pszClassname)
-			{
-				"windows"	"\x55\x8B\xEC\x8B\x45\x08\x83\xEC\x08\x56\x8B\xF1\x85\xC0\x74\x2A\x89\x45\xF8\x8D\x4E\x04\x8D\x45\xF8\x50\xE8\x2A\x2A\x2A\x2A\x0F\xB7\xC0\xB9\xFF\xFF\x00\x00"
-				"linux"		"@_ZN24CEntityFactoryDictionary11FindFactoryEPKc"
-			}
-			"CEntityFactoryDictionary::InstallFactory" // void CEntityFactoryDictionary::InstallFactory(IEntityFactory *, const char *pClassName)
-			{
-				"windows"	"\x55\x8B\xEC\x8D\x45\x08\x83\xC1\x04"
-				"linux"		"@_ZN24CEntityFactoryDictionary14InstallFactoryEP14IEntityFactoryPKc"
 			}
 		}
 		"Functions"
@@ -1926,8 +1925,8 @@
 			}
 			"CBaseTrigger::IsTouching"	// CBaseTrigger::IsTouching(const CBaseEntity *pOther)
 			{
-				"windows"	"217"
-				"linux"		"218"
+				"windows"	"206"
+				"linux"		"207"
 			}
 		}
 	}

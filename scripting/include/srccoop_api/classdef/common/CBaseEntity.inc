@@ -11,7 +11,6 @@ static Handle g_pSetMinMaxSize;
 
 const any NULL_CBASEENTITY = -1;
 
-const any NO_ENTITY_DATA = -1;
 static StringMap g_pEntityData;
 
 methodmap CBaseEntity
@@ -74,15 +73,7 @@ methodmap CBaseEntity
 		}
 
 		g_pEntityData = new StringMap();
-		// We don't want to store a StringMap for every single entity, only the ones that we have custom data for
-		//DHookAddEntityListener(ListenType_Created, Hook_CBaseEntity_OnCreated);
 		DHookAddEntityListener(ListenType_Deleted, Hook_CBaseEntity_OnDeleted);
-
-		//int iEntIndex = -1;
-		//while ((iEntIndex = FindEntityByClassname(iEntIndex, "*")) != -1)
-		//{
-		//	Hook_CBaseEntity_OnCreated(iEntIndex);
-		//}
 	}
 	public CBaseEntity(const int iEntIndex = -1)
 	{
@@ -747,32 +738,29 @@ methodmap CBaseEntity
 	{
 		StopSound(this.entindex, iChannel, szName);
 	}
-	public any GetUserData(const char[] szKey)
+	public any GetUserData(const char[] szKey, const any iDefaultValue = -1)
 	{
-		StringMap pEntityData;
-		{
-			char szEntityKey[MAX_CHARS_INT(INT_MIN)];
-			IntToString(this.entref, szEntityKey, sizeof(szEntityKey));
-			if (!g_pEntityData.ContainsKey(szEntityKey))
-				return NO_ENTITY_DATA;
+		char szEntityKey[MAX_CHARS_INT(INT_MIN)];
+		IntToString(this.entref, szEntityKey, sizeof(szEntityKey));
 
-			g_pEntityData.GetValue(szEntityKey, pEntityData);
-		}
+		StringMap pEntityData;
+		if (!g_pEntityData.GetValue(szEntityKey, pEntityData))
+			return iDefaultValue;
 
 		any data;
-		pEntityData.GetValue(szKey, data);
-		return data;
+		return pEntityData.GetValue(szKey, data) ? data : iDefaultValue;
 	}
 	public void SetUserData(const char[] szKey, const any data)
 	{
-		StringMap pEntityData;
 		char szEntityKey[MAX_CHARS_INT(INT_MIN)];
 		IntToString(this.entref, szEntityKey, sizeof(szEntityKey));
 		
-		// Create new mapping if it doesn't exist
-		if (!g_pEntityData.ContainsKey(szEntityKey))
-			g_pEntityData.SetValue(szEntityKey, new StringMap());
-		g_pEntityData.GetValue(szEntityKey, pEntityData);
+		StringMap pEntityData;
+		if (!g_pEntityData.GetValue(szEntityKey, pEntityData))
+		{
+			pEntityData = new StringMap();
+			g_pEntityData.SetValue(szEntityKey, pEntityData);
+		}
 		pEntityData.SetValue(szKey, data);
 	}
 }
@@ -879,18 +867,15 @@ enum SolidFlags_t
 	FSOLID_TRIGGER_TOUCH_DEBRIS = 0x0200,	// This trigger will touch debris objects
 }
 
-/*
-static void Hook_CBaseEntity_OnCreated(const int iEntIndex)
-{
-	char szKey[MAX_CHARS_INT(INT_MIN)];
-	IntToString(CBaseEntity(iEntIndex).entref, szKey, sizeof(szKey));
-	g_pEntityData.SetValue(szKey, new StringMap());
-}
-*/
 static void Hook_CBaseEntity_OnDeleted(const int iEntIndex)
 {
-	char szKey[MAX_CHARS_INT(INT_MIN)];
-	IntToString(CBaseEntity(iEntIndex).entref, szKey, sizeof(szKey));
-	if (g_pEntityData.ContainsKey(szKey))
-		g_pEntityData.Remove(szKey);
+	char szEntityKey[MAX_CHARS_INT(INT_MIN)];
+	IntToString(CBaseEntity(iEntIndex).entref, szEntityKey, sizeof(szEntityKey));
+
+	StringMap pEntityData;
+	if (g_pEntityData.GetValue(szEntityKey, pEntityData))
+	{
+		pEntityData.Close();
+		g_pEntityData.Remove(szEntityKey);
+	}
 }

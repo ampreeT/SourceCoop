@@ -52,6 +52,7 @@ methodmap CBaseTrigger < CBaseToggle
 			view_as<CBaseEntity>(this).m_spawnflags = view_as<int>(eSpawnFlags);
 		}
 	}
+
 	public bool IsEnabled()
 	{
 		return !GetEntProp(this.entindex, Prop_Data, "m_bDisabled");
@@ -60,7 +61,8 @@ methodmap CBaseTrigger < CBaseToggle
 	{
 		SetEntProp(this.entindex, Prop_Data, "m_bDisabled", !bEnabled);
 	}
-	// void CBaseTrigger::InitTrigger() from SDK
+
+	// CBaseTrigger::InitTrigger() from SDK
 	public void InitTrigger()
 	{
 		this.SetSolidType(this.GetParent() != NULL_CBASEENTITY ? SOLID_VPHYSICS : SOLID_BSP);
@@ -86,9 +88,9 @@ methodmap CBaseTrigger < CBaseToggle
 		this.SetModel(szBuffer); // initialize the model from name
 		this.m_fEffects |= EF_NODRAW;
 	}
-	// void CBaseTrigger::IsTouching(const CBaseEntity *pOther) from SDK
-	public bool IsTouching(const int iEntIndex)
+	// CBaseTrigger::IsTouching(const CBaseEntity *pOther) from SDK
+	public bool IsTouching(const CBaseEntity pOther)
 	{
-		return SDKCall(g_pBaseTriggerIsTouching, this.entindex, iEntIndex);
+		return SDKCall(g_pBaseTriggerIsTouching, this.entindex, pOther.entindex);
 	}
 }
