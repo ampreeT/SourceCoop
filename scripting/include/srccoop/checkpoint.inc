@@ -14,7 +14,7 @@ enum struct CCoopPortal
 	bool Spawn()
 	{
 		this.m_pParticle = CParticleSystem.Create(Conf.PORTAL_PARTICLE);
-		if (this.m_pParticle.IsValid())
+		if (this.m_pParticle != NULL_CBASEENTITY)
 		{
 			float mins[3], maxs[3];
 			mins[0] = mins[1] = mins[2] = -Conf.PORTAL_TOUCH_SIZE;
@@ -373,11 +373,11 @@ enum struct CCoopEquipment
 				CBaseCombatWeapon pWeapon = pPlayer.GiveWeapon(pWeaponEntry.m_szClassname);
 				if (pWeapon.IsValid())
 				{
-					if (pWeapon.GetPrimaryAmmoType() != -1)
+					if (pWeapon.GetPrimaryAmmoType() != -1 && pWeaponEntry.m_iPrimaryAmmo >= 0)
 					{
 						pWeapon.SetPrimaryAmmo(pWeaponEntry.m_iPrimaryAmmo);
 					}
-					if (pWeapon.GetSecondaryAmmoType() != -1)
+					if (pWeapon.GetSecondaryAmmoType() != -1 && pWeaponEntry.m_iSecondaryAmmo >= 0)
 					{
 						pWeapon.SetSecondaryAmmo(pWeaponEntry.m_iSecondaryAmmo);
 					}
@@ -1044,9 +1044,9 @@ methodmap CCoopSpawnSystem
 	{
 		if (!bAllowDuplicates)
 		{
+			CCoopWeaponEntry pWeaponEntry;
 			for (int i = 0; i < data.m_pDefaultEquipment.m_pWeaponList.Length; i++)
 			{
-				CCoopWeaponEntry pWeaponEntry;
 				if (data.m_pDefaultEquipment.m_pWeaponList.GetArray(i, pWeaponEntry, sizeof(pWeaponEntry)))
 				{
 					// does basic checking of item_weapon vs weapon_ strings
