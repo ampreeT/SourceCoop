@@ -696,7 +696,11 @@ methodmap CCoopSpawnSystem
 	{
 		PrecacheSound(Conf.SND_BRINGALL);
 		PrecacheSound(Conf.SND_PORTAL);
-		
+		CCoopSpawnSystem.ParseConfigFileCore(kv);
+	}
+
+	public static void ParseConfigFileCore(KeyValues kv)
+	{
 		if (kv.GotoFirstSubKey(false))
 		{
 			do
@@ -704,6 +708,8 @@ methodmap CCoopSpawnSystem
 				char szType[MAX_KEY];
 				if (kv.GetSectionName(szType, sizeof(szType)))
 				{
+					EVAL_CONDITIONS(szType, kv, CCoopSpawnSystem.ParseConfigFileCore(kv))
+
 					if (kv.GetDataType(NULL_STRING) != KvData_None)
 					{
 						continue;

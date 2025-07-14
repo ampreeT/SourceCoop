@@ -554,6 +554,14 @@ enum struct CGlobalLevelLump
 	{
 		float flStartTime = GetEngineTime();
 		
+		this.ParseConfigFileCore(kv);
+		this.m_pOutputHookList.Validate(this.m_pEntityList);
+		
+		LogDebug("Processing edt file took %fs", GetEngineTime() - flStartTime);
+	}
+	
+	void ParseConfigFileCore(KeyValues kv)
+	{
 		if (kv.GotoFirstSubKey(false))
 		{
 			do
@@ -561,6 +569,8 @@ enum struct CGlobalLevelLump
 				char szType[MAX_KEY];
 				if (kv.GetSectionName(szType, sizeof(szType)))
 				{
+					EVAL_CONDITIONS(szType, kv, this.ParseConfigFileCore(kv))
+
 					if (kv.GetDataType(NULL_STRING) != KvData_None) // simple values
 					{
 						if (strcmp(szType, "nextmap", false) == 0)
@@ -627,9 +637,6 @@ enum struct CGlobalLevelLump
 			while (kv.GotoNextKey(false));
 			kv.GoBack();
 		}
-		this.m_pOutputHookList.Validate(this.m_pEntityList);
-		
-		LogDebug("Processing edt file took %fs", GetEngineTime() - flStartTime);
 	}
 	
 	void ParseEquipment(KeyValues kv)
