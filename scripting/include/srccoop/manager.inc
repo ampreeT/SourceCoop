@@ -5,6 +5,13 @@
 // Coop manager
 //------------------------------------------------------
 
+enum MapLoadType
+{
+	MAPLOAD_NEW_GAME,
+	MAPLOAD_SAME_GAME,
+	MAPLOAD_RESTART,
+}
+
 enum struct FireOutputData
 {
 	char m_szName[32];
@@ -32,6 +39,7 @@ enum struct CoopManagerData
 	Handle m_pChangeLevelTimer;
 	int m_iTicksToEnd;
 	CoopConfigLocation m_mapConfigLoc;
+	ArrayList m_hLevelInitGlobalStates;
 }
 
 CoopManagerData g_pCoopManagerData;
@@ -74,12 +82,24 @@ methodmap CoopManager
 	
 		if ((data.m_bIsCoopMap = data.kv != null))
 		{
-			if (CoopManager.IsNewMapSeries())
+			MapLoadType eLoadType = CoopManager.GetMapLoadType();
+			if (eLoadType == MAPLOAD_NEW_GAME)
 			{
-				// reset global states
-				IServerGameDLL.Get().GameShutdown();
+				// reset global states & equipment
+				CGlobalState.Reset();
 				EquipmentManager.ClearAll();
 			}
+			else if (eLoadType == MAPLOAD_RESTART)
+			{
+				// restore global states from last level init
+				if (data.m_hLevelInitGlobalStates != null)
+				{
+					CGlobalState.RestoreFromList(data.m_hLevelInitGlobalStates);
+				}
+			}
+			
+			delete data.m_hLevelInitGlobalStates;
+			data.m_hLevelInitGlobalStates = CGlobalState.SaveToList();
 			g_pLevelLump.ParseMapEntities(szMapEntities);
 			g_pLevelLump.ParseConfigFile(data.kv);
 			g_pLevelLump.ToString(szMapEntities);
@@ -401,20 +421,23 @@ methodmap CoopManager
 		return 1.0 - (1.0 / (iPlayerCount / float(votes))) * g_pConvarEndWaitFactor.FloatValue;
 	}
 
-	public static bool IsNewMapSeries()
+	public static MapLoadType GetMapLoadType()
 	{
-		// Return false if map was changed naturally, true if externally
 		if (GetMapHistorySize() > 0)
 		{
 			char szMap[MAX_MAPNAME], szReason[32]; int startTime;
 			GetMapHistory(0, szMap, sizeof(szMap), szReason, sizeof(szReason), startTime);
 		
-			if (StrEqual(szReason, SC_NORMAL_MAPCHANGE) || StrEqual(szReason, SC_SURVIVAL_RESTART_MAPCHANGE))
+			if (StrEqual(szReason, SC_NORMAL_MAPCHANGE) || StrEqual(szReason, SC_VOTING_SKIP_MAPCHANGE))
 			{
-				return false;
+				return MAPLOAD_SAME_GAME;
+			}
+			else if (StrEqual(szReason, SC_SURVIVAL_RESTART_MAPCHANGE) || StrEqual(szReason, SC_VOTING_RESTART_MAPCHANGE))
+			{
+				return MAPLOAD_RESTART;
 			}
 		}
-		return true;
+		return MAPLOAD_NEW_GAME;
 	}
 	
 	public static void OnMapSeriesFinished()
