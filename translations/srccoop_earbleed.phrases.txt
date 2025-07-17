@@ -10,12 +10,14 @@
 	"earbleed disabled"
 	{
 		"en"			"Explosion ringing sound effect disabled."
+		"ru"			"Звуковой эффект звона в ушах отключён."
 		"zho"			"爆炸回響音效已禁用。"
 	}
 
 	"earbleed enabled"
 	{
 		"en"			"Explosion ringing sound effect enabled."
+		"ru"			"Звуковой эффект звона в ушах включён."
 		"zho"			"爆炸回響音效已啟用。"
 	}
 
@@ -24,12 +26,14 @@
 	"disable earbleed"
 	{
 		"en"			"Disable earbleed"
+		"ru"			"Отключить звон в ушах"
 		"zho"			"禁用耳膜出血音效"
 	}
 
 	"enable earbleed"
 	{
 		"en"			"Enable earbleed"
+		"ru"			"Включить звон в ушах"
 		"zho"			"啟用耳膜出血音效"
 	}
 
