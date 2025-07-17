@@ -40,6 +40,7 @@
 	#define ENTPATCH_FUNC_TRACKTRAIN
 	#define ENTPATCH_NPC_RUNTASK
 	#define ENTPATCH_BARNACLE_PREDICTION
+	#define ENTPATCH_TRIGGER_COOP
 	
 	#define PLAYERPATCH_SUIT_SOUNDS
 	#define PLAYERPATCH_PICKUP_FORCEPLAYERTODROPTHISOBJECT
@@ -108,6 +109,7 @@
 	#define ENTPATCH_BM_DISSOLVE
 	#define ENTPATCH_BM_XENPORTAL_PUSH_PLAYERS
 	#define ENTPATCH_BM_BATTERY_DLIGHT
+	#define ENTPATCH_TRIGGER_COOP
 
 	#define PLAYERPATCH_SUIT_SOUNDS
 	#define PLAYERPATCH_PICKUP_FORCEPLAYERTODROPTHISOBJECT
@@ -154,6 +156,7 @@
 #include <srccoop/config>
 #include <srccoop/features>
 #include <srccoop/globals>
+#include <srccoop/entity/CTriggerCoop>
 #include <srccoop/kv_shared>
 #include <srccoop/manager_changelevel>
 #include <srccoop/manager>
