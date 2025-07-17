@@ -10,6 +10,14 @@ static Handle g_pGlobalEntitySetState;
 static Handle g_pGlobalEntitySetCounter;
 static Handle g_pGlobalEntityAdd;
 
+enum struct globalentity_t
+{
+	char          szName[1024];
+	char          szMap[MAX_MAPNAME];
+	GLOBALESTATE  eState;
+	int           iCounter;
+}
+
 methodmap CGlobalState
 {
 	public static void InitClassdef(const GameData hGameConfig)
@@ -134,6 +142,16 @@ methodmap CGlobalState
 	{
 		return SDKCall(g_pGlobalEntityGetMap, szGlobalMap, iMaxLength, iGlobalIndex);
 	}
+	public static bool GetGlobalEntity(const int iGlobalIndex, globalentity_t pGlobalEntity)
+	{
+		if (CGlobalState.GetName(iGlobalIndex, pGlobalEntity.szName, sizeof(pGlobalEntity.szName)) == -1)
+			return false;
+
+		CGlobalState.GetMap(iGlobalIndex, pGlobalEntity.szMap, sizeof(pGlobalEntity.szMap));
+		pGlobalEntity.eState = CGlobalState.GetStateByIndex(iGlobalIndex);
+		pGlobalEntity.iCounter = CGlobalState.GetCounter(iGlobalIndex);
+		return true;
+	}
 	public static bool SetState(const int iGlobalIndex, const GLOBALESTATE eState)
 	{
 		if (CGlobalState.IsValidIndex(iGlobalIndex))
@@ -180,5 +198,34 @@ methodmap CGlobalState
 	public static int Add(const char[] szGlobalName, const char[] szMapName, const GLOBALESTATE eState)
 	{
 		return SDKCall(g_pGlobalEntityAdd, szGlobalName, szMapName, eState);
+	}
+	public static void Reset()
+	{
+		IServerGameDLL.Get().GameShutdown();
+	}
+
+	public static ArrayList SaveToList()
+	{
+		ArrayList hList = new ArrayList(sizeof(globalentity_t));
+		globalentity_t pGlobalEntity;
+		for (int i = 0; ; i++)
+		{
+			if (!CGlobalState.GetGlobalEntity(i, pGlobalEntity))
+				break;
+			
+			hList.PushArray(pGlobalEntity);
+		}
+		return hList;
+	}
+	public static void RestoreFromList(ArrayList hList)
+	{
+		CGlobalState.Reset();
+		globalentity_t pGlobalEntity;
+		for (int i = 0; i < hList.Length; i++)
+		{
+			hList.GetArray(i, pGlobalEntity);
+			int iGlobalIndex = CGlobalState.Add(pGlobalEntity.szName, pGlobalEntity.szMap, pGlobalEntity.eState);
+			CGlobalState.SetCounter(iGlobalIndex, pGlobalEntity.iCounter);
+		}
 	}
 }
