@@ -233,6 +233,7 @@
 	{
 		"#format"		"{1:s}" // attacker
 		"en"			"{1} suicided!"
+		"ru"			"{1} покончил(а) с собой!"
 		"zho"			"{1} 自殺了！"
 	}
 	
@@ -240,6 +241,7 @@
 	{
 		"#format"		"{1:s},{2:s},{3:s}" // attacker, victim, weapon
 		"en"			"{1} killed {2} with {3}!"
+		"ru"			"{1} убил {2} с помощью {3}!"
 		"zho"			"{1} 用 {2} 殺死了 {3}!"
 	}
 
@@ -247,6 +249,7 @@
 	{
 		"#format"		"{1:s},{2:s}" // attacker, victim
 		"en"			"{1} killed {2}!"
+		"ru"			"{1} убил {2}!"
 		"zho"			"{1} 殺死 {2}!"
 	}
 }
