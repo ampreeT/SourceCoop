@@ -4,6 +4,7 @@
 // Patches for Black Mesa
 
 static bool g_pPlayerIronsightClassic[MAXPLAYERS + 1];
+static bool g_bDisableCrossbowExplosion = false;
 
 //------------------------------------------------------
 // CNPC_PlayerCompanion - npc_human_scientist*, npc_human_security
@@ -826,9 +827,11 @@ public MRESReturn Hook_ToggleIronsights(int _this, DHookParam hParams)
 		if (pWeapon.IsReloading())
 			return MRES_Supercede;
 		
-		CBlackMesaPlayer pPlayer = view_as<CBlackMesaPlayer>(pWeapon.GetOwner());
-		if (!pPlayer.IsValid())
+		CBaseCombatCharacter pOwner = pWeapon.GetOwner();
+		if (pOwner == NULL_CBASEENTITY || !pOwner.IsPlayer())
 			return MRES_Supercede;
+		
+		CBlackMesaPlayer pPlayer = view_as<CBlackMesaPlayer>(pOwner);
 		
 		char szClassname[MAX_CLASSNAME];
 		bool bIsCrossbow = pWeapon.GetClassname(szClassname, sizeof(szClassname)) && strcmp(szClassname, "weapon_crossbow") == 0;
@@ -848,7 +851,7 @@ public MRESReturn Hook_ToggleIronsights(int _this, DHookParam hParams)
 			if (!g_pPlayerIronsightClassic[pPlayer.entindex])
 			{
 				CPredictedViewModel pViewModel = pPlayer.GetViewModel();
-				if (pViewModel.IsValid())
+				if (pViewModel != NULL_CBASEENTITY)
 				{
 					if (bWillBeUsingIronsights || !bIsRearming)
 					{
@@ -900,24 +903,6 @@ public MRESReturn Hook_IronsightGetPrimaryAttackActivity(int _this, DHookReturn 
 }
 
 //------------------------------------------------------
-// weapon_crossbow
-// Fixes the shooting animation played while using ironsights.
-//------------------------------------------------------
-public MRESReturn Hook_CrossbowGetPrimaryAttackActivity(int _this, DHookReturn hReturn)
-{
-	if (CoopManager.IsFeatureEnabled(FT_SP_WEAPONS))
-	{
-		CBlackMesaBaseCombatWeaponIronsights pWeapon = CBlackMesaBaseCombatWeaponIronsights(_this);
-		if (pWeapon.IsInIronsights())
-		{
-			DHookSetReturn(hReturn, ACT_VM_PRIMARYATTACK);
-			return MRES_Supercede;
-		}
-	}
-	return MRES_Ignored;
-}
-
-//------------------------------------------------------
 // Caches the player ConVar `cl_ironsight_classic`.
 //------------------------------------------------------
 void ConvarQuery_IronsightClassic(QueryCookie hCookie, int iClient, ConVarQueryResult hResult, const char[] szCvar, const char[] szValue, any value)
@@ -955,7 +940,7 @@ public MRESReturn Hook_IronsightDeployPost_SaveSettings(int _this, DHookReturn h
 //------------------------------------------------------
 public MRESReturn Hook_GrenadeBoltAcceptInput(int _this, DHookReturn hReturn, DHookParam hParams)
 {
-	if (CoopManager.IsFeatureEnabled(FT_SP_WEAPONS))
+	if (g_bDisableCrossbowExplosion)
 	{
 		char szInputType[MAX_FORMAT];
 		DHookGetParamString(hParams, 1, szInputType, sizeof(szInputType));
@@ -964,6 +949,20 @@ public MRESReturn Hook_GrenadeBoltAcceptInput(int _this, DHookReturn hReturn, DH
 			DHookSetReturn(hReturn, true);
 			return MRES_Supercede;
 		}
+	}
+	return MRES_Ignored;
+}
+
+//------------------------------------------------------
+// weapon_crossbow
+// Fixes the shooting animation played while using ironsights.
+//------------------------------------------------------
+public MRESReturn Hook_CrossbowGetPrimaryAttackActivity(int _this, DHookReturn hReturn)
+{
+	if (CoopManager.IsFeatureEnabled(FT_SP_WEAPONS))
+	{
+		DHookSetReturn(hReturn, ACT_VM_PRIMARYATTACK);
+		return MRES_Supercede;
 	}
 	return MRES_Ignored;
 }
@@ -993,76 +992,83 @@ public MRESReturn Hook_CrossbowDeployPost(int _this, DHookReturn hReturn)
 
 //------------------------------------------------------
 // weapon_crossbow
-// Sets the rearming animation (not the state!) after firing.
+// This hook manages the rearm state.
+// In the original implementation, the rearm state is never called in multiplayer
 // Also fixes the scope in animation covering the screen by setting it to idle.
-//
-// TODO: Hooking ItemPostFrame with IsMultiplayer = false causes prediction issues.
-// Fix this by not calling IsMultiplayer = false.
-//------------------------------------------------------
-public MRESReturn Hook_CrossbowItemPostFrame(int _this, DHookReturn hReturn)
-{
-	if (CoopManager.IsFeatureEnabled(FT_SP_WEAPONS))
-	{
-		g_bIsMultiplayerOverride = false;
-
-		CBaseCombatWeapon pWeapon = CBaseCombatWeapon(_this);
-		CBaseCombatCharacter pOwner = pWeapon.GetOwner();
-		if (pOwner != NULL_CBASEENTITY && pOwner.IsPlayer())
-		{
-			CBasePlayer pPlayer = view_as<CBasePlayer>(pOwner);
-			CPredictedViewModel pViewModel = pPlayer.GetViewModel();
-			if (pViewModel != NULL_CBASEENTITY)
-			{
-				// Switch to idle animation so the scope does not block the view.
-				if (pViewModel.GetSequence() == pViewModel.SelectWeightedSequence(ACT_VM_IDLE_TO_IS) && pViewModel.GetCycle() >= 0.55)
-				{
-					pWeapon.SendWeaponAnim(ACT_VM_IDLE);
-				}
-			}
-		}
-	}
-	return MRES_Ignored;
-}
-
-//------------------------------------------------------
-// weapon_crossbow
-// See `Hook_CrossbowItemPostFrame` for details.
 //------------------------------------------------------
 public MRESReturn Hook_CrossbowItemPostFramePost(int _this, DHookReturn hReturn)
 {
 	if (CoopManager.IsFeatureEnabled(FT_SP_WEAPONS))
 	{
-		g_bIsMultiplayerOverride = true;
+		CWeapon_Crossbow pWeapon = CWeapon_Crossbow(_this);
+		CBaseCombatCharacter pOwner = pWeapon.GetOwner();
+		if (pOwner != NULL_CBASEENTITY && pOwner.IsPlayer())
+		{
+			CBlackMesaPlayer pPlayer = view_as<CBlackMesaPlayer>(pOwner);
+			CPredictedViewModel pViewModel = pPlayer.GetViewModel();
+			if (pViewModel != NULL_CBASEENTITY)
+			{
+				Activity eActivity = pWeapon.GetActivity();
+				if (pWeapon.IsRearming())
+				{
+					if (pViewModel != NULL_CBASEENTITY)
+					{
+						if (pWeapon.GetActivity() == ACT_CROSSBOW_BOLT_BACK)
+						{
+							if (pViewModel.IsSequenceFinished())
+							{
+								pWeapon.SetRearming(false);
+							}
+						}
+						else
+						{
+							pWeapon.SendWeaponAnim(ACT_CROSSBOW_BOLT_BACK);
+						}
+					}
+				}
+				else if (eActivity == ACT_VM_IDLE_TO_IS && pViewModel.GetCycle() >= 0.55)
+				{
+					// Switch to idle animation so the scope does not block the view.
+					pWeapon.SendWeaponAnim(ACT_VM_IDLE);
+				}
+			}
+		}
 	}
+
 	return MRES_Ignored;
 }
 
 //------------------------------------------------------
 // weapon_crossbow
-// This does the following:
-//
-// - Causes `CWeapon_Crossbow::FireBolt` to get called instead of `CWeapon_Crossbow::FireHitscanBolt` on secondary attacks
-// - Sets the rearm bool
-// - Sets animations
+// Prevents the input `SetToExplode` from being called.
 //------------------------------------------------------
 public MRESReturn Hook_CrossbowPrimaryAttack(int _this, DHookReturn hReturn, DHookParam hParams)
 {
 	if (CoopManager.IsFeatureEnabled(FT_SP_WEAPONS))
 	{
-		g_bIsMultiplayerOverride = false;
+		g_bDisableCrossbowExplosion = true;
 	}
 	return MRES_Ignored;
 }
 
 //------------------------------------------------------
 // weapon_crossbow
-// See `Hook_CrossbowPrimaryAttack` for details.
+// Sets the rearm state and fixes the time to attack.
 //------------------------------------------------------
 public MRESReturn Hook_CrossbowPrimaryAttackPost(int _this, DHookReturn hReturn, DHookParam hParams)
 {
 	if (CoopManager.IsFeatureEnabled(FT_SP_WEAPONS))
 	{
-		g_bIsMultiplayerOverride = true;
+		g_bDisableCrossbowExplosion = true;
+
+		CWeapon_Crossbow pWeapon = CWeapon_Crossbow(_this);
+
+		bool bShouldRearm = pWeapon.GetPrimaryAmmo() > 0;
+		if (bShouldRearm)
+		{
+			pWeapon.DelayNextAttack(2.0);
+		}
+		pWeapon.SetRearming(bShouldRearm);
 	}
 	return MRES_Ignored;
 }
@@ -1075,47 +1081,12 @@ public MRESReturn Hook_CrossbowGetDrawActivity(int _this, DHookReturn hReturn)
 {
 	if (CoopManager.IsFeatureEnabled(FT_SP_WEAPONS))
 	{
-		g_bIsMultiplayerOverride = false;
-	}
-	return MRES_Ignored;
-}
-
-//------------------------------------------------------
-// weapon_crossbow
-// See `Hook_CrossbowGetDrawActivity` for details.
-//------------------------------------------------------
-public MRESReturn Hook_CrossbowGetDrawActivityPost(int _this, DHookReturn hReturn)
-{
-	if (CoopManager.IsFeatureEnabled(FT_SP_WEAPONS))
-	{
-		g_bIsMultiplayerOverride = true;
-	}
-	return MRES_Ignored;
-}
-
-//------------------------------------------------------
-// weapon_crossbow
-// `CWeapon_Crossbow::FireBolt` is only called by `CWeapon_Crossbow::PrimaryAttack` which is hooked.
-// If this gets called with singleplayer being set, this will crash the server.
-//------------------------------------------------------
-public MRESReturn Hook_CrossbowFireBolt(int _this, DHookReturn hReturn, DHookParam hParams)
-{
-	if (CoopManager.IsFeatureEnabled(FT_SP_WEAPONS))
-	{
-		g_bIsMultiplayerOverride = true;
-	}
-	return MRES_Ignored;
-}
-
-//------------------------------------------------------
-// weapon_crossbow
-// See `Hook_CrossbowFireBolt` for details.
-//------------------------------------------------------
-public MRESReturn Hook_CrossbowFireBoltPost(int _this, DHookReturn hReturn, DHookParam hParams)
-{
-	if (CoopManager.IsFeatureEnabled(FT_SP_WEAPONS))
-	{
-		g_bIsMultiplayerOverride = false;
+		CWeapon_Crossbow pWeapon = CWeapon_Crossbow(_this);
+		if (pWeapon.IsRearming())
+		{
+			DHookSetReturn(hReturn, ACT_CROSSBOW_BOLT_BACK);
+			return MRES_Supercede;
+		}
 	}
 	return MRES_Ignored;
 }
