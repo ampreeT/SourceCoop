@@ -153,6 +153,13 @@
 					}
 				}
 			}
+			"CAI_BaseNPC::IsNavigationUrgent"
+			{
+				"offset"	"CAI_BaseNPC::IsNavigationUrgent"
+				"hooktype"	"entity"
+				"return"	"bool"
+				"this"		"entity"
+			}
 			"CProtoSniper::SelectSchedule"
 			{
 				"offset"	"CProtoSniper::SelectSchedule"
@@ -1263,6 +1270,11 @@
 			{
 				"windows"	"445"
 				"linux"		"446"
+			}
+			"CAI_BaseNPC::IsNavigationUrgent"	// CAI_BaseNPC::IsNavigationUrgent()
+			{
+				"windows"	"482"
+				"linux"		"483"
 			}
 			"CProtoSniper::SelectSchedule" // CProtoSniper::SelectSchedule()
 			{
