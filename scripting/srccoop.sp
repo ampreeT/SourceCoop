@@ -45,6 +45,10 @@ void LoadGameData()
 	LoadDHookVirtual(pGameConfig, hkIsPlayerAlly, "CAI_BaseNPC::IsPlayerAlly");
 	#endif
 
+	#if defined ENTPATCH_NAVIGATION_URGENT
+	LoadDHookVirtual(pGameConfig, hkIsNavigationUrgent, "CAI_BaseNPC::IsNavigationUrgent");
+	#endif
+
 	#if defined ENTPATCH_NPC_DIALOGUE
 	LoadDHookVirtual(pGameConfig, hkFindNamedEntity, "CSceneEntity::FindNamedEntity");
 	LoadDHookVirtual(pGameConfig, hkFindNamedEntityClosest, "CSceneEntity::FindNamedEntityClosest");
@@ -631,7 +635,11 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 		if (strncmp(szClassname, "npc_human_scientist", 19) == 0)
 		{
 			#if defined ENTPATCH_PLAYER_ALLY
-			DHookEntity(hkIsPlayerAlly, true, iEntIndex, _, Hook_IsPlayerAlly);
+			DHookEntity(hkIsPlayerAlly, false, iEntIndex, _, Hook_IsPlayerAlly);
+			#endif
+			
+			#if defined ENTPATCH_NAVIGATION_URGENT
+			DHookEntity(hkIsNavigationUrgent, false, iEntIndex, _, Hook_IsNavigationUrgent);
 			#endif
 
 			return;
@@ -640,7 +648,14 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 		#if defined ENTPATCH_PLAYER_ALLY
 		if (strcmp(szClassname, "npc_human_security") == 0)
 		{
-			DHookEntity(hkIsPlayerAlly, true, iEntIndex, _, Hook_IsPlayerAlly);
+			#if defined ENTPATCH_PLAYER_ALLY
+			DHookEntity(hkIsPlayerAlly, false, iEntIndex, _, Hook_IsPlayerAlly);
+			#endif
+
+			#if defined ENTPATCH_NAVIGATION_URGENT
+			DHookEntity(hkIsNavigationUrgent, false, iEntIndex, _, Hook_IsNavigationUrgent);
+			#endif
+
 			return;
 		}
 		#endif

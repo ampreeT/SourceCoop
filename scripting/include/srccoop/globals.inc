@@ -85,6 +85,10 @@ DynamicHook hkBaseNpcRunTask;
 DynamicHook hkIsPlayerAlly;
 #endif
 
+#if defined ENTPATCH_NAVIGATION_URGENT
+DynamicHook hkIsNavigationUrgent;
+#endif
+
 #if defined ENTPATCH_SNIPER
 DynamicHook hkProtoSniperSelectSchedule;
 #endif
