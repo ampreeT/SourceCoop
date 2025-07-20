@@ -17,6 +17,7 @@
 #include <srccoop_api/util/common/player>
 #include <srccoop_api/util/common/string>
 #include <srccoop_api/util/common/stringbuilder>
+#include <srccoop_api/util/common/intmap>
 #if defined _dhooks_included
 #include <srccoop_api/util/common/dhooks>
 #endif
