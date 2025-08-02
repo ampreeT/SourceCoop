@@ -7,6 +7,12 @@ enum CTriggerCoop_CountType
 	TRIGGER_COOP_PERCENTAGE = 1  // Compare as percentage of players
 }
 
+enum struct CTriggerCoop_TouchData
+{
+	int iPlayersTouching;
+	int iPlayersRequired;
+}
+
 methodmap CTriggerCoop < CBaseTrigger
 {
 	public CTriggerCoop(const int iEntIndex = -1)
@@ -21,10 +27,11 @@ methodmap CTriggerCoop < CBaseTrigger
 	public void OnCreated()
 	{
 		int iEntIndex = this.entindex;
-		SDKHook(iEntIndex, SDKHook_TouchPost, Hook_Touch);
-		SDKHook(iEntIndex, SDKHook_EndTouchPost, Hook_Touch);
+		SDKHook(iEntIndex, SDKHook_StartTouchPost, Hook_StartTouchPost);
+		SDKHook(iEntIndex, SDKHook_EndTouchPost, Hook_EndTouchPost);
 		DHookEntity(hkKeyValue_char, false, iEntIndex, _, Hook_KeyValue);
 		DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_AcceptInput);
+		CreateTimer(1.0, Timer_UpdateHud, this, TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT);
 	}
 
 	public void SetCountType(const CTriggerCoop_CountType eCountType)
@@ -44,15 +51,6 @@ methodmap CTriggerCoop < CBaseTrigger
 	{
 		return this.GetUserData("m_iPlayerValue", 50);
 	}
-
-	public void SetFiredPlayersIn(const bool bValue)
-	{
-		this.SetUserData("m_bFiredPlayersIn", bValue);
-	}
-	public bool GetFiredPlayersIn()
-	{
-		return this.GetUserData("m_bFiredPlayersIn", false);
-	}
 	
 	public void SetUseHud(const bool bValue)
 	{
@@ -62,111 +60,125 @@ methodmap CTriggerCoop < CBaseTrigger
 	{
 		return this.GetUserData("m_bUseHud", true);
 	}
-}
 
-//------------------------------------------------------
-// Touch function
-//------------------------------------------------------
-static void Hook_Touch(int _this, int _other)
-{
-	CTriggerCoop pThis = CTriggerCoop(_this);
-	if (!pThis.IsEnabled())
-		return;
-	
-	static char szHudMsg[32];
-	ArrayList hPlayersInside = new ArrayList(MaxClients+1);
-	int iLivingPlayers;
-
-	for (int i = 1; i <= MaxClients; i++)
+	public void SetTouchData(const CTriggerCoop_TouchData pData)
 	{
-		if (IsClientInGame(i) && !IsFakeClient(i) && IsPlayerAlive(i))
-		{
-			CBasePlayer pPlayer = CBasePlayer(i);
-			if (pThis.IsTouching(pPlayer))
-			{
-				hPlayersInside.Push(i);
-			}
-			iLivingPlayers++;
-		}
+		this.SetUserDataArray("m_pTouchData", pData, sizeof(CTriggerCoop_TouchData));
 	}
-	
-	int iPlayerValue = pThis.GetPlayerValue();
-	bool bFiredPlayersIn = pThis.GetFiredPlayersIn();
-	
-	// CountType 0 - Number of players
-	if (pThis.GetCountType() == TRIGGER_COOP_RAW)
+	public bool GetTouchData(CTriggerCoop_TouchData pData)
 	{
-		if (pThis.GetUseHud())
+		return this.GetUserDataArray("m_pTouchData", pData, sizeof(CTriggerCoop_TouchData));
+	}
+
+	public void UpdateTouchingPlayers()
+	{
+		if (!this.IsEnabled())
+			return;
+		
+		CTriggerCoop_TouchData pData;
+		int iPlayersAlive;
+
+		for (int i = 1; i <= MaxClients; i++)
 		{
-			FormatEx(szHudMsg, sizeof(szHudMsg), "%i/%i players required", hPlayersInside.Length, iPlayerValue);
-			for (int i = 0; i < hPlayersInside.Length; i++)
+			if (IsClientInGame(i) && !IsFakeClient(i) && IsPlayerAlive(i))
 			{
-				SetHudTextParams(-1.0, 0.9, 0.5, 255, 255, 255, 255, 1, 1.0, 1.0, 1.0);
-				ShowHudText(hPlayersInside.Get(i), 2, szHudMsg);
+				CBasePlayer pPlayer = CBasePlayer(i);
+				if (this.IsTouching(pPlayer))
+				{
+					pData.iPlayersTouching++;
+				}
+				iPlayersAlive++;
 			}
 		}
-		if (hPlayersInside.Length >= iPlayerValue)
+		
+		if (this.GetCountType() == TRIGGER_COOP_RAW)
 		{
-			pThis.SetFiredPlayersIn(true);
-			pThis.AcceptInputStr("FireUser1", "", CBaseEntity(_other));
+			pData.iPlayersRequired = this.GetPlayerValue();
 		}
-		else if (hPlayersInside.Length < iPlayerValue && bFiredPlayersIn)
+		else // TRIGGER_COOP_PERCENTAGE
 		{
-			pThis.SetFiredPlayersIn(false);
-			pThis.AcceptInputStr("FireUser2", "", CBaseEntity(_other));
-		}
-		if (hPlayersInside.Length == iLivingPlayers)
-		{
-			pThis.AcceptInputStr("FireUser3", "", CBaseEntity(_other));
-		}
-	}
-	else
-	{
-		// CountType 1 - Percentage
-		float flTotalPercentage = (hPlayersInside.Length / iLivingPlayers)  * 100.0;
-		if (pThis.GetUseHud())
-		{
-			// Tried view_as<float>() (float) and float(), everything is set to 0.0 on return
-			float flPlayerValue = 0.0 + iPlayerValue;
-			float flLivingPlayers = 0.0 + iLivingPlayers;
 			// 0.5 is rounding down, had to add 0.01...
-			Format(szHudMsg, sizeof(szHudMsg), "%i/%i players required", hPlayersInside.Length, RoundFloat(flLivingPlayers * (flPlayerValue * 0.01) + 0.01));
-			for (int i = 0; i < hPlayersInside.Length; i++)
+			pData.iPlayersRequired = RoundFloat(iPlayersAlive * (this.GetPlayerValue() * 0.01) + 0.01);
+		}
+		
+		CTriggerCoop_TouchData pOldData;
+		if (!this.GetTouchData(pOldData))
+		{
+			pOldData.iPlayersTouching = -1;
+		}
+
+		if (pData.iPlayersRequired == pOldData.iPlayersRequired
+			&& pData.iPlayersTouching == pOldData.iPlayersTouching)
+		{
+			// no change
+			return;
+		}
+
+		this.SetTouchData(pData);
+
+		if (pData.iPlayersTouching >= pData.iPlayersRequired)
+		{
+			if (pData.iPlayersTouching > 0 && pOldData.iPlayersTouching < pOldData.iPlayersRequired)
 			{
-				SetHudTextParams(-1.0, 0.9, 0.5, 255, 255, 255, 255, 1, 1.0, 1.0, 1.0);
-				ShowHudText(hPlayersInside.Get(i), 2, szHudMsg);
+				this.FireOutput("OnUser1"); // OnPlayersIn
 			}
 		}
-		if (flTotalPercentage >= iPlayerValue)
+		else if (pData.iPlayersTouching < pData.iPlayersRequired)
 		{
-			pThis.SetFiredPlayersIn(true);
-			pThis.AcceptInputStr("FireUser1", "", CBaseEntity(_other));
+			if (pOldData.iPlayersTouching > 0 && pOldData.iPlayersTouching >= pOldData.iPlayersRequired)
+			{
+				this.FireOutput("OnUser2"); // OnPlayersOut
+			}
 		}
-		else if (flTotalPercentage < iPlayerValue && bFiredPlayersIn)
+
+		if (pData.iPlayersTouching == iPlayersAlive && iPlayersAlive > 0)
 		{
-			pThis.SetFiredPlayersIn(false);
-			pThis.AcceptInputStr("FireUser2", "", CBaseEntity(_other));
-		}
-		if (hPlayersInside.Length == iLivingPlayers)
-		{
-			pThis.AcceptInputStr("FireUser3", "", CBaseEntity(_other));
+			this.FireOutput("OnUser3"); // OnAllPlayersIn
 		}
 	}
-	hPlayersInside.Close();
+
+	public void UpdateHud()
+	{
+		if (!this.IsEnabled() || !this.GetUseHud())
+			return;
+		
+		CTriggerCoop_TouchData pData;
+		if (!this.GetTouchData(pData))
+			return;
+
+		RGBA color = this.GetRenderColor();
+		SetHudTextParams(-1.0, 0.9, 0.5, color.r, color.g, color.b, color.a, 1, 1.0, 1.0, 1.0);
+		for (int i = 1; i <= MaxClients; i++)
+		{
+			if (IsClientInGame(i) && !IsFakeClient(i))
+			{
+				CBasePlayer pPlayer = CBasePlayer(i);
+				if (this.IsTouching(pPlayer))
+				{
+					ShowHudText(i, 2, "%i / %i %t", pData.iPlayersTouching, pData.iPlayersRequired, "players");
+				}
+			}
+		}
+	}
 }
 
 //------------------------------------------------------
-// KeyValue(char)
-// Remapping output keyvalues to ones we can use
+// Performs remapping of outputs and sets entity properties
 //------------------------------------------------------
 static MRESReturn Hook_KeyValue(int _this, DHookReturn hReturn, DHookParam hParams)
 {
-	CTriggerCoop pThis = CTriggerCoop(_this);
-	static char szKey[MAX_FORMAT];
+	static char szKey[MAX_KEY];
 	static char szVal[MAX_VALUE];
 	hParams.GetString(1, szKey, sizeof(szKey));
 	hParams.GetString(2, szVal, sizeof(szVal));
-	
+
+	if (strncmp(szKey, "OnUser", 6, false) == 0 && IsCharNumeric(szKey[6]))
+	{
+		MsgSrv("ERROR: OnUser* outputs are not supported for trigger_coop!");
+		hReturn.Value = false;
+		return MRES_Supercede;
+	}
+
 	if (StrEqual(szKey, "OnPlayersIn", false))
 	{
 		hParams.SetString(1, "OnUser1");
@@ -181,17 +193,45 @@ static MRESReturn Hook_KeyValue(int _this, DHookReturn hReturn, DHookParam hPara
 	}
 	else if (StrEqual(szKey, "PlayerValue", false))
 	{
-		pThis.SetPlayerValue(StringToInt(szVal));
+		CTriggerCoop(_this).SetPlayerValue(StringToInt(szVal));
 	}
 	else if (StrEqual(szKey, "CountType", false))
 	{
-		pThis.SetCountType(view_as<CTriggerCoop_CountType>(StringToInt(szVal)));
+		CTriggerCoop(_this).SetCountType(view_as<CTriggerCoop_CountType>(StringToInt(szVal)));
 	}
 	else if (StrEqual(szKey, "UseHud", false))
 	{
-		pThis.SetUseHud(!!StringToInt(szVal));
+		CTriggerCoop(_this).SetUseHud(!!StringToInt(szVal));
 	}
-	return MRES_Ignored;
+	return MRES_ChangedHandled;
+}
+
+//------------------------------------------------------
+// Touch hooks
+//------------------------------------------------------
+static void Hook_StartTouchPost(int _this, int _other)
+{
+	CTriggerCoop pThis = CTriggerCoop(_this);
+	pThis.UpdateTouchingPlayers();
+}
+
+static void Hook_EndTouchPost(int _this, int _other)
+{
+	CTriggerCoop pThis = CTriggerCoop(_this);
+	pThis.UpdateTouchingPlayers();
+}
+
+//------------------------------------------------------
+// Hud update timer
+//------------------------------------------------------
+static Action Timer_UpdateHud(Handle timer, CTriggerCoop pThis)
+{
+	if (pThis.IsValid())
+	{
+		pThis.UpdateHud();
+		return Plugin_Continue;
+	}
+	return Plugin_Stop;
 }
 
 //------------------------------------------------------
@@ -202,38 +242,38 @@ static MRESReturn Hook_AcceptInput(int _this, DHookReturn hReturn, DHookParam hP
 	if (hParams.IsNull(1))
 		return MRES_Ignored;
 	
-	char szInputType[MAX_FORMAT];
+	char szInputType[MAX_KEY];
 	hParams.GetString(1, szInputType, sizeof(szInputType));
 	
-	if (strcmp(szInputType, "TeleportPlayersNotTouching", false) == 0)
+	if (StrEqual(szInputType, "TeleportPlayersNotTouching", false))
 	{
 		hReturn.Value = true;
 		CTriggerCoop pThis = CTriggerCoop(_this);
 		
-		float vTargetOrigin[3], vTargetAngles[3];
-		char szTarget[64];
+		char szTarget[MAX_VALUE];
 		pThis.GetTarget(szTarget, sizeof(szTarget));
 		CBaseEntity pTarget = CBaseEntity(FindEntityByTargetname(-1, szTarget));
 		if (pTarget == NULL_CBASEENTITY)
 		{
 			char szTargetname[MAX_VALUE];
 			pThis.GetTargetname(szTargetname, sizeof(szTargetname));
-			PrintToServer("trigger_coop: '%s' has invalid target: '%s'", szTargetname, szTarget);
-			return MRES_Supercede;
+			MsgSrv("WARN: trigger_coop '%s' has invalid target: '%s'", szTargetname, szTarget);
 		}
-
-		// Should WorldSpaceCenter be used instead?
-		pTarget.GetAbsOrigin(vTargetOrigin);
-		pTarget.GetAbsAngles(vTargetAngles);
-		
-		for (int i = 1; i <= MaxClients; i++)
+		else
 		{
-			if (IsClientInGame(i) && !IsFakeClient(i) && IsPlayerAlive(i))
+			float vecTargetOrigin[3], vecTargetAngles[3];
+			pTarget.GetAbsOrigin(vecTargetOrigin);
+			pTarget.GetAbsAngles(vecTargetAngles);
+			
+			for (int i = 1; i <= MaxClients; i++)
 			{
-				CBasePlayer pPlayer = CBasePlayer(i);
-				if (!pThis.IsTouching(pPlayer))
+				if (IsClientInGame(i) && !IsFakeClient(i) && IsPlayerAlive(i))
 				{
-					pPlayer.Teleport(vTargetOrigin, vTargetAngles, vec3_origin);
+					CBasePlayer pPlayer = CBasePlayer(i);
+					if (!pThis.IsTouching(pPlayer))
+					{
+						pPlayer.Teleport(vecTargetOrigin, vecTargetAngles, vec3_origin);
+					}
 				}
 			}
 		}
