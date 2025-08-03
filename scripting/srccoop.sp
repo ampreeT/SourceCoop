@@ -1117,6 +1117,20 @@ void PerformEntityClassAliasing()
 	hKV.Close();
 }
 
+bool TranslateCustomEntityOutput(CBaseEntity pEntity, char[] szOutputName, int iMaxLength, bool bReverse = false)
+{
+	static char szClassname[MAX_CLASSNAME];
+	if (!pEntity.GetClassname(szClassname, sizeof(szClassname)))
+		return false;
+	
+	if (StrEqual(szClassname, "trigger_coop"))
+	{
+		return CTriggerCoop.TranslateOutput(szOutputName, szOutputName, iMaxLength, bReverse);
+	}
+
+	return false;
+}
+
 public Action Event_BroadcastTeamsound(Event hEvent, const char[] szName, bool bDontBroadcast)
 {
 	if (CoopManager.IsCoopModeEnabled())

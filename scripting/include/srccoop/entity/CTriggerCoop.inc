@@ -24,6 +24,23 @@ methodmap CTriggerCoop < CBaseTrigger
 		return CTriggerCoop(CreateEntityByName("trigger_coop"));
 	}
 
+	public static bool TranslateOutput(const char[] szOutputName, char[] szResult, int iMaxLength, bool bReverse = false)
+	{
+		static char szOutputMap[][][] = 
+		{
+			{"OnPlayersIn", "OnUser1"},
+			{"OnPlayersOut", "OnUser2"},
+			{"OnAllPlayersIn", "OnUser3"}
+		};
+		int i = FindStringInArrayDict(szOutputMap, sizeof(szOutputMap), szOutputName, false, bReverse ? 1 : 0);
+		if (i != -1)
+		{
+			strcopy(szResult, iMaxLength, szOutputMap[i][bReverse ? 0 : 1]);
+			return true;
+		}
+		return false;
+	}
+
 	public void OnCreated()
 	{
 		int iEntIndex = this.entindex;
@@ -179,17 +196,10 @@ static MRESReturn Hook_KeyValue(int _this, DHookReturn hReturn, DHookParam hPara
 		return MRES_Supercede;
 	}
 
-	if (StrEqual(szKey, "OnPlayersIn", false))
+	if (CTriggerCoop.TranslateOutput(szKey, szKey, sizeof(szKey)))
 	{
-		hParams.SetString(1, "OnUser1");
-	}
-	else if (StrEqual(szKey, "OnPlayersOut", false))
-	{
-		hParams.SetString(1, "OnUser2");
-	}
-	else if (StrEqual(szKey, "OnAllPlayersIn", false))
-	{
-		hParams.SetString(1, "OnUser3");
+		hParams.SetString(1, szKey);
+		return MRES_ChangedHandled;
 	}
 	else if (StrEqual(szKey, "PlayerValue", false))
 	{
@@ -203,7 +213,7 @@ static MRESReturn Hook_KeyValue(int _this, DHookReturn hReturn, DHookParam hPara
 	{
 		CTriggerCoop(_this).SetUseHud(!!StringToInt(szVal));
 	}
-	return MRES_ChangedHandled;
+	return MRES_Ignored;
 }
 
 //------------------------------------------------------
