@@ -1125,10 +1125,12 @@ bool TranslateCustomEntityOutput(CBaseEntity pEntity, char[] szOutputName, int i
 	if (!pEntity.GetClassname(szClassname, sizeof(szClassname)))
 		return false;
 	
+	#if defined ENTPATCH_TRIGGER_COOP
 	if (StrEqual(szClassname, "trigger_coop"))
 	{
 		return CTriggerCoop.TranslateOutput(szOutputName, szOutputName, iMaxLength, bReverse);
 	}
+	#endif
 
 	return false;
 }
