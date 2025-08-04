@@ -1,6 +1,8 @@
 #pragma newdecls required
 #pragma semicolon 1
 
+static Handle g_pBaseTriggerIsTouching;
+
 enum CBaseTrigger_SpawnFlags
 {
 	SF_TRIGGER_ALLOW_CLIENTS				= 0x01,		// Players can fire this trigger
@@ -20,6 +22,20 @@ enum CBaseTrigger_SpawnFlags
 
 methodmap CBaseTrigger < CBaseToggle
 {
+	public static void InitClassdef(const GameData hGameConfig)
+	{
+		char szIsTouching[] = "CBaseTrigger::IsTouching";
+		StartPrepSDKCall(SDKCall_Entity);
+		if (!PrepSDKCall_SetFromConf(hGameConfig, SDKConf_Virtual, szIsTouching))
+			LogMessage("Could not obtain gamedata signature %s", szIsTouching);
+		else
+		{
+			PrepSDKCall_SetReturnInfo(SDKType_Bool, SDKPass_Plain);
+			PrepSDKCall_AddParameter(SDKType_CBaseEntity, SDKPass_Pointer);
+			if (!(g_pBaseTriggerIsTouching = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szIsTouching);
+		}
+	}
+
 	public CBaseTrigger(const int iEntIndex = -1)
 	{
 		return view_as<CBaseTrigger>(CBaseToggle(iEntIndex));
@@ -36,6 +52,7 @@ methodmap CBaseTrigger < CBaseToggle
 			view_as<CBaseEntity>(this).m_spawnflags = view_as<int>(eSpawnFlags);
 		}
 	}
+
 	public bool IsEnabled()
 	{
 		return !GetEntProp(this.entindex, Prop_Data, "m_bDisabled");
@@ -44,7 +61,8 @@ methodmap CBaseTrigger < CBaseToggle
 	{
 		SetEntProp(this.entindex, Prop_Data, "m_bDisabled", !bEnabled);
 	}
-	// void CBaseTrigger::InitTrigger() from SDK
+
+	// CBaseTrigger::InitTrigger() from SDK
 	public void InitTrigger()
 	{
 		this.SetSolidType(this.GetParent() != NULL_CBASEENTITY ? SOLID_VPHYSICS : SOLID_BSP);
@@ -69,5 +87,10 @@ methodmap CBaseTrigger < CBaseToggle
 		this.GetModelName(szBuffer, sizeof(szBuffer));
 		this.SetModel(szBuffer); // initialize the model from name
 		this.m_fEffects |= EF_NODRAW;
+	}
+	// CBaseTrigger::IsTouching(const CBaseEntity *pOther) from SDK
+	public bool IsTouching(const CBaseEntity pOther)
+	{
+		return SDKCall(g_pBaseTriggerIsTouching, this.entindex, pOther.entindex);
 	}
 }

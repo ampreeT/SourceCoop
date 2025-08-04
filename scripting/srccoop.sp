@@ -297,6 +297,7 @@ public void OnPluginStart()
 	EquipmentManager.Initialize();
 	DnManager.Initialize();
 	InitializeMenus();
+	PerformEntityClassAliasing();
 	
 	g_CoopMapStartFwd = new GlobalForward("SC_OnCoopMapStart", ET_Ignore);
 	g_CoopMapConfigLoadedFwd = new GlobalForward("SC_OnCoopMapConfigLoaded", ET_Ignore, Param_Cell, Param_Cell);
@@ -1002,6 +1003,14 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 			return;
 		}
 		#endif
+		
+		#if defined ENTPATCH_TRIGGER_COOP
+		if (strcmp(szClassname, "trigger_coop") == 0)
+		{
+			view_as<CTriggerCoop>(pEntity).OnCreated();
+			return;
+		}
+		#endif
 
 		// if some explosions turn out to be damaging all players except one, this is the fix
 		// if (strcmp(szClassname, "env_explosion") == 0)
@@ -1069,6 +1078,59 @@ static void SpawnPostponedItem(const CItem pItem)
 
 		pItem.SetCollisionGroup(COLLISION_GROUP_WEAPON);
 	}
+}
+
+void PerformEntityClassAliasing()
+{
+	// Static mappings:
+#if defined ENTPATCH_TRIGGER_COOP
+	CEntityFactoryDictionary.Get().CreateAlias("trigger_coop", "trigger_multiple");
+#endif
+	
+	// Dynamic mappings:
+	char szPath[PLATFORM_MAX_PATH];
+	BuildPath(Path_SM, szPath, sizeof(szPath), "configs/srccoop/entitymappings.cfg");
+	if (!FileExists(szPath))
+		return;
+	
+	KeyValues hKV = CreateKeyValues("Entities");
+	if (!hKV.ImportFromFile(szPath))
+	{
+		LogError("Failed reading entity list from \"%s\"", szPath);
+		hKV.Close();
+		return;
+	}
+
+	bool bFirst = hKV.GotoFirstSubKey(true);
+	char szEntityClass[128];
+	char szBaseClass[128];
+	while (bFirst || hKV.GotoNextKey(true))
+	{
+		bFirst = false;
+		hKV.GetSectionName(szEntityClass, sizeof(szEntityClass));
+		hKV.GetString("baseclass", szBaseClass, sizeof(szBaseClass), "");
+		
+		if (szBaseClass[0] == EOS)
+			continue;
+		
+		if (CEntityFactoryDictionary.Get().CreateAlias(szEntityClass, szBaseClass))
+			LogDebug("New class registration \"%s\" with baseclass \"%s\" succeeded", szEntityClass, szBaseClass);
+	}
+	hKV.Close();
+}
+
+bool TranslateCustomEntityOutput(CBaseEntity pEntity, char[] szOutputName, int iMaxLength, bool bReverse = false)
+{
+	static char szClassname[MAX_CLASSNAME];
+	if (!pEntity.GetClassname(szClassname, sizeof(szClassname)))
+		return false;
+	
+	if (StrEqual(szClassname, "trigger_coop"))
+	{
+		return CTriggerCoop.TranslateOutput(szOutputName, szOutputName, iMaxLength, bReverse);
+	}
+
+	return false;
 }
 
 public Action Event_BroadcastTeamsound(Event hEvent, const char[] szName, bool bDontBroadcast)

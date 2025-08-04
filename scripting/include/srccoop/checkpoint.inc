@@ -594,11 +594,11 @@ methodmap CCoopSpawnSystem
 	
 	public static int AddCheckpoint(const CCoopSpawnEntry pCheckpoint)
 	{
-		int iIndex = data.m_pCheckpointList.PushArray(pCheckpoint);
 		bool bHasTrigger;
 		
 		if (pCheckpoint.m_pTriggerEnt.IsValid())
 		{
+			TranslateCustomEntityOutput(pCheckpoint.m_pTriggerEnt, pCheckpoint.m_szOutputName, sizeof(pCheckpoint.m_szOutputName));
 			pCheckpoint.m_pTriggerEnt.HookOutput(pCheckpoint.m_szOutputName, Hook_OutputCheckpoint, true);
 			bHasTrigger = true;
 		}
@@ -611,7 +611,9 @@ methodmap CCoopSpawnSystem
 		{
 			bHasTrigger = true;
 		}
-		
+
+		int iIndex = data.m_pCheckpointList.PushArray(pCheckpoint);
+
 		if (!bHasTrigger)
 		{
 			CCoopSpawnSystem.ActivateCheckpoint(iIndex);

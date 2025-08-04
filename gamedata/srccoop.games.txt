@@ -59,6 +59,21 @@
 				"windows"	"32"
 				"linux"		"33"
 			}
+			"CServerTools::GetEntityFactoryDictionary" // CServerTools::GetEntityFactoryDictionary()
+			{
+				"windows"	"23"
+				"linux"		"24"
+			}
+			"CEntityFactoryDictionary::InstallFactory" // CEntityFactoryDictionary::InstallFactory(IEntityFactory*, char const*)
+			{
+				"windows"	"0"
+				"linux"		"0"
+			}
+			"CEntityFactoryDictionary::FindFactory" // CEntityFactoryDictionary::FindFactory(char const*)
+			{
+				"windows"	"3"
+				"linux"		"3"
+			}
 			"sizeof(CSound)"
 			{
 				"windows"	"52"
@@ -599,6 +614,20 @@
 				"return"	"vector"
 				"this"		"entity"
 			}
+			"CBaseTrigger::IsTouching"
+			{
+				"offset"	"CBaseTrigger::IsTouching"
+				"hooktype"	"entity"
+				"return"	"bool"
+				"this"		"entity"
+				"arguments"
+				{
+					"pOther"
+					{
+						"type"	"cbaseentity"
+					}
+				}
+			}
 
 			//   _____  ______ _______ ____  _    _ _____  
 			//  |  __ \|  ____|__   __/ __ \| |  | |  __ \ 
@@ -1038,7 +1067,7 @@
 			}
 			"CAI_BaseNPC::UpdateSleepState"	// void CAI_BaseNPC::UpdateSleepState( bool bInPVS )
 			{
-				"windows"	"\x55\x8B\xEC\x56\x8B\xF1\x83\xBE\x2A\x2A\x2A\x2A\x00\x0F\x8E" // str: "CAI_BaseNPC::UpdateSleepState called with NULL pLocalPlayer\n"
+				"windows"	"\x55\x8B\xEC\x56\x8B\xF1\x83\xBE\x2A\x2A\x2A\x2A\x00\x0F\x8E" // str: "CAI_BaseNPC::UpdateSleepState called with NULL pLocalPlayer"
 				"linux"		"@_ZN11CAI_BaseNPC16UpdateSleepStateEb"
 			}
 			"CBaseEntity::SetNextThink" // void SetNextThink( float nextThinkTime, const char *szContext = NULL );
@@ -1491,6 +1520,11 @@
 				"windows"	"285"
 				"linux"		"286"
 			}
+			"CBaseTrigger::IsTouching"	// CBaseTrigger::IsTouching(const CBaseEntity *pOther)
+			{
+				"windows"	"217"
+				"linux"		"218"
+			}
 		}
 	}
 
@@ -1882,6 +1916,12 @@
 				"windows"	"271"
 				"linux"		"272"
 			}
+			"CBaseTrigger::IsTouching"	// CBaseTrigger::IsTouching(const CBaseEntity *pOther)
+			{
+				"windows"	"206"
+				"linux"		"207"
+			}
 		}
 	}
 }
+

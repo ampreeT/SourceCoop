@@ -1,0 +1,28 @@
+@SolidClass base(Trigger) = trigger_coop : "Trigger that can count the number of players, either fractionally or as a specific number." +
+	"Filters can be used with this entity, however only players can use the special features of this entity."
+[
+	CountType(choices) : "Count Type" : 1 : "How you want the trigger to count players." =
+	[
+		0 : "Specific Number"
+		1 : "Percentage"
+	]
+
+	UseHud(choices) : "Use HUD" : 1 : "Should we use the HUD to display the number of players?" =
+	[
+		0 : "No"
+		1 : "Yes"
+	]
+	
+	PlayerValue(integer) : "Number of Players" : 50 : "The value this trigger will use to compare with.  Use value range of 0 - 100 for percentage."
+	target(target_destination) : "Target" : "" : "Target to teleport the player to with TeleportPlayersNotTouching Input."
+	renderamt(integer) : "HUD Alpha" : 255 : "Alpha of the hud text, where 0 = fully transparent and 255 = fully opaque." 
+	rendercolor(color255) : "HUD Color (R G B)" : "255 255 255"
+
+	input Alpha(integer) : "Sets HUD alpha (0 - 255)."
+	input Color(color255) : "Sets HUD render color (R G B)."
+	input TeleportPlayersNotTouching(void) : "Teleport Players who are not touching this trigger to the Target's location."
+
+	output OnPlayersIn(void) : "This gets fired if the required amount of players are touching this volume."
+	output OnPlayersOut(void) : "This gets fired after the player count drops below the requirement."
+	output OnAllPlayersIn(void) : "This gets fired when every player is touching the trigger, will couple with OnPlayersIn. (Use OnEndTouchAll for opposite effect)"
+]

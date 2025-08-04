@@ -13,6 +13,18 @@ stock int FindStringInArrayEx(const char[][] array, int len, const char[] str, b
 	return -1;
 }
 
+stock int FindStringInArrayDict(const char[][][] array, int len, const char[] str, bool caseSensitive = true, int searchColumnIndex = 0)
+{
+	for (int i = 0; i < len; i++)
+	{
+		if (StrEqual(str, array[i][searchColumnIndex], caseSensitive))
+		{
+			return i;
+		}
+	}
+	return -1;
+}
+
 stock int FindValueInArrayEx(const any[] array, int len, const any val)
 {
 	for (int i = 0; i < len; i++)

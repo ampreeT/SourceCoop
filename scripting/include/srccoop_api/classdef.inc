@@ -27,6 +27,7 @@
 #include <srccoop_api/classdef/common/CBreakableProp.inc>
 #include <srccoop_api/classdef/common/CChangelevel.inc>
 #include <srccoop_api/classdef/common/CDynamicProp.inc>
+#include <srccoop_api/classdef/common/CEntityFactoryDictionary.inc>
 #include <srccoop_api/classdef/common/CEnvBeam.inc>
 #include <srccoop_api/classdef/common/CEnvZoom.inc>
 #include <srccoop_api/classdef/common/CFuncLadder.inc>
@@ -109,6 +110,8 @@ stock void InitClassdef(const GameData hGameConfig)
 	CSoundEnt.InitClassdef(hGameConfig);
 	CPlayerState.InitClassdef(hGameConfig);
 	CNPC_Barnacle.InitClassdef(hGameConfig);
+	CBaseTrigger.InitClassdef(hGameConfig);
+	CEntityFactoryDictionary.InitClassdef(hGameConfig);
 
 	// Always last.
 	CGlobalVars.InitClassdef(hGameConfig);
