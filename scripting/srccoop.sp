@@ -956,14 +956,6 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 		}
 		#endif
 
-		#if defined PLAYERPATCH_BM_CLIENT_PREDICTION
-		if (strncmp(szClassname, "prop_ragdoll", 12) == 0)
-		{
-			SDKHook(iEntIndex, SDKHook_SpawnPost, Hook_Ragdoll_SpawnPost);
-			return;
-		}
-		#endif
-
 		#if defined ENTPATCH_BM_PROP_CHARGERS
 		if (strcmp(szClassname, "prop_radiation_charger") == 0)
 		{

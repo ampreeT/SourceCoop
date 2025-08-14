@@ -712,14 +712,6 @@ public void Hook_SpriteTeamSpawnPost(int iEntIndex)
 	CreateTimer(0.0, Timer_SetTripmineSpriteColor, CSpriteTeam(iEntIndex));
 }
 
-// Fixes the bouncing up/down prediction errors experienced by the player thinking that the ragdoll has no collision.
-//
-public void Hook_Ragdoll_SpawnPost(int iEntIndex)
-{
-	CRagdollProp pRagdoll = CRagdollProp(iEntIndex);
-	pRagdoll.SetCollisionGroup(COLLISION_GROUP_DEBRIS);
-}
-
 // Fixes map-placed tripmines not having the proper color with `mp_teamplay 1`.
 //
 public void Timer_SetTripmineSpriteColor(Handle timer, CSpriteTeam pSpriteTeam)
