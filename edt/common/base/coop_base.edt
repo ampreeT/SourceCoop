@@ -38,6 +38,11 @@
 		"bm_killstreaks_enabled" "0"
 	}
 
+	"define"
+	{
+		"all_ragdolls_are_debris" "1"
+	}
+
 	"client_console"
 	{
 		// fixes bugged trigger_teleport prediction (camera jerking around as if being teleported)
@@ -57,5 +62,24 @@
 	
 	"entity_base_coop"
 	{
+		// fix prop_ragdoll prediction bug
+		#if
+		{
+			"all_ragdolls_are_debris" "1"
+			#then
+			{
+				"modify"
+				{
+					"classname" "prop_ragdoll"
+					"flags"
+					{
+						"spawnflags"
+						{
+							"add" "4" // Debris - Don't collide with the player or other debris
+						}
+					}
+				}
+			}
+		}
 	}
 }
