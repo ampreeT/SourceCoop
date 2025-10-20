@@ -1197,8 +1197,8 @@ public void Hook_AmmoCanister_Sprite_OnCreated(const CSprite pSprite)
 	if (pCanisterLight != NULL_CBASEENTITY)
 	{	
 		pCanisterLight.SetLightColor(255, 150, 0);
-		pCanisterLight.SetEnabled(1);
-		pCanisterLight.SetStyle(1);
+		pCanisterLight.SetEnabled(true);
+		pCanisterLight.SetStyle(true);
 		pCanisterLight.SetIntensity(32.0);
 		pCanisterLight.SetSpecMultiplier(0.0); //never used by code generated lights, maybe we should have ?
 		pCanisterLight.SetLightType(2);
@@ -1228,11 +1228,11 @@ public void Hook_Battery_OnCreated(const CItem pItem)
 		return;
 	
 	pBatteryLight.SetLightColor(20, 181, 214);
-	pBatteryLight.SetEnabled(1);
-	pBatteryLight.SetStyle(1);
+	pBatteryLight.SetEnabled(true);
+	pBatteryLight.SetStyle(true);
 	pBatteryLight.SetIntensity(256.0);
 	pBatteryLight.SetTexName("lights/lightcookie_battery.vtf");
-	pBatteryLight.SetTexLight(1);
+	pBatteryLight.SetTexLight(true);
 	pBatteryLight.SetSpecMultiplier(0.0);
 	pBatteryLight.SetLightType(2);
 	pBatteryLight.SetRange(100.0);

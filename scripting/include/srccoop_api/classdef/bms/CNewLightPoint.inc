@@ -13,12 +13,12 @@ methodmap CNewLightPoint < CBaseEntity
 		return CNewLightPoint(CreateEntityByName("newlight_point"));
 	}
 	
-	public int GetEnabled()
+	public bool GetEnabled()
 	{
 		return GetEntProp(this.entindex, Prop_Data, "m_bEnabled") != 0;
 	}
 	
-	public void SetEnabled(const int bEnabled)
+	public void SetEnabled(const bool bEnabled)
 	{
 		SetEntProp(this.entindex, Prop_Data, "m_bEnabled", bEnabled);
 	}
@@ -85,12 +85,12 @@ methodmap CNewLightPoint < CBaseEntity
 		SetEntPropFloat(this.entindex, Prop_Data, "m_fSpecMultiplier", flSpecMultiplier);
 	}
 	
-	public int GetHasShadow()
+	public bool GetHasShadow()
 	{
 		return GetEntProp(this.entindex, Prop_Data, "m_bHasShadow") != 0;
 	}
 	
-	public void SetHasShadow(const int bHasShadow)
+	public void SetHasShadow(const bool bHasShadow)
 	{
 		SetEntProp(this.entindex, Prop_Data, "m_bHasShadow", bHasShadow);
 	}
@@ -115,12 +115,12 @@ methodmap CNewLightPoint < CBaseEntity
 		return SetEntPropString(this.entindex, Prop_Data, "texName", szTexturePath); 
 	}
 	
-	public int GetTexLight()
+	public bool GetTexLight()
 	{
 		return GetEntProp(this.entindex, Prop_Data, "bTexLight") != 0;
 	}
 	
-	public void SetTexLight(const int bTexLight)
+	public void SetTexLight(const bool bTexLight)
 	{
 		SetEntProp(this.entindex, Prop_Data, "bTexLight", bTexLight);
 	}
@@ -135,12 +135,12 @@ methodmap CNewLightPoint < CBaseEntity
 		SetEntPropFloat(this.entindex, Prop_Data, "m_fShadowRadius", flShadowRadius);
 	}
 	
-	public int GetEnableGodRays()
+	public bool GetEnableGodRays()
 	{
 		return GetEntProp(this.entindex, Prop_Data, "m_bEnableGodRays") != 0;
 	}
 	
-	public void SetEnableGodRays(const int bEnableGodRays)
+	public void SetEnableGodRays(const bool bEnableGodRays)
 	{
 		SetEntProp(this.entindex, Prop_Data, "m_bEnableGodRays", bEnableGodRays);
 	}
@@ -185,12 +185,12 @@ methodmap CNewLightPoint < CBaseEntity
 		SetEntPropFloat(this.entindex, Prop_Data, "m_fDistFactor", flDistFactor);
 	}
 
-	public int GetGodRaysType()
+	public bool GetGodRaysType()
 	{
 		return GetEntProp(this.entindex, Prop_Data, "m_nGodRaysType");
 	}
 	
-	public void SetGodRaysType(const int iGodRaysType)
+	public void SetGodRaysType(const bool iGodRaysType)
 	{
 		SetEntProp(this.entindex, Prop_Data, "m_nGodRaysType", iGodRaysType);
 	}
