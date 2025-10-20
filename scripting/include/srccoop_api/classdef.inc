@@ -81,6 +81,7 @@
 #include <srccoop_api/classdef/bms/CEnv_XenPortalEffect.inc>
 #include <srccoop_api/classdef/bms/CEnvBeamTeam.inc>
 #include <srccoop_api/classdef/bms/CItem_HealthKit.inc>
+#include <srccoop_api/classdef/bms/CNewLightPoint.inc>
 #include <srccoop_api/classdef/bms/CParamsManager.inc>
 #include <srccoop_api/classdef/bms/CPropChargerBase.inc>
 #include <srccoop_api/classdef/bms/CSpriteTeam.inc>

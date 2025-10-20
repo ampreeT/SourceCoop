@@ -1193,24 +1193,26 @@ public void Hook_AmmoCanister_Sprite_OnCreated(const CSprite pSprite)
 		SDKHook(pSprite.entindex, SDKHook_SetTransmit, Hook_Instancing_ItemParent_Transmit);
 	}
 
-	/*
-	// TODO: Find out another way of drawing the light.
-	// This is commented out as the light will still appear with the `SetTransmit` hook returning `Plugin_Stop`.
-	CBaseEntity pDynamicLight = CBaseEntity.Create("light_dynamic");
-	if (pDynamicLight != NULL_CBASEENTITY)
-	{
-		// TODO: Create methodmap `CDynamicLight` and replace these calls.
-		pDynamicLight.SetRenderColor(RGBA(255, 160, 0, 255));
-		pDynamicLight.KeyValue("brightness", "2");
-		pDynamicLight.KeyValue("distance", "16");
-		pDynamicLight.KeyValue("style", "1");
-		pDynamicLight.Spawn();
-		pDynamicLight.AcceptInput("TurnOn");
-		pDynamicLight.SetParent(pParent);
-		pDynamicLight.SetParentAttachment("w_weaponbox_dlight");
-		SDKHook(pDynamicLight.entindex, SDKHook_SetTransmit, Hook_Instancing_ItemParent_Transmit);
+	CNewLightPoint pCanisterLight = CNewLightPoint.Create();
+	if (pCanisterLight != NULL_CBASEENTITY)
+	{	
+		pCanisterLight.SetLightColor(255, 150, 0);
+		pCanisterLight.SetEnabled(true);
+		pCanisterLight.SetStyle(true);
+		pCanisterLight.SetIntensity(32.0);
+		pCanisterLight.SetSpecMultiplier(0.0); //never used by code generated lights, maybe we should have ?
+		pCanisterLight.SetLightType(2);
+		pCanisterLight.SetRange(100.0); //we don't know the orig range, the def is 100, which is respectable
+		
+		pCanisterLight.Spawn();
+		pCanisterLight.SetParent(pParent);
+		pCanisterLight.SetParentAttachment("w_weaponbox_dlight");
+		SDKHook(pCanisterLight.entindex, SDKHook_SetTransmit, Hook_Instancing_ItemParent_Transmit);
+		
+		// Without modifying these flags, the light's parent will be forced to always transmit.
+		pCanisterLight.edictFlags &= ~FL_EDICT_ALWAYS;
+		pCanisterLight.edictFlags |= FL_EDICT_PVSCHECK;
 	}
-	*/
 }
 
 // Fixes the missing dynamic light on the battery.
@@ -1220,25 +1222,25 @@ public void Hook_Battery_OnCreated(const CItem pItem)
 	if (!pItem.IsValid())
 		return;
 	
-	// TODO: Create a methodmap.
-	CBaseEntity pBatteryLight = CBaseEntity.Create("newLight_Point");
+	CNewLightPoint pBatteryLight = CNewLightPoint.Create();
+	
 	if (pBatteryLight == NULL_CBASEENTITY)
 		return;
-
-	pBatteryLight.KeyValue("lightcolor", "20 181 214 255");
-	pBatteryLight.KeyValue("style", "1");	// Flicker A
-	pBatteryLight.KeyValue("Intensity", "256");
-	pBatteryLight.KeyValue("texName", "lights/lightcookie_battery.vtf");
-	pBatteryLight.KeyValue("bTexLight", "1");
-	pBatteryLight.KeyValue("SpecMultiplier", "0");
-	pBatteryLight.KeyValue("lighttype", "2");
-	pBatteryLight.KeyValue("range", "30");
+	
+	pBatteryLight.SetLightColor(20, 181, 214);
+	pBatteryLight.SetEnabled(true);
+	pBatteryLight.SetStyle(true);
+	pBatteryLight.SetIntensity(256.0);
+	pBatteryLight.SetTexName("lights/lightcookie_battery.vtf");
+	pBatteryLight.SetTexLight(true);
+	pBatteryLight.SetSpecMultiplier(0.0);
+	pBatteryLight.SetLightType(2);
+	pBatteryLight.SetRange(100.0);
+	
 	pBatteryLight.Spawn();
 
 	pBatteryLight.SetParent(pItem);
-	pBatteryLight.Teleport({0.0, 0.0, 6.0}, vec3_origin);
-
-	pBatteryLight.AcceptInput("TurnOn");
+	pBatteryLight.Teleport({0.0, 0.0, 6.0}, vec3_origin); //TODO: Should this be removed ? Orig light is always at battery origin
 
 	// Without modifying these flags, the light's parent will be forced to always transmit.
 	pBatteryLight.edictFlags &= ~FL_EDICT_ALWAYS;
