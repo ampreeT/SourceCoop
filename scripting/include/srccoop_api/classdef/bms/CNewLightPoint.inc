@@ -97,7 +97,7 @@ methodmap CNewLightPoint < CBaseEntity
 	
 	public int GetLightType()
 	{
-		return GetEntProp(this.entindex, Prop_Data, "m_tLightType") != 0;
+		return GetEntProp(this.entindex, Prop_Data, "m_tLightType");
 	}
 	
 	public void SetLightType(const int iLightType)
@@ -105,7 +105,7 @@ methodmap CNewLightPoint < CBaseEntity
 		SetEntProp(this.entindex, Prop_Data, "m_tLightType", iLightType);
 	}
 	
-	public int GetTexName(char[] szBuffer, const int iMaxLength)
+	public bool GetTexName(char[] szBuffer, const int iMaxLength)
 	{
 		return GetEntPropString(this.entindex, Prop_Data, "texName", szBuffer, iMaxLength) != 0;
 	}
@@ -187,7 +187,7 @@ methodmap CNewLightPoint < CBaseEntity
 
 	public bool GetGodRaysType()
 	{
-		return GetEntProp(this.entindex, Prop_Data, "m_nGodRaysType");
+		return GetEntProp(this.entindex, Prop_Data, "m_nGodRaysType") != 0;
 	}
 	
 	public void SetGodRaysType(const bool iGodRaysType)
