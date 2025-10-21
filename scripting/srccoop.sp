@@ -910,14 +910,6 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 			return;
 		}
 		#endif
-
-		#if defined ENTPATCH_WEAPON_MODELS
-		if (pEntity.IsWeapon())
-		{
-			DHookEntity(hkSetModel, false, iEntIndex, _, Hook_WeaponSetModel);
-			return;
-		}
-		#endif
 		
 		// ToDo: support all games
 		#if defined SRCCOOP_BLACKMESA
