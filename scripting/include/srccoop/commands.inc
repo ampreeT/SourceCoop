@@ -243,3 +243,51 @@ public Action Command_ImportConfigs(int iArgs)
 
 	return Plugin_Handled;
 }
+
+static int g_iMissingWeaponSpawnCount = 0;
+static Handle g_hMissingWeaponTimer;
+
+// Intended to be used on the map `bm_c1a3a` to test missing weapons upon player spawns.
+// Increase `engine_no_focus_sleep` to `350` on the client, then unfocus the window to reproduce.
+//
+public Action Command_Debug_MissingWeapons(int iArgs)
+{
+	if (g_hMissingWeaponTimer == null)
+	{
+		g_iMissingWeaponSpawnCount = 0;
+		g_hMissingWeaponTimer = CreateTimer(0.5, Timer_Debug_MissingWeapons, _, TIMER_REPEAT);
+		MsgAll("Infinite missing weapon timer started");
+	}
+	else
+	{
+		delete g_hMissingWeaponTimer;
+		MsgAll("Infinite missing weapon timer stopped");
+	}
+	
+	return Plugin_Handled;
+}
+
+static Action Timer_Debug_MissingWeapons(Handle hTimer)
+{
+	for (int i = 1; i <= MaxClients; ++i)
+	{
+		CBasePlayer pPlayer = CBasePlayer(i);
+		if (pPlayer == NULL_CBASEENTITY || !pPlayer.IsAlive() || pPlayer.IsBot())
+			continue;
+
+		// Check player state here.
+		if (!pPlayer.HasWeapon("weapon_glock") || !pPlayer.HasWeapon("weapon_shotgun"))
+		{
+			MsgAll("Missing weapons after %i spawns", g_iMissingWeaponSpawnCount);
+			g_hMissingWeaponTimer = null;
+			return Plugin_Stop;
+		}
+		
+		pPlayer.Suicide();
+		pPlayer.Spawn();
+	}
+
+	g_iMissingWeaponSpawnCount += 1;
+
+	return Plugin_Continue;
+}
