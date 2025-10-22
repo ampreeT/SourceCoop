@@ -726,11 +726,6 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 			return;
 		}
 
-		if (strcmp(szClassname, "grenade_bolt") == 0)
-		{
-			DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_GrenadeBoltAcceptInput);
-			return;
-		}
 		#endif
 
 		if (pEntity.IsWeapon())
