@@ -743,9 +743,40 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 			DHookEntity(hkBaseCombatWeaponGetPrimaryAttackActivity, false, iEntIndex, _, Hook_CrossbowGetPrimaryAttackActivity);
 			DHookEntity(hkWeaponCrossbowFireBolt, false, iEntIndex, _, Hook_CrossbowFireBolt);
 			DHookEntity(hkWeaponCrossbowFireBolt, true, iEntIndex, _, Hook_CrossbowFireBoltPost);
+		if (strcmp(szClassname, "grenade_bolt") == 0)
+		{
+			DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_GrenadeBoltAcceptInput);
 			return;
 		}
 		#endif
+
+		if (pEntity.IsWeapon())
+		{
+			#if defined ENTPATCH_BM_SP_WEAPONS
+			if (strcmp(szClassname, "weapon_357") == 0)
+			{
+				DHookEntity(hkBaseCombatWeaponDeploy, false, iEntIndex, _, Hook_IronsightDeployPost_SaveSettings);
+				DHookEntity(hkBaseCombatWeaponGetPrimaryAttackActivity, false, iEntIndex, _, Hook_IronsightGetPrimaryAttackActivity);
+			}
+
+			if (strcmp(szClassname, "weapon_crossbow") == 0)
+			{
+				DHookEntity(hkBaseCombatWeaponItemPostFrame, true, iEntIndex, _, Hook_CrossbowItemPostFramePost);
+				DHookEntity(hkBaseCombatWeaponDeploy, false, iEntIndex, _, Hook_IronsightDeployPost_SaveSettings);
+				DHookEntity(hkBaseCombatWeaponDeploy, true, iEntIndex, _, Hook_CrossbowDeployPost);
+				DHookEntity(hkBaseCombatWeaponPrimaryAttack, false, iEntIndex, _, Hook_CrossbowPrimaryAttack);
+				DHookEntity(hkBaseCombatWeaponPrimaryAttack, true, iEntIndex, _, Hook_CrossbowPrimaryAttackPost);
+				DHookEntity(hkBaseCombatWeaponGetDrawActivity, false, iEntIndex, _, Hook_CrossbowGetDrawActivity);
+				DHookEntity(hkBaseCombatWeaponGetPrimaryAttackActivity, false, iEntIndex, _, Hook_CrossbowGetPrimaryAttackActivity);
+			}
+			#endif
+
+			#if defined ENTPATCH_WEAPON_MODELS
+			DHookEntity(hkSetModel, false, iEntIndex, _, Hook_WeaponSetModel);
+			#endif
+
+			return;
+		}
 
 		if (strcmp(szClassname, "env_message", false) == 0)
 		{
@@ -897,14 +928,6 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 		if (strcmp(szClassname, "phys_bone_follower") == 0)
 		{
 			SDKHook(iEntIndex, SDKHook_VPhysicsUpdatePost, Hook_BoneFollowerVPhysicsUpdatePost);
-			return;
-		}
-		#endif
-
-		#if defined ENTPATCH_WEAPON_MODELS
-		if (pEntity.IsWeapon())
-		{
-			DHookEntity(hkSetModel, false, iEntIndex, _, Hook_WeaponSetModel);
 			return;
 		}
 		#endif
