@@ -726,23 +726,6 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 			return;
 		}
 
-		if (strcmp(szClassname, "weapon_357") == 0)
-		{
-			DHookEntity(hkBaseCombatWeaponDeploy, false, iEntIndex, _, Hook_IronsightDeployPost_SaveSettings);
-			DHookEntity(hkBaseCombatWeaponGetPrimaryAttackActivity, false, iEntIndex, _, Hook_IronsightGetPrimaryAttackActivity);
-			return;
-		}
-
-		if (strcmp(szClassname, "weapon_crossbow") == 0)
-		{
-			DHookEntity(hkBaseCombatWeaponItemPostFrame, true, iEntIndex, _, Hook_CrossbowItemPostFramePost);
-			DHookEntity(hkBaseCombatWeaponDeploy, false, iEntIndex, _, Hook_IronsightDeployPost_SaveSettings);
-			DHookEntity(hkBaseCombatWeaponDeploy, true, iEntIndex, _, Hook_CrossbowDeployPost);
-			DHookEntity(hkBaseCombatWeaponPrimaryAttack, true, iEntIndex, _, Hook_CrossbowPrimaryAttackPost);
-			DHookEntity(hkBaseCombatWeaponGetDrawActivity, false, iEntIndex, _, Hook_CrossbowGetDrawActivity);
-			DHookEntity(hkBaseCombatWeaponGetPrimaryAttackActivity, false, iEntIndex, _, Hook_CrossbowGetPrimaryAttackActivity);
-			DHookEntity(hkWeaponCrossbowFireBolt, false, iEntIndex, _, Hook_CrossbowFireBolt);
-			DHookEntity(hkWeaponCrossbowFireBolt, true, iEntIndex, _, Hook_CrossbowFireBoltPost);
 		if (strcmp(szClassname, "grenade_bolt") == 0)
 		{
 			DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_GrenadeBoltAcceptInput);
@@ -764,7 +747,6 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 				DHookEntity(hkBaseCombatWeaponItemPostFrame, true, iEntIndex, _, Hook_CrossbowItemPostFramePost);
 				DHookEntity(hkBaseCombatWeaponDeploy, false, iEntIndex, _, Hook_IronsightDeployPost_SaveSettings);
 				DHookEntity(hkBaseCombatWeaponDeploy, true, iEntIndex, _, Hook_CrossbowDeployPost);
-				DHookEntity(hkBaseCombatWeaponPrimaryAttack, false, iEntIndex, _, Hook_CrossbowPrimaryAttack);
 				DHookEntity(hkBaseCombatWeaponPrimaryAttack, true, iEntIndex, _, Hook_CrossbowPrimaryAttackPost);
 				DHookEntity(hkBaseCombatWeaponGetDrawActivity, false, iEntIndex, _, Hook_CrossbowGetDrawActivity);
 				DHookEntity(hkBaseCombatWeaponGetPrimaryAttackActivity, false, iEntIndex, _, Hook_CrossbowGetPrimaryAttackActivity);
