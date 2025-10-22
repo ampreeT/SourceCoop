@@ -117,9 +117,13 @@ void LoadGameData()
 	LoadDHookVirtual(pGameConfig, hkBaseCombatWeaponPrimaryAttack, "CBaseCombatWeapon::PrimaryAttack");
 	LoadDHookVirtual(pGameConfig, hkBaseCombatWeaponGetPrimaryAttackActivity, "CBaseCombatWeapon::GetPrimaryAttackActivity");
 	LoadDHookVirtual(pGameConfig, hkBaseCombatWeaponGetDrawActivity, "CBaseCombatWeapon::GetDrawActivity");
+	LoadDHookVirtual(pGameConfig, hkWeaponCrossbowFireBolt, "CWeapon_Crossbow::FireBolt");
 	LoadDHookDetour(pGameConfig, hkToggleIronsights, "CBlackMesaBaseWeaponIronSights::ToggleIronSights", Hook_ToggleIronsights);
 	LoadDHookDetour(pGameConfig, hkTauFireBeam, "CWeapon_Tau::FireBeam", Hook_TauFireBeam, Hook_TauFireBeamPost);
 	LoadDHookDetour(pGameConfig, hkParamsManagerInitInstances, "CParamsManager::InitInstances", Hook_CParamsManager_InitInstances);
+	LoadDHookDetour(pGameConfig, hkStartLagCompensation, "CLagCompensationManager::StartLagCompensation", Hook_StartLagCompensation);
+	
+	g_iUserCmdOffset = pGameConfig.GetOffset("CBasePlayer::GetCurrentUserCommand");
 	#endif
 	
 	#if defined PLAYERPATCH_SUIT_SOUNDS
@@ -729,21 +733,16 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 			return;
 		}
 
-		if (strcmp(szClassname, "grenade_bolt") == 0)
-		{
-			DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_GrenadeBoltAcceptInput);
-			return;
-		}
-
 		if (strcmp(szClassname, "weapon_crossbow") == 0)
 		{
 			DHookEntity(hkBaseCombatWeaponItemPostFrame, true, iEntIndex, _, Hook_CrossbowItemPostFramePost);
 			DHookEntity(hkBaseCombatWeaponDeploy, false, iEntIndex, _, Hook_IronsightDeployPost_SaveSettings);
 			DHookEntity(hkBaseCombatWeaponDeploy, true, iEntIndex, _, Hook_CrossbowDeployPost);
-			DHookEntity(hkBaseCombatWeaponPrimaryAttack, false, iEntIndex, _, Hook_CrossbowPrimaryAttack);
 			DHookEntity(hkBaseCombatWeaponPrimaryAttack, true, iEntIndex, _, Hook_CrossbowPrimaryAttackPost);
 			DHookEntity(hkBaseCombatWeaponGetDrawActivity, false, iEntIndex, _, Hook_CrossbowGetDrawActivity);
 			DHookEntity(hkBaseCombatWeaponGetPrimaryAttackActivity, false, iEntIndex, _, Hook_CrossbowGetPrimaryAttackActivity);
+			DHookEntity(hkWeaponCrossbowFireBolt, false, iEntIndex, _, Hook_CrossbowFireBolt);
+			DHookEntity(hkWeaponCrossbowFireBolt, true, iEntIndex, _, Hook_CrossbowFireBoltPost);
 			return;
 		}
 		#endif

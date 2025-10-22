@@ -89,6 +89,7 @@ char g_pDnDisplayList[][2][] =
 
 	// Weapon Projectiles.
 	{ "grenade_bolt", "Crossbow Bolt" },
+	{ "tracerbullet", "Crossbow Bolt" },
 	{ "grenade_frag", "Frag Grenade" },
 	{ "grenade_hornet", "Hornet" },
 	{ "grenade_mp5_contact", "MP5 Grenade" },
@@ -108,7 +109,7 @@ char g_pDnWeaponIconList[][2][] =
 {
 	// Weapons.
 	{ "weapon_357", "357" },
-	{ "weapon_assassin_glock", "assassin_glock" },
+	{ "weapon_assassin_glock", "glock" }, //no icon in game files, use "glock" cuz it's glock anyway
 	{ "weapon_crossbow", "crossbow" },
 	{ "weapon_crowbar", "crowbar" },
 	{ "weapon_frag", "frag" },
@@ -126,6 +127,7 @@ char g_pDnWeaponIconList[][2][] =
 
 	// Weapon Projectiles.
 	{ "grenade_bolt", "crossbow" },
+	{ "tracerbullet", "crossbow" },
 	{ "grenade_frag", "frag" },
 	{ "grenade_hornet", "hivehand" },
 	{ "grenade_mp5_contact", "mp5" },
