@@ -129,9 +129,11 @@ DynamicHook hkBaseCombatWeaponDeploy;
 DynamicHook hkBaseCombatWeaponPrimaryAttack;
 DynamicHook hkBaseCombatWeaponGetPrimaryAttackActivity;
 DynamicHook hkBaseCombatWeaponGetDrawActivity;
+DynamicHook hkWeaponCrossbowFireBolt;
 DynamicDetour hkToggleIronsights;
 DynamicDetour hkTauFireBeam;
 DynamicDetour hkParamsManagerInitInstances;
+DynamicDetour hkStartLagCompensation;
 #endif
 
 #if defined PLAYERPATCH_SUIT_SOUNDS
@@ -219,6 +221,9 @@ int g_bUnblockRespawn[MAXPLAYERS+1];
 SpawnOptions g_pSpawnOptions;
 OperatingSystem g_serverOS;
 FeatureMap g_pFeatureMap;
+#if defined SRCCOOP_BLACKMESA
+int g_iUserCmdOffset;
+#endif
 
 ArrayList g_pPostponedSpawns;
 
