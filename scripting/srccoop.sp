@@ -628,7 +628,7 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 		#endif
 		
 		#if defined ENTPATCH_SNIPER
-		if (strcmp(szClassname, "npc_sniper", false) == 0)
+		if (strcmp(szClassname, "npc_sniper", false) == 0 || strcmp(szClassname, "proto_sniper", false) == 0)
 		{
 			DHookEntity(hkProtoSniperSelectSchedule, false, iEntIndex, _, Hook_ProtoSniperSelectSchedule);
 			return;

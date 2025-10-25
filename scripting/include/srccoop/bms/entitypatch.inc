@@ -227,19 +227,26 @@ public MRESReturn Hook_PropHevChargerThink(int _this)
 //------------------------------------------------------
 public Action BlackMesaFireBulletsTEHook(const char[] szTEName, const int[] iClients, int iNumClients, float flDelay)
 {
+	// TE will crash all clients without a valid entity.
+	CBaseEntity pEntity = CBaseEntity(TE_ReadNum("m_iEntityIndex"));
+	if (pEntity == NULL_CBASEENTITY)
+		return Plugin_Changed;
+		
+	int bIsPlayer = TE_ReadNum("m_bIsPlayer");
+
+	//Check if my owner is player, fixes tracerbullet not creating decals + impact fx
+	if(bIsPlayer)
+		return Plugin_Continue;
+	
+	char szClassname[MAX_CLASSNAME];
+	if (!pEntity.GetClassname(szClassname, sizeof(szClassname)))
+		return Plugin_Changed;
+	
 	// Prevent crashes from `npc_sniper` on certain client configurations. 
 	AmmoType_t eAmmoType = view_as<AmmoType_t>(TE_ReadNum("m_iAmmoID"));
 	if (eAmmoType == AMMO_SNIPERROUND)
 		return Plugin_Changed;
 	
-	// TE will crash all clients without a valid entity.
-	CBaseEntity pEntity = CBaseEntity(TE_ReadNum("m_iEntityIndex"));
-	if (pEntity == NULL_CBASEENTITY)
-		return Plugin_Changed;
-
-	char szClassname[MAX_CLASSNAME];
-	if (!pEntity.GetClassname(szClassname, sizeof(szClassname)))
-		return Plugin_Changed;
 
 	// Hide tracers of broken npcs.
 	// TODO:
