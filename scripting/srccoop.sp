@@ -745,6 +745,8 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 				DHookEntity(hkBaseCombatWeaponPrimaryAttack, true, iEntIndex, _, Hook_CrossbowPrimaryAttackPost);
 				DHookEntity(hkBaseCombatWeaponGetDrawActivity, false, iEntIndex, _, Hook_CrossbowGetDrawActivity);
 				DHookEntity(hkBaseCombatWeaponGetPrimaryAttackActivity, false, iEntIndex, _, Hook_CrossbowGetPrimaryAttackActivity);
+				DHookEntity(hkWeaponCrossbowFireBolt, false, iEntIndex, _, Hook_CrossbowFireBolt);
+				DHookEntity(hkWeaponCrossbowFireBolt, true, iEntIndex, _, Hook_CrossbowFireBoltPost);
 			}
 			#endif
 
