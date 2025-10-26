@@ -133,7 +133,6 @@ DynamicHook hkWeaponCrossbowFireBolt;
 DynamicDetour hkToggleIronsights;
 DynamicDetour hkTauFireBeam;
 DynamicDetour hkParamsManagerInitInstances;
-DynamicDetour hkStartLagCompensation;
 #endif
 
 #if defined PLAYERPATCH_SUIT_SOUNDS
@@ -198,6 +197,10 @@ DynamicHook hkCreateRagdollEntity;
 #if defined SRCCOOP_BLACKMESA
 DynamicDetour hkAccumulatePose;
 DynamicDetour hkTestGroundMove;
+#endif
+
+#if defined SRCCOOP_BLACKMESA
+DynamicDetour hkStartLagCompensation;
 #endif
 
 // ----------------------------
