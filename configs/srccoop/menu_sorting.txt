@@ -2,27 +2,41 @@
 {
 	"PlayerSettings"
 	{
-		"item"		"ToggleThirdperson"
-		"item"		"ToggleDeathCamera"
+		"ToggleThirdperson" {}
+		"ToggleDeathCamera" {}
 	}
 
 	"SoundSettings"
 	{
-		"item"		"ToggleKillsounds"
-		"item"		"ToggleEarBleed"
+		"ToggleKillsounds" {}
+		"ToggleEarBleed" {}
 	}
 
 	"Voting"
 	{
-		"item"		"SurvivalVote"
-		"item"		"MapVote"
-		"item"		"RestartMapVote"
-		"item"		"SkipIntroVote"
+		"SurvivalVote" {}
+		"MapVote"
+		{
+			"Black Mesa Official"
+			{
+				"sorting" "map"
+			}
+			"Workshop maps"
+			{
+				"sorting" "chapter"
+			}
+			"[Unnamed campaigns]"
+			{
+				"sorting" "chapter"
+			}
+		}
+		"RestartMapVote" {}
+		"SkipIntroVote" {}
 	}
 
 	"Other"
 	{
-		"item"		"ToggleKillfeed"
+		"ToggleKillfeed" {}
 	}
 	
 }

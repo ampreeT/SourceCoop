@@ -454,7 +454,7 @@ void OnSurvivalModeChangedWhileVoting(ConVar convar, const char[] oldValue, cons
 
 enum struct MapMenuSection
 {
-	char szName[32];
+	char szName[64];
 	ArrayList pSubSections;
 	ArrayList pMaps;
 
@@ -467,7 +467,7 @@ enum struct MapMenuSection
 
 	void Close()
 	{
-		if (this.pSubSections != null)
+		if (this.pSubSections)
 		{
 			int len = this.pSubSections.Length;
 			MapMenuSection pSubSection;
@@ -488,7 +488,7 @@ enum struct MapMenuSection
 		for (int i = 0; i < len; i++)
 		{
 			this.pSubSections.GetArray(i, pTemp);
-			if (StrEqual(pTemp.szName, szSection))
+			if (StrEqual(pTemp.szName, szSection, false))
 			{
 				pSubSection = pTemp;
 				return true;
@@ -512,6 +512,18 @@ enum struct MapMenuSection
 #define CAMPAIGN_NONE "[Unnamed campaigns]"
 #define CHAPTER_NONE "[Unnamed chapters]"
 
+enum ChapterSorting
+{
+	ChapterSorting_Map,           // sort chapters by natural map insert order
+	ChapterSorting_Chapter,       // sort chapters by name
+}
+
+enum struct CampaignSorting
+{
+	ChapterSorting eChapterSorting;
+	int iOrder;
+}
+
 MapMenuSection pRootMapSection;
 
 methodmap MapParser
@@ -525,10 +537,33 @@ methodmap MapParser
 		
 		StringMap duplicityChecker = new StringMap();
 		
+		// Load
 		char szConfigPath[PLATFORM_MAX_PATH];
 		BuildPath(Path_SM, szConfigPath, sizeof(szConfigPath), "data/srccoop");
 		MapParser.LoadMapsInPath(szConfigPath, duplicityChecker);
 		MapParser.LoadMapsInPath("maps", duplicityChecker, true);
+		
+		// Sort campaigns
+		StringMap hSortMap = MapParser.LoadSorting();
+		pRootMapSection.pSubSections.SortCustom(SortCampaigns, hSortMap);
+
+		// Sort chapters
+		MapMenuSection pCampaign;
+		for (int i = 0; i < pRootMapSection.pSubSections.Length; i++)
+		{
+			pRootMapSection.pSubSections.GetArray(i, pCampaign);
+			LowerCaseString(pCampaign.szName, pCampaign.szName, sizeof(pCampaign.szName));
+	
+			CampaignSorting pSorting;
+			if (hSortMap.GetArray(pCampaign.szName, pSorting, sizeof(CampaignSorting)))
+			{
+				if (pSorting.eChapterSorting == ChapterSorting_Chapter)
+				{
+					pCampaign.pSubSections.SortCustom(SortChapters);
+				}
+			}
+		}
+		hSortMap.Close();
 		
 		MsgSrv("%t", "scanned maps", duplicityChecker.Size, GetEngineTime() - flStartTime);
 		delete duplicityChecker;
@@ -589,14 +624,85 @@ methodmap MapParser
 		pSection.GetSubSection(szChapter, pSection);
 		pSection.pMaps.PushString(szMap);
 	}
+
+	public static StringMap LoadSorting()
+	{
+		char szPath[PLATFORM_MAX_PATH];
+		BuildPath(Path_SM, szPath, sizeof(szPath), "configs/srccoop/menu_sorting.txt");
+		StringMap hSortMap = new StringMap();
+		KeyValues kv = new KeyValues("");
+		if (kv.ImportFromFile(szPath))
+		{
+			if (kv.JumpToKey(COOPMENU_CATEGORY_VOTING) && kv.JumpToKey(MENUITEM_MAPVOTE))
+			{
+				if (kv.GotoFirstSubKey())
+				{
+					CampaignSorting pSorting;
+					char szCampaign[64], szSorting[8];
+					int i;
+					do
+					{
+						if (kv.GetSectionName(szCampaign, sizeof(szCampaign)))
+						{
+							LowerCaseString(szCampaign, szCampaign, sizeof(szCampaign));
+							kv.GetString("sorting", szSorting, sizeof(szSorting));
+							pSorting.eChapterSorting = StrEqual(szSorting, "chapter", false) ?
+								ChapterSorting_Chapter : ChapterSorting_Map;
+							pSorting.iOrder = i++;
+							hSortMap.SetArray(szCampaign, pSorting, sizeof(CampaignSorting), false);
+						}
+					} while (kv.GotoNextKey());
+				}
+			}
+		}
+		kv.Close();
+		return hSortMap;
+	}
+}
+
+int SortCampaigns(int idx1, int idx2, ArrayList hArr, StringMap hSortMap)
+{
+	char szName1[64], szName2[64];
+	hArr.GetString(idx1, szName1, sizeof(szName1), MapMenuSection::szName);
+	hArr.GetString(idx2, szName2, sizeof(szName2), MapMenuSection::szName);
+	LowerCaseString(szName1, szName1, sizeof(szName1));
+	LowerCaseString(szName2, szName2, sizeof(szName2));
+
+	CampaignSorting pSorting1, pSorting2;
+	bool bHasOrder1 = hSortMap.GetArray(szName1, pSorting1, sizeof(CampaignSorting));
+	bool bHasOrder2 = hSortMap.GetArray(szName2, pSorting2, sizeof(CampaignSorting));
+	if (bHasOrder1 && bHasOrder2)
+	{
+		return pSorting1.iOrder > pSorting2.iOrder ? 1 : -1;
+	}
+	else if (bHasOrder1)
+	{
+		return -1;
+	}
+	else if (bHasOrder2)
+	{
+		return 1;
+	}
+	else
+	{
+		return strcmp(szName1, szName2);
+	}
+}
+
+int SortChapters(int idx1, int idx2, ArrayList hArr, Handle hUnused)
+{
+	char szName1[64], szName2[64];
+	hArr.GetString(idx1, szName1, sizeof(szName1), MapMenuSection::szName);
+	hArr.GetString(idx2, szName2, sizeof(szName2), MapMenuSection::szName);
+	return strcmp(szName1, szName2, false);
 }
 
 //------------------------------------------------------
 // Votemap - Client menu handling
 //------------------------------------------------------
 
-MapMenuSection pMapSection[MAXPLAYERS+1];
-ArrayStack pMapMenuNavStack[MAXPLAYERS+1];
+MapMenuSection pMapSection[MAXPLAYERS + 1];
+ArrayStack pMapMenuNavStack[MAXPLAYERS + 1];
 char szCurrentMapVote[MAX_MAPNAME];
 
 public void OnClientPutInServer(int client)
