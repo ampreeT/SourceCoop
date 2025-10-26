@@ -121,8 +121,10 @@ void LoadGameData()
 	LoadDHookDetour(pGameConfig, hkToggleIronsights, "CBlackMesaBaseWeaponIronSights::ToggleIronSights", Hook_ToggleIronsights);
 	LoadDHookDetour(pGameConfig, hkTauFireBeam, "CWeapon_Tau::FireBeam", Hook_TauFireBeam, Hook_TauFireBeamPost);
 	LoadDHookDetour(pGameConfig, hkParamsManagerInitInstances, "CParamsManager::InitInstances", Hook_CParamsManager_InitInstances);
-	LoadDHookDetour(pGameConfig, hkStartLagCompensation, "CLagCompensationManager::StartLagCompensation", Hook_StartLagCompensation);
+	#endif
 	
+	#if defined STARTLALCOMPENSATION_PATH
+	LoadDHookDetour(pGameConfig, hkStartLagCompensation, "CLagCompensationManager::StartLagCompensation", Hook_StartLagCompensation);
 	g_iUserCmdOffset = pGameConfig.GetOffset("CBasePlayer::GetCurrentUserCommand");
 	#endif
 	
