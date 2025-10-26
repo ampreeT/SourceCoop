@@ -221,7 +221,7 @@ int g_bUnblockRespawn[MAXPLAYERS+1];
 SpawnOptions g_pSpawnOptions;
 OperatingSystem g_serverOS;
 FeatureMap g_pFeatureMap;
-#if defined STARTLALCOMPENSATION_PATH
+#if defined SRCCOOP_BLACKMESA
 int g_iUserCmdOffset;
 #endif
 

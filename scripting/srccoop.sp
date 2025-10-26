@@ -123,7 +123,7 @@ void LoadGameData()
 	LoadDHookDetour(pGameConfig, hkParamsManagerInitInstances, "CParamsManager::InitInstances", Hook_CParamsManager_InitInstances);
 	#endif
 	
-	#if defined STARTLALCOMPENSATION_PATH
+	#if defined SRCCOOP_BLACKMESA
 	LoadDHookDetour(pGameConfig, hkStartLagCompensation, "CLagCompensationManager::StartLagCompensation", Hook_StartLagCompensation);
 	g_iUserCmdOffset = pGameConfig.GetOffset("CBasePlayer::GetCurrentUserCommand");
 	#endif
