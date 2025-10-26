@@ -145,10 +145,20 @@ methodmap CBasePlayer < CBaseCombatCharacter
 		}
 		
 		CBaseAnimating pItem = CBaseAnimating(GivePlayerItem(this.entindex, szItemName));
-		if (pItem != NULL_CBASEENTITY && pItem.GetOwner() == NULL_CBASEENTITY)
+		if (pItem != NULL_CBASEENTITY)
 		{
-			// this would drop on the ground if player cant pick up any more
-			pItem.KillDelayed(0.1);
+			// Horrible but simple way to check if the item is spawned.
+			// If the item is double spawned, then weapon animations will not play.
+			if (pItem.GetSolidType() == SOLID_NONE)
+			{
+				// Spawn the item so it can be touched.
+				pItem.Spawn();
+			}
+
+			// With `GivePlayerItem`, the item that is being given has a chance to
+			// clip inside the world and not touch the player.
+			// We call `Touch` to fix this.
+			this.Touch(pItem);
 		}
 		return pItem;
 	}
