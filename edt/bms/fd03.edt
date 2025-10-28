@@ -1,0 +1,295 @@
+// Script for workshop item 2316239201 - Further Data
+
+#base "base/coop_base_sp_conversion.edt"
+
+"config"
+{
+	"campaign" "Workshop maps"
+	"chapter" "Further Data"
+	
+	"features"
+	{
+		"KEEP_EQUIPMENT" "1"
+	}
+	"equipment"
+	{
+		"item" "item_suit"
+		"item" "weapon_crowbar"
+		"item" "weapon_glock"
+		"item" "weapon_mp5"
+		"item" "item_battery"
+		"item" "item_ammo_glock"
+		"item" "item_ammo_mp5"
+	}
+	"entity"
+	{
+		// block off previous map
+		"modify"
+		{
+			"hammerid" "170589"
+			"set"
+			{
+				"classname" "func_brush"
+				"rendermode" "10"
+			}
+		}
+		// delay map start
+		"modify"
+		{
+			"hammerid" "942650"
+			"functions"
+			{
+				"delay_output" "OnMapSpawn"
+			}
+		}
+		// no choice fix of announcements; logic_choreographed_scene isn't supported in coop
+		"add"
+		{
+			"origin" "3630 -1544 -354"
+			"classname"	"ambient_generic"
+			"targetname" "satcom_vo_01_snd"
+			"message" "further_data/vo/fd03/scientist/01_freeman.wav"
+			"health" "8"
+			"radius" "1200"
+			"spawnflags" "48"
+		}
+		"modify"
+		{
+			"hammerid" "783802"
+			"outputs"
+			{
+				"modify"
+				{
+					"target" "satcom_vo_01"
+					"replace"
+					{
+						"target" "satcom_vo_01_snd"
+						"input"	"PlaySound"
+					}
+				}
+			}
+		}
+		"add"
+		{
+			"origin" "3630 -1544 -354"
+			"classname"	"ambient_generic"
+			"targetname" "satcom_vo_02_snd"
+			"message" "further_data/vo/fd03/scientist/02_doornag.wav"
+			"health" "8"
+			"radius" "1200"
+			"spawnflags" "48"
+		}
+		"modify"
+		{
+			"hammerid" "784176"
+			"outputs"
+			{
+				"modify"
+				{
+					"target" "satcom_vo_02"
+					"replace"
+					{
+						"target" "satcom_vo_02_snd"
+						"input"	"PlaySound"
+					}
+				}
+			}
+		}
+		"add"
+		{
+			"origin" "3630 -1544 -354"
+			"classname"	"ambient_generic"
+			"targetname" "satcom_vo_04_snd"
+			"message" "further_data/vo/fd03/scientist/04_wait.wav"
+			"health" "8"
+			"radius" "1200"
+			"spawnflags" "48"
+		}
+		"modify"
+		{
+			"hammerid" "784209"
+			"outputs"
+			{
+				"modify"
+				{
+					"target" "satcom_vo_04"
+					"replace"
+					{
+						"target" "satcom_vo_04_snd"
+						"input"	"PlaySound"
+					}
+				}
+			}
+		}
+		"add"
+		{
+			"origin" "3630 -1544 -354"
+			"classname"	"ambient_generic"
+			"targetname" "satcom_vo_05_snd"
+			"message" "further_data/vo/fd03/scientist/05_usnrc.wav"
+			"health" "8"
+			"radius" "1200"
+			"spawnflags" "48"
+		}
+		"modify"
+		{
+			"hammerid" "784606"
+			"outputs"
+			{
+				"modify"
+				{
+					"target" "satcom_vo_05"
+					"replace"
+					{
+						"target" "satcom_vo_05_snd"
+						"input"	"PlaySound"
+					}
+				}
+			}
+		}
+		"add"
+		{
+			"origin" "3630 -1544 -354"
+			"classname"	"ambient_generic"
+			"targetname" "satcom_vo_06_snd"
+			"message" "further_data/vo/fd03/scientist/06_allclear.wav"
+			"health" "8"
+			"radius" "1200"
+			"spawnflags" "48"
+		}
+		"modify"
+		{
+			"hammerid" "299676"
+			"outputs"
+			{
+				"modify"
+				{
+					"target" "satcom_vo_06"
+					"replace"
+					{
+						"target" "satcom_vo_06_snd"
+						"input"	"PlaySound"
+					}
+				}
+			}
+		}
+		// push away people from falling down above lift
+		"add"
+		{
+			"classname"	"trigger_push"
+			"targetname" "elev_push_up"
+			"pushdir" "0 270 0"
+			"speed" "500"
+			"spawnflags" "1"
+			"functions"
+			{
+				"set_model"
+				{
+					"origin" "64 788 64"
+					"size" "96 40 128"
+				}
+			}
+		}
+		"add"
+		{
+			"classname"	"trigger_push"
+			"targetname" "elev_push_down"
+			"pushdir" "0 90 0"
+			"speed" "500"
+			"spawnflags" "1"
+			"StartDisabled" "1"
+			"functions"
+			{
+				"set_model"
+				{
+					"origin" "64 972 -472"
+					"size" "128 40 112"
+				}
+			}
+		}
+		"modify"
+		{
+			"hammerid" "20279"
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnFullyOpen"
+					"target" "elev_push_up"
+					"input"	"Disable"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnClose"
+					"target" "elev_push_up"
+					"input"	"Enable"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnFullyClosed"
+					"target" "elev_push_down"
+					"input"	"Disable"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnOpen"
+					"target" "elev_push_down"
+					"input"	"Enable"
+					"timestofire" "-1"
+				}
+			}
+		}
+		// fix 328953 and 328961 spawned twice sometimes
+		"modify"
+		{
+			"hammerid" "349206"
+			"outputs"
+			{
+				"remove"
+				{
+					"target" "satcom_crab1"
+				}
+				"modify"
+				{
+					"target" "satcom_crab2"
+				}
+			}
+		}
+	}
+	"checkpoint"
+	{
+		"spawn"
+		{
+			"origin"	"2416 -1792 -444"
+			"angles"	"0 180 0"
+		}
+		"door closed"
+		{
+			"origin"	"30 -120 -500"
+			"angles"	"0 180 0"
+			"triggerid"	"379966"
+			"output"	"OnTrigger"
+			"portal"	"64 -400 -470"
+		}
+		"battle begins"
+		{
+			"origin"	"42 204 0"
+			"angles"	"0 90 0"
+			"triggerid"	"299996"
+			"output"	"OnPressed"
+			"respawn"	"1"
+			"bringall"	"1"
+			"delay"		"3"
+		}
+		"before sewer"
+		{
+			"origin"	"176 400 -950"
+			"angles"	"0 180 0"
+			"triggerid"	"576615"
+			"output"	"OnTrigger"
+		}
+	}
+}

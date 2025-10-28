@@ -1,0 +1,69 @@
+// Script for workshop item 2904429204 - Surface Contamination
+
+#base "base/coop_base_sp_conversion.edt"
+
+"config"
+{
+	"campaign" "Workshop maps"
+	"chapter" "Surface Contamination"
+	
+	"features"
+	{
+		"KEEP_EQUIPMENT" "1"
+	}
+	"equipment"
+	{
+		"lookup"
+		{
+			"targetname" "c1a4a_equipment"
+		}
+	}
+	"entity"
+	{
+		// delay map start
+		"modify"
+		{
+			"hammerid" "82330"
+			"functions"
+			{
+				"delay_output" "OnMapSpawn"
+			}
+		}
+		// block off previous map
+		"modify"
+		{
+			"classname" "trigger_changelevel"
+			"map" "bc_m1"
+			"set"
+			{
+				"classname" "func_brush"
+				"rendermode" "10"
+			}
+		}
+	}
+	"checkpoint"
+	{
+		"spawn"
+		{
+			"origin"	"2921 -2432 56"
+			"angles"	"0 180 0"
+		}
+		"tunnel"
+		{
+			"origin"	"700 -1632 -27"
+			"angles"	"0 180 0"
+			"triggerid"	"105301"
+			"output"	"OnTrigger"
+			"portal"	"852 -1632 -27"
+		}
+		"lift"
+		{
+			"origin"	"0 0 10"
+			"angles"	"0 90 0"
+			"followid"	"801249"
+			"triggerid"	"801271"
+			"output"	"OnPressed"
+			"bringall"	"1"
+		}
+	}
+}

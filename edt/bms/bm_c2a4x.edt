@@ -1,0 +1,642 @@
+// Script for workshop item 1086124981 - Superbus Via Inscientiae
+
+#base "base/coop_base_sp_conversion.edt"
+
+"config"
+{
+	"campaign" "Workshop maps"
+	"chapter" "Superbus Via Inscientiae"
+	"intro_type" "fade"
+	
+	"features"
+	{
+		"KEEP_EQUIPMENT" "1"
+	}
+	"equipment"
+	{
+		"lookup"
+		{
+			"targetname" "suit"
+		}
+		"health" "69"
+	}
+	"entity"
+	{
+		// delay map start
+		"modify"
+		{
+			"hammerid" "390248"
+			"functions"
+			{
+				"delay_output" "OnMapSpawn"
+			}
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnMapSpawn"
+					"target" "start_turret_relation_r"
+					"input"	"ApplyRelationship"
+					"timestofire" "-1"
+				}
+			}
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnMapSpawn"
+					"target" "vent_uc_hed_ai"
+					"input"	"ApplyRelationship"
+					"timestofire" "-1"
+				}
+			}
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnMapSpawn"
+					"target" "asshole_relation"
+					"input"	"ApplyRelationship"
+					"timestofire" "-1"
+				}
+			}
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnMapSpawn"
+					"target" "lobby_turret_relation"
+					"input"	"ApplyRelationship"
+					"timestofire" "-1"
+				}
+			}
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnMapSpawn"
+					"target" "start_relation"
+					"input"	"ApplyRelationship"
+					"timestofire" "-1"
+				}
+			}
+		}
+		"modify"
+		{
+			"hammerid" "929044"
+			"set"
+			{
+				"targetname" "start_relation"
+			}
+		}
+		"modify"
+		{
+			"hammerid" "976163"
+			"set"
+			{
+				"targetname" "start_relation"
+			}
+		}
+		"modify"
+		{
+			"hammerid" "1225356"
+			"set"
+			{
+				"targetname" "start_relation"
+			}
+		}
+		"modify"
+		{
+			"hammerid" "2030646"
+			"set"
+			{
+				"targetname" "start_relation"
+			}
+		}
+		"modify"
+		{
+			"hammerid" "2030649"
+			"set"
+			{
+				"targetname" "start_relation"
+			}
+		}
+		"modify"
+		{
+			"hammerid" "2030676"
+			"set"
+			{
+				"targetname" "start_relation"
+			}
+		}
+		"modify"
+		{
+			"hammerid" "2042074"
+			"set"
+			{
+				"targetname" "start_relation"
+			}
+		}
+		"modify"
+		{
+			"hammerid" "2925088"
+			"set"
+			{
+				"targetname" "start_relation"
+			}
+		}
+		"modify"
+		{
+			"hammerid" "2927223"
+			"set"
+			{
+				"targetname" "start_relation"
+			}
+		}
+		"modify"
+		{
+			"hammerid" "3575397"
+			"set"
+			{
+				"targetname" "start_relation"
+			}
+		}
+		"modify"
+		{
+			"hammerid" "4257438"
+			"set"
+			{
+				"targetname" "start_relation"
+			}
+		}
+		"modify"
+		{
+			"hammerid" "4257450"
+			"set"
+			{
+				"targetname" "start_relation"
+			}
+		}
+		"modify"
+		{
+			"hammerid" "4257465"
+			"set"
+			{
+				"targetname" "start_relation"
+			}
+		}
+		"modify"
+		{
+			"hammerid" "4312188"
+			"set"
+			{
+				"targetname" "start_relation"
+			}
+		}
+		"modify"
+		{
+			"hammerid" "4517056"
+			"set"
+			{
+				"targetname" "start_relation"
+			}
+		}
+		"modify"
+		{
+			"hammerid" "5337399"
+			"set"
+			{
+				"targetname" "start_relation"
+			}
+		}
+		"modify"
+		{
+			"hammerid" "5337402"
+			"set"
+			{
+				"targetname" "start_relation"
+			}
+		}
+		"modify"
+		{
+			"hammerid" "5474969"
+			"set"
+			{
+				"targetname" "start_relation"
+			}
+		}
+		"modify"
+		{
+			"hammerid" "6058474"
+			"set"
+			{
+				"targetname" "start_relation"
+			}
+		}
+		"modify"
+		{
+			"hammerid" "6058477"
+			"set"
+			{
+				"targetname" "start_relation"
+			}
+		}
+		// changespawn stuffs
+		"remove"
+		{
+			"hammerid" "1845696"
+		}
+		"remove"
+		{
+			"hammerid" "1845704"
+		}
+		"remove"
+		{
+			"hammerid" "1879424"
+		}
+		"modify"
+		{
+			"hammerid" "198055"
+			"outputs"
+			{
+				"remove"
+				{
+					"target" "exit_blast_a_button"
+				}
+				"remove"
+				{
+					"target" "exit_blast_a_button_spark"
+				}
+			}
+		}
+		"modify"
+		{
+			"hammerid" "5778047"
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnStartTouch"
+					"target" "exit_blast_a_button"
+					"input"	"PressOut"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnStartTouch"
+					"target" "exit_blast_a_button"
+					"input"	"Lock"
+					"delay" "0.1"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnStartTouch"
+					"target" "exit_blast_a_button_spark"
+					"input"	"StartSpark"
+					"delay" "0.1"
+					"timestofire" "-1"
+				}
+			}
+		}
+		"modify"
+		{
+			"hammerid" "1171346"
+			"outputs"
+			{
+				"remove"
+				{
+					"target" "SCI*"
+				}
+				"remove"
+				{
+					"target" "GRD*"
+				}
+				"remove"
+				{
+					"target" "particle_2"
+				}
+				"remove"
+				{
+					"target" "kill_c"
+				}
+				"remove"
+				{
+					"target" "qe_sq*"
+				}
+				"remove"
+				{
+					"target" "male_toilet_zombie"
+				}
+				"remove"
+				{
+					"target" "cvd_zombie"
+				}
+				"remove"
+				{
+					"target" "rapist*"
+				}
+				"remove"
+				{
+					"target" "ass*"
+				}
+				"remove"
+				{
+					"target" "portal*"
+				}
+				"remove"
+				{
+					"target" "s_stupid"
+				}
+				"remove"
+				{
+					"target" "sc_portal"
+				}
+				"remove"
+				{
+					"target" "entrance_*"
+				}
+				"remove"
+				{
+					"target" "vend_can_3"
+				}
+				"remove"
+				{
+					"target" "vend_machine_3*"
+				}
+				"remove"
+				{
+					"target" "farewell_trig"
+				}
+				"remove"
+				{
+					"target" "micro*"
+				}
+				"remove"
+				{
+					"target" "stupid_portal_*"
+				}
+				"remove"
+				{
+					"target" "lb_props"
+				}
+			}
+		}
+		"modify"
+		{
+			"hammerid" "1385371"
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnPressed"
+					"target" "SCI*"
+					"input"	"Kill"
+					"delay" "1"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnPressed"
+					"target" "GRD*"
+					"input"	"Kill"
+					"delay" "1"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnPressed"
+					"target" "particle_2"
+					"input"	"Kill"
+					"delay" "1"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnPressed"
+					"target" "kill_c"
+					"input"	"Kill"
+					"delay" "1"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnPressed"
+					"target" "qe_sq*"
+					"input"	"Kill"
+					"delay" "1"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnPressed"
+					"target" "male_toilet_zombie"
+					"input"	"Kill"
+					"delay" "1"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnPressed"
+					"target" "cvd_zombie"
+					"input"	"Kill"
+					"delay" "1"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnPressed"
+					"target" "rapist*"
+					"input"	"Kill"
+					"delay" "1"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnPressed"
+					"target" "ass*"
+					"input"	"Kill"
+					"delay" "1"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnPressed"
+					"target" "portal*"
+					"input"	"Kill"
+					"delay" "1"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnPressed"
+					"target" "s_stupid"
+					"input"	"Kill"
+					"delay" "1"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnPressed"
+					"target" "sc_portal"
+					"input"	"Kill"
+					"delay" "1"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnPressed"
+					"target" "entrance_*"
+					"input"	"Kill"
+					"delay" "1"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnPressed"
+					"target" "vend_can_3"
+					"input"	"Kill"
+					"delay" "1"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnPressed"
+					"target" "vend_machine_3*"
+					"input"	"Kill"
+					"delay" "1"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnPressed"
+					"target" "farewell_trig"
+					"input"	"Kill"
+					"delay" "1"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnPressed"
+					"target" "micro*"
+					"input"	"Kill"
+					"delay" "1"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnPressed"
+					"target" "stupid_portal_*"
+					"input"	"Kill"
+					"delay" "1"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnPressed"
+					"target" "lb_props"
+					"input"	"Kill"
+					"delay" "1"
+					"timestofire" "-1"
+				}
+			}
+		}
+		"modify"
+		{
+			"hammerid" "564922"
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnPressed"
+					"target" "psi_blast_entrance"
+					"input"	"Close"
+					"timestofire" "-1"
+				}
+			}
+		}
+		"modify"
+		{
+			"hammerid" "1335661"
+			"outputs"
+			{
+				"remove"
+				{
+					"target" "psi_blast_entrance"
+				}
+			}
+		}
+		// remove killing everyone if goes near to Xen turret
+		"remove"
+		{
+			"hammerid" "5857654"
+		}		
+		// why left doors unopened?
+		"modify"
+		{
+			"hammerid" "1468105"
+			"outputs"
+			{
+				"remove"
+				{
+					"target" "qe_door_osi_2"
+				}
+				"remove"
+				{
+					"target" "qe_door_osi_3"
+				}
+				"remove"
+				{
+					"target" "qe_door_osi_5"
+				}
+				"remove"
+				{
+					"target" "qe_door_osi_9"
+				}
+			}
+		}
+	}
+	"checkpoint"
+	{
+		"spawn"
+		{
+			"origin"	"-3136 640 36"
+			"angles"	"0 0 0"
+		}
+		"lobby security room"
+		{
+			"origin"	"-2694 -696 100"
+			"angles"	"0 0 0"
+			"triggerid"	"5778047"
+			"output"	"OnStartTouch"
+			"bringall"	"1"
+			"delay"		"1"
+		}
+		"battle room"
+		{
+			"origin"	"-1786 -1416 36"
+			"angles"	"0 0 0"
+			"triggerid"	"122314"
+			"output"	"OnStartTouch"
+			"bringall"	"1"
+		}
+		"psi room"
+		{
+			"origin"	"-14 -2046 36"
+			"angles"	"0 90 0"
+			"triggerid"	"1385371"
+			"output"	"OnPressed"
+			"bringall"	"1"
+			"delay"		"1"
+		}
+		"next room"
+		{
+			"origin"	"-464 -960 132"
+			"angles"	"0 0 0"
+			"triggerid"	"564922"
+			"output"	"OnPressed"
+			"bringall"	"1"
+			"delay"		"1"
+		}
+	}
+}

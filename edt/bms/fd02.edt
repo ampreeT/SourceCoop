@@ -1,0 +1,421 @@
+// Script for workshop item 2316239201 - Further Data
+
+#base "base/coop_base_sp_conversion.edt"
+
+"config"
+{
+	"campaign" "Workshop maps"
+	"chapter" "Further Data"
+	
+	"features"
+	{
+		"KEEP_EQUIPMENT" "1"
+	}
+	"equipment"
+	{
+		#if
+		{
+			"globalstate" "backtrack"
+			#then
+			{
+				"item" "weapon_crowbar"
+				"item" "weapon_glock"
+				"item" "weapon_357"
+				"item" "weapon_mp5"
+				"item" "weapon_shotgun"
+				"item" "item_battery"
+				"item" "item_battery"
+				"item" "item_ammo_mp5"
+				"item" "item_ammo_mp5"
+				"item" "item_ammo_mp5"
+				"item" "item_ammo_357"
+				"item" "item_ammo_357"
+				"item" "item_ammo_shotgun"
+				"item" "item_ammo_shotgun"
+			}
+			#else
+			{
+				"item" "item_suit"
+				"health" "50"
+			}
+		}
+	}
+	"entity"
+	{
+		// block off sewer part from fd03
+		"modify"
+		{
+			"hammerid" "460738"
+			"set"
+			{
+				"classname" "func_brush"
+				"rendermode" "10"
+			}
+		}
+		// siren follows cargo
+		"modify"
+		{
+			"hammerid" "1054573"
+			"set"
+			{
+				"targetname" "ware_cargo"
+			}
+		}
+		"modify"
+		{
+			"targetname" "ware_cargo_alert"
+			"set"
+			{
+				"SourceEntityName" "ware_cargo"
+			}
+		}
+		#if
+		{
+			"globalstate" "backtrack"
+			#then
+			{
+				// who are the backtracked props?
+				"modify"
+				{
+					"hammerid" "151481"
+					"set"
+					{
+						"targetname" "backtrack_props"
+					}
+				}
+				"modify"
+				{
+					"hammerid" "151576"
+					"set"
+					{
+						"targetname" "backtrack_props"
+					}
+				}
+				"modify"
+				{
+					"hammerid" "151654"
+					"set"
+					{
+						"targetname" "backtrack_props"
+					}
+				}
+				"modify"
+				{
+					"hammerid" "227623"
+					"set"
+					{
+						"targetname" "backtrack_props"
+					}
+				}
+				"modify"
+				{
+					"hammerid" "19512"
+					"set"
+					{
+						"targetname" "backtrack_props"
+					}
+				}			
+				// remove entities during backtracking
+				// brushes
+				"remove"
+				{
+					"hammerid" "365611"
+				}
+				"remove"
+				{
+					"hammerid" "412788"
+				}
+				"remove"
+				{
+					"hammerid" "822323"
+				}
+				"remove"
+				{
+					"hammerid" "822192"
+				}
+				"remove"
+				{
+					"hammerid" "613771"
+				}
+				"remove"
+				{
+					"hammerid" "976484"
+				}
+				"remove"
+				{
+					"hammerid" "253148"
+				}
+				"remove"
+				{
+					"hammerid" "253268"
+				}
+				"remove"
+				{
+					"hammerid" "986767"
+				}
+				"remove"
+				{
+					"hammerid" "168697"
+				}
+				"remove"
+				{
+					"hammerid" "987302"
+				}
+				"remove"
+				{
+					"hammerid" "158966"
+				}
+				"remove"
+				{
+					"hammerid" "986549"
+				}
+				// npcs
+				"remove"
+				{
+					"hammerid" "363501"
+				}
+				"remove"
+				{
+					"hammerid" "363513"
+				}
+				"remove"
+				{
+					"hammerid" "363539"
+				}
+				"remove"
+				{
+					"hammerid" "363535"
+				}
+				"remove"
+				{
+					"hammerid" "363533"
+				}
+				"remove"
+				{
+					"hammerid" "363525"
+				}
+				"remove"
+				{
+					"hammerid" "363551"
+				}
+				"remove"
+				{
+					"hammerid" "566335"
+				}
+				"remove"
+				{
+					"hammerid" "566358"
+				}
+				"remove"
+				{
+					"hammerid" "350812"
+				}
+				"remove"
+				{
+					"hammerid" "350820"
+				}
+				"remove"
+				{
+					"hammerid" "630995"
+				}
+				"remove"
+				{
+					"hammerid" "325741"
+				}
+				"remove"
+				{
+					"hammerid" "174535"
+				}
+				"remove"
+				{
+					"hammerid" "174541"
+				}
+				"remove"
+				{
+					"hammerid" "177680"
+				}
+				"remove"
+				{
+					"hammerid" "174570"
+				}
+				"remove"
+				{
+					"hammerid" "966780"
+				}
+				"remove"
+				{
+					"hammerid" "135907"
+				}
+				"remove"
+				{
+					"hammerid" "275710"
+				}
+				"remove"
+				{
+					"hammerid" "275712"
+				}
+				"remove"
+				{
+					"hammerid" "151943"
+				}
+				"remove"
+				{
+					"hammerid" "253236"
+				}
+				"remove"
+				{
+					"hammerid" "253256"
+				}
+				"remove"
+				{
+					"hammerid" "253258"
+				}
+				"remove"
+				{
+					"hammerid" "225586"
+				}
+				"remove"
+				{
+					"hammerid" "225843"
+				}
+				"remove"
+				{
+					"hammerid" "225853"
+				}					
+				// it already happened!
+				"modify"
+				{
+					"hammerid" "365567"
+					"set"
+					{
+						"spawnflags" "2048"
+					}
+				}
+				"modify"
+				{
+					"hammerid" "365572"
+					"set"
+					{
+						"spawnflags" "2048"
+					}
+				}
+				"modify"
+				{
+					"hammerid" "461240"
+					"outputs"
+					{
+						"add"
+						{
+							"output" "OnMapSpawn"
+							"target" "garage_plunger"
+							"input"	"Open"
+						}
+						"add"
+						{
+							"output" "OnMapSpawn"
+							"target" "garage_splode_choreo"
+							"input"	"Trigger"
+						}
+						"add"
+						{
+							"output" "OnMapSpawn"
+							"target" "ware_splode2"
+							"input"	"Break"
+						}
+						"add"
+						{
+							"output" "OnMapSpawn"
+							"target" "grd_boom_crates"
+							"input"	"Break"
+						}
+						"add"
+						{
+							"output" "OnMapSpawn"
+							"target" "backtrack_props"
+							"input"	"Break"
+						}
+					}
+				}
+			}
+			#else
+			{
+				// delay map start
+				"modify"
+				{
+					"hammerid" "22734"
+					"functions"
+					{
+						"delay_output" "OnNewGame"
+					}
+					"functions"
+					{
+						"delay_output" "OnMapSpawn"
+					}
+				}
+				// block off previous map
+				"modify"
+				{
+					"hammerid" "441803"
+					"outputs"
+					{
+						"remove" {}
+					}
+				}
+			}
+		}
+	}		
+	"checkpoint"
+	{
+		#if
+		{
+			"globalstate" "backtrack"
+			#then
+			{
+				"spawn"
+				{
+					"origin"	"970 -3450 -220"
+					"angles"	"0 270 0"
+				}
+				"after warehouse"
+				{
+					"origin"	"1444 -2596 -28"
+					"angles"	"0 90 0"
+					"triggerid"	"988476"
+					"output"	"OnTrigger"
+				}
+				"inside elevator"
+				{
+					"origin"	"-384 -896 36"
+					"angles"	"0 0 0"
+					"triggerid"	"441803"
+					"output"	"OnPressed"
+					"bringall"	"1"
+					"delay"		"1.5"
+				}
+			}
+			#else
+			{
+				"spawn"
+				{
+					"origin"	"-384 -896 36"
+					"angles"	"0 0 0"
+				}
+				"after warehouse"
+				{
+					"origin"	"1444 -2564 -28"
+					"angles"	"0 270 0"
+					"triggerid"	"976484"
+					"output"	"OnTrigger"
+					"respawn"	"1"
+				}
+				"before yard"
+				{
+					"origin"	"806 -4630 -210"
+					"angles"	"0 270 0"
+					"triggerid"	"412788"
+					"output"	"OnTrigger"
+				}
+			}
+		}
+	}
+}

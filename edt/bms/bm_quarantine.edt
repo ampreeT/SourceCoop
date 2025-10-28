@@ -1,0 +1,61 @@
+// Script for workshop item 798988742 - Quarantine
+
+#base "base/coop_base_sp_conversion.edt"
+
+"config"
+{
+	"campaign" "Workshop maps"
+	"chapter" "Quarantine"
+	
+	"features"
+	{
+		"KEEP_EQUIPMENT" "1"
+	}
+	"equipment"
+	{
+		"item" "item_suit"
+		"item" "item_weapon_crowbar"
+	}
+	"entity"
+	{
+		// remove starting weapons
+		"remove"
+		{
+			"hammerid" "703"
+		}
+		"remove"
+		{
+			"hammerid" "715"
+		}
+	}
+	"checkpoint"
+	{
+		"spawn"
+		{
+			"origin"	"-416 -256 228"
+			"angles"	"0 270 0"
+		}
+		"2nd door"
+		{
+			"origin"	"1767 1194 37"
+			"angles"	"0 90 0"
+			"triggerid"	"78278"
+			"output"	"OnTrigger"
+		}
+		"guard door"
+		{
+			"origin"	"1860 2946 38"
+			"angles"	"0 90 0"
+			"triggerid"	"172323"
+			"output"	"OnTrigger"
+		}
+		"inside lift"
+		{
+			"origin"	"-127 -705 37"
+			"angles"	"0 180 0"
+			"triggerid"	"165841"
+			"output"	"OnPressed"
+			"bringall"	"1"
+		}
+	}
+}

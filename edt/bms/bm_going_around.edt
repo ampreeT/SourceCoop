@@ -1,0 +1,91 @@
+// Script for workshop item 2344380359 - Going Around
+
+#base "base/coop_base_sp_conversion.edt"
+
+"config"
+{
+	"campaign" "Workshop maps"
+	"chapter" "Going Around"
+	"intro_type" "fade"
+	
+	"features"
+	{
+		"KEEP_EQUIPMENT" "1"
+	}
+	"equipment"
+	{
+		"item" "item_suit"
+	}
+	"entity"
+	{
+		// delay map start
+		"modify"
+		{
+			"hammerid" "2484292"
+			"functions"
+			{
+				"delay_output" "OnMapSpawn"
+			}
+		}
+		"modify"
+		{
+			"hammerid" "2756542"
+			"functions"
+			{
+				"delay_output" "OnMapSpawn"
+			}
+		}
+		// remove starting weapons
+		"remove"
+		{
+			"hammerid" "50571"
+		}
+	}
+	"checkpoint"
+	{
+		"spawn"
+		{
+			"origin"	"-400 1216 656"
+			"angles"	"0 180 0"
+		}
+		"toilet"
+		{
+			"origin"	"-173 -2724 -58"
+			"angles"	"0 0 0"
+			"triggerid"	"35316"
+			"output"	"OnTrigger"
+		}
+		"hall"
+		{
+			"origin"	"2462 -2888 -27"
+			"angles"	"0 180 0"
+			"triggerid"	"2370007"
+			"output"	"OnTrigger"
+		}
+		"ambush"
+		{
+			"origin"	"3278 -2087 -3"
+			"angles"	"0 270 0"
+			"triggerid"	"23460"
+			"output"	"OnPressed"
+			"bringall"	"1"
+			"delay"		"1"
+		}
+		"final"
+		{
+			"origin"	"-382 108 420"
+			"angles"	"0 270 0"
+			"triggerid"	"2220264"
+			"output"	"OnTrigger"
+			"bringall"	"1"
+		}
+		"exit"
+		{
+			"origin"	"-1383 -477 420"
+			"angles"	"0 180 0"
+			"triggerid"	"2220212"
+			"output"	"OnPressed"
+			"bringall"	"1"
+		}
+	}
+}

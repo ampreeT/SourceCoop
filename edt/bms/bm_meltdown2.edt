@@ -1,0 +1,75 @@
+// Script for workshop item 2639914442 - Meltdown
+
+#base "base/coop_base_sp_conversion.edt"
+
+"config"
+{
+	"campaign" "Workshop maps"
+	"chapter" "Meltdown"
+	"intro_type" "fade"
+	
+	"features"
+	{
+		"KEEP_EQUIPMENT" "1"
+	}
+	"equipment"
+	{
+		"item" "item_suit"
+	}
+	"entity"
+	{
+		// delay map start
+		"modify"
+		{
+			"hammerid" "18833"
+			"functions"
+			{
+				"delay_output" "OnMapSpawn"
+			}
+		}
+		// restart game if fails; player_loadsaved isn't supported in coop
+		"add"
+		{
+			"classname"	"point_servercommand"
+			"targetname" "restartgame"
+		}
+		"modify"
+		{
+			"hammerid" "998096"
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnTrigger"
+					"target" "restartgame"
+					"input"	"Command"
+					"parameter" "changelevel bm_meltdown2"
+					"delay" "8"
+					"timestofire" "-1"
+				}
+			}
+		}
+	}
+	"checkpoint"
+	{
+		"spawn"
+		{
+			"origin"	"-3744 -1536 -32"
+			"angles"	"0 0 0"
+		}
+		"first floor"
+		{
+			"origin"	"-1600 -1952 230"
+			"angles"	"0 180 0"
+			"triggerid"	"894339"
+			"output"	"OnTrigger"
+		}
+		"second floor"
+		{
+			"origin"	"-1532 -1218 292"
+			"angles"	"0 0 0"
+			"triggerid"	"732794"
+			"output"	"OnTrigger"
+		}
+	}
+}

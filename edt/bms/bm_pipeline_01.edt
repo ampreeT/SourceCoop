@@ -1,0 +1,86 @@
+// Script for workshop item 2775454271 - Pipeline
+
+#base "base/coop_base_sp_conversion.edt"
+
+"config"
+{
+	"campaign" "Workshop maps"
+	"chapter" "Pipeline"
+	"intro_type" "fade"
+	
+	"features"
+	{
+		"KEEP_EQUIPMENT" "1"
+	}
+	"equipment"
+	{
+		"item" "item_suit"
+	}
+	"entity"
+	{
+		// delay map start
+		"modify"
+		{
+			"hammerid" "40514"
+			"functions"
+			{
+				"delay_output" "OnMapSpawn"
+			}
+		}
+		// remove starting weapons
+		"remove"
+		{
+			"hammerid" "2173"
+		}
+		// fix trapping at security door
+		"modify"
+		{
+			"hammerid" "98806"
+			"outputs"
+			{
+				"remove"
+				{
+					"target" "secdr1"
+				}
+			}
+		}
+	}
+	"checkpoint"
+	{
+		"spawn"
+		{
+			"origin"	"-160 -1152 36"
+			"angles"	"0 0 0"
+		}
+		"open door"
+		{
+			"origin"	"1306 -766 36"
+			"angles"	"0 0 0"
+			"triggerid"	"16224"
+			"output"	"OnPressed"
+		}
+		"turn valve"
+		{
+			"origin"	"2584 -1208 -250"
+			"angles"	"0 0 0"
+			"triggerid"	"60636"
+			"output"	"OnPressed"
+			"bringall"	"1"
+			"delay"		"1"
+		}
+		"back laser"
+		{
+			"origin"	"2050 -1400 36"
+			"angles"	"0 0 0"
+			"triggerid"	"101645"
+			"output"	"OnPressed"
+		}
+		"to outside"
+		{
+			"origin"	"276 -572 36"
+			"angles"	"0 90 0"
+			"triggerid"	"144057"
+			"output"	"OnTrigger"
+		}
+	}
+}

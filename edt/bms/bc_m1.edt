@@ -1,0 +1,82 @@
+// Script for workshop item 2904429204 - Surface Contamination
+
+#base "base/coop_base_sp_conversion.edt"
+
+"config"
+{
+	"campaign" "Workshop maps"
+	"chapter" "Surface Contamination"	
+	"intro_type" "fade"
+	
+	"features"
+	{
+		"KEEP_EQUIPMENT" "1"
+	}
+	"equipment"
+	{
+		"item" "item_suit"
+	}
+	"entity"
+	{
+		// delay map start
+		"modify"
+		{
+			"hammerid" "939589"
+			"functions"
+			{
+				"delay_output" "OnMapSpawn"
+			}
+		}
+		// remove starting weapons
+		"remove"
+		{
+			"hammerid" "947506"
+		}
+		// fix can turn wheel to extinguish fire before inserting wheel
+		"modify"
+		{
+			"hammerid" "1095955"
+			"set"
+			{
+				"spawnflags" "3137"
+			}
+		}
+		"modify"
+		{
+			"hammerid" "1035889"
+			"outputs"
+			{
+				"modify"
+				{
+					"target" "redvalve_button_2"
+					"replace"
+					{
+						"target" "redvalveholder_2"
+					}
+				}
+			}
+		}
+	}
+	"checkpoint"
+	{
+		"spawn"
+		{
+			"origin"	"-13416 2024 137"
+			"angles"	"0 225 0"
+		}
+		"outside"
+		{
+			"origin"	"-10145 1249 164"
+			"angles"	"0 0 0"
+			"triggerid"	"993856"
+			"output"	"OnStartTouch"
+		}
+		"inside"
+		{
+			"origin"	"-6064 -5792 36"
+			"angles"	"0 0 0"
+			"triggerid"	"1096009"
+			"output"	"OnTrigger"
+		}
+	}
+}
