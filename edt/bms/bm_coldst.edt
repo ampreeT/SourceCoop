@@ -1,0 +1,71 @@
+// Script for workshop item 1377042249 - Cold Storage
+
+#base "base/coop_base_sp_conversion.edt"
+
+"config"
+{
+	"campaign" "Workshop maps"
+	"chapter" "Cold Storage"
+	
+	"features"
+	{
+		"KEEP_EQUIPMENT" "1"
+	}
+	"equipment"
+	{
+		"item" "item_suit"
+		"item" "item_weapon_crowbar"
+	}
+	"entity"
+	{
+		// delay map start
+		"modify"
+		{
+			"hammerid" "3001"
+			"functions"
+			{
+				"delay_output" "OnMapSpawn"
+			}
+		}
+		// remove starting weapons
+		"remove"
+		{
+			"hammerid" "787"
+		}
+		"remove"
+		{
+			"hammerid" "217722"
+		}
+	}
+	"checkpoint"
+	{
+		"spawn"
+		{
+			"origin"	"1040 320 -258"
+			"angles"	"0 180 0"
+		}
+		"ramp"
+		{
+			"origin"	"-1728 890 36"
+			"angles"	"0 270 0"
+			"triggerid"	"197648"
+			"output"	"OnStartTouch"
+		}
+		"hall"
+		{
+			"origin"	"-736 960 36"
+			"angles"	"0 270 0"
+			"triggerid"	"373625"
+			"output"	"OnStartTouch"
+		}
+		"battle"
+		{
+			"origin"	"66 -176 -220"
+			"angles"	"0 270 0"
+			"triggerid"	"133741"
+			"output"	"OnTrigger"
+			"bringall"	"1"
+			"delay"		"1"
+		}
+	}
+}

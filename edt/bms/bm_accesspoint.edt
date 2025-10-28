@@ -1,0 +1,77 @@
+// Script for workshop item 2161275016 - Access Point
+
+#base "base/coop_base_sp_conversion.edt"
+
+"config"
+{
+	"campaign" "Workshop maps"
+	"chapter" "Access Point"	
+	"intro_type" "fade"
+	
+	"features"
+	{
+		"KEEP_EQUIPMENT" "1"
+	}
+	"equipment"
+	{
+		"lookup"
+		{
+			"targetname" "startitems"
+		}
+	}
+	"entity"
+	{
+		// delay map start
+		"modify"
+		{
+			"hammerid" "2070"
+			"functions"
+			{
+				"delay_output" "OnMapSpawn"
+			}
+		}
+		// don't close starting doors
+		"remove"
+		{
+			"hammerid" "224761"
+		}
+	}
+	"checkpoint"
+	{
+		"spawn"
+		{
+			"origin"	"-192 -132 0"
+			"angles"	"0 90 0"
+		}
+		"hall"
+		{
+			"origin"	"18 896 36"
+			"angles"	"0 90 0"
+			"triggerid"	"879680"
+			"output"	"OnStartTouch"
+		}
+		"security"
+		{
+			"origin"	"1152 448 36"
+			"angles"	"0 180 0"
+			"triggerid"	"276148"
+			"output"	"OnStartTouch"
+		}
+		"warehouse"
+		{
+			"origin"	"-96 3840 100"
+			"angles"	"0 90 0"
+			"triggerid"	"351744"
+			"output"	"OnStartTouch"
+			"portal"	"-96 3680 100"
+		}
+		"lift"
+		{
+			"origin"	"-1724 4608 358"
+			"angles"	"0 0 0"
+			"triggerid"	"392449"
+			"output"	"OnPressed"
+			"bringall"	"1"
+		}
+	}
+}

@@ -1,0 +1,79 @@
+// Script for workshop item 1850064669 - Stalwart XT
+
+#base "base/coop_base_sp_conversion.edt"
+
+"config"
+{
+	"campaign" "Workshop maps"
+	"chapter" "Stalwart XT"
+	
+	"features"
+	{
+		"KEEP_EQUIPMENT" "1"
+	}
+	"equipment"
+	{
+		"item" "item_suit"
+		"item" "item_weapon_crowbar"
+	}
+	"entity"
+	{
+		// remove starting weapons
+		"remove"
+		{
+			"hammerid" "254"
+		}
+		"remove"
+		{
+			"hammerid" "258"
+		}		
+		// rename changelevel map name to small letter, as Linux is case sensitive
+		"modify"
+		{
+			"hammerid" "1084985"
+			"set"
+			{
+				"map" "bm_stalwartxtb"
+			}
+		}
+	}
+	"checkpoint"
+	{
+		"spawn"
+		{
+			"origin"	"-1280 -432 -156"
+			"angles"	"0 270 0"
+		}
+		"upstairs"
+		{
+			"origin"	"563 -1780 45"
+			"angles"	"0 90 0"
+			"triggerid"	"1017261"
+			"output"	"OnStartTouch"
+		}
+		"pass vent"
+		{
+			"origin"	"-1481 -561 21"
+			"angles"	"0 270 0"
+			"triggerid"	"880340"
+			"output"	"OnStartTouch"
+		}
+		"incoming"
+		{
+			"origin"	"-624 -382 85"
+			"angles"	"0 0 0"
+			"triggerid"	"68206"
+			"output"	"OnPressed"
+			"bringall"	"1"
+			"delay"		"1"
+		}
+		"inside elevator"
+		{
+			"origin"	"-782 -389 85"
+			"angles"	"0 0 0"
+			"triggerid"	"71574"
+			"output"	"OnPressed"
+			"bringall"	"1"
+		}
+	}
+}
