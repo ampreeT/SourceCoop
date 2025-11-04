@@ -226,7 +226,7 @@ public MRESReturn Hook_PropHevChargerThink(int _this)
 //------------------------------------------------------
 public void Hook_WallChargerRateMultiplierReset(const int iEntIndex)
 {
-	if (CoopManager.IsCoopModeEnabled()
+	if (CoopManager.IsCoopModeEnabled())
 	{
 		SetEntPropFloat(iEntIndex, Prop_Data, "m_flChargeRate", 1.0);
 	}
