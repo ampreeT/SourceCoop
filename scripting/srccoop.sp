@@ -853,6 +853,20 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 			return;
 		}
 		
+		#if defined ENTPATCH_BM_WALL_CHARGERS
+		if (strcmp(szClassname, "item_suitcharger") == 0)
+		{
+			SDKHook(iEntIndex, SDKHook_SpawnPost, Hook_WallChargerRateMultiplierReset);
+			return;
+		}
+
+		if (strcmp(szClassname, "item_healthcharger") == 0)
+		{
+			SDKHook(iEntIndex, SDKHook_SpawnPost, Hook_WallChargerRateMultiplierReset);
+			return;
+		}
+		#endif
+		
 		#if defined ENTPATCH_AI_SCRIPT_CONDITIONS
 		if (strcmp(szClassname, "ai_script_conditions") == 0)
 		{
