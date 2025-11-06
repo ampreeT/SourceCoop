@@ -4,6 +4,7 @@
 // Patches for Black Mesa
 
 static bool g_pPlayerIronsightClassic[MAXPLAYERS + 1];
+static bool g_bDisableCrossbowExplosion = false;
 
 //------------------------------------------------------
 // CNPC_PlayerCompanion - npc_human_scientist*, npc_human_security
@@ -239,26 +240,19 @@ public void Hook_WallChargerRateMultiplierReset(const int iEntIndex)
 //------------------------------------------------------
 public Action BlackMesaFireBulletsTEHook(const char[] szTEName, const int[] iClients, int iNumClients, float flDelay)
 {
-	// TE will crash all clients without a valid entity.
-	CBaseEntity pEntity = CBaseEntity(TE_ReadNum("m_iEntityIndex"));
-	if (pEntity == NULL_CBASEENTITY)
-		return Plugin_Changed;
-		
-	int bIsPlayer = TE_ReadNum("m_bIsPlayer");
-
-	//Check if my owner is player, fixes tracerbullet not creating decals + impact fx
-	if(bIsPlayer)
-		return Plugin_Continue;
-	
-	char szClassname[MAX_CLASSNAME];
-	if (!pEntity.GetClassname(szClassname, sizeof(szClassname)))
-		return Plugin_Changed;
-	
 	// Prevent crashes from `npc_sniper` on certain client configurations. 
 	AmmoType_t eAmmoType = view_as<AmmoType_t>(TE_ReadNum("m_iAmmoID"));
 	if (eAmmoType == AMMO_SNIPERROUND)
 		return Plugin_Changed;
 	
+	// TE will crash all clients without a valid entity.
+	CBaseEntity pEntity = CBaseEntity(TE_ReadNum("m_iEntityIndex"));
+	if (pEntity == NULL_CBASEENTITY)
+		return Plugin_Changed;
+
+	char szClassname[MAX_CLASSNAME];
+	if (!pEntity.GetClassname(szClassname, sizeof(szClassname)))
+		return Plugin_Changed;
 
 	// Hide tracers of broken npcs.
 	// TODO:
@@ -968,6 +962,25 @@ public MRESReturn Hook_IronsightDeployPost_SaveSettings(int _this, DHookReturn h
 }
 
 //------------------------------------------------------
+// grenade_bolt
+// Disables explosive bolts by blocking the call.
+//------------------------------------------------------
+public MRESReturn Hook_GrenadeBoltAcceptInput(int _this, DHookReturn hReturn, DHookParam hParams)
+{
+	if (g_bDisableCrossbowExplosion)
+	{
+		char szInputType[MAX_FORMAT];
+		DHookGetParamString(hParams, 1, szInputType, sizeof(szInputType));
+		if (strcmp(szInputType, "SetToExplode", false) == 0)
+		{
+			DHookSetReturn(hReturn, true);
+			return MRES_Supercede;
+		}
+	}
+	return MRES_Ignored;
+}
+
+//------------------------------------------------------
 // weapon_crossbow
 // Fixes the shooting animation played while using ironsights.
 //------------------------------------------------------
@@ -1054,12 +1067,27 @@ public MRESReturn Hook_CrossbowItemPostFramePost(int _this, DHookReturn hReturn)
 
 //------------------------------------------------------
 // weapon_crossbow
+// Prevents the input `SetToExplode` from being called.
+//------------------------------------------------------
+public MRESReturn Hook_CrossbowPrimaryAttack(int _this, DHookReturn hReturn, DHookParam hParams)
+{
+	if (CoopManager.IsFeatureEnabled(FT_SP_WEAPONS))
+	{
+		g_bDisableCrossbowExplosion = true;
+	}
+	return MRES_Ignored;
+}
+
+//------------------------------------------------------
+// weapon_crossbow
 // Sets the rearm state and fixes the time to attack.
 //------------------------------------------------------
 public MRESReturn Hook_CrossbowPrimaryAttackPost(int _this, DHookReturn hReturn, DHookParam hParams)
 {
 	if (CoopManager.IsFeatureEnabled(FT_SP_WEAPONS))
 	{
+		g_bDisableCrossbowExplosion = true;
+
 		CWeapon_Crossbow pWeapon = CWeapon_Crossbow(_this);
 
 		bool bShouldRearm = pWeapon.GetPrimaryAmmo() > 0;
@@ -1087,55 +1115,6 @@ public MRESReturn Hook_CrossbowGetDrawActivity(int _this, DHookReturn hReturn)
 			return MRES_Supercede;
 		}
 	}
-	return MRES_Ignored;
-}
-
-//------------------------------------------------------
-// weapon_crossbow
-// Enables singleplayer version to make sk_crossbow_tracer_enabled working and prevent exploding bolts
-//------------------------------------------------------
-public MRESReturn Hook_CrossbowFireBolt(int _this, DHookReturn hReturn, DHookParam hParams)
-{
-	if (CoopManager.IsFeatureEnabled(FT_SP_WEAPONS))
-	{
-		g_bIsMultiplayerOverride = false;
-	}
-	return MRES_Ignored;
-}
-
-//------------------------------------------------------
-// weapon_crossbow
-// See Hook_FireBolt for details.
-//------------------------------------------------------
-public MRESReturn Hook_CrossbowFireBoltPost(int _this, DHookReturn hReturn, DHookParam hParams)
-{
-	if (CoopManager.IsFeatureEnabled(FT_SP_WEAPONS))
-	{
-		g_bIsMultiplayerOverride = true;
-	}
-	return MRES_Ignored;
-}
-
-//------------------------------------------------------
-// CLagCompensationManager::StartLagCompensation
-// Prevents engine error if "const CUserCmd *cmd = player->GetCurrentUserCommand() == nullprt", we need it to fix tracerbullet crash when it hits something
-// Original code by: fdxx (taked from https://hlmod.net/threads/krash-servera-ne-ochen-ponjatny-prichiny.35472/post-600631)
-// Code edits by: MyGamepedia
-//------------------------------------------------------
-MRESReturn Hook_StartLagCompensation(Address pThis, DHookParam hParams)
-{
-	int iClient = hParams.Get(1);
-	
-	if (iClient > 0 && iClient <= MaxClients && IsClientInGame(iClient) && !IsFakeClient(iClient))
-	{
-		Address pClient = hParams.GetAddress(1);
-		Address pCUserCmd = LoadFromAddress(pClient + view_as<Address>(g_iUserCmdOffset), NumberType_Int32);
-		if (pCUserCmd == Address_Null)
-		{
-			return MRES_Supercede;
-		}
-	}
-	
 	return MRES_Ignored;
 }
 
