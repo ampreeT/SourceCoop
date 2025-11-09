@@ -211,7 +211,7 @@ methodmap DnManager
 			if (iDamageFlags & g_pDamageFlagList[i])
 			{
 				strcopy(szBuffer, iMaxLength, g_pDamageStringList[i]);
-				break;
+				return;
 			}
 		}
 		strcopy(szBuffer, iMaxLength, szClassname);
@@ -236,17 +236,17 @@ methodmap DnManager
 			DnManager.GetDisplayNameFromDamageForEvent(iDamageFlags, szClassname, szBuffer, iMaxLength);
 		}
 		else
-		{
-			for (int i = 0; i < sizeof(g_pDnDisplayList); ++i)
 			{
-				if (strcmp(szClassname, g_pDnDisplayList[i][0], false) == 0)
+				for (int i = 0; i < sizeof(g_pDnDisplayList); ++i)
 				{
-					strcopy(szBuffer, iMaxLength, g_pDnDisplayList[i][1]);
-					return;
+					if (strcmp(szClassname, g_pDnDisplayList[i][0], false) == 0)
+					{
+						strcopy(szBuffer, iMaxLength, g_pDnDisplayList[i][1]);
+						return;
+					}
 				}
-			}
 
-			strcopy(szBuffer, iMaxLength, szClassname);
+				strcopy(szBuffer, iMaxLength, szClassname);
 		}
 	}
 	// Formats the weapon string for a display event.
@@ -379,7 +379,7 @@ methodmap DnManager
 		CBaseEntity pVictim = CBaseEntity(hEvent.GetInt("entindex_killed"));
 		CBaseEntity pInflictor = CBaseEntity(hEvent.GetInt("entindex_inflictor"));
 
-		if (!pAttacker.IsValid() || !pVictim.IsValid() || !DnManager.IsEntityAllowed(pVictim))
+		if (pAttacker == NULL_CBASEENTITY || pVictim == NULL_CBASEENTITY || !DnManager.IsEntityAllowed(pVictim))
 			return;
 		
 		DnEntry sEntry;
@@ -387,6 +387,19 @@ methodmap DnManager
 		{
 			if (!DnManager.WriteEntryPlayerKill(sEntry, view_as<CBasePlayer>(pAttacker), pVictim))
 				return;
+		}
+		else if (pAttacker == CWorld())
+		{
+			if (pVictim.IsPlayer())
+			{
+				if (!DnManager.WriteEntryPlayerKill(sEntry, view_as<CBasePlayer>(pVictim), pVictim))
+					return;
+			}
+			else
+			{
+				if (!DnManager.WriteEntryEntityKills(sEntry, pVictim, pVictim))
+					return;
+			}
 		}
 		else
 		{

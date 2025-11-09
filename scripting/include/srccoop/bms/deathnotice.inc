@@ -58,6 +58,7 @@ char g_pDnDisplayList[][2][] =
 	{ "npc_sentry_ground", "Turret" },
 	{ "npc_snark", "Snark" },
 	{ "npc_sniper", "HECU Sniper" },
+	{ "proto_sniper", "HECU Sniper" },
 	{ "npc_tentacle", "Alien Tentacle" },
 	{ "npc_vortigaunt", "Alien Slave" },
 	{ "npc_xen_grunt", "Alien Grunt" },
@@ -86,6 +87,8 @@ char g_pDnDisplayList[][2][] =
 	{ "prop_barrel_cactus", "Cactus" },
 	{ "prop_barrel_cactus_semilarge", "Cactus" },
 	{ "func_minefield", "Landmine" },
+	{ "func_door", "Door" },
+	{ "func_platrot", "Rotating Platform" },
 
 	// Weapon Projectiles.
 	{ "grenade_bolt", "Crossbow Bolt" },
@@ -108,7 +111,7 @@ char g_pDnWeaponIconList[][2][] =
 {
 	// Weapons.
 	{ "weapon_357", "357" },
-	{ "weapon_assassin_glock", "assassin_glock" },
+	{ "weapon_assassin_glock", "glock" },
 	{ "weapon_crossbow", "crossbow" },
 	{ "weapon_crowbar", "crowbar" },
 	{ "weapon_frag", "frag" },
