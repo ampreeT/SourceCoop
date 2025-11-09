@@ -1525,6 +1525,11 @@
 				"windows"	"217"
 				"linux"		"218"
 			}
+			"CBaseEntity::Touch"	// CBaseEntity::Touch(CBaseEntity*)
+			{
+				"windows"	"108"
+				"linux"		"109"
+			}
 		}
 	}
 
