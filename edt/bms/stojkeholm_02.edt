@@ -12,8 +12,7 @@
 		"KEEP_EQUIPMENT" "1"
 	}
 	"equipment"
-	{
-	
+	{	
 		"item" "item_suit"
 		"item" "item_weapon_crowbar"
 		"item" "item_weapon_glock"
@@ -41,7 +40,7 @@
 				}
 			}
 		}
-		//block off previous map and open elevator doors
+		// block off previous map and open elevator doors
 		"modify"
 		{
 			"targetname" "lcb_to_ucb_elevator"
@@ -89,8 +88,9 @@
 		{
 			"origin"	"4335 -5124 -635"
 			"angles"	"0 -90 0"
-			"triggerid"	"4872655"
+			"triggerid"	"2764476"
 			"output"	"OnTrigger"
+			"respawn"	"1"
 		}
 		"middle of tunnels"
 		{
