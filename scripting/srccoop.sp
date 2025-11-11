@@ -286,6 +286,7 @@ public void OnPluginStart()
 	RegServerCmd("sc_dump", Command_DumpMapEntities, "Command for dumping map entities to a file");
 	RegServerCmd("sc_mkconfigs", Command_MakeConfigs, "Creates default SourceCoop configs for maps found in the maps directory, which are missing one.\n - Note: Please disable \"SlowScriptTimeout\" in SourceMod core.cfg beforehand as this could run for long time! (Restart required after editing)\n - Format: sc_mkconfigs <MAPFILTER> [CONFIRM]\n  MAPFILTER:\n    - filters the map names to include; use * for all; supports wildcards with * such as coop_*\n  CONFIRM:\n    - [0 = dry run, 1 = live run]");
 	RegServerCmd("sc_importconfigs", Command_ImportConfigs, "Imports other formats of map configs into SourceCoop configs.\n - Note: Please disable \"SlowScriptTimeout\" in SourceMod core.cfg beforehand as this could run for long time! (Restart required after editing)\n - Format: sc_importconfigs <TYPE> <MAPFILTER> <UPDATE> <CREATE> [CONFIRM]\n  TYPE:\n    - The type of configs to import\n    - [stripper = Stripper:source]\n  MAPFILTER:\n    - filters the map names to import; use * for all; supports wildcards with * such as coop_*\n  UPDATE:\n    - [1 = allow updating SourceCoop configs that already exist, 0 = skips existing configs]\n  CREATE:\n    - [1 = attempts to create default SourceCoop config for a map if it's missing, 0 = prints a warning and skips if missing]\n  CONFIRM:\n    - [0 = dry run, 1 = live run]");
+	RegServerCmd("sc_debug_missing_weapons", Command_Debug_MissingWeapons, "Internal debug command for testing missing weapons on spawn.");
 	
 	g_pLevelLump.Initialize();
 	CCoopSpawnSystem.Initialize();
@@ -850,6 +851,20 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 
 			return;
 		}
+		
+		#if defined ENTPATCH_BM_WALL_CHARGERS
+		if (strcmp(szClassname, "item_suitcharger") == 0)
+		{
+			SDKHook(iEntIndex, SDKHook_SpawnPost, Hook_WallChargerRateMultiplierReset);
+			return;
+		}
+
+		if (strcmp(szClassname, "item_healthcharger") == 0)
+		{
+			SDKHook(iEntIndex, SDKHook_SpawnPost, Hook_WallChargerRateMultiplierReset);
+			return;
+		}
+		#endif
 		
 		#if defined ENTPATCH_AI_SCRIPT_CONDITIONS
 		if (strcmp(szClassname, "ai_script_conditions") == 0)

@@ -222,6 +222,18 @@ public MRESReturn Hook_PropHevChargerThink(int _this)
 }
 
 //------------------------------------------------------
+// item_suitcharger/item_healthcharger
+// Sets back default charge rate value for wall chargers from singleplayer.
+//------------------------------------------------------
+public void Hook_WallChargerRateMultiplierReset(const int iEntIndex)
+{
+	if (CoopManager.IsCoopModeEnabled())
+	{
+		SetEntPropFloat(iEntIndex, Prop_Data, "m_flChargeRate", 1.0);
+	}
+}
+
+//------------------------------------------------------
 // TE - BlackMesa Shot
 // Fix npc_sniper tracers hard crashing some client configurations and
 // hides the tracers of certain npcs due to incorrect firing position

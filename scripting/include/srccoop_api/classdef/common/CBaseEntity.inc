@@ -7,6 +7,7 @@ static Handle g_pSetNextThink;
 static Handle g_pSetNextThinkNullString;
 static Handle g_pWorldSpaceCenter;
 static Handle g_pIsNPC;
+static Handle g_pTouch;
 static Handle g_pSetMinMaxSize;
 
 const any NULL_CBASEENTITY = -1;
@@ -58,6 +59,16 @@ methodmap CBaseEntity
 		{
 			PrepSDKCall_SetReturnInfo(SDKType_Bool, SDKPass_Plain);
 			if (!(g_pIsNPC = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szIsNpc);
+		}
+
+		char szTouch[] = "CBaseEntity::Touch";
+		StartPrepSDKCall(SDKCall_Player);
+		if (!PrepSDKCall_SetFromConf(hGameConfig, SDKConf_Virtual, szTouch))
+			LogMessage("Could not obtain gamedata offset %s", szTouch);
+		else
+		{
+			PrepSDKCall_AddParameter(SDKType_CBaseEntity, SDKPass_Pointer);
+			if (!(g_pTouch = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szTouch);
 		}
 		
 		char szSetMinMaxSize[] = "SetMinMaxSize";
@@ -795,6 +806,10 @@ methodmap CBaseEntity
 			g_hEntityData.SetValue(this.entref, hEntityData);
 		}
 		hEntityData.SetArray(szKey, arrData, iNumItems);
+	}
+	public void Touch(const CBaseEntity pEntity)
+	{
+		SDKCall(g_pTouch, this.entindex, pEntity.entindex);
 	}
 }
 
