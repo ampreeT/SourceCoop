@@ -27,6 +27,15 @@
 				"delay_output" "OnMapSpawn"
 			}
 		}
+		// text fixes
+		"modify"
+		{
+			"targetname" "txt_facilitydoor"
+			"set"
+			{
+				"spawnflags" "0"
+			}
+		}
 	}
 	"checkpoint"
 	{
