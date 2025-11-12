@@ -27,7 +27,7 @@
 				"delay_output" "OnMapSpawn"
 			}
 		}
-		// text fixes
+		// game text fix
 		"modify"
 		{
 			"targetname" "txt_facilitydoor"
