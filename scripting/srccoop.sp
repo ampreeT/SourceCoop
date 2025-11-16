@@ -969,6 +969,12 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 					pEntity.HookOutput("OnPlayerPickup", Hook_SuitTouchPickup);
 					return;
 				}
+
+				if (strcmp(szClassname, "item_longjump") == 0)
+				{
+					DHookEntity(hkOnTryPickUp, true, iEntIndex, _, Hook_OnEquipmentTryPickUpPost);
+					return;
+				}
 			}
 			return;
 		}
