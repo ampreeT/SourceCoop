@@ -236,17 +236,17 @@ methodmap DnManager
 			DnManager.GetDisplayNameFromDamageForEvent(iDamageFlags, szClassname, szBuffer, iMaxLength);
 		}
 		else
+		{
+			for (int i = 0; i < sizeof(g_pDnDisplayList); ++i)
 			{
-				for (int i = 0; i < sizeof(g_pDnDisplayList); ++i)
+				if (strcmp(szClassname, g_pDnDisplayList[i][0], false) == 0)
 				{
-					if (strcmp(szClassname, g_pDnDisplayList[i][0], false) == 0)
-					{
-						strcopy(szBuffer, iMaxLength, g_pDnDisplayList[i][1]);
-						return;
-					}
+					strcopy(szBuffer, iMaxLength, g_pDnDisplayList[i][1]);
+					return;
 				}
+			}
 
-				strcopy(szBuffer, iMaxLength, szClassname);
+			strcopy(szBuffer, iMaxLength, szClassname);
 		}
 	}
 	// Formats the weapon string for a display event.
