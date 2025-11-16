@@ -131,21 +131,19 @@ public Action Hook_PuffballFungusDmg(int victim, int &attacker, int &inflictor, 
 public MRESReturn Hook_HumanMedicKilled(int _this, DHookParam hParams)
 {
     CBaseEntity pMedic = CBaseEntity(_this);
-
-    int iPlayerCount = GetClientCount(); //get current player count
     int iHealth;
 
     //the orig code doesn't take care by what and how the medic was killed, 
     //the medic will drop healthkit even if killed by a zombie,
     //the only condition checked is if a player has health below 50,
     //to recreate the same behavior, we need to check health for all players
-    for (int i = 1; i <= iPlayerCount; i++)
+    for (int i = 1; i <= MaxClients; i++)
     {
         if (!IsClientInGame(i) || IsFakeClient(i) || !IsPlayerAlive(i))
             continue;
 
 
-        iHealth = GetEntProp(i, Prop_Data, "m_iHealth");
+        iHealth = CBasePlayer(i).GetHealth();
 
         if (iHealth < 50) //if below 50 health - create healthkit under the legs of the medic
         {
@@ -157,9 +155,10 @@ public MRESReturn Hook_HumanMedicKilled(int _this, DHookParam hParams)
             float vecMedicOrigin[3], vecMedicAngles[3];
             pMedic.GetAbsOrigin(vecMedicOrigin);
             pMedic.GetAbsAngles(vecMedicAngles); //NOTE: it looks like the orig code cares only about X angle
-            pHealthKit.Spawn();
 
             pHealthKit.Teleport(vecMedicOrigin, vecMedicAngles);
+            pHealthKit.Spawn();
+
             break;
         }
     }
