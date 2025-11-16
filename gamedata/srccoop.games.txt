@@ -79,6 +79,12 @@
 				"windows"	"52"
 				"linux"		"52"
 			}
+			//It is "const CUserCmd *cmd = player->GetCurrentUserCommand()" in orig code, W - 0xE14 (hex) L - 0xE1C (hex)
+			"CBasePlayer::GetCurrentUserCommand"	//TODO: Give a better name ?
+			{
+				"linux"		"3612"
+				"windows"	"3604"
+			}
 		}
 		"Signatures"
 		{
@@ -628,6 +634,52 @@
 					}
 				}
 			}
+			
+			"CWeapon_Crossbow::FireBolt"
+			{
+				"offset"	"CWeapon_Crossbow::FireBolt"
+				"callconv"	"thiscall"
+				"return"	"bool"
+				"this"		"entity"
+				"arguments"
+				{
+					"bUnknown"
+					{
+						"type"	"bool"
+					}
+				}
+			}
+			
+			"CLagCompensationManager::StartLagCompensation"	//void CLagCompensationManager::StartLagCompensation( CBasePlayer *player, LagCompensationType lagCompensationType, const Vector& weaponPos, const QAngle &weaponAngles, float weaponRange )
+			{
+				"signature"		"CLagCompensationManager::StartLagCompensation"
+				"callconv"		"thiscall"
+				"return"		"void"
+				"this"			"address"
+				"arguments"
+				{
+					"CBasePlayer"
+					{
+						"type"		"cbaseentity"
+					}
+					"LagCompensationType"
+					{
+						"type"		"int"
+					}
+					"weaponPos"
+					{
+						"type"		"vectorptr"
+					}
+					"weaponAngles"
+					{
+						"type"		"vectorptr"
+					}
+					"weaponRange"
+					{
+						"type"		"float"
+					}
+				}
+			}
 
 			//   _____  ______ _______ ____  _    _ _____  
 			//  |  __ \|  ____|__   __/ __ \| |  | |  __ \ 
@@ -1101,6 +1153,11 @@
 				"windows"	"\x55\x8B\xEC\x81\xEC\x00\x01\x00\x00\xA1\x2A\x2A\x2A\x2A\x33\xC5\x89\x45\xFC\x8B\x45\x14"
 				"linux"		"@_ZN23CLagCompensationManager15BacktrackEntityEP11CBaseEntityfP19CUtlFixedLinkedListI9LagRecordEPS3_S6_b"
 			}
+			"CLagCompensationManager::StartLagCompensation" //Seach by string "StartLagCompensation"
+			{
+				"windows"	"\x55\x8B\xEC\x83\xEC\x40\x33\xD2\x89\x4D\xF4\x56\x57\x33\xFF\x89\x55\xF8\x8D\x71\x04\x89\x55\xC0\x89\x55\xC4\x89\x55\xC8\x89\x7D\xCC\xBF\xFF\xFF\x00\x00\x89\x55\xD0\x2A\x2A\x2A\x2A\x89\x75\xE8\x66\x3B\xD7\x74\x15\x8B\x46\x04\x0F\xB7\xCA\x03\xC9\x0F\xB7\x04"
+				"linux"		"@_ZN23CLagCompensationManager20StartLagCompensationEP11CBasePlayer19LagCompensationTypeRK6VectorRK6QAnglef"
+			}
 			"CBlackMesaBaseWeaponIronSights::ToggleIronSights"
 			{
 				"windows"	"\x55\x8B\xEC\x83\xEC\x14\x56\x57\x8B\xF9\x2A\x2A\x2A\x2A\x2A\x8B\xF0\x89\x75\xEC\x85\xF6\x2A\x2A\x5F\x32\xC0\x5E\x8B"
@@ -1529,6 +1586,12 @@
 			{
 				"windows"	"108"
 				"linux"		"109"
+			}
+			
+			"CWeapon_Crossbow::FireBolt" //bool CWeapon_Crossbow::FireBolt(bool)
+			{
+				"windows"	"423"
+				"linux"		"424"
 			}
 		}
 	}
