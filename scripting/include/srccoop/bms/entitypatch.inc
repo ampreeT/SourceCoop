@@ -108,8 +108,13 @@ public void GargantuaChaseThink(int _this)
 //------------------------------------------------------
 public MRESReturn Hook_IchthyosaurIdleSound(int _this)
 {
-	// ToDo: do the things as in original code, albeit I can hardly spot a difference
-	return MRES_Supercede;
+	AddSinglePlayerOverride(CBaseEntity(_this));
+	return MRES_Ignored;
+}
+public MRESReturn Hook_IchthyosaurIdleSoundPost(int _this)
+{
+	PopSinglePlayerOverride();
+	return MRES_Ignored;
 }
 
 //------------------------------------------------------
