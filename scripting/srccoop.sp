@@ -704,6 +704,14 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 			return;
 		}
 		#endif
+		
+		#if defined ENTPATCH_BM_MEDIC
+		if (strcmp(szClassname, "npc_human_medic") == 0)
+		{
+			DHookEntity(hkEvent_Killed, false, iEntIndex, _, Hook_HumanMedicKilled);
+			return;
+		}
+		#endif
 	}
 	else // !isNPC
 	{
