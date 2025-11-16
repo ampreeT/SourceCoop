@@ -211,7 +211,7 @@ methodmap DnManager
 			if (iDamageFlags & g_pDamageFlagList[i])
 			{
 				strcopy(szBuffer, iMaxLength, g_pDamageStringList[i]);
-				break;
+				return;
 			}
 		}
 		strcopy(szBuffer, iMaxLength, szClassname);
@@ -390,7 +390,7 @@ methodmap DnManager
 		CBaseEntity pInflictor = CBaseEntity(hEvent.GetInt("entindex_inflictor"));
 		int iDamageType = hEvent.GetInt("damagebits");
 
-		if (!pAttacker.IsValid() || !pVictim.IsValid() || !DnManager.IsEntityAllowed(pVictim))
+		if (pAttacker == NULL_CBASEENTITY || pVictim == NULL_CBASEENTITY || !DnManager.IsEntityAllowed(pVictim))
 			return;
 		
 		DnEntry sEntry;
@@ -398,6 +398,19 @@ methodmap DnManager
 		{
 			if (!DnManager.WriteEntryPlayerKill(sEntry, view_as<CBasePlayer>(pAttacker), pVictim))
 				return;
+		}
+		else if (pAttacker == CWorld())
+		{
+			if (pVictim.IsPlayer())
+			{
+				if (!DnManager.WriteEntryPlayerKill(sEntry, view_as<CBasePlayer>(pVictim), pVictim))
+					return;
+			}
+			else
+			{
+				if (!DnManager.WriteEntryEntityKills(sEntry, pVictim, pVictim))
+					return;
+			}
 		}
 		else
 		{

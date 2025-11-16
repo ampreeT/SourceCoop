@@ -87,6 +87,8 @@ char g_pDnDisplayList[][2][] =
 	{ "prop_barrel_cactus", "Cactus" },
 	{ "prop_barrel_cactus_semilarge", "Cactus" },
 	{ "func_minefield", "Landmine" },
+	{ "func_door", "Door" },
+	{ "func_platrot", "Rotating Platform" },
 	{ "func_50cal", "M2 Browning" },
 
 	// Weapon Projectiles.
