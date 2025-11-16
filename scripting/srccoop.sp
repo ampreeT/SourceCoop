@@ -117,9 +117,15 @@ void LoadGameData()
 	LoadDHookVirtual(pGameConfig, hkBaseCombatWeaponPrimaryAttack, "CBaseCombatWeapon::PrimaryAttack");
 	LoadDHookVirtual(pGameConfig, hkBaseCombatWeaponGetPrimaryAttackActivity, "CBaseCombatWeapon::GetPrimaryAttackActivity");
 	LoadDHookVirtual(pGameConfig, hkBaseCombatWeaponGetDrawActivity, "CBaseCombatWeapon::GetDrawActivity");
+	LoadDHookVirtual(pGameConfig, hkWeaponCrossbowFireBolt, "CWeapon_Crossbow::FireBolt");
 	LoadDHookDetour(pGameConfig, hkToggleIronsights, "CBlackMesaBaseWeaponIronSights::ToggleIronSights", Hook_ToggleIronsights);
 	LoadDHookDetour(pGameConfig, hkTauFireBeam, "CWeapon_Tau::FireBeam", Hook_TauFireBeam, Hook_TauFireBeamPost);
 	LoadDHookDetour(pGameConfig, hkParamsManagerInitInstances, "CParamsManager::InitInstances", Hook_CParamsManager_InitInstances);
+	#endif
+	
+	#if defined SRCCOOP_BLACKMESA
+	LoadDHookDetour(pGameConfig, hkStartLagCompensation, "CLagCompensationManager::StartLagCompensation", Hook_StartLagCompensation);
+	g_iUserCmdOffset = pGameConfig.GetOffset("CBasePlayer::GetCurrentUserCommand");
 	#endif
 	
 	#if defined PLAYERPATCH_SUIT_SOUNDS
@@ -286,6 +292,7 @@ public void OnPluginStart()
 	RegServerCmd("sc_dump", Command_DumpMapEntities, "Command for dumping map entities to a file");
 	RegServerCmd("sc_mkconfigs", Command_MakeConfigs, "Creates default SourceCoop configs for maps found in the maps directory, which are missing one.\n - Note: Please disable \"SlowScriptTimeout\" in SourceMod core.cfg beforehand as this could run for long time! (Restart required after editing)\n - Format: sc_mkconfigs <MAPFILTER> [CONFIRM]\n  MAPFILTER:\n    - filters the map names to include; use * for all; supports wildcards with * such as coop_*\n  CONFIRM:\n    - [0 = dry run, 1 = live run]");
 	RegServerCmd("sc_importconfigs", Command_ImportConfigs, "Imports other formats of map configs into SourceCoop configs.\n - Note: Please disable \"SlowScriptTimeout\" in SourceMod core.cfg beforehand as this could run for long time! (Restart required after editing)\n - Format: sc_importconfigs <TYPE> <MAPFILTER> <UPDATE> <CREATE> [CONFIRM]\n  TYPE:\n    - The type of configs to import\n    - [stripper = Stripper:source]\n  MAPFILTER:\n    - filters the map names to import; use * for all; supports wildcards with * such as coop_*\n  UPDATE:\n    - [1 = allow updating SourceCoop configs that already exist, 0 = skips existing configs]\n  CREATE:\n    - [1 = attempts to create default SourceCoop config for a map if it's missing, 0 = prints a warning and skips if missing]\n  CONFIRM:\n    - [0 = dry run, 1 = live run]");
+	RegServerCmd("sc_debug_missing_weapons", Command_Debug_MissingWeapons, "Internal debug command for testing missing weapons on spawn.");
 	
 	g_pLevelLump.Initialize();
 	CCoopSpawnSystem.Initialize();
@@ -624,7 +631,7 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 		#endif
 		
 		#if defined ENTPATCH_SNIPER
-		if (strcmp(szClassname, "npc_sniper", false) == 0)
+		if (strcmp(szClassname, "npc_sniper", false) == 0 || strcmp(szClassname, "proto_sniper", false) == 0)
 		{
 			DHookEntity(hkProtoSniperSelectSchedule, false, iEntIndex, _, Hook_ProtoSniperSelectSchedule);
 			return;
@@ -675,6 +682,7 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 		if (strcmp(szClassname, "npc_ichthyosaur") == 0)
 		{
 			DHookEntity(hkIchthyosaurIdleSound, false, iEntIndex, _, Hook_IchthyosaurIdleSound);
+			DHookEntity(hkIchthyosaurIdleSound, true, iEntIndex, _, Hook_IchthyosaurIdleSoundPost);
 			return;
 		}
 		#endif
@@ -703,6 +711,14 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 			return;
 		}
 		#endif
+		
+		#if defined ENTPATCH_BM_MEDIC
+		if (strcmp(szClassname, "npc_human_medic") == 0)
+		{
+			DHookEntity(hkEvent_Killed, false, iEntIndex, _, Hook_HumanMedicKilled);
+			return;
+		}
+		#endif
 	}
 	else // !isNPC
 	{
@@ -722,11 +738,6 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 			return;
 		}
 
-		if (strcmp(szClassname, "grenade_bolt") == 0)
-		{
-			DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_GrenadeBoltAcceptInput);
-			return;
-		}
 		#endif
 
 		if (pEntity.IsWeapon())
@@ -743,10 +754,11 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 				DHookEntity(hkBaseCombatWeaponItemPostFrame, true, iEntIndex, _, Hook_CrossbowItemPostFramePost);
 				DHookEntity(hkBaseCombatWeaponDeploy, false, iEntIndex, _, Hook_IronsightDeployPost_SaveSettings);
 				DHookEntity(hkBaseCombatWeaponDeploy, true, iEntIndex, _, Hook_CrossbowDeployPost);
-				DHookEntity(hkBaseCombatWeaponPrimaryAttack, false, iEntIndex, _, Hook_CrossbowPrimaryAttack);
 				DHookEntity(hkBaseCombatWeaponPrimaryAttack, true, iEntIndex, _, Hook_CrossbowPrimaryAttackPost);
 				DHookEntity(hkBaseCombatWeaponGetDrawActivity, false, iEntIndex, _, Hook_CrossbowGetDrawActivity);
 				DHookEntity(hkBaseCombatWeaponGetPrimaryAttackActivity, false, iEntIndex, _, Hook_CrossbowGetPrimaryAttackActivity);
+				DHookEntity(hkWeaponCrossbowFireBolt, false, iEntIndex, _, Hook_CrossbowFireBolt);
+				DHookEntity(hkWeaponCrossbowFireBolt, true, iEntIndex, _, Hook_CrossbowFireBoltPost);
 			}
 			#endif
 
@@ -956,6 +968,12 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 				{
 					DHookEntity(hkOnTryPickUp, true, iEntIndex, _, Hook_OnEquipmentTryPickUpPost);
 					pEntity.HookOutput("OnPlayerPickup", Hook_SuitTouchPickup);
+					return;
+				}
+
+				if (strcmp(szClassname, "item_longjump") == 0)
+				{
+					DHookEntity(hkOnTryPickUp, true, iEntIndex, _, Hook_OnEquipmentTryPickUpPost);
 					return;
 				}
 			}

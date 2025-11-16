@@ -251,7 +251,7 @@ methodmap DnManager
 	}
 	// Formats the weapon string for a display event.
 	//
-	public static void GetWeaponNameForEvent(CBaseEntity pInflictor, char[] szBuffer, const int iMaxLength)
+	public static void GetWeaponNameForEvent(CBaseEntity pInflictor, char[] szBuffer, const int iMaxLength, CBaseEntity pAttacker, const int iDamageType)
 	{
 		if (pInflictor.IsValid())
 		{
@@ -265,6 +265,16 @@ methodmap DnManager
 					strcopy(szBuffer, iMaxLength, g_pDnWeaponIconList[i][1]);
 					return;
 				}
+			}
+			
+			//WORKAROUND:
+			//Fix bugged tracerbullet behavior by checking following conditions and hardcode "crossbow":
+			//pInflictor == Player, pAttacker == pInflictor, iDamageType == 2 (bullet)
+			//Will need rework it or create new workarond if we will find issues caused by this workarond, rn there is no other known way for these conditions to happen
+			if(strcmp(szClassname, "player", false) == 0 && pInflictor == pAttacker && iDamageType == 2)
+			{	
+				strcopy(szBuffer, iMaxLength, "crossbow");
+				return;
 			}
 		}
 		strcopy(szBuffer, iMaxLength, "");
@@ -378,6 +388,7 @@ methodmap DnManager
 		CBaseEntity pAttacker = CBaseEntity(hEvent.GetInt("entindex_attacker"));
 		CBaseEntity pVictim = CBaseEntity(hEvent.GetInt("entindex_killed"));
 		CBaseEntity pInflictor = CBaseEntity(hEvent.GetInt("entindex_inflictor"));
+		int iDamageType = hEvent.GetInt("damagebits");
 
 		if (pAttacker == NULL_CBASEENTITY || pVictim == NULL_CBASEENTITY || !DnManager.IsEntityAllowed(pVictim))
 			return;
@@ -406,7 +417,7 @@ methodmap DnManager
 			if (!DnManager.WriteEntryEntityKills(sEntry, pAttacker, pVictim))
 				return;
 		}
-		DnManager.GetWeaponNameForEvent(pInflictor, sEntry.m_szWeapon, sizeof(sEntry.m_szWeapon));
+		DnManager.GetWeaponNameForEvent(pInflictor, sEntry.m_szWeapon, sizeof(sEntry.m_szWeapon), pAttacker, iDamageType);
 		DnManager.PushDeathNotice(sEntry);
 	}
 	// Pushes a death notice entry onto the display.

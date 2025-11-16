@@ -129,6 +129,7 @@ DynamicHook hkBaseCombatWeaponDeploy;
 DynamicHook hkBaseCombatWeaponPrimaryAttack;
 DynamicHook hkBaseCombatWeaponGetPrimaryAttackActivity;
 DynamicHook hkBaseCombatWeaponGetDrawActivity;
+DynamicHook hkWeaponCrossbowFireBolt;
 DynamicDetour hkToggleIronsights;
 DynamicDetour hkTauFireBeam;
 DynamicDetour hkParamsManagerInitInstances;
@@ -198,6 +199,10 @@ DynamicDetour hkAccumulatePose;
 DynamicDetour hkTestGroundMove;
 #endif
 
+#if defined SRCCOOP_BLACKMESA
+DynamicDetour hkStartLagCompensation;
+#endif
+
 // ----------------------------
 // MemPatches
 // ----------------------------
@@ -219,6 +224,9 @@ int g_bUnblockRespawn[MAXPLAYERS+1];
 SpawnOptions g_pSpawnOptions;
 OperatingSystem g_serverOS;
 FeatureMap g_pFeatureMap;
+#if defined SRCCOOP_BLACKMESA
+int g_iUserCmdOffset;
+#endif
 
 ArrayList g_pPostponedSpawns;
 

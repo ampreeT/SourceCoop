@@ -487,12 +487,9 @@ public MRESReturn Hook_PlayerSpawnPost(int iClient, DHookReturn hReturn, DHookPa
 		CCoopSpawnSystem.TeleportPlayerOnSpawn(pPlayer);
 
 		// Initialize clientside convars from skill.cfg, which may have not executed.
+		// This occurs if the client has not loaded any background map which can happen from either running -dev or by joining directly.
 		#if defined SRCCOOP_BLACKMESA
-		pPlayer.QueryConvar("r_bloomtintexponent_nextgen", QueryConVar_Bloom, 2.2);
-		pPlayer.QueryConvar("r_bloomtintr_nextgen", QueryConVar_Bloom, 0.25);
-		pPlayer.QueryConvar("r_bloomtintg_nextgen", QueryConVar_Bloom, 0.25);
-		pPlayer.QueryConvar("r_bloomtintb_nextgen", QueryConVar_Bloom, 0.25);
-		pPlayer.QueryConvar("gb_flashlight_intensity", QueryConVar_Bloom, 0.8);
+		ClientCommand(iClient, "exec skill_manifest.cfg");
 		#endif
 		
 		#if defined GAMEPATCH_TEAMSELECT_UI
@@ -1007,32 +1004,6 @@ void Timer_FixWeaponPrediction(Handle timer, CBasePlayer pPlayer)
 {
 	if (pPlayer.IsValid() && pPlayer.IsAlive())
 		RestorePackedItems(pPlayer);
-}
-
-//------------------------------------------------------
-// Check for default broken values and fix them
-// This occurs if the client has not loaded any background map which can happen from either running -dev or by direct steam://connect links.
-//------------------------------------------------------
-public void QueryConVar_Bloom(QueryCookie cookie, int iClient, ConVarQueryResult result, const char[] cvarName, const char[] cvarValue, float flDefaultValue)
-{
-	if (!strcmp(cvarName, "r_bloomtintexponent_nextgen"))
-	{
-		if (!strcmp(cvarValue, "0.750"))
-		{
-			ClientCommand(iClient, "%s %f", cvarName, flDefaultValue);
-		}
-	}
-	else if (!strcmp(cvarName, "gb_flashlight_intensity"))
-	{
-		if (!strcmp(cvarValue, "2.5"))
-		{
-			ClientCommand(iClient, "%s %f", cvarName, flDefaultValue);
-		}
-	}
-	else if (!strcmp(cvarValue, "1.0"))
-	{
-		ClientCommand(iClient, "%s %f", cvarName, flDefaultValue);
-	}
 }
 
 void SendClientConvars(int client, bool bSpawn)
