@@ -682,6 +682,7 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 		if (strcmp(szClassname, "npc_ichthyosaur") == 0)
 		{
 			DHookEntity(hkIchthyosaurIdleSound, false, iEntIndex, _, Hook_IchthyosaurIdleSound);
+			DHookEntity(hkIchthyosaurIdleSound, true, iEntIndex, _, Hook_IchthyosaurIdleSoundPost);
 			return;
 		}
 		#endif
