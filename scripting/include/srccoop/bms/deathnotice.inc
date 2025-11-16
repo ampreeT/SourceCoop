@@ -58,6 +58,7 @@ char g_pDnDisplayList[][2][] =
 	{ "npc_sentry_ground", "Turret" },
 	{ "npc_snark", "Snark" },
 	{ "npc_sniper", "HECU Sniper" },
+	{ "proto_sniper", "HECU Sniper" },
 	{ "npc_tentacle", "Alien Tentacle" },
 	{ "npc_vortigaunt", "Alien Slave" },
 	{ "npc_xen_grunt", "Alien Grunt" },
