@@ -18,7 +18,7 @@ public MRESReturn Hook_IsPlayerAlly(int _this, DHookReturn hReturn, DHookParam h
 		for (int i = 1; i <= MaxClients; i++)
 		{
 			CBasePlayer pPlayer = CBasePlayer(i);
-			if (pPlayer != NULL_CBASEENTITY && !pPlayer.IsBot())
+			if (pPlayer != NULL_CBASEENTITY && !pPlayer.IsBot() && pPlayer.IsAlive())
 			{
 				if (pThis.IRelationType(pPlayer) != D_LI)
 				{

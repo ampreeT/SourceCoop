@@ -1025,6 +1025,11 @@
 				"windows"	"72"
 				"linux"		"72"
 			}
+			"CAI_BaseColleague::m_bProvoked"  // backing field of CAI_BaseColleague::IsProvoked
+			{
+				"windows"	"2808" // linux - 20
+				"linux"		"2828"
+			}
 		}
 		//   ____  __  __  _____     _____ _____ _____ _   _       _______ _    _ _____  ______  _____ 
 		//  |  _ \|  \/  |/ ____|   / ____|_   _/ ____| \ | |   /\|__   __| |  | |  __ \|  ____|/ ____|
