@@ -7,6 +7,8 @@
 	"campaign" "Workshop maps"
 	"chapter" "Stojkeholm"
 	
+	"intro_type" "fade"
+	
 	"features"
 	{
 		"KEEP_EQUIPMENT" "1"
@@ -14,12 +16,45 @@
 	"equipment"
 	{
 	}
+	"define"
+	{
+		// manually assign spawnflags for game_text as some texts are activator-sided only
+		"game_text_allplayers" "0"
+	}
 	"entity"
 	{
+		// delay map start
+		"modify"
+		{
+			"hammerid" "14661"
+			"functions"
+			{
+				"delay_output" "OnMapSpawn"
+			}
+		}
+		// game text fix
+		"modify"
+		{
+			"targetname" "/^(txt_subject|txt_location|txt_time)$/"
+			"set"
+			{
+				"spawnflags" "1"
+			}
+		}
 	}
 	"checkpoint"
 	{
-		"use_map_autosave" "1"
-		"use_map_spawnpoint" "1"
+		"spawn"
+		{
+			"origin"	"832 1024 -60"
+			"angles"	"0 0 0"
+		}
+		"before battle"
+		{
+			"origin"	"-1377 -5226 -703"
+			"angles"	"0 0 0"
+			"triggerid"	"1274182"
+			"output"	"OnTrigger"
+		}
 	}
 }
