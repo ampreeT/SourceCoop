@@ -16,6 +16,11 @@
 	"equipment"
 	{
 	}
+	"define"
+	{
+		// manually assign spawnflags for game_text as some texts are activator-sided only
+		"game_text_allplayers" "0"
+	}
 	"entity"
 	{
 		// delay map start
@@ -30,10 +35,10 @@
 		// game text fix
 		"modify"
 		{
-			"targetname" "txt_facilitydoor"
+			"targetname" "/^(txt_subject|txt_location|txt_time)$/"
 			"set"
 			{
-				"spawnflags" "0"
+				"spawnflags" "1"
 			}
 		}
 	}
