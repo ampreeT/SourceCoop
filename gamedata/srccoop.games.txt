@@ -1587,11 +1587,15 @@
 				"windows"	"108"
 				"linux"		"109"
 			}
-			
 			"CWeapon_Crossbow::FireBolt" //bool CWeapon_Crossbow::FireBolt(bool)
 			{
 				"windows"	"423"
 				"linux"		"424"
+			}
+			"CBaseCombatCharacter::IRelationType" // CBaseCombatCharacter::IRelationType(CBaseEntity*)
+			{
+				"windows"	"318"
+				"linux"		"319"
 			}
 		}
 	}
@@ -1988,6 +1992,11 @@
 			{
 				"windows"	"206"
 				"linux"		"207"
+			}
+			"CBaseCombatCharacter::IRelationType" // CBaseCombatCharacter::IRelationType(CBaseEntity*)
+			{
+				"windows"	"303"
+				"linux"		"304"
 			}
 		}
 	}
