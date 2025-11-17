@@ -7,13 +7,30 @@ static bool g_pPlayerIronsightClassic[MAXPLAYERS + 1];
 
 //------------------------------------------------------
 // CNPC_PlayerCompanion - npc_human_scientist*, npc_human_security
-// scientists should classify as allies (in MP, base function returns false when player is not passed in)
-// this allows npcs to pass filter in "player ally only" triggers
+// In case a player is not passed in, consider as ally so long we don't dislike any player.
+// This allows friendly NPCs to pass filter in "player ally only" triggers in MP.
 //------------------------------------------------------
 public MRESReturn Hook_IsPlayerAlly(int _this, DHookReturn hReturn, DHookParam hParams)
 {
-	DHookSetReturn(hReturn, true);
-	return MRES_Supercede;
+	if (hParams.IsNull(1)) // pPlayer
+	{
+		CAI_BaseNPC pThis = CAI_BaseNPC(_this);
+		for (int i = 1; i <= MaxClients; i++)
+		{
+			CBasePlayer pPlayer = CBasePlayer(i);
+			if (pPlayer != NULL_CBASEENTITY && !pPlayer.IsBot() && pPlayer.IsAlive())
+			{
+				if (pThis.IRelationType(pPlayer) != D_LI)
+				{
+					DHookSetReturn(hReturn, false);
+					return MRES_Supercede;
+				}
+			}
+		}
+		DHookSetReturn(hReturn, true);
+		return MRES_Supercede;
+	}
+	return MRES_Ignored;
 }
 
 //------------------------------------------------------
