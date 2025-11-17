@@ -40,10 +40,95 @@
 				"rendermode" "10"
 			}
 		}
+		// strip weapons from all players
+		"remove"
+		{
+			"hammerid" "5398072"
+		}
+		"remove"
+		{
+			"hammerid" "5331322"
+		}		
+		"add"
+		{
+			"classname" "trigger_multiple"
+			"spawnflags" "1"
+			"wait" "0.1"
+			"functions"
+			{
+				"set_model"
+				{
+					"origin" "11712 384 -10240"
+					"size" "896 1536 640"
+				}
+			}
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnTrigger"
+					"target" "weaponstrip_killhud"
+					"input"	"StripWeaponsAndSuit"
+					"timestofire" "-1"
+				}
+			}
+		}
+		"add"
+		{
+			"classname" "trigger_multiple"
+			"spawnflags" "1"
+			"wait" "0.1"
+			"functions"
+			{
+				"set_model"
+				{
+					"origin" "14166 155 -10170"
+					"size" "460 876 144"
+				}
+			}
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnTrigger"
+					"target" "weaponstrip_killhud"
+					"input"	"StripWeaponsAndSuit"
+					"timestofire" "-1"
+				}
+			}
+		}
 	}
+	
 	"checkpoint"
 	{
-		"use_map_autosave" "1"
-		"use_map_spawnpoint" "1"
+		"spawn"
+		{
+			"origin"	"658 4222 -335"
+			"angles"	"0 0 0"
+		}
+		"before apache"
+		{
+			"origin"	"547 1598 -67"
+			"angles"	"0 270 0"
+			"triggerid"	"4970494"
+			"output"	"OnTrigger"
+			"respawn"	"1"
+		}
+		"ending xen"
+		{
+			"origin"	"11904 128 -10307"
+			"angles"	"0 82 0"
+			"triggerid"	"5331334"
+			"output"	"OnTrigger"
+			"delay"		"0.5"
+		}
+		"ending house"
+		{
+			"origin"	"14119 462 -10211"
+			"angles"	"0 297 0"
+			"triggerid"	"5331332"
+			"output"	"OnTrigger"
+			"delay"		"0.5"
+		}
 	}
 }

@@ -1,8 +1,10 @@
-#base "base/bm_sp_campaign.edt"
+// Script for workshop item 3164506630 - Stadium
+
+#base "base/coop_base_sp_conversion.edt"
 
 "config"
 {
-	"campaign" "Stadium"
+	"campaign" "Workshop maps"
 	"chapter" "Stadium"
 	
 	"equipment"
@@ -77,7 +79,11 @@
 		"item" "item_grenade_mp5"
 		"item" "item_grenade_mp5"
 	}
-    
+	"define"
+	{
+		// since map has player triggered views (the monitor), dont force the camera on all players
+		"viewcontrol_allplayers" "0"
+	}
 	"checkpoint"
 	{
 		"use_map_spawnpoint" "1"

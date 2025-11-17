@@ -1,0 +1,125 @@
+// Script for workshop item 2639914442 - Meltdown
+
+#base "base/coop_base_sp_conversion.edt"
+
+"config"
+{
+	"campaign" "Workshop maps"
+	"chapter" "Meltdown"
+	
+	"features"
+	{
+		"KEEP_EQUIPMENT" "1"
+	}
+	"equipment"
+	{
+		"item" "item_suit"
+		"item" "item_weapon_crowbar"
+	}
+	"entity"
+	{
+		// delay map start
+		"modify"
+		{
+			"hammerid" "18833"
+			"functions"
+			{
+				"delay_output" "OnMapSpawn"
+			}
+		}
+		// remove starting weapons
+		"remove"
+		{
+			"hammerid" "309"
+		}
+		"remove"
+		{
+			"hammerid" "1415105"
+		}
+		"modify"
+		{
+			"hammerid" "1276985"
+			"outputs"
+			{
+				"modify"
+				{
+					"target" "Bang1"
+					"replace"
+					{
+						"delay" "2.5"
+					}
+				}
+				"modify"
+				{
+					"target" "Fade1"
+					"replace"
+					{
+						"delay" "2.5"
+					}
+				}
+				"modify"
+				{
+					"target" "Explode1"
+					"replace"
+					{
+						"delay" "2.45"
+					}
+				}
+				"modify"
+				{
+					"target" "Freeze"
+					"replace"
+					{
+						"delay" "2.5"
+					}
+				}
+				"modify"
+				{
+					"target" "Change"
+					"replace"
+					{
+						"delay" "5"
+					}
+				}
+				"modify"
+				{
+					"target" "Endpos"
+					"replace"
+					{
+						"delay" "4.8"
+					}
+				}
+			}
+		}
+	}
+	"checkpoint"
+	{
+		"spawn"
+		{
+			"origin"	"-4608 -1344 372"
+			"angles"	"0 270 0"
+		}
+		"first floor"
+		{
+			"origin"	"-1539 -1217 293"
+			"angles"	"0 0 0"
+			"triggerid"	"1078254"
+			"output"	"OnTrigger"
+		}
+		"ground floor"
+		{
+			"origin"	"-3424 -1312 10"
+			"angles"	"0 0 0"
+			"triggerid"	"1335550"
+			"output"	"OnTrigger"
+		}
+		"kaboom"
+		{
+			"origin"	"-3530 -1536 6"
+			"angles"	"0 0 0"
+			"triggerid"	"1276985"
+			"output"	"OnPressed"
+			"bringall"	"1"
+			"delay"		"1"
+	}
+}
