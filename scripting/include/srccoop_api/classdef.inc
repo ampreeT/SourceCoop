@@ -73,6 +73,7 @@
 #include <srccoop_api/classdef/common/Task_t.inc>
 
 #if defined SRCCOOP_BLACKMESA
+#include <srccoop_api/classdef/bms/CAI_BaseColleague.inc>
 #include <srccoop_api/classdef/bms/CBlackMesaBaseCombatWeapon.inc>
 #include <srccoop_api/classdef/bms/CBlackMesaBaseCombatWeaponIronsights.inc>
 #include <srccoop_api/classdef/bms/CBlackMesaBaseDetonator.inc>

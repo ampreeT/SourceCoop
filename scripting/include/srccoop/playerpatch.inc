@@ -1070,20 +1070,34 @@ public void Hook_ConVar_AlwaysRun(const ConVar hConVar, const char[] szOldValue,
 static void ClearNpcMemoryForPlayer(const CBasePlayer pPlayer)
 {
 	int iEntIndex = -1;
+	#if defined SRCCOOP_BLACKMESA
+	char szClassname[MAX_CLASSNAME];
+	#endif
+
 	while ((iEntIndex = FindEntityByClassname(iEntIndex, "*")) != -1)
 	{
 		CBaseEntity pEntity = CBaseEntity(iEntIndex);
 		if (pEntity.IsNPC())
 		{
+			CAI_BaseNPC pNPC = view_as<CAI_BaseNPC>(pEntity);
+
 			#if defined SRCCOOP_BLACKMESA
-			if (pEntity.IsClassname("npc_abrams"))
+			pEntity.GetClassname(szClassname, sizeof(szClassname));
+			if (strcmp(szClassname, "npc_abrams") == 0)
 			{
 				// causes a crash in CNPC_Abrams::AimMiniTurret2
 				continue;
 			}
-			#endif
+			if (strcmp(szClassname, "npc_human_security") == 0)
+			{
+				if (pNPC.GetEnemy() == pPlayer)
+				{
+					// Reset provoked state - used by CAI_BaseColleague::IRelationType
+					pNPC.m_afMemory &= ~bits_MEMORY_PROVOKED;
+				}
+			}
+			#endif // SRCCOOP_BLACKMESA
 
-			CAI_BaseNPC pNPC = view_as<CAI_BaseNPC>(pEntity);
 			pNPC.ForgetEntity(pPlayer);
 		}
 	}
