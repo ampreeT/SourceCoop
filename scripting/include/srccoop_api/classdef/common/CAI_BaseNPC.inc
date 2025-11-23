@@ -26,6 +26,23 @@ enum CAI_BaseNPC_SpawnFlags
 	SF_NPC_NO_PLAYER_PUSHAWAY = (1 << 14),	
 }
 
+enum CAI_BaseNPC_Memory
+{
+	bits_MEMORY_PROVOKED		= ( 1 << 0 ), // right now only used for houndeyes.
+	bits_MEMORY_INCOVER			= ( 1 << 1 ), // npc knows it is in a covered position.
+	bits_MEMORY_SUSPICIOUS		= ( 1 << 2 ), // Ally is suspicious of the player, and will move to provoked more easily
+	bits_MEMORY_TASK_EXPENSIVE	= ( 1 << 3 ), // NPC has completed a task which is considered costly, so don't do another task this frame
+	bits_MEMORY_PATH_FAILED		= ( 1 << 5 ), // Failed to find a path
+	bits_MEMORY_FLINCHED		= ( 1 << 6 ), // Has already flinched
+	bits_MEMORY_TOURGUIDE		= ( 1 << 8 ), // I have been acting as a tourguide.
+	bits_MEMORY_LOCKED_HINT		= ( 1 << 10 ),
+	bits_MEMORY_TURNING			= ( 1 << 13 ), // Turning, don't interrupt me.
+	bits_MEMORY_TURNHACK		= ( 1 << 14 ), 
+	bits_MEMORY_HAD_ENEMY		= ( 1 << 15 ), // Had an enemy
+	bits_MEMORY_HAD_PLAYER		= ( 1 << 16 ), // Had player
+	bits_MEMORY_HAD_LOS			= ( 1 << 17 ) // Had LOS to enemy
+}
+
 methodmap CAI_BaseNPC < CBaseCombatCharacter
 {
 	public static void InitClassdef(const GameData hGameConfig)
@@ -98,6 +115,17 @@ methodmap CAI_BaseNPC < CBaseCombatCharacter
 		public set(const CAI_BaseNPC_SpawnFlags eSpawnFlags)
 		{
 			view_as<CBaseEntity>(this).m_spawnflags = view_as<int>(eSpawnFlags);
+		}
+	}
+	property CAI_BaseNPC_Memory m_afMemory
+	{
+		public get()
+		{
+			return view_as<CAI_BaseNPC_Memory>(GetEntProp(this.entindex, Prop_Data, "m_afMemory"));
+		}
+		public set(const CAI_BaseNPC_Memory iMemory)
+		{
+			SetEntProp(this.entindex, Prop_Data, "m_afMemory", view_as<int>(iMemory));
 		}
 	}
 	public NPC_STATE GetState()

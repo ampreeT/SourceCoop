@@ -120,6 +120,5 @@ stock void InitClassdef(const GameData hGameConfig)
 
 	#if defined SRCCOOP_BLACKMESA
 	CParamsManager.InitClassdef(hGameConfig);
-	CAI_BaseColleague.InitClassdef(hGameConfig);
 	#endif
 }

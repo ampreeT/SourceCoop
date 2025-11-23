@@ -1092,8 +1092,8 @@ static void ClearNpcMemoryForPlayer(const CBasePlayer pPlayer)
 			{
 				if (pNPC.GetEnemy() == pPlayer)
 				{
-					// Reset backing field for CAI_BaseColleague::IsProvoked() - used by CAI_BaseColleague::IRelationType
-					view_as<CAI_BaseColleague>(pNPC).SetProvoked(false);
+					// Reset provoked state - used by CAI_BaseColleague::IRelationType
+					pNPC.m_afMemory &= ~bits_MEMORY_PROVOKED;
 				}
 			}
 			#endif // SRCCOOP_BLACKMESA
