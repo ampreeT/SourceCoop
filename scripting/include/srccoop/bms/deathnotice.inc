@@ -58,6 +58,7 @@ char g_pDnDisplayList[][2][] =
 	{ "npc_sentry_ground", "Turret" },
 	{ "npc_snark", "Snark" },
 	{ "npc_sniper", "HECU Sniper" },
+	{ "proto_sniper", "HECU Sniper" },
 	{ "npc_tentacle", "Alien Tentacle" },
 	{ "npc_vortigaunt", "Alien Slave" },
 	{ "npc_xen_grunt", "Alien Grunt" },
@@ -86,9 +87,13 @@ char g_pDnDisplayList[][2][] =
 	{ "prop_barrel_cactus", "Cactus" },
 	{ "prop_barrel_cactus_semilarge", "Cactus" },
 	{ "func_minefield", "Landmine" },
+	{ "func_door", "Door" },
+	{ "func_platrot", "Rotating Platform" },
+	{ "func_50cal", "M2 Browning" },
 
 	// Weapon Projectiles.
 	{ "grenade_bolt", "Crossbow Bolt" },
+	{ "tracerbullet", "Crossbow Bolt" },
 	{ "grenade_frag", "Frag Grenade" },
 	{ "grenade_hornet", "Hornet" },
 	{ "grenade_mp5_contact", "MP5 Grenade" },
@@ -108,7 +113,7 @@ char g_pDnWeaponIconList[][2][] =
 {
 	// Weapons.
 	{ "weapon_357", "357" },
-	{ "weapon_assassin_glock", "assassin_glock" },
+	{ "weapon_assassin_glock", "glock" }, //no icon in game files, use "glock" cuz it's glock anyway
 	{ "weapon_crossbow", "crossbow" },
 	{ "weapon_crowbar", "crowbar" },
 	{ "weapon_frag", "frag" },
@@ -126,6 +131,7 @@ char g_pDnWeaponIconList[][2][] =
 
 	// Weapon Projectiles.
 	{ "grenade_bolt", "crossbow" },
+	{ "tracerbullet", "crossbow" },
 	{ "grenade_frag", "frag" },
 	{ "grenade_hornet", "hivehand" },
 	{ "grenade_mp5_contact", "mp5" },
@@ -142,7 +148,6 @@ char g_pDnWeaponIconList[][2][] =
 // env_gunfire
 // env_mortar_launcher
 // env_sporeexplosion
-// func_50cal
 // func_door
 // func_tow
 // func_tow_mp
@@ -152,6 +157,3 @@ char g_pDnWeaponIconList[][2][] =
 // grenade_spit
 // grenade_tank_shell
 // grenade_tow
-
-
-// proto_sniper

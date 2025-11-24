@@ -1,0 +1,294 @@
+// Script for workshop item 2316239201 - Further Data
+
+#base "base/coop_base_sp_conversion.edt"
+
+"config"
+{
+	"campaign" "Workshop maps"
+	"chapter" "Further Data"	
+	"intro_type" "fade"
+	#if
+	{
+		"globalstate" "backtrack"
+		#then
+		{
+			"intro_type" "none"
+		}
+	}
+
+	"features"
+	{
+		"KEEP_EQUIPMENT" "1"
+	}
+	"equipment"
+	{
+		#if
+		{
+			"globalstate" "backtrack"
+			#then
+			{
+				"item" "item_suit"
+				"item" "weapon_crowbar"
+				"item" "weapon_glock"
+				"item" "weapon_357"
+				"item" "weapon_mp5"
+				"item" "weapon_shotgun"
+				"item" "item_battery"
+				"item" "item_battery"
+				"item" "item_battery"
+				"item" "item_ammo_mp5"
+				"item" "item_ammo_mp5"
+				"item" "item_ammo_mp5"
+				"item" "item_ammo_357"
+				"item" "item_ammo_357"
+				"item" "item_ammo_shotgun"
+				"item" "item_ammo_shotgun"
+			}
+			#else
+			{
+				"item" "item_suit"
+				"health" "50"
+			}
+		}
+	}
+	"entity"
+	{
+		// disable garg step sound
+		"modify"
+		{
+			"targetname" "int_sd_gargstep_timer"
+			"set"
+			{
+				"StartDisabled" "1"
+			}
+		}
+		// strip all weapons
+		"add"
+		{
+			"classname"	"trigger_multiple"
+			"targetname" "stripall"
+			"spawnflags" "1"
+			"wait" "0.1"
+			"StartDisabled" "1"
+			"functions"
+			{
+				"set_model"
+				{
+					"origin" "6016 768 128"
+					"size" "384 384 256"
+				}
+			}
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnTrigger"
+					"target" "end_strip"
+					"input"	"StripWeaponsAndSuit"
+					"delay" "9.5"
+					"timestofire" "-1"
+				}
+			}
+		}
+		"modify"
+		{
+			"targetname" "end_start"
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnTrigger"
+					"target" "stripall"
+					"input"	"Enable"
+					"timestofire" "-1"
+				}
+			}
+		}
+		#if
+		{
+			"globalstate" "backtrack"
+			#then
+			{
+				// remove entities during backtracking
+				// brushes
+				"remove"
+				{
+					"hammerid" "365611"
+				}
+				"remove"
+				{
+					"hammerid" "223625"
+				}
+				"remove"
+				{
+					"hammerid" "222616"
+				}
+				"remove"
+				{
+					"hammerid" "10852"
+				}
+				"remove"
+				{
+					"hammerid" "241611"
+				}
+				// entities
+				"remove"
+				{
+					"hammerid" "1235"
+				}
+				"remove"
+				{
+					"hammerid" "8042"
+				}
+				"remove"
+				{
+					"hammerid" "155428"
+				}
+				// delay map start
+				"modify"
+				{
+					"hammerid" "45436"
+					"functions"
+					{
+						"delay_output" "OnMapSpawn"
+					}
+				}
+				"modify"
+				{
+					"hammerid" "4771"
+					"set"
+					{
+						"spawnflags" "3073"
+					}
+				}
+				"modify"
+				{
+					"hammerid" "222781"
+					"outputs"
+					{
+						"remove"
+						{
+							"target" "ambush_grunt_trigger"
+						}
+					}
+				}
+			}
+			#else
+			{
+				// delay map start
+				"modify"
+				{
+					"hammerid" "8042"
+					"functions"
+					{
+						"delay_output" "OnNewGame"
+					}
+				}
+				// fix elevator door can be opened by players before guard opens it
+				"modify"
+				{
+					"hammerid" "4714"
+					"set"
+					{
+						"spawnflags" "3073"
+						"locked_sound" "2"
+					}
+				}
+				"modify"
+				{
+					"hammerid" "222980"
+					"outputs"
+					{
+						"add"
+						{
+							"output" "OnEndSequence"
+							"target" "int_ele_btn"
+							"input"	"Unlock"
+						}
+					}
+				}
+				"modify"
+				{
+					"hammerid" "4771"
+					"set"
+					{
+						"sounds" "100"
+					}
+				}
+				// turns on garg step sounds
+				"modify"
+				{
+					"targetname" "int_start_sd"
+					"outputs"
+					{
+						"add"
+						{
+							"output" "OnTrigger"
+							"target" "int_sd_gargstep_timer"
+							"input"	"Enable"
+						}
+					}
+				}
+				// truly fade at start
+				"modify"
+				{
+					"hammerid" "1235"
+					"functions"
+					{
+						"delay_output" "OnNewGame"
+					}
+					"outputs"
+					{
+						"add"
+						{
+							"output" "OnMapSpawn"
+							"target" "int_fade"
+							"input"	"Fade"
+						}
+					}
+				}
+			}
+		}
+	}
+	"checkpoint"
+	{
+		#if
+		{
+			"globalstate" "backtrack"
+			#then
+			{
+				"spawn"
+				{
+					"origin"	"200 -70 166"
+					"angles"	"0 0 0"
+				}
+				"end"
+				{
+					"origin"	"6080 656 36"
+					"angles"	"0 180 0"
+					"triggerid" "160571"
+					"output"	"OnPressed"
+					"bringall"	"1"
+					"delay"		"3"
+				}
+			}
+			#else
+			{			
+				"spawn"
+				{
+					"origin"	"896 928 36"
+					"angles"	"0 270 0"
+				}
+				"inside elevator"
+				{
+					"origin"	"200 -70 166"
+					"angles"	"0 0 0"
+					"triggerid" "4771"
+					"output"	"OnPressed"
+					"bringall"	"1"
+					"delay"		"1.5"
+				}
+			}
+		}
+	}
+}

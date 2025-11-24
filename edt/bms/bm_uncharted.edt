@@ -1,0 +1,69 @@
+// Script for workshop item 1205460043 - Uncharted Territory
+
+#base "base/coop_base_sp_conversion.edt"
+
+"config"
+{
+	"campaign" "Workshop maps"
+	"chapter" "Uncharted Territory"
+	
+	"features"
+	{
+		"KEEP_EQUIPMENT" "1"
+	}
+	"equipment"
+	{
+		"item" "item_suit"
+		"item" "item_weapon_crowbar"
+	}
+	"entity"
+	{
+		// delay map start
+		"modify"
+		{
+			"hammerid" "1223"
+			"functions"
+			{
+				"delay_output" "OnMapSpawn"
+			}
+		}
+		// remove starting weapons
+		"remove"
+		{
+			"hammerid" "1213"
+		}
+		"remove"
+		{
+			"hammerid" "1217"
+		}
+	}
+	"checkpoint"
+	{
+		"spawn"
+		{
+			"origin"	"-2192 3520 162"
+			"angles"	"0 0 0"
+		}
+		"2nd spawn"
+		{
+			"origin"	"1213 813 -347"
+			"angles"	"0 90 0"
+			"triggerid"	"449866"
+			"output"	"OnStartTouch"
+		}
+		"3rd spawn"
+		{
+			"origin"	"340 1363 229"
+			"angles"	"0 0 0"
+			"triggerid"	"566322"
+			"output"	"OnStartTouch"
+		}
+		"4th spawn"
+		{
+			"origin"	"-258 -116 420"
+			"angles"	"0 180 0"
+			"triggerid"	"693951"
+			"output"	"OnStartTouch"
+		}
+	}
+}

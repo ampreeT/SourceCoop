@@ -117,9 +117,15 @@ void LoadGameData()
 	LoadDHookVirtual(pGameConfig, hkBaseCombatWeaponPrimaryAttack, "CBaseCombatWeapon::PrimaryAttack");
 	LoadDHookVirtual(pGameConfig, hkBaseCombatWeaponGetPrimaryAttackActivity, "CBaseCombatWeapon::GetPrimaryAttackActivity");
 	LoadDHookVirtual(pGameConfig, hkBaseCombatWeaponGetDrawActivity, "CBaseCombatWeapon::GetDrawActivity");
+	LoadDHookVirtual(pGameConfig, hkWeaponCrossbowFireBolt, "CWeapon_Crossbow::FireBolt");
 	LoadDHookDetour(pGameConfig, hkToggleIronsights, "CBlackMesaBaseWeaponIronSights::ToggleIronSights", Hook_ToggleIronsights);
 	LoadDHookDetour(pGameConfig, hkTauFireBeam, "CWeapon_Tau::FireBeam", Hook_TauFireBeam, Hook_TauFireBeamPost);
 	LoadDHookDetour(pGameConfig, hkParamsManagerInitInstances, "CParamsManager::InitInstances", Hook_CParamsManager_InitInstances);
+	#endif
+	
+	#if defined SRCCOOP_BLACKMESA
+	LoadDHookDetour(pGameConfig, hkStartLagCompensation, "CLagCompensationManager::StartLagCompensation", Hook_StartLagCompensation);
+	g_iUserCmdOffset = pGameConfig.GetOffset("CBasePlayer::GetCurrentUserCommand");
 	#endif
 	
 	#if defined PLAYERPATCH_SUIT_SOUNDS
@@ -625,7 +631,7 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 		#endif
 		
 		#if defined ENTPATCH_SNIPER
-		if (strcmp(szClassname, "npc_sniper", false) == 0)
+		if (strcmp(szClassname, "npc_sniper", false) == 0 || strcmp(szClassname, "proto_sniper", false) == 0)
 		{
 			DHookEntity(hkProtoSniperSelectSchedule, false, iEntIndex, _, Hook_ProtoSniperSelectSchedule);
 			return;
@@ -676,6 +682,7 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 		if (strcmp(szClassname, "npc_ichthyosaur") == 0)
 		{
 			DHookEntity(hkIchthyosaurIdleSound, false, iEntIndex, _, Hook_IchthyosaurIdleSound);
+			DHookEntity(hkIchthyosaurIdleSound, true, iEntIndex, _, Hook_IchthyosaurIdleSoundPost);
 			return;
 		}
 		#endif
@@ -704,6 +711,14 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 			return;
 		}
 		#endif
+		
+		#if defined ENTPATCH_BM_MEDIC
+		if (strcmp(szClassname, "npc_human_medic") == 0)
+		{
+			DHookEntity(hkEvent_Killed, false, iEntIndex, _, Hook_HumanMedicKilled);
+			return;
+		}
+		#endif
 	}
 	else // !isNPC
 	{
@@ -723,11 +738,6 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 			return;
 		}
 
-		if (strcmp(szClassname, "grenade_bolt") == 0)
-		{
-			DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_GrenadeBoltAcceptInput);
-			return;
-		}
 		#endif
 
 		if (pEntity.IsWeapon())
@@ -744,10 +754,11 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 				DHookEntity(hkBaseCombatWeaponItemPostFrame, true, iEntIndex, _, Hook_CrossbowItemPostFramePost);
 				DHookEntity(hkBaseCombatWeaponDeploy, false, iEntIndex, _, Hook_IronsightDeployPost_SaveSettings);
 				DHookEntity(hkBaseCombatWeaponDeploy, true, iEntIndex, _, Hook_CrossbowDeployPost);
-				DHookEntity(hkBaseCombatWeaponPrimaryAttack, false, iEntIndex, _, Hook_CrossbowPrimaryAttack);
 				DHookEntity(hkBaseCombatWeaponPrimaryAttack, true, iEntIndex, _, Hook_CrossbowPrimaryAttackPost);
 				DHookEntity(hkBaseCombatWeaponGetDrawActivity, false, iEntIndex, _, Hook_CrossbowGetDrawActivity);
 				DHookEntity(hkBaseCombatWeaponGetPrimaryAttackActivity, false, iEntIndex, _, Hook_CrossbowGetPrimaryAttackActivity);
+				DHookEntity(hkWeaponCrossbowFireBolt, false, iEntIndex, _, Hook_CrossbowFireBolt);
+				DHookEntity(hkWeaponCrossbowFireBolt, true, iEntIndex, _, Hook_CrossbowFireBoltPost);
 			}
 			#endif
 
@@ -957,6 +968,12 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 				{
 					DHookEntity(hkOnTryPickUp, true, iEntIndex, _, Hook_OnEquipmentTryPickUpPost);
 					pEntity.HookOutput("OnPlayerPickup", Hook_SuitTouchPickup);
+					return;
+				}
+
+				if (strcmp(szClassname, "item_longjump") == 0)
+				{
+					DHookEntity(hkOnTryPickUp, true, iEntIndex, _, Hook_OnEquipmentTryPickUpPost);
 					return;
 				}
 			}

@@ -487,12 +487,9 @@ public MRESReturn Hook_PlayerSpawnPost(int iClient, DHookReturn hReturn, DHookPa
 		CCoopSpawnSystem.TeleportPlayerOnSpawn(pPlayer);
 
 		// Initialize clientside convars from skill.cfg, which may have not executed.
+		// This occurs if the client has not loaded any background map which can happen from either running -dev or by joining directly.
 		#if defined SRCCOOP_BLACKMESA
-		pPlayer.QueryConvar("r_bloomtintexponent_nextgen", QueryConVar_Bloom, 2.2);
-		pPlayer.QueryConvar("r_bloomtintr_nextgen", QueryConVar_Bloom, 0.25);
-		pPlayer.QueryConvar("r_bloomtintg_nextgen", QueryConVar_Bloom, 0.25);
-		pPlayer.QueryConvar("r_bloomtintb_nextgen", QueryConVar_Bloom, 0.25);
-		pPlayer.QueryConvar("gb_flashlight_intensity", QueryConVar_Bloom, 0.8);
+		ClientCommand(iClient, "exec skill_manifest.cfg");
 		#endif
 		
 		#if defined GAMEPATCH_TEAMSELECT_UI
@@ -1009,32 +1006,6 @@ void Timer_FixWeaponPrediction(Handle timer, CBasePlayer pPlayer)
 		RestorePackedItems(pPlayer);
 }
 
-//------------------------------------------------------
-// Check for default broken values and fix them
-// This occurs if the client has not loaded any background map which can happen from either running -dev or by direct steam://connect links.
-//------------------------------------------------------
-public void QueryConVar_Bloom(QueryCookie cookie, int iClient, ConVarQueryResult result, const char[] cvarName, const char[] cvarValue, float flDefaultValue)
-{
-	if (!strcmp(cvarName, "r_bloomtintexponent_nextgen"))
-	{
-		if (!strcmp(cvarValue, "0.750"))
-		{
-			ClientCommand(iClient, "%s %f", cvarName, flDefaultValue);
-		}
-	}
-	else if (!strcmp(cvarName, "gb_flashlight_intensity"))
-	{
-		if (!strcmp(cvarValue, "2.5"))
-		{
-			ClientCommand(iClient, "%s %f", cvarName, flDefaultValue);
-		}
-	}
-	else if (!strcmp(cvarValue, "1.0"))
-	{
-		ClientCommand(iClient, "%s %f", cvarName, flDefaultValue);
-	}
-}
-
 void SendClientConvars(int client, bool bSpawn)
 {
 	CClientConsoleCommand cmd;
@@ -1099,20 +1070,34 @@ public void Hook_ConVar_AlwaysRun(const ConVar hConVar, const char[] szOldValue,
 static void ClearNpcMemoryForPlayer(const CBasePlayer pPlayer)
 {
 	int iEntIndex = -1;
+	#if defined SRCCOOP_BLACKMESA
+	char szClassname[MAX_CLASSNAME];
+	#endif
+
 	while ((iEntIndex = FindEntityByClassname(iEntIndex, "*")) != -1)
 	{
 		CBaseEntity pEntity = CBaseEntity(iEntIndex);
 		if (pEntity.IsNPC())
 		{
+			CAI_BaseNPC pNPC = view_as<CAI_BaseNPC>(pEntity);
+
 			#if defined SRCCOOP_BLACKMESA
-			if (pEntity.IsClassname("npc_abrams"))
+			pEntity.GetClassname(szClassname, sizeof(szClassname));
+			if (strcmp(szClassname, "npc_abrams") == 0)
 			{
 				// causes a crash in CNPC_Abrams::AimMiniTurret2
 				continue;
 			}
-			#endif
+			if (strcmp(szClassname, "npc_human_security") == 0)
+			{
+				if (pNPC.GetEnemy() == pPlayer)
+				{
+					// Reset provoked state - used by CAI_BaseColleague::IRelationType
+					pNPC.m_afMemory &= ~bits_MEMORY_PROVOKED;
+				}
+			}
+			#endif // SRCCOOP_BLACKMESA
 
-			CAI_BaseNPC pNPC = view_as<CAI_BaseNPC>(pEntity);
 			pNPC.ForgetEntity(pPlayer);
 		}
 	}

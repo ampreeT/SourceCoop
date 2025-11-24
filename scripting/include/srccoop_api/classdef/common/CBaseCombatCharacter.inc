@@ -2,6 +2,7 @@
 #pragma semicolon 1
 
 static Handle g_pWeaponSwitch;
+static Handle g_pIRelationType;
 
 methodmap CBaseCombatCharacter < CBaseFlex
 {
@@ -17,6 +18,17 @@ methodmap CBaseCombatCharacter < CBaseFlex
 			PrepSDKCall_AddParameter(SDKType_CBaseEntity, SDKPass_Pointer);
 			PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
 			if (!(g_pWeaponSwitch = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szWeaponSwitch);
+		}
+		
+		char szIRelationType[] = "CBaseCombatCharacter::IRelationType";
+		StartPrepSDKCall(SDKCall_Entity);
+		if (!PrepSDKCall_SetFromConf(hGameConfig, SDKConf_Virtual, szIRelationType))
+			LogMessage("Could not obtain gamedata offset %s", szIRelationType);
+		else
+		{
+			PrepSDKCall_SetReturnInfo(SDKType_PlainOldData, SDKPass_Plain);
+			PrepSDKCall_AddParameter(SDKType_CBaseEntity, SDKPass_Pointer, VDECODE_FLAG_ALLOWNULL);
+			if (!(g_pIRelationType = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szIRelationType);
 		}
 	}
 	public CBaseCombatCharacter(const int iEntIndex = -1)
@@ -115,5 +127,9 @@ methodmap CBaseCombatCharacter < CBaseFlex
 	{
 		bool bIsNPC = this != NULL_CBASEENTITY && this.IsNPC();
 		return bIsNPC ? view_as<CAI_BaseNPC>(this) : NULL_CBASEENTITY;
+	}
+	public Disposition_t IRelationType(CBaseEntity pTarget)
+	{
+		return SDKCall(g_pIRelationType, this.entindex, pTarget.entindex);
 	}
 }
