@@ -143,6 +143,19 @@ In order for players to able to join the server, you will need to only forward t
 - [Main Campaign](https://store.steampowered.com/app/362890/Black_Mesa/)
 - [Stojkeholm](https://steamcommunity.com/sharedfiles/filedetails/?id=2320533262)
 - [Emergency 17](https://steamcommunity.com/sharedfiles/filedetails/?id=934371395)
+- [Stadium](https://steamcommunity.com/sharedfiles/filedetails/?id=3164506630)
+- [Further Data](https://steamcommunity.com/sharedfiles/filedetails/?id=2316239201)
+- [Meltdown](https://steamcommunity.com/sharedfiles/filedetails/?id=2639914442)
+- [Quarantine](https://steamcommunity.com/sharedfiles/filedetails/?id=798988742)
+- [Escapade](https://steamcommunity.com/sharedfiles/filedetails/?id=873700194)
+- [Stalwart XT](https://steamcommunity.com/sharedfiles/filedetails/?id=1850064669)
+- [Uncharted Territory](https://steamcommunity.com/sharedfiles/filedetails/?id=1205460043)
+- [Superbus Via Inscientiae](https://steamcommunity.com/sharedfiles/filedetails/?id=1086124981)
+- [Pipeline](https://steamcommunity.com/sharedfiles/filedetails/?id=2775454271)
+- [Cold Storage](https://steamcommunity.com/sharedfiles/filedetails/?id=1377042249)
+- [Going Around](https://steamcommunity.com/sharedfiles/filedetails/?id=2344380359)
+- [Surface Contamination](https://steamcommunity.com/sharedfiles/filedetails/?id=2904429204)
+- [Access Point](https://steamcommunity.com/sharedfiles/filedetails/?id=2161275016)
 
 SourceCoop __allows single-player map configurations__ without decompiling and redistributing; __learn more about creating your own__ on the [EDT Map Script Format](https://github.com/ampreeT/SourceCoop/wiki/EDT---Map-script-format).
 
