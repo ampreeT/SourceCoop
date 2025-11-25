@@ -121,6 +121,7 @@
 			"angles"	"0 0 0"
 			"triggerid"	"17742"
 			"output"	"OnPressed"
+			"respawn"	"1"
 		}
 		"ambush"
 		{
