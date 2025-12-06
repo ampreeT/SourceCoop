@@ -275,8 +275,8 @@ public void OnPluginStart()
 	// Black Mesa ConVars.
 	#if defined SRCCOOP_BLACKMESA
 	sv_always_run = FindConVar("sv_always_run");
-	sv_speed_sprint = FindConVar("sv_speed_sprint");
-	sv_speed_walk = FindConVar("sv_speed_walk");
+	//sv_speed_sprint = FindConVar("sv_speed_sprint");
+	//sv_speed_walk = FindConVar("sv_speed_walk");
 	sv_jump_long_enabled = FindConVar("sv_jump_long_enabled");
 	sv_long_jump_manacost = FindConVar("sv_long_jump_manacost");
 	#endif

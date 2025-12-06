@@ -33,8 +33,8 @@ ConVar mp_forcerespawn;
 
 #if defined SRCCOOP_BLACKMESA
 ConVar sv_always_run;
-ConVar sv_speed_sprint;
-ConVar sv_speed_walk;
+//ConVar sv_speed_sprint;
+//ConVar sv_speed_walk;
 ConVar sv_jump_long_enabled;
 ConVar sv_long_jump_manacost;
 #endif
