@@ -25,10 +25,10 @@ ConVar g_pConvarCleanHud;
 #endif
 
 // Existing ConVars.
-ConVar mp_friendlyfire;
-ConVar mp_flashlight;
-ConVar mp_forcerespawn;
-ConVar sv_ladder_useonly;
+stock ConVar mp_friendlyfire;
+stock ConVar mp_flashlight;
+stock ConVar mp_forcerespawn;
+stock ConVar sv_ladder_useonly;
 
 // Existing Black Mesa ConVars.
 
