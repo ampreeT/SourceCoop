@@ -61,6 +61,8 @@ public void Hook_PlayerPreThinkPost(int iClient)
 		#if defined PLAYERPATCH_BM_CLIENT_PREDICTION
 		CBlackMesaPlayer pBlackMesaPlayer = view_as<CBlackMesaPlayer>(pPlayer);
 
+		// Disabled due to ladder bug: https://github.com/ampreeT/SourceCoop/issues/257
+		/*
 		if (!sv_always_run.BoolValue)	// If `sv_always_run` is set to `true`, then client prediction is working as intended.
 		{
 			// In multiplayer, max speed on both the client and the server is set when `IN_SPEED` is held.
@@ -76,6 +78,7 @@ public void Hook_PlayerPreThinkPost(int iClient)
 				pBlackMesaPlayer.SetMaxSpeed(190.0);		// Controlled by `sv_speed_mp` since `sv_speed_walk` is set to `0` only on the client.
 			}
 		}
+		*/
 
 		// Manually re-enable the jump module.
 		// This introduces one rare client prediction bug where the client can jump multiple times without
@@ -469,6 +472,7 @@ public MRESReturn Hook_PlayerSpawnPost(int iClient, DHookReturn hReturn, DHookPa
 		#endif
 		
 		#if defined PLAYERPATCH_BM_CLIENT_PREDICTION
+		pPlayer.SetMaxSpeed(320.0);
 		// Fixes client prediction on the jump module HUD and the first initial jump with full mana.
         pPlayer.SendConVarValueInt(sv_long_jump_manacost, 0);
 		#endif
@@ -1049,6 +1053,8 @@ void QueryConVarSafeSet(QueryCookie cookie, int client, ConVarQueryResult result
 
 public void SetMovementPredictionConVars()
 {
+	// Disabled due to ladder bug: https://github.com/ampreeT/SourceCoop/issues/257
+	/*
 	// Client movement prediction fix.
 	// `sv_speed_walk` in MP is used for sprinting (`IN_SPEED`).
 	// If `sv_speed_walk` is set to `0.0`, then `sv_speed_mp` is used instead which is set to `320.0` by default.
@@ -1056,6 +1062,7 @@ public void SetMovementPredictionConVars()
 	bool bAlwaysRun = sv_always_run.BoolValue;
 	sv_speed_sprint.FloatValue = (!bIsCoop || bAlwaysRun) ? 320.0 : 190.0;
 	sv_speed_walk.FloatValue = (!bIsCoop || bAlwaysRun) ? 90.0 : 0.0;
+	*/
 }
 
 public void Hook_ConVar_AlwaysRun(const ConVar hConVar, const char[] szOldValue, const char[] szNewValue)

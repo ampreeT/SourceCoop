@@ -282,6 +282,8 @@ public void OnPluginStart()
 	#endif
 
 	#if defined PLAYERPATCH_BM_CLIENT_PREDICTION
+	// Force `sv_always_run` to be always on. This does not affect non-cooperative play.
+	sv_always_run.BoolValue = true;
 	sv_always_run.Flags &= ~FCVAR_REPLICATED;
 	HookConVarChange(sv_always_run, Hook_ConVar_AlwaysRun);
 	#endif
