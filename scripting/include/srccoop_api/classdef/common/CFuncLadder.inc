@@ -9,7 +9,7 @@ methodmap CFuncLadder < CBaseEntity
 	}
 	public static CFuncLadder Create()
 	{
-		return CFuncLadder(CreateEntityByName("func_ladder"));
+		return CFuncLadder(CreateEntityByName("func_useableladder"));
 	}
 
 	public bool IsEnabled()

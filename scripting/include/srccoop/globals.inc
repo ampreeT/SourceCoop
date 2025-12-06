@@ -28,6 +28,7 @@ ConVar g_pConvarCleanHud;
 ConVar mp_friendlyfire;
 ConVar mp_flashlight;
 ConVar mp_forcerespawn;
+ConVar sv_ladder_useonly;
 
 // Existing Black Mesa ConVars.
 
