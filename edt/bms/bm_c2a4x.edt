@@ -609,6 +609,7 @@
 			"angles"	"0 0 0"
 			"triggerid"	"5778047"
 			"output"	"OnStartTouch"
+			"respawn"	"1"
 			"bringall"	"1"
 			"delay"		"1"
 		}
@@ -626,6 +627,7 @@
 			"angles"	"0 90 0"
 			"triggerid"	"1385371"
 			"output"	"OnPressed"
+			"respawn"	"1"
 			"bringall"	"1"
 			"delay"		"1"
 		}
@@ -635,6 +637,7 @@
 			"angles"	"0 0 0"
 			"triggerid"	"564922"
 			"output"	"OnPressed"
+			"respawn"	"1"
 			"bringall"	"1"
 			"delay"		"1"
 		}

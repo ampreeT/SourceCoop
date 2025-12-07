@@ -57,6 +57,7 @@
 			"angles"	"0 270 0"
 			"triggerid"	"373625"
 			"output"	"OnStartTouch"
+			"respawn"	"1"
 		}
 		"battle"
 		{

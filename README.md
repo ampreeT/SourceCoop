@@ -138,11 +138,10 @@ In order for players to able to join the server, you will need to only forward t
 <a id="campaign-support"></a>
 ## 🌎 Campaign Support
 
-<h3><img src="images/icon-bms-small.png" height="20px"> Black Mesa - <a href="https://steamcommunity.com/sharedfiles/filedetails/?id=2375865650">Steam Workshop Collection</a></h3>
+<h3><img src="images/icon-bms-small.png" height="20px"> Black Mesa</h3>
 
-- [Main Campaign](https://store.steampowered.com/app/362890/Black_Mesa/)
-- [Stojkeholm](https://steamcommunity.com/sharedfiles/filedetails/?id=2320533262)
-- [Emergency 17](https://steamcommunity.com/sharedfiles/filedetails/?id=934371395)
+
+Visit our <a href="https://steamcommunity.com/sharedfiles/filedetails/?id=2375865650">Steam Workshop Collection</a> to check out all available custom maps supported by SourceCoop!
 
 SourceCoop __allows single-player map configurations__ without decompiling and redistributing; __learn more about creating your own__ on the [EDT Map Script Format](https://github.com/ampreeT/SourceCoop/wiki/EDT---Map-script-format).
 
