@@ -55,7 +55,7 @@
 // Other definitions
 //------------------------------------------------------
 
-#define SRCCOOP_VERSION "1.6"
+#define SRCCOOP_VERSION "1.7-dev"
 #define SRCCOOP_URL "https://github.com/ampreeT/SourceCoop"
 #define SRCCOOP_GAMEDATA_NAME "srccoop.games"
 #define SRCCOOP_CONFIG_GAMEDATA_NAME "srccoop_config.games"
