@@ -711,11 +711,19 @@ public MRESReturn Hook_PlayerChangeTeam(int iClient, DHookParam hParams)
 	{
 		// Allow next ForceRespawn() call after a team change
 		g_bUnblockRespawn[iClient] = true;
-
-		if (!CMultiplayRules.IsTeamplay())
-			return MRES_Ignored;
 		
 		int iTeam = hParams.Get(1);
+		
+		if (!CMultiplayRules.IsTeamplay())
+		{
+			if(iTeam == TEAM_SPECTATOR)
+			{
+				PlayerJoinedSpectators(iClient);
+			}
+			
+			return MRES_Ignored;
+		}
+		
 		if (iTeam == TEAM_UNASSIGNED || iTeam > TEAM_SPECTATOR)
 		{
 			int iEnforcedTeam = CoopManager.GetEnforcedTeam();
@@ -731,9 +739,33 @@ public MRESReturn Hook_PlayerChangeTeam(int iClient, DHookParam hParams)
 				return MRES_ChangedHandled;
 			}
 		}
+		
+		if(iTeam == TEAM_SPECTATOR)
+		{
+			PlayerJoinedSpectators(iClient);
+		}
 	}
 	return MRES_Ignored;
 }
+
+//------------------------------------------------------
+// Function called from Hook_PlayerChangeTeam when player join spectators to fix some stuff
+//------------------------------------------------------
+public void PlayerJoinedSpectators(int iClient)
+{
+	CBasePlayer pPlayer = CBasePlayer(iClient);
+	CBaseEntity pCarriedObject = pPlayer.GetUseEntity();
+				
+	//if joined spectators, force player to drop the carried phys object or dismount used tank entity
+	if (pCarriedObject != NULL_CBASEENTITY)
+	{
+		pPlayer.ForceDropOfCarriedPhysObjects();
+	}
+
+	//POWER SALO said that sometimes orig code doesn't remove items itself, so I added this line
+	pPlayer.RemoveAllItems();	
+}
+
 
 public MRESReturn Hook_PlayerChangeTeamPost(int iClient, DHookParam hParams)
 {
