@@ -218,9 +218,9 @@ ArrayList g_pCoopModeMemPatchList;
 #define MAX_PLAYERS 101 //max players for hl2dm
 #endif
 
-char g_szMapName[MAX_MAPNAME];
-char g_szPrevMapName[MAX_MAPNAME];
-char g_szEntityString[ENTITYSTRING_LENGTH];
+char g_szMapName[64];
+char g_szPrevMapName[64];
+char g_szEntityString[4096];
 char g_szSteamIds[MAX_PLAYERS+1][32];
 bool g_bTempDontHookEnts;
 public bool g_bMapStarted;

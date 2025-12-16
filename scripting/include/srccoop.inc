@@ -150,8 +150,6 @@
 #include <dhooks>
 #include <topmenus>
 
-#include <srccoop/globals>
-
 #include <sourcescramble>
 #include <logdebug>
 
@@ -160,6 +158,7 @@
 #include <srccoop_api>
 #include <srccoop/config>
 #include <srccoop/features>
+#include <srccoop/globals>
 #include <srccoop/entity/CTriggerCoop>
 #include <srccoop/kv_shared>
 #include <srccoop/manager_changelevel>
