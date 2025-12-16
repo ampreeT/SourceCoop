@@ -243,6 +243,15 @@ CBaseEntity g_pLocalPlayerEntity[32] = {NULL_CBASEENTITY, ...};
 int g_iLocalPlayerStackSkips[sizeof(g_pLocalPlayerEntity)];
 int g_iLocalPlayerStackPointer;
 
+//stores active env_screenoverlay for certain player, the first element of the array is for global overlays
+int g_iActiveScreenOverlayEntity[MAX_PLAYERS+1];
+
+//stores next overlay will be played by env_screenoverlay for certain player
+int g_iNextScreenOverlayIndex[MAX_PLAYERS+1];
+
+//stores time value for every player to check if we want to start next overlay for certain player
+float g_flNextOverlayTime[MAX_PLAYERS+1];
+
 // ----------------------------
 // Plugin API
 // ----------------------------

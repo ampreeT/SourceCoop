@@ -402,6 +402,14 @@ public void PlayerPatch_OnClientPutInServer(const int iClient)
 	g_bSetJumpModuleActive[iClient] = false;
 	#endif
 	
+	#if defined ENTPATCH_ENV_SCREENOVERLAY
+	//if global overlay is active - start it for this client
+	if(g_iActiveScreenOverlayEntity[0] != 0)
+	{
+		AcceptEntityInput(g_iActiveScreenOverlayEntity[0], "StartOverlays", iClient);
+	}
+	#endif
+	
 	SendClientConvars(iClient, false);
 }
 
@@ -636,6 +644,13 @@ public void PlayerPatch_OnClientDisconnect(CBasePlayer pPlayer)
 			pRagdoll.Kill();
 		}
 		#endif // SRCCOOP_HL2DM && PLAYERPATCH_SERVERSIDE_RAGDOLLS
+		
+		#if defined ENTPATCH_ENV_SCREENOVERLAY
+		//disable screenoverlay for this client
+		g_iActiveScreenOverlayEntity[client] = 0;
+		g_iNextScreenOverlayIndex[client] = 0;
+		g_flNextOverlayTime[client] = 0.0;
+		#endif
 	}
 }
 

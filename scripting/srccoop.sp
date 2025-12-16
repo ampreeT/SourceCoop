@@ -1224,6 +1224,19 @@ public MRESReturn Hook_RestoreWorld(DHookReturn hReturn)
 {
 	if (CoopManager.IsCoopModeEnabled())
 	{
+		//NOTE: In case if SourceCoop will use restore world - uncomment this part of code.
+		/*
+		g_iActiveScreenOverlayEntity[0] = 0; //mark that no global overlay entity is active
+		//stop overlay for active env_screenoverlays
+		for (int i = 1; i <= MaxClients; i++)
+		{
+			if(g_iActiveScreenOverlayEntity[i] != 0)
+			{
+				AcceptEntityInput(g_iActiveScreenOverlayEntity[i], "StopOverlaysForEveryone");
+			}
+		}
+		*/
+		
 		// disable gamerules resetting the world on 'round start', this caused crashes
 		DHookSetReturn(hReturn, 0);
 		return MRES_Supercede;
