@@ -150,11 +150,12 @@
 #include <dhooks>
 #include <topmenus>
 
+#include <srccoop/globals>
+
 #include <sourcescramble>
 #include <logdebug>
 
 #include <srccoop/typedef>
-#include <srccoop/globals>
 #include <srccoop/public>
 #include <srccoop_api>
 #include <srccoop/config>
