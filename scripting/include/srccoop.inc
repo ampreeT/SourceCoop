@@ -153,8 +153,8 @@
 #include <sourcescramble>
 #include <logdebug>
 
-#include <srccoop/globals>
 #include <srccoop/typedef>
+#include <srccoop/globals>
 #include <srccoop/public>
 #include <srccoop_api>
 #include <srccoop/config>
