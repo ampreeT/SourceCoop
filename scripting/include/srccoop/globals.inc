@@ -212,16 +212,22 @@ ArrayList g_pCoopModeMemPatchList;
 // ----------------------------
 // Plugin variables
 // ----------------------------
+#if defined SRCCOOP_BLACKMESA
+#define MAX_PLAYERS 33 //max players for bms
+#else
+#define MAX_PLAYERS 101 //max players for hl2dm
+#endif
+
 char g_szMapName[MAX_MAPNAME];
 char g_szPrevMapName[MAX_MAPNAME];
 char g_szEntityString[ENTITYSTRING_LENGTH];
-char g_szSteamIds[MAXPLAYERS+1][32];
+char g_szSteamIds[MAX_PLAYERS+1][32];
 bool g_bTempDontHookEnts;
 public bool g_bMapStarted;
 int g_iPlayerCount;
-bool g_bPostTeamSelect[MAXPLAYERS+1];
-int g_iAddButtons[MAXPLAYERS+1];
-int g_bUnblockRespawn[MAXPLAYERS+1];
+bool g_bPostTeamSelect[MAX_PLAYERS+1];
+int g_iAddButtons[MAX_PLAYERS+1];
+int g_bUnblockRespawn[MAX_PLAYERS+1];
 SpawnOptions g_pSpawnOptions;
 OperatingSystem g_serverOS;
 FeatureMap g_pFeatureMap;
