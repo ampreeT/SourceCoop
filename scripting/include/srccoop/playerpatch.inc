@@ -647,9 +647,9 @@ public void PlayerPatch_OnClientDisconnect(CBasePlayer pPlayer)
 		
 		#if defined ENTPATCH_ENV_SCREENOVERLAY
 		//disable screenoverlay for this client
-		g_iActiveScreenOverlayEntity[client] = 0;
-		g_iNextScreenOverlayIndex[client] = 0;
-		g_flNextOverlayTime[client] = 0.0;
+		g_iActiveScreenOverlayEntity[pPlayer.entindex] = 0;
+		g_iNextScreenOverlayIndex[pPlayer.entindex] = 0;
+		g_flNextOverlayTime[pPlayer.entindex] = 0.0;
 		#endif
 	}
 }
