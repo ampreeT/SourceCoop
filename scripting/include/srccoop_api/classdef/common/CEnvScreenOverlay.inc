@@ -1,14 +1,17 @@
 #pragma newdecls required
 #pragma semicolon 1
 
-//stores active env_screenoverlay for certain player, the first element of the array is for global overlays
-int g_iActiveScreenOverlayEntity[MAX_PLAYERS+1];
+#if defined SRCCOOP_BLACKMESA
+int g_iActiveScreenOverlayEntity[33+1]; //stores active env_screenoverlay for certain player
+										//the first element of the array is for global overlays
 
-//stores next overlay will be played by env_screenoverlay for certain player
-int g_iNextScreenOverlayIndex[MAX_PLAYERS+1];
-
-//stores time value for every player to check if we want to start next overlay for certain player
-float g_flNextOverlayTime[MAX_PLAYERS+1];
+int g_iNextScreenOverlayIndex[33+1]; //stores next overlay will be played by env_screenoverlay for certain player
+float g_flNextOverlayTime[33+1]; //stores time value for every player to check if we want to start next overlay for certain player
+#else
+int g_iActiveScreenOverlayEntity[101+1];
+int g_iNextScreenOverlayIndex[101+1];
+float g_flNextOverlayTime[101+1];
+#endif
 
 methodmap CEnvScreenOverlay  < CBaseEntity
 {
