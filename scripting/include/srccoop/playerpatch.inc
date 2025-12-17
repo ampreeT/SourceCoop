@@ -308,7 +308,7 @@ public Action PlayerCommandListener(int client, const char[] command, int argc)
 char szLastSuitSound[MAX_PLAYERS+1][PLATFORM_MAX_PATH];
 #endif
 
-public Action PlayerSoundListener(int iClients[MAX_PLAYERS], int& iNumClients, char szSample[PLATFORM_MAX_PATH], int& iEntIndex, int& iChannel, float& flVolume, int& iLevel, int& iPitch, int& iFlags, char szSoundEntry[PLATFORM_MAX_PATH], int& iSeed)
+public Action PlayerSoundListener(int iClients[MAXPLAYERS], int& iNumClients, char szSample[PLATFORM_MAX_PATH], int& iEntIndex, int& iChannel, float& flVolume, int& iLevel, int& iPitch, int& iFlags, char szSoundEntry[PLATFORM_MAX_PATH], int& iSeed)
 {
 	#if defined PLAYERPATCH_SUIT_SOUNDS
 	if (strncmp(szSample, "!HEV_", 5) == 0)
