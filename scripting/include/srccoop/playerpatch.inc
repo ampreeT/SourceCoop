@@ -1156,7 +1156,7 @@ static void ClearNpcMemoryForPlayer(const CBasePlayer pPlayer)
 
 // If removing the player index was successful, this function returns `true`, modifies the array and adjusts `iNumClients`.
 //
-stock bool RemovePlayerFromSoundListener(const int iClientIndex, int iClients[MAX_PLAYERS], int& iNumClients)
+stock bool RemovePlayerFromSoundListener(const int iClientIndex, int iClients[MAXPLAYERS], int& iNumClients)
 {
 	for (int i = 0; i < iNumClients; ++i)
 	{
