@@ -945,7 +945,7 @@ public MRESReturn Hook_EnvScreenoverlayAcceptInput(int _this, DHookReturn hRetur
 		//if other local screenoverlay is active - stop overlay for it before we use this entity
 		if(pScreenOverlay.GetActiveStoredOverlay(pPlayer) != 0)
 		{
-			AcceptEntityInput(pScreenOverlay.GetActiveStoredOverlay(pPlayer), "StopOverlays");
+			AcceptEntityInput(pScreenOverlay.GetActiveStoredOverlay(pPlayer), "StopOverlays", pPlayer.entindex);
 		}
 
 		//send command to apply screen overlay
@@ -1049,7 +1049,7 @@ public MRESReturn Hook_EnvScreenoverlayAcceptInput(int _this, DHookReturn hRetur
 			// If another overlay is active, stop it first
 			if (pScreenOverlay.GetActiveStoredOverlay(pPlayer) != 0)
 			{
-				AcceptEntityInput(pScreenOverlay.GetActiveStoredOverlay(pPlayer), "StopOverlaysForEveryone");
+				AcceptEntityInput(pScreenOverlay.GetActiveStoredOverlay(pPlayer), "StopOverlaysForEveryone", pPlayer.entindex);
 			}
 
 			// Send overlay command
