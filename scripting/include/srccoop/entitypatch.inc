@@ -1574,16 +1574,30 @@ public void Timer_Barnacle_OnGrab(Handle hTimer, const CNPC_Barnacle pBarnacle)
 	if (pBarnacle.IsValid() && pBarnacle.IsAlive())
 	{
 		CBaseEntity pEnemy = pBarnacle.GetEnemy();
-		if (pEnemy != NULL_CBASEENTITY && pEnemy.IsPlayer())
+		if (pEnemy != NULL_CBASEENTITY)
 		{
-			CBasePlayer pPlayer = view_as<CBasePlayer>(pEnemy);
+			if (pEnemy.IsPlayer())
+			{
+				CBasePlayer pPlayer = view_as<CBasePlayer>(pEnemy);
 
-			// Prevents client-side prediction errors for movement while being pulled up.
-			pPlayer.m_fFlags |= FL_ATCONTROLS;
-			// Removes the initial view jitter when being pulled up.
-			pPlayer.SetMoveType(MOVETYPE_FLY);
-			// Remove the view jitter while being pulled up.
-			pPlayer.SetLaggedMovement(0.0);
+				// Prevents client-side prediction errors for movement while being pulled up.
+				pPlayer.m_fFlags |= FL_ATCONTROLS;
+				// Removes the initial view jitter when being pulled up.
+				pPlayer.SetMoveType(MOVETYPE_FLY);
+				// Remove the view jitter while being pulled up.
+				pPlayer.SetLaggedMovement(0.0);
+			}
+			else if (pEnemy.IsNPC())
+			{
+				CRagdollProp pRagdoll = pBarnacle.GetRagdoll();
+				
+				// Apply damage to the enemy ragdoll and instantly kill the NPC.
+				// https://github.com/ValveSoftware/source-sdk-2013/blob/master/src/game/server/hl2/npc_barnacle.cpp#L1507
+				if (pRagdoll != NULL_CBASEENTITY)
+				{
+					SDKHooks_TakeDamage(pRagdoll.entindex, pBarnacle.entindex, pBarnacle.entindex, float(pEnemy.GetHealth() + 1000), DMG_CRUSH | DMG_SLASH, _, _, _, true);
+				}
+			}
 		}
 	}
 }
