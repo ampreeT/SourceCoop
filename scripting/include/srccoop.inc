@@ -23,6 +23,7 @@
 	#define ENTPATCH_POINT_SERVERCOMMAND_CHANGELEVEL
 	#define ENTPATCH_ENV_ZOOM
 	#define ENTPATCH_ENV_CREDITS
+	#define	ENTPATCH_ENV_SCREENOVERLAY
 	#define ENTPATCH_ENV_SPRITE
 	#define ENTPATCH_AI_SCRIPT_CONDITIONS
 	#define ENTPATCH_FUNC_ROTATING
@@ -72,6 +73,7 @@
 	#define ENTPATCH_ENV_ZOOM
 	#define ENTPATCH_ENV_CREDITS
 	#define ENTPATCH_ENV_INTROCREDITS
+	#define	ENTPATCH_ENV_SCREENOVERLAY
 	#define ENTPATCH_ENV_SPRITE
 	#define ENTPATCH_AI_SCRIPT_CONDITIONS
 	#define ENTPATCH_LAGCOMP_POSE_PARAMS
@@ -151,12 +153,12 @@
 #include <sourcescramble>
 #include <logdebug>
 
+#include <srccoop/globals>
 #include <srccoop/typedef>
 #include <srccoop/public>
 #include <srccoop_api>
 #include <srccoop/config>
 #include <srccoop/features>
-#include <srccoop/globals>
 #include <srccoop/entity/CTriggerCoop>
 #include <srccoop/kv_shared>
 #include <srccoop/manager_changelevel>
