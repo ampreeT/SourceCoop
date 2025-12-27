@@ -471,6 +471,8 @@ public MRESReturn Hook_PlayerSpawnPost(int iClient, DHookReturn hReturn, DHookPa
 		#if defined PLAYERPATCH_BM_CLIENT_PREDICTION
 		// Fixes client prediction on the jump module HUD and the first initial jump with full mana.
         pPlayer.SendConVarValueInt(sv_long_jump_manacost, 0);
+		// Fixes 'stuck on ladder' prediction issue that started to appear after we set sv_speed_walk to 0.
+		pPlayer.SendConVarValueInt(sv_ladder_useonly, 1);
 		#endif
 
 		// Stop HEV sounds

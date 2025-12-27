@@ -271,6 +271,7 @@ public void OnPluginStart()
 	mp_friendlyfire = FindConVar("mp_friendlyfire");
 	mp_flashlight = FindConVar("mp_flashlight");
 	mp_forcerespawn = FindConVar("mp_forcerespawn");
+	sv_ladder_useonly = FindConVar("sv_ladder_useonly");
 
 	// Black Mesa ConVars.
 	#if defined SRCCOOP_BLACKMESA

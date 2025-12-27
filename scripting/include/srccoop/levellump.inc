@@ -27,12 +27,20 @@ enum struct CEntityOutputLump
 	float m_flDelay;
 	int m_iTimesToFire;
 	
+	char m_szDelimiter[2];
+	
 	bool LoadFromEntityKeyLump(const CEntityKeyLump pEntityKeyLump)
 	{
 		char buffers[5][MAX_VALUE];
-		if (sizeof(buffers) != ExplodeString(pEntityKeyLump.m_szValue, OUTPUT_SEPARATOR, buffers, sizeof(buffers), sizeof(buffers[])))
+
+		this.m_szDelimiter = "\27"; // 'ESC'
+		if (sizeof(buffers) != ExplodeString(pEntityKeyLump.m_szValue, this.m_szDelimiter, buffers, sizeof(buffers), sizeof(buffers[])))
 		{
-			return false;
+			this.m_szDelimiter = ",";
+			if (sizeof(buffers) != ExplodeString(pEntityKeyLump.m_szValue, this.m_szDelimiter, buffers, sizeof(buffers), sizeof(buffers[])))
+			{
+				return false;
+			}
 		}
 		if (!StringToFloatEx(buffers[3], this.m_flDelay))
 		{
@@ -50,11 +58,14 @@ enum struct CEntityOutputLump
 	
 	void SaveToEntityKeyLump(CEntityKeyLump pEntityKeyLump)
 	{
+		if (this.m_szDelimiter[0] == EOS)
+			this.m_szDelimiter = "\27"; // default to 'ESC'
+		
 		FormatEx(pEntityKeyLump.m_szValue, sizeof(pEntityKeyLump.m_szValue), "%s%s%s%s%s%s%.2f%s%d",
-			this.m_szTargetEntity, OUTPUT_SEPARATOR,
-			this.m_szInputName, OUTPUT_SEPARATOR,
-			this.m_szParameter, OUTPUT_SEPARATOR,
-			this.m_flDelay, OUTPUT_SEPARATOR,
+			this.m_szTargetEntity, this.m_szDelimiter,
+			this.m_szInputName, this.m_szDelimiter,
+			this.m_szParameter, this.m_szDelimiter,
+			this.m_flDelay, this.m_szDelimiter,
 			this.m_iTimesToFire);
 	}
 	
