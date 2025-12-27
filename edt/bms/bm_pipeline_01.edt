@@ -65,6 +65,7 @@
 			"angles"	"0 0 0"
 			"triggerid"	"60636"
 			"output"	"OnPressed"
+			"respawn"	"1"
 			"bringall"	"1"
 			"delay"		"1"
 		}

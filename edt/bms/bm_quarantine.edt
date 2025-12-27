@@ -48,6 +48,7 @@
 			"angles"	"0 90 0"
 			"triggerid"	"172323"
 			"output"	"OnTrigger"
+			"respawn"	"1"
 		}
 		"inside lift"
 		{

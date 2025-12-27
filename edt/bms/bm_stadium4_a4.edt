@@ -44,12 +44,16 @@
 		"item" "item_weapon_tripmine"
 		"item" "item_weapon_tripmine"
 		"item" "item_weapon_tripmine"
+		"item" "item_weapon_tripmine"
 		"item" "item_ammo_mp5"
 		"item" "item_ammo_mp5"
 		"item" "item_ammo_mp5"
 		"item" "item_ammo_mp5"
 		"item" "item_ammo_mp5"
 		"item" "item_ammo_mp5"
+		"item" "item_grenade_rpg"
+		"item" "item_grenade_rpg"
+		"item" "item_grenade_rpg"
 		"item" "item_grenade_rpg"
 		"item" "item_grenade_rpg"
 		"item" "item_ammo_shotgun"
@@ -83,6 +87,41 @@
 	{
 		// since map has player triggered views (the monitor), dont force the camera on all players
 		"viewcontrol_allplayers" "0"
+	}
+	"entity"
+	{
+		// remove starting weapons
+		"modify"
+		{
+			"hammerid" "8581"
+			"outputs"
+			{
+				"remove"
+				{
+					"parameter" "give item_suit"
+				}
+				"remove"
+				{
+					"parameter" "give item_longjump"
+				}
+				"remove"
+				{
+					"parameter" "give item_battery"
+				}
+				"remove"
+				{
+					"parameter" "sv_cheats 1"
+				}
+				"remove"
+				{
+					"parameter" "impulse 101"
+				}
+				"remove"
+				{
+					"parameter" "firstperson"
+				}
+			}
+		}
 	}
 	"checkpoint"
 	{

@@ -56,6 +56,23 @@
 				}
 			}
 		}
+		// spawn fix
+		"modify"
+		{
+			"hammerid" "738836"
+			"set"
+			{
+				"MaxNPCCount" "1"
+			}
+		}
+		"modify"
+		{
+			"hammerid" "738840"
+			"set"
+			{
+				"MaxNPCCount" "1"
+			}
+		}
 	}
 	"checkpoint"
 	{
@@ -70,6 +87,7 @@
 			"angles"	"0 0 0"
 			"triggerid"	"993856"
 			"output"	"OnStartTouch"
+			"respawn"	"1"
 		}
 		"inside"
 		{
