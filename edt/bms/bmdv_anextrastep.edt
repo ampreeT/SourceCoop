@@ -1,0 +1,189 @@
+// Script for workshop item 1950564849 - An Extra Step
+
+#base "base/coop_base_sp_conversion.edt"
+
+"config"
+{
+	"campaign" "Workshop maps"
+	"chapter" "An Extra Step"
+	
+	"intro_type" "fade"
+	
+	"features"
+	{
+		"KEEP_EQUIPMENT" "1"
+	}
+	"equipment"
+	{
+		"item" "item_suit"
+	}
+	"entity"
+	{
+		// delay map start
+		"modify"
+		{
+			"hammerid" "3297081"
+			"functions"
+			{
+				"delay_output" "OnNewGame"
+				"delay_output" "OnLoadGame"
+			}
+		}
+		// remove starting weapons
+		"remove"
+		{
+			"hammerid" "3297077"
+		}
+		// don't let vital NPCs die
+		"modify"
+		{
+			"hammerid" "3296468"
+			"set"
+			{
+				"GameEndAlly" "1"
+			}
+		}
+		"modify"
+		{
+			"hammerid" "3296472"
+			"set"
+			{
+				"GameEndAlly" "1"
+			}
+		}
+		"modify"
+		{
+			"hammerid" "3296470"
+			"set"
+			{
+				"GameEndAlly" "1"
+			}
+		}
+		// exit checkpoint fixes due to using twice at lift
+		"add"
+		{
+			"classname" "logic_relay"
+			"targetname" "lift_spawn1"
+			"spawnflags" "1"
+		}
+		"add"
+		{
+			"classname" "logic_relay"
+			"targetname" "lift_spawn2"
+			"spawnflags" "1"
+		}
+		"modify"
+		{
+			"hammerid" "3265320"
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnPressed"
+					"target" "lift_spawn1"
+					"input"	"Trigger"
+					"timestofire" "-1"
+				}
+			}
+		}
+		"modify"
+		{
+			"hammerid" "3506710"
+			"outputs"
+			{
+				"remove"
+				{
+					"target" "door_ele_l1"
+				}
+				"remove"
+				{
+					"target" "door_ele_r1"
+				}
+				"remove"
+				{
+					"target" "door_ele_l"
+				}
+				"remove"
+				{
+					"target" "door_ele_r"
+				}
+			}
+		}
+		// avoid two players trigger two things at same time
+		"modify"
+		{
+			"hammerid" "3434811"
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnTrigger"
+					"target" "AAcs"
+					"input"	"AddOutput"
+					"parameter" "OnPressed lift_spawn2,Trigger,,0,-1"
+					"timestofire" "-1"
+				}
+				"modify"
+				{
+					"target" "setup1"
+					"replace"
+					{
+						"delay" "5"
+					}
+				}
+				"modify"
+				{
+					"target" "trig_music_stopper4"
+					"replace"
+					{
+						"delay" "5"
+					}
+				}
+			}
+		}
+	}
+	"checkpoint"
+	{	
+		"spawn"
+		{
+			"origin"	"2289 -1774 -271"
+			"angles"	"0 290 0"
+		}
+		"lift"
+		{
+			"origin"	"0 0 10"
+			"angles"	"0 270 0"
+			"followid"	"elev_body"
+			"triggerid"	"lift_spawn1"
+			"output"	"OnTrigger"
+			"bringall"	"1"
+		}
+		"security"
+		{
+			"origin"	"1890 -2432 -565"
+			"angles"	"0 90 0"
+			"triggerid"	"3376666"
+			"output"	"OnPressed"
+			"bringall"	"1"
+			"delay"		"1"
+		}
+		"battle"
+		{
+			"origin"	"5448 -1596 -1190"
+			"angles"	"0 180 0"
+			"triggerid"	"3434811"
+			"output"	"OnTrigger"
+			"respawn"	"1"
+			"bringall"	"1"
+		}
+		"exit"
+		{
+			"origin"	"0 0 10"
+			"angles"	"0 270 0"
+			"followid"	"elev_body"
+			"triggerid"	"lift_spawn2"
+			"output"	"OnTrigger"
+			"bringall"	"1"
+		}
+	}
+}

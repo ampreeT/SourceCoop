@@ -5,7 +5,7 @@
 "config"
 {
 	"campaign" "Workshop maps"
-	"chapter" "Surface Contamination"	
+	"chapter" "Surface Contamination"
 	"intro_type" "fade"
 	
 	"features"
@@ -25,6 +25,23 @@
 			"functions"
 			{
 				"delay_output" "OnMapSpawn"
+			}
+		}
+		// block off next map
+		"modify"
+		{
+			"hammerid" "1051114"
+			"set"
+			{
+				"spawnflags" "2048"
+			}
+		}
+		"modify"
+		{
+			"hammerid" "1051119"
+			"set"
+			{
+				"spawnflags" "2048"
 			}
 		}
 		// remove starting weapons

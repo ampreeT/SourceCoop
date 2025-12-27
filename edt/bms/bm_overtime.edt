@@ -1,0 +1,71 @@
+// Script for workshop item 799007153 - Overtime
+
+#base "base/coop_base_sp_conversion.edt"
+
+"config"
+{
+	"campaign" "Workshop maps"
+	"chapter" "Overtime"
+	
+	"features"
+	{
+		"KEEP_EQUIPMENT" "1"
+	}
+	"equipment"
+	{
+		"item" "item_suit"
+		"item" "item_weapon_crowbar"
+	}
+	"entity"
+	{
+		// delay map start
+		"modify"
+		{
+			"hammerid" "429055"
+			"functions"
+			{
+				"delay_output" "OnMapSpawn"
+			}
+		}
+		// remove starting weapons
+		"remove"
+		{
+			"hammerid" "125229"
+		}
+		"remove"
+		{
+			"hammerid" "126867"
+		}
+	}
+	"checkpoint"
+	{
+		"spawn"
+		{
+			"origin"	"2352 -2288 -256"
+			"angles"	"0 180 0"
+		}
+		"warehouse"
+		{
+			"origin"	"-1720 -1594 36"
+			"angles"	"0 0 0"
+			"triggerid"	"446133"
+			"output"	"OnStartTouch"
+			"respawn"	"1"
+		}
+		"battle"
+		{
+			"origin"	"-172 -886 36"
+			"angles"	"0 180 0"
+			"triggerid"	"385633"
+			"output"	"OnStartTouch"
+		}
+		"train"
+		{
+			"origin"	"1990 -1280 -230"
+			"angles"	"0 0 0"
+			"triggerid"	"251900"
+			"output"	"OnStartTouch"
+			"bringall"	"1"
+		}
+	}
+}
