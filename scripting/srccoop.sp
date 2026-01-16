@@ -1021,6 +1021,15 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 			return;
 		}
 		#endif
+		
+		#if defined ENTPATCH_ENV_SCREENOVERLAY
+		if (strcmp(szClassname, "env_screenoverlay") == 0)
+		{
+			CBaseEntity(iEntIndex).SetUserData("m_bIsActive", false); //needed to fix not working switching overlays
+			DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_EnvScreenoverlayAcceptInput);
+			return;
+		}
+		#endif
 
 		#if defined ENTPATCH_FUNC_TRACKAUTOCHANGE
 		if (strcmp(szClassname, "func_trackautochange") == 0)
@@ -1052,6 +1061,18 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 		// 	SDKHook(iEntIndex, SDKHook_SpawnPost, Hook_ExplosionSpawn);
 		// 	return;
 		// }
+	}
+}
+
+public void Hook_OnEntityDeleted(const CBaseEntity pEntity)
+{
+	char szClassname[MAX_CLASSNAME];
+	pEntity.GetClassname(szClassname, sizeof(szClassname));
+
+	if (StrEqual(szClassname, "env_screenoverlay"))
+	{
+		pEntity.AcceptInput("StopOverlaysAll");
+		return;
 	}
 }
 
@@ -1224,19 +1245,6 @@ public MRESReturn Hook_RestoreWorld(DHookReturn hReturn)
 {
 	if (CoopManager.IsCoopModeEnabled())
 	{
-		//NOTE: In case if SourceCoop will use restore world - uncomment this part of code.
-		/*
-		g_iActiveScreenOverlayEntity[0] = 0; //mark that no global overlay entity is active
-		//stop overlay for active env_screenoverlays
-		for (int i = 1; i <= MaxClients; i++)
-		{
-			if(g_iActiveScreenOverlayEntity[i] != 0)
-			{
-				AcceptEntityInput(g_iActiveScreenOverlayEntity[i], "StopOverlaysForEveryone");
-			}
-		}
-		*/
-		
 		// disable gamerules resetting the world on 'round start', this caused crashes
 		DHookSetReturn(hReturn, 0);
 		return MRES_Supercede;

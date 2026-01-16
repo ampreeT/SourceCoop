@@ -3,7 +3,7 @@
 
 // Patches for Black Mesa
 
-static bool g_pPlayerIronsightClassic[MAX_PLAYERS + 1];
+static bool g_pPlayerIronsightClassic[MAXPLAYERS + 1];
 
 //------------------------------------------------------
 // CNPC_PlayerCompanion - npc_human_scientist*, npc_human_security
@@ -353,7 +353,7 @@ public void Hook_XenTurretSpawnPost(int iEntIndex)
 // CMiscMarionettist - misc_marionettist
 // Prevent a crash due to reactivation before finishing or when used by multiple players at once
 //------------------------------------------------------
-CBaseEntity g_pActiveMarionettist[MAX_PLAYERS+1] = {view_as<CBaseEntity>(-1), ...};
+CBaseEntity g_pActiveMarionettist[MAXPLAYERS+1] = {view_as<CBaseEntity>(-1), ...};
 
 public MRESReturn Hook_MarionettistAcceptInput(int _this, DHookReturn hReturn, DHookParam hParams)
 {

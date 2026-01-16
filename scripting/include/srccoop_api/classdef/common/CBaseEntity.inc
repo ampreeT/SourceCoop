@@ -214,6 +214,10 @@ methodmap CBaseEntity
 	{
 		return SetEntPropString(this.entindex, Prop_Data, "m_iName", szTargetname); 
 	}
+	public bool GetTarget(char[] szBuffer, const int iMaxLength)
+	{
+		return GetEntPropString(this.entindex, Prop_Data, "m_target", szBuffer, iMaxLength) != 0;
+	}
 	public bool GetResponseContext(char[] szBuffer, const int iMaxLength)
 	{
 		return GetEntPropString(this.entindex, Prop_Data, "m_iszResponseContext", szBuffer, iMaxLength) != 0;
@@ -222,9 +226,13 @@ methodmap CBaseEntity
 	{
 		return SetEntPropString(this.entindex, Prop_Data, "m_iszResponseContext", szResponseContext); 
 	}
-	public bool GetTarget(char[] szBuffer, const int iMaxLength)
+	public int GetTextureFrameIndex()
 	{
-		return GetEntPropString(this.entindex, Prop_Data, "m_target", szBuffer, iMaxLength) != 0;
+		return GetEntProp(this.entindex, Prop_Data, "m_iTextureFrameIndex");
+	}
+	public void SetTextureFrameIndex(const int iTextureFrameIndex)
+	{
+		SetEntProp(this.entindex, Prop_Data, "m_iTextureFrameIndex", iTextureFrameIndex);
 	}
 	public int SetTarget(const char[] szTarget)
 	{
@@ -645,14 +653,6 @@ methodmap CBaseEntity
 	{
 		SetEntProp(this.entindex, Prop_Data, "m_iMaxHealth", iMaxHealth);
 	}
-	public int GetTextureFrameIndex()
-	{
-		return GetEntProp(this.entindex, Prop_Data, "m_iTextureFrameIndex");
-	}
-	public void SetTextureFrameIndex(const int iTextureFrameIndex)
-	{
-		SetEntProp(this.entindex, Prop_Data, "m_iTextureFrameIndex", iTextureFrameIndex);
-	}
 	public bool FVisibleEntity(const CBaseEntity pEntity, int iTraceMask = MASK_BLOCKLOS, CBaseEntity& pBlocker = NULL_CBASEENTITY)
 	{
 		if (pEntity.m_fFlags & FL_NOTARGET)
@@ -851,8 +851,13 @@ static bool TraceEntityFilter_FVisible(int iEntIndex, int iMask, int iThisEntInd
 
 static void Hook_CBaseEntity_OnDeleted(const int iEntIndex)
 {
+	CBaseEntity pEntity = CBaseEntity(iEntIndex);
+
+	//do other stuff if required before removing user data in "public void Hook_OnEntityDeleted(const CBaseEntity pEntity)"
+	Hook_OnEntityDeleted(pEntity);
+
 	StringMap hEntityData;
-	int iKey = CBaseEntity(iEntIndex).entref;
+	int iKey = pEntity.entref;
 
 	if (g_hEntityData.GetValue(iKey, hEntityData))
 	{

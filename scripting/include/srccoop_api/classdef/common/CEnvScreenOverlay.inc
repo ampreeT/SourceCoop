@@ -1,18 +1,6 @@
 #pragma newdecls required
 #pragma semicolon 1
 
-#if defined SRCCOOP_BLACKMESA
-int g_iActiveScreenOverlayEntity[33+1]; //stores active env_screenoverlay for certain player
-										//the first element of the array is for global overlays
-
-int g_iNextScreenOverlayIndex[33+1]; //stores next overlay will be played by env_screenoverlay for certain player
-float g_flNextOverlayTime[33+1]; //stores time value for every player to check if we want to start next overlay for certain player
-#else
-int g_iActiveScreenOverlayEntity[101+1];
-int g_iNextScreenOverlayIndex[101+1];
-float g_flNextOverlayTime[101+1];
-#endif
-
 methodmap CEnvScreenOverlay  < CBaseEntity
 {
 	public CEnvScreenOverlay(const int iEntIndex = -1)
@@ -74,18 +62,6 @@ methodmap CEnvScreenOverlay  < CBaseEntity
 		SetEntPropFloat(this.entindex, Prop_Send, "m_flOverlayTimes", flDuration, iOverlayNumber);
 	}
 
-	//Set next overlay start time for certain player.
-	public void SetNextOverlayStartTime(const float flNextOverlayTime, const CBasePlayer pPlayer)
-	{
-		g_flNextOverlayTime[pPlayer.entindex] = flNextOverlayTime;
-	}
-
-	//Get next overlay start time for certain player.
-	public float GetNextOverlayStartTime(const CBasePlayer pPlayer)
-	{
-		return g_flNextOverlayTime[pPlayer.entindex];
-	}
-
 	//Get desired overlay.
 	public int GetDesiredOverlay()
 	{
@@ -104,62 +80,6 @@ methodmap CEnvScreenOverlay  < CBaseEntity
 		SetEntProp(this.entindex, Prop_Data, "m_iDesiredOverlay", iDesiredOverlay);
 	}
 
-	//Get next overlay will be played.
-	public int GetNextOverlay(const CBasePlayer pPlayer)
-	{
-		return g_iNextScreenOverlayIndex[pPlayer.entindex];
-	}
-
-	//Set next overlay will be played.
-	public void SetNextOverlay(int iNextOverlay, const CBasePlayer pPlayer)
-	{
-		if(iNextOverlay < 0)
-			iNextOverlay = 0;
-		
-		if(iNextOverlay > 9)
-			iNextOverlay = 9;
-
-		g_iNextScreenOverlayIndex[pPlayer.entindex] = iNextOverlay;
-	}
-
-	//Returns false if this screenoverlay marked as disabled or true if this screenoverlay marked as enabled.
-	public bool GetActiveState()
-	{
-		//HACK! Use UNUSED field to store active state
-		if(GetEntProp(this.entindex, Prop_Data, "m_iHealth") != 1)
-		{
-			return false;
-		}
-		else
-		{
-			return true;
-		}
-	}
-
-	//True to mark this screenoverlay as enabled, false to mark this screenoverlay as disabled.
-	public void SetActiveState(const bool bIsActive)
-	{
-		//HACK! Use UNUSED field to store active state
-		if(bIsActive)
-		{
-			SetEntProp(this.entindex, Prop_Data, "m_iHealth", 1);
-		}
-		else
-		{
-			SetEntProp(this.entindex, Prop_Data, "m_iHealth", 0);
-		}
-	}
-
-	public int GetActiveStoredOverlay(const CBasePlayer pPlayer)
-	{
-		return g_iActiveScreenOverlayEntity[pPlayer.entindex];
-	}
-
-	public void SetActiveStoredOverlay(const int iEntIndex, const CBasePlayer pPlayer)
-	{
-		g_iActiveScreenOverlayEntity[pPlayer.entindex] = iEntIndex; //store active screenoverlay for this player
-	}
-
 	//Fire StartOverlays input.
 	public void StartOverlays(const CBasePlayer pPlayer)
 	{
@@ -170,18 +90,6 @@ methodmap CEnvScreenOverlay  < CBaseEntity
 	public void StopOverlays(const CBasePlayer pPlayer)
 	{
 		AcceptEntityInput(this.entindex, "StopOverlays", pPlayer.entindex);
-	}
-
-	//Fire StartOverlaysForEveryone input.
-	public void StartOverlaysForEveryone(const CBasePlayer pPlayer)
-	{
-		AcceptEntityInput(this.entindex, "StartOverlaysForEveryone", pPlayer.entindex);
-	}
-
-	//Fire StopOverlaysForEveryone input.
-	public void StopOverlaysForEveryone(const CBasePlayer pPlayer)
-	{
-		AcceptEntityInput(this.entindex, "StopOverlaysForEveryone", pPlayer.entindex);
 	}
 
 	//Fire SwitchOverlay input, defined by number from 1 to 10.

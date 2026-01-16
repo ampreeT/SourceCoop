@@ -10,7 +10,6 @@
 #if defined SRCCOOP_HL2DM
 	
 	#define CHECK_ENGINE "HL2DM"; if (GetEngineVersion() != Engine_HL2DM)
-	#define OUTPUT_SEPARATOR ","
 	#define INTRO_TIMER_HUDTEXT
 
 	#define ENTPATCH_CUSTOM_NPC_MODELS
@@ -60,7 +59,6 @@
 		#define SRCCOOP_BLACKMESA
 	#endif
 	#define CHECK_ENGINE "Black Mesa"; if (GetEngineVersion() != Engine_BlackMesa)
-	#define OUTPUT_SEPARATOR "\27"
 
 	#define ENTPATCH_CUSTOM_NPC_MODELS
 	#define ENTPATCH_UPDATE_ENEMY_MEMORY
@@ -75,7 +73,6 @@
 	#define ENTPATCH_ENV_ZOOM
 	#define ENTPATCH_ENV_CREDITS
 	#define ENTPATCH_ENV_INTROCREDITS
-	#define	ENTPATCH_ENV_SCREENOVERLAY
 	#define ENTPATCH_ENV_SPRITE
 	#define ENTPATCH_AI_SCRIPT_CONDITIONS
 	#define ENTPATCH_LAGCOMP_POSE_PARAMS
@@ -155,12 +152,12 @@
 #include <sourcescramble>
 #include <logdebug>
 
-#include <srccoop/globals>
 #include <srccoop/typedef>
 #include <srccoop/public>
 #include <srccoop_api>
 #include <srccoop/config>
 #include <srccoop/features>
+#include <srccoop/globals>
 #include <srccoop/entity/CTriggerCoop>
 #include <srccoop/kv_shared>
 #include <srccoop/manager_changelevel>

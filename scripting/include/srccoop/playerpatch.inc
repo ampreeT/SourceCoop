@@ -1,11 +1,11 @@
 #pragma newdecls required
 #pragma semicolon 1
 
-static float g_vec3PlayerShootPosition[MAX_PLAYERS + 1][3];
-static float g_flPlayerMaxSpeed[MAX_PLAYERS + 1];
+static float g_vec3PlayerShootPosition[MAXPLAYERS + 1][3];
+static float g_flPlayerMaxSpeed[MAXPLAYERS + 1];
 
 #if defined PLAYERPATCH_BM_CLIENT_PREDICTION
-static bool g_bSetJumpModuleActive[MAX_PLAYERS + 1];
+static bool g_bSetJumpModuleActive[MAXPLAYERS + 1];
 #endif
 
 //------------------------------------------------------
@@ -102,7 +102,7 @@ public void Hook_PlayerPreThinkPost(int iClient)
 		CBlackMesaBaseCombatWeapon pWeapon = view_as<CBlackMesaBaseCombatWeapon>(pPlayer.GetActiveWeapon());
 		if (pWeapon != NULL_CBASEENTITY)
 		{
-			static bool g_bDisableAttack[MAX_PLAYERS + 1];
+			static bool g_bDisableAttack[MAXPLAYERS + 1];
 
 			// Fixes prediction errors with weapons.
 			bool bIsZooming = pPlayer.IsZooming();
@@ -305,7 +305,7 @@ public Action PlayerCommandListener(int client, const char[] command, int argc)
 //------------------------------------------------------
 
 #if defined PLAYERPATCH_SUIT_SOUNDS
-char szLastSuitSound[MAX_PLAYERS+1][PLATFORM_MAX_PATH];
+char szLastSuitSound[MAXPLAYERS+1][PLATFORM_MAX_PATH];
 #endif
 
 public Action PlayerSoundListener(int iClients[MAXPLAYERS], int& iNumClients, char szSample[PLATFORM_MAX_PATH], int& iEntIndex, int& iChannel, float& flVolume, int& iLevel, int& iPitch, int& iFlags, char szSoundEntry[PLATFORM_MAX_PATH], int& iSeed)
@@ -401,7 +401,7 @@ public void PlayerPatch_OnClientPutInServer(const int iClient)
 	#if defined PLAYERPATCH_BM_CLIENT_PREDICTION
 	g_bSetJumpModuleActive[iClient] = false;
 	#endif
-	
+
 	#if defined ENTPATCH_ENV_SCREENOVERLAY
 	//if global overlay is active - start it for this client
 	if(g_iActiveScreenOverlayEntity[0] != 0)
@@ -532,7 +532,7 @@ public MRESReturn Hook_PlayerSpawnPost(int iClient, DHookReturn hReturn, DHookPa
 // - Force serverside ragdolls
 //------------------------------------------------------
 #if defined PLAYERPATCH_SERVERSIDE_RAGDOLLS
-bool g_bServerRagdoll[MAX_PLAYERS + 1];
+bool g_bServerRagdoll[MAXPLAYERS + 1];
 #endif
 
 public MRESReturn Hook_PlayerKilled(int _this, DHookParam hParams)
@@ -728,10 +728,10 @@ public MRESReturn Hook_PlayerChangeTeam(int iClient, DHookParam hParams)
 		g_bUnblockRespawn[iClient] = true;
 		
 		int iTeam = hParams.Get(1);
-		
+
 		if (!CMultiplayRules.IsTeamplay())
 		{
-			if(iTeam == TEAM_SPECTATOR)
+			if (iTeam == TEAM_SPECTATOR)
 			{
 				PlayerJoinedSpectators(iClient);
 			}
@@ -747,7 +747,7 @@ public MRESReturn Hook_PlayerChangeTeam(int iClient, DHookParam hParams)
 				hParams.Set(1, iEnforcedTeam);
 				return MRES_ChangedHandled;
 			}
-			
+
 			if (iTeam == TEAM_UNASSIGNED)
 			{
 				hParams.Set(1, TEAM_TWO);
@@ -780,7 +780,6 @@ public void PlayerJoinedSpectators(int iClient)
 	//POWER SALO said that sometimes orig code doesn't remove items itself, so I added this line
 	pPlayer.RemoveAllItems();	
 }
-
 
 public MRESReturn Hook_PlayerChangeTeamPost(int iClient, DHookParam hParams)
 {
@@ -965,7 +964,7 @@ public void Movement_FindLadder(CBasePlayer pPlayer)
 // Detaches and stores player's equipped items.
 // Makes it possible to re-equip the player on potential revives.
 //------------------------------------------------------
-CCoopEquipment g_pPackedEquipment[MAX_PLAYERS + 1];
+CCoopEquipment g_pPackedEquipment[MAXPLAYERS + 1];
 
 bool HasPackedItems(CBasePlayer pPlayer)
 {
