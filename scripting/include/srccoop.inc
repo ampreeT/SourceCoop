@@ -152,12 +152,12 @@
 #include <sourcescramble>
 #include <logdebug>
 
+#include <srccoop/globals>
 #include <srccoop/typedef>
 #include <srccoop/public>
 #include <srccoop_api>
 #include <srccoop/config>
 #include <srccoop/features>
-#include <srccoop/globals>
 #include <srccoop/entity/CTriggerCoop>
 #include <srccoop/kv_shared>
 #include <srccoop/manager_changelevel>
