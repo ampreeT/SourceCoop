@@ -877,13 +877,13 @@ public void Timer_EnvSpritePostSpawn(Handle timer, CBaseEntity pEntity)
 }
 
 //stores active env_screenoverlay for certain player, the first element of the array is for global overlays
-int g_iActiveScreenOverlayEntity[MAX_PLAYERS+1];
+int g_iActiveScreenOverlayEntity[MAXPLAYERS+1];
 
 //stores next overlay will be played by env_screenoverlay for certain player
-int g_iNextScreenOverlayIndex[MAX_PLAYERS+1];
+int g_iNextScreenOverlayIndex[MAXPLAYERS+1];
 
 //stores time value for every player to check if we want to start next overlay for certain player
-float g_flNextOverlayTime[MAX_PLAYERS+1];
+float g_flNextOverlayTime[MAXPLAYERS+1];
 
 #if defined ENTPATCH_ENV_SCREENOVERLAY
 //------------------------------------------------------
@@ -1137,7 +1137,7 @@ public MRESReturn Hook_EnvScreenoverlayAcceptInput(int _this, DHookReturn hRetur
 		{
 			CBasePlayer pPlayer = CBasePlayer(i);
 			int entidx = pPlayer.entindex;
-			if (entidx > 0 && entidx <= MAX_PLAYERS && IsClientInGame(i) && !IsFakeClient(i) && IsValidEntity(i))
+			if (entidx > 0 && entidx <= MAXPLAYERS && IsClientInGame(i) && !IsFakeClient(i) && IsValidEntity(i))
 			{
 				if (g_iActiveScreenOverlayEntity[pPlayer.entindex] == pScreenOverlay.entindex)
 				{
@@ -1209,15 +1209,15 @@ public MRESReturn Hook_EnvScreenoverlayAcceptInput(int _this, DHookReturn hRetur
 		float flTickedTime = GetTickedTime(); //store ingame time in this var so we don't call func every time
 
 		int iNextOverlayIndex = -1;
-		int iNextOverlay[MAX_PLAYERS + 1] = {-1}; //store next overlays to set for certain players
-		float flNextOverlayStartTime[MAX_PLAYERS + 1] = {-1.0};
+		int iNextOverlay[MAXPLAYERS + 1] = {-1}; //store next overlays to set for certain players
+		float flNextOverlayStartTime[MAXPLAYERS + 1] = {-1.0};
 
 		for(int i = 1; i <= MaxClients; i++)
 		{
 			CBasePlayer pPlayer = CBasePlayer(i);
 			int entidx = pPlayer.entindex;
-			// Only proceed if entidx is in valid range (1..MAX_PLAYERS)
-			if (entidx > 0 && entidx <= MAX_PLAYERS && IsClientInGame(i) && !IsFakeClient(i) && IsValidEntity(i))
+			// Only proceed if entidx is in valid range (1..MAXPLAYERS)
+			if (entidx > 0 && entidx <= MAXPLAYERS && IsClientInGame(i) && !IsFakeClient(i) && IsValidEntity(i))
 			{
 				if (g_iActiveScreenOverlayEntity[pPlayer.entindex] == pScreenOverlay.entindex)
 				{
