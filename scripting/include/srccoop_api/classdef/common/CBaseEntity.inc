@@ -218,6 +218,10 @@ methodmap CBaseEntity
 	{
 		return GetEntPropString(this.entindex, Prop_Data, "m_target", szBuffer, iMaxLength) != 0;
 	}
+	public int SetTarget(const char[] szTarget)
+	{
+		return SetEntPropString(this.entindex, Prop_Data, "m_target", szTarget); 
+	}
 	public bool GetResponseContext(char[] szBuffer, const int iMaxLength)
 	{
 		return GetEntPropString(this.entindex, Prop_Data, "m_iszResponseContext", szBuffer, iMaxLength) != 0;
@@ -233,10 +237,6 @@ methodmap CBaseEntity
 	public void SetTextureFrameIndex(const int iTextureFrameIndex)
 	{
 		SetEntProp(this.entindex, Prop_Data, "m_iTextureFrameIndex", iTextureFrameIndex);
-	}
-	public int SetTarget(const char[] szTarget)
-	{
-		return SetEntPropString(this.entindex, Prop_Data, "m_target", szTarget); 
 	}
 	public bool IsClassname(const char[] szClassname)
 	{
@@ -853,8 +853,10 @@ static void Hook_CBaseEntity_OnDeleted(const int iEntIndex)
 {
 	CBaseEntity pEntity = CBaseEntity(iEntIndex);
 
+	#if defined SRCCOOP_BLACKMESA || defined SRCCOOP_HL2DM
 	//do other stuff if required before removing user data in "public void Hook_OnEntityDeleted(const CBaseEntity pEntity)"
 	Hook_OnEntityDeleted(pEntity);
+	#endif
 
 	StringMap hEntityData;
 	int iKey = pEntity.entref;
