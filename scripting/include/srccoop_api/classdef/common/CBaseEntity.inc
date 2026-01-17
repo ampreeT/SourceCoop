@@ -853,10 +853,8 @@ static void Hook_CBaseEntity_OnDeleted(const int iEntIndex)
 {
 	CBaseEntity pEntity = CBaseEntity(iEntIndex);
 
-	#if defined SRCCOOP_BLACKMESA || defined SRCCOOP_HL2DM
 	//do other stuff if required before removing user data in "public void Hook_OnEntityDeleted(const CBaseEntity pEntity)"
 	Hook_OnEntityDeleted(pEntity);
-	#endif
 
 	StringMap hEntityData;
 	int iKey = pEntity.entref;
