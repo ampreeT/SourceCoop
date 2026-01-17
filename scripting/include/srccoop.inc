@@ -160,11 +160,11 @@
 #include <srccoop/globals>
 #include <srccoop/entity/CTriggerCoop>
 #include <srccoop/kv_shared>
+#include <srccoop/entitypatch>
 #include <srccoop/manager_changelevel>
 #include <srccoop/manager>
 #include <srccoop/manager_survival>
 #include <srccoop/manager_persistence>
-#include <srccoop/entitypatch>
 #if defined SRCCOOP_BLACKMESA
 #include <srccoop/bms/entitypatch>
 #include <srccoop/bms/deathnotice>
