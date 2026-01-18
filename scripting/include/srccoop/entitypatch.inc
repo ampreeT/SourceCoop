@@ -925,6 +925,14 @@ public MRESReturn Hook_EnvScreenoverlayAcceptInput(int _this, DHookReturn hRetur
 		}
 
 		CBasePlayer	pPlayer = DHookGetParam(hParams, 2);
+		
+		//only players can have screen overlays
+		if(!pPlayer.IsPlayer())
+		{
+			DHookSetReturn(hReturn, true);
+			return MRES_Supercede;
+		}
+		
 		CEnvScreenOverlay pScreenOverlay = CEnvScreenOverlay(_this);
 
 		//don't active me if i'm already active for this player
@@ -1017,6 +1025,12 @@ public MRESReturn Hook_EnvScreenoverlayAcceptInput(int _this, DHookReturn hRetur
 		if (!DHookIsNullParam(hParams, 2))
 		{
 			pPlayer = DHookGetParam(hParams, 2);
+			
+			if(!pPlayer.IsPlayer())
+			{
+				DHookSetReturn(hReturn, true);
+				return MRES_Supercede;
+			}
 		}
 		else
 		{
