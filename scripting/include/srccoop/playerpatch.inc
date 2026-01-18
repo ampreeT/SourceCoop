@@ -401,9 +401,9 @@ public void PlayerPatch_OnClientPutInServer(const int iClient)
 	#if defined PLAYERPATCH_BM_CLIENT_PREDICTION
 	g_bSetJumpModuleActive[iClient] = false;
 	#endif
-
-	#if defined ENTPATCH_ENV_SCREENOVERLAY
+	
 	//if global overlay is active - start it for this client
+	#if defined ENTPATCH_ENV_SCREENOVERLAY
 	if(g_iActiveScreenOverlayEntity[0] != 0)
 	{
 		AcceptEntityInput(g_iActiveScreenOverlayEntity[0], "StartOverlays", iClient);
@@ -635,6 +635,13 @@ public void PlayerPatch_OnClientDisconnect(CBasePlayer pPlayer)
 	if (pPlayer.IsValid())
 	{
 		ClearPackedItems(pPlayer);
+		
+		//disable screenoverlay for this client
+		#if defined ENTPATCH_ENV_SCREENOVERLAY
+		g_iActiveScreenOverlayEntity[pPlayer.entindex] = 0;
+		g_iNextScreenOverlayIndex[pPlayer.entindex] = 0;
+		g_flNextOverlayTime[pPlayer.entindex] = 0.0;
+		#endif
 
 		#if defined SRCCOOP_HL2DM && defined PLAYERPATCH_SERVERSIDE_RAGDOLLS
 		// prevent hl2dm crash with serverside ragdolls
@@ -644,13 +651,6 @@ public void PlayerPatch_OnClientDisconnect(CBasePlayer pPlayer)
 			pRagdoll.Kill();
 		}
 		#endif // SRCCOOP_HL2DM && PLAYERPATCH_SERVERSIDE_RAGDOLLS
-		
-		#if defined ENTPATCH_ENV_SCREENOVERLAY
-		//disable screenoverlay for this client
-		g_iActiveScreenOverlayEntity[pPlayer.entindex] = 0;
-		g_iNextScreenOverlayIndex[pPlayer.entindex] = 0;
-		g_flNextOverlayTime[pPlayer.entindex] = 0.0;
-		#endif
 	}
 }
 
@@ -748,6 +748,7 @@ public MRESReturn Hook_PlayerChangeTeam(int iClient, DHookParam hParams)
 				return MRES_ChangedHandled;
 			}
 
+			
 			if (iTeam == TEAM_UNASSIGNED)
 			{
 				hParams.Set(1, TEAM_TWO);

@@ -318,6 +318,7 @@ public void OnPluginStart()
 	HookEvent("player_disconnect", Event_PlayerDisconnect);
 	AddNormalSoundHook(PlayerSoundListener);
 	AddCommandListener(PlayerCommandListener);
+	DHookAddEntityListener(ListenType_Deleted, Hook_OnEntityDeleted);
 
 	#if defined SRCCOOP_BLACKMESA
 
@@ -1064,8 +1065,9 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 	}
 }
 
-public void Hook_OnEntityDeleted(const CBaseEntity pEntity)
+public void Hook_OnEntityDeleted(int iEntIndex)
 {
+	CBaseEntity pEntity = CBaseEntity(iEntIndex);
 	char szClassname[MAX_CLASSNAME];
 	pEntity.GetClassname(szClassname, sizeof(szClassname));
 

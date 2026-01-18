@@ -1290,6 +1290,7 @@ public MRESReturn Hook_EnvScreenoverlayAcceptInput(int _this, DHookReturn hRetur
 
 	return MRES_Ignored; //ignore if the input is not one of those we should override
 }
+#endif
 
 //------------------------------------------------------
 // CAI_GoalEntity - ai_goal_*

@@ -72,6 +72,7 @@
 	#define ENTPATCH_POINT_SERVERCOMMAND_CHANGELEVEL
 	#define ENTPATCH_ENV_ZOOM
 	#define ENTPATCH_ENV_CREDITS
+	#define ENTPATCH_ENV_SCREENOVERLAY
 	#define ENTPATCH_ENV_INTROCREDITS
 	#define ENTPATCH_ENV_SPRITE
 	#define ENTPATCH_AI_SCRIPT_CONDITIONS
@@ -160,11 +161,11 @@
 #include <srccoop/globals>
 #include <srccoop/entity/CTriggerCoop>
 #include <srccoop/kv_shared>
-#include <srccoop/entitypatch>
 #include <srccoop/manager_changelevel>
 #include <srccoop/manager>
 #include <srccoop/manager_survival>
 #include <srccoop/manager_persistence>
+#include <srccoop/entitypatch>
 #if defined SRCCOOP_BLACKMESA
 #include <srccoop/bms/entitypatch>
 #include <srccoop/bms/deathnotice>
