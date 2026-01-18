@@ -318,7 +318,6 @@ public void OnPluginStart()
 	HookEvent("player_disconnect", Event_PlayerDisconnect);
 	AddNormalSoundHook(PlayerSoundListener);
 	AddCommandListener(PlayerCommandListener);
-	DHookAddEntityListener(ListenType_Deleted, Hook_OnEntityDeleted);
 
 	#if defined SRCCOOP_BLACKMESA
 
@@ -1027,6 +1026,7 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 		if (strcmp(szClassname, "env_screenoverlay") == 0)
 		{
 			CBaseEntity(iEntIndex).SetUserData("m_bIsActive", false); //needed to fix not working switching overlays
+			DHookEntity(hkUpdateOnRemove, false, iEntIndex, _, Hook_EnvScreenoverlayUpdateOnRemove);
 			DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_EnvScreenoverlayAcceptInput);
 			return;
 		}
@@ -1062,19 +1062,6 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 		// 	SDKHook(iEntIndex, SDKHook_SpawnPost, Hook_ExplosionSpawn);
 		// 	return;
 		// }
-	}
-}
-
-public void Hook_OnEntityDeleted(int iEntIndex)
-{
-	CBaseEntity pEntity = CBaseEntity(iEntIndex);
-	char szClassname[MAX_CLASSNAME];
-	pEntity.GetClassname(szClassname, sizeof(szClassname));
-
-	if (StrEqual(szClassname, "env_screenoverlay"))
-	{
-		pEntity.AcceptInput("StopOverlaysAll");
-		return;
 	}
 }
 

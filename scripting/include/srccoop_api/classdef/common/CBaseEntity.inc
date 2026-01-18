@@ -84,6 +84,7 @@ methodmap CBaseEntity
 		}
 
 		g_hEntityData = new IntMap();
+		DHookAddEntityListener(ListenType_Deleted, Hook_CBaseEntity_OnDeleted);
 	}
 	public CBaseEntity(const int iEntIndex = -1)
 	{
@@ -848,12 +849,10 @@ static bool TraceEntityFilter_FVisible(int iEntIndex, int iMask, int iThisEntInd
 	//return CBaseEntity(iEntity).GetCollisionGroup() != COLLISION_GROUP_NONE;
 }
 
-public void OnEntityDestroyed(int iEntIndex)
+static void Hook_CBaseEntity_OnDeleted(const int iEntIndex)
 {
-	CBaseEntity pEntity = CBaseEntity(iEntIndex);
-
 	StringMap hEntityData;
-	int iKey = pEntity.entref;
+	int iKey = CBaseEntity(iEntIndex).entref;
 
 	if (g_hEntityData.GetValue(iKey, hEntityData))
 	{

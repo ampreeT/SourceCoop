@@ -1290,6 +1290,16 @@ public MRESReturn Hook_EnvScreenoverlayAcceptInput(int _this, DHookReturn hRetur
 
 	return MRES_Ignored; //ignore if the input is not one of those we should override
 }
+
+//------------------------------------------------------
+// CEnvScreenOverlay - env_screenoverlay
+// Stops overlays for all players before remove this entity.
+//------------------------------------------------------
+MRESReturn Hook_EnvScreenoverlayUpdateOnRemove(int iEntIndex)
+{
+	CBaseEntity(iEntIndex).AcceptInput("StopOverlaysAll");
+	return MRES_Ignored;
+}
 #endif
 
 //------------------------------------------------------
