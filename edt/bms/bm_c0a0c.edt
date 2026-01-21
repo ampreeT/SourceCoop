@@ -24,6 +24,11 @@
 			}
 		}
 	}
+	"console"
+	{
+		// enable turbophysics to prevent players from falling out of tram (Fix from Synergy BMS EDTs)
+		"sv_turbophysics" "~L 1"
+	}
 	"checkpoint"
 	{
 		"spawn"
