@@ -925,14 +925,14 @@ public MRESReturn Hook_EnvScreenoverlayAcceptInput(int _this, DHookReturn hRetur
 		}
 
 		CBasePlayer	pPlayer = DHookGetParam(hParams, 2);
-		
-		//only players can have screen overlays
-		if(!pPlayer.IsPlayer())
+
+		//only real and valid players can have screen overlays
+		if(pPlayer.IsBot() && !pPlayer.IsValid())
 		{
 			DHookSetReturn(hReturn, true);
 			return MRES_Supercede;
 		}
-		
+
 		CEnvScreenOverlay pScreenOverlay = CEnvScreenOverlay(_this);
 
 		//don't active me if i'm already active for this player
@@ -1025,7 +1025,7 @@ public MRESReturn Hook_EnvScreenoverlayAcceptInput(int _this, DHookReturn hRetur
 		if (!DHookIsNullParam(hParams, 2))
 		{
 			pPlayer = DHookGetParam(hParams, 2);
-			
+
 			if(!pPlayer.IsPlayer())
 			{
 				DHookSetReturn(hReturn, true);
@@ -1082,7 +1082,7 @@ public MRESReturn Hook_EnvScreenoverlayAcceptInput(int _this, DHookReturn hRetur
 		for (int i = 1; i <= MaxClients; i++)
 		{
 			CBasePlayer pPlayer = CBasePlayer(i);
-			if (!pPlayer.IsValid() || !IsClientInGame(i) || IsFakeClient(i) || !IsValidEntity(i))
+			if (pPlayer.IsBot() && !pPlayer.IsValid())
 				continue;
 
 			// Don't activate if already active for this player
@@ -1150,8 +1150,7 @@ public MRESReturn Hook_EnvScreenoverlayAcceptInput(int _this, DHookReturn hRetur
 		for(int i = 1; i <= MaxClients; i++)
 		{
 			CBasePlayer pPlayer = CBasePlayer(i);
-			int entidx = pPlayer.entindex;
-			if (entidx > 0 && entidx <= MAXPLAYERS && IsClientInGame(i) && !IsFakeClient(i) && IsValidEntity(i))
+			if (!pPlayer.IsBot() && pPlayer.IsValid())
 			{
 				if (g_iActiveScreenOverlayEntity[pPlayer.entindex] == pScreenOverlay.entindex)
 				{
@@ -1229,9 +1228,7 @@ public MRESReturn Hook_EnvScreenoverlayAcceptInput(int _this, DHookReturn hRetur
 		for(int i = 1; i <= MaxClients; i++)
 		{
 			CBasePlayer pPlayer = CBasePlayer(i);
-			int entidx = pPlayer.entindex;
-			// Only proceed if entidx is in valid range (1..MAXPLAYERS)
-			if (entidx > 0 && entidx <= MAXPLAYERS && IsClientInGame(i) && !IsFakeClient(i) && IsValidEntity(i))
+			if (!pPlayer.IsBot() && pPlayer.IsValid())
 			{
 				if (g_iActiveScreenOverlayEntity[pPlayer.entindex] == pScreenOverlay.entindex)
 				{
@@ -1256,7 +1253,7 @@ public MRESReturn Hook_EnvScreenoverlayAcceptInput(int _this, DHookReturn hRetur
 		for(int i = 1; i <= MaxClients; i++)
 		{
 			CBasePlayer pPlayer = CBasePlayer(i);
-			if (!pPlayer.IsValid())
+			if (!pPlayer.IsValid() || pPlayer.IsBot())
 				continue;
 
 			// Only switch overlay if the delay has finished
