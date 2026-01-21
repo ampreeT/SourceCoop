@@ -927,7 +927,7 @@ public MRESReturn Hook_EnvScreenoverlayAcceptInput(int _this, DHookReturn hRetur
 		CBasePlayer	pPlayer = DHookGetParam(hParams, 2);
 
 		//only real and valid players can have screen overlays
-		if(pPlayer.IsBot() && !pPlayer.IsValid())
+		if(!pPlayer.IsValid() || pPlayer.IsBot())
 		{
 			DHookSetReturn(hReturn, true);
 			return MRES_Supercede;
@@ -1082,7 +1082,7 @@ public MRESReturn Hook_EnvScreenoverlayAcceptInput(int _this, DHookReturn hRetur
 		for (int i = 1; i <= MaxClients; i++)
 		{
 			CBasePlayer pPlayer = CBasePlayer(i);
-			if (pPlayer.IsBot() && !pPlayer.IsValid())
+			if (!pPlayer.IsValid() || pPlayer.IsBot())
 				continue;
 
 			// Don't activate if already active for this player
@@ -1150,7 +1150,7 @@ public MRESReturn Hook_EnvScreenoverlayAcceptInput(int _this, DHookReturn hRetur
 		for(int i = 1; i <= MaxClients; i++)
 		{
 			CBasePlayer pPlayer = CBasePlayer(i);
-			if (!pPlayer.IsBot() && pPlayer.IsValid())
+			if (pPlayer.IsValid() && !pPlayer.IsBot())
 			{
 				if (g_iActiveScreenOverlayEntity[pPlayer.entindex] == pScreenOverlay.entindex)
 				{
@@ -1228,7 +1228,7 @@ public MRESReturn Hook_EnvScreenoverlayAcceptInput(int _this, DHookReturn hRetur
 		for(int i = 1; i <= MaxClients; i++)
 		{
 			CBasePlayer pPlayer = CBasePlayer(i);
-			if (!pPlayer.IsBot() && pPlayer.IsValid())
+			if (pPlayer.IsValid() && !pPlayer.IsBot())
 			{
 				if (g_iActiveScreenOverlayEntity[pPlayer.entindex] == pScreenOverlay.entindex)
 				{
