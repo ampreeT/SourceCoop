@@ -541,7 +541,6 @@ public void OnClientDisconnect(int client)
 	
 	CBasePlayer pPlayer = CBasePlayer(client);
 	PlayerPatch_OnClientDisconnect(pPlayer);
-	ItemInstancingManager.OnClientDisconnect(client);
 }
 
 public void OnClientDisconnect_Post(int client)
@@ -560,6 +559,7 @@ public void OnClientDisconnect_Post(int client)
 	}
 	SurvivalManager.OnClientDisconnectPost(client);
 	CoopManager.OnClientDisconnectPost(client);
+	ItemInstancingManager.OnClientDisconnectPost(client);
 	g_szSteamIds[client] = "";
 	g_bPostTeamSelect[client] = false;
 	g_iAddButtons[client] = 0;
