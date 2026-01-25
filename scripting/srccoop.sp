@@ -1025,7 +1025,7 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 		#if defined ENTPATCH_ENV_SCREENOVERLAY
 		if (strcmp(szClassname, "env_screenoverlay") == 0)
 		{
-			CBaseEntity(iEntIndex).SetUserData("m_bIsActive", false); //needed to fix not working switching overlays
+			pEntity.SetUserData("m_bIsEnabled", false); //needed to fix not working switching overlays
 			DHookEntity(hkUpdateOnRemove, false, iEntIndex, _, Hook_EnvScreenoverlayUpdateOnRemove);
 			DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_EnvScreenoverlayAcceptInput);
 			return;

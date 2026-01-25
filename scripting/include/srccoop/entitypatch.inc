@@ -977,12 +977,7 @@ public MRESReturn Hook_EnvScreenoverlayAcceptInput(int _this, DHookReturn hRetur
 		g_iActiveScreenOverlayEntity[pPlayer.entindex] = pScreenOverlay.entindex; //store active overlay entindex for this player
 
 		int iNextOverlay = iTextureIndex + 1;
-
-		if (iNextOverlay < 0)
-			iNextOverlay = 0;
-		
-		if (iNextOverlay > 9)
-			iNextOverlay = 9;
+		iNextOverlay = Clamp(iNextOverlay, 0, 9);
 
 		g_iNextScreenOverlayIndex[pPlayer.entindex] = iNextOverlay; //set next overlay we want to play
 
@@ -998,9 +993,9 @@ public MRESReturn Hook_EnvScreenoverlayAcceptInput(int _this, DHookReturn hRetur
 		g_flNextOverlayTime[pPlayer.entindex] = GetTickedTime() + flOverlayDuration;
 
 		//don't create more timers if already active
-		if (pScreenOverlay.GetUserData("m_bIsActive") == false)
+		if (pScreenOverlay.GetUserData("m_bIsEnabled") == false)
 		{
-			pScreenOverlay.SetUserData("m_bIsActive", true);
+			pScreenOverlay.SetUserData("m_bIsEnabled", true);
 
 			//Think() doesn't seem to work on this entity at all, use i/o
 			pScreenOverlay.AddOutput("OnUser4", "!self", "Think", "", 0.01, 1);
@@ -1050,7 +1045,7 @@ public MRESReturn Hook_EnvScreenoverlayAcceptInput(int _this, DHookReturn hRetur
 		pPlayer.SendCommand("r_screenoverlay off"); //used by source source sdk code as disabled overlay val
 
 		g_iActiveScreenOverlayEntity[pPlayer.entindex] = 0; //mark that this player has no active ent overlays
-		pScreenOverlay.SetUserData("m_bIsActive", false);
+		pScreenOverlay.SetUserData("m_bIsEnabled", false);
 
 		//prevent orig code
 		DHookSetReturn(hReturn, true);
@@ -1103,12 +1098,7 @@ public MRESReturn Hook_EnvScreenoverlayAcceptInput(int _this, DHookReturn hRetur
 			g_iActiveScreenOverlayEntity[pPlayer.entindex] = pScreenOverlay.entindex; //store active overlay entindex for this player
 
 			int iNextOverlay = iTextureIndex + 1;
-
-			if (iNextOverlay < 0)
-				iNextOverlay = 0;
-		
-			if (iNextOverlay > 9)
-				iNextOverlay = 9;
+			iNextOverlay = Clamp(iNextOverlay, 0, 9);
 
 			g_iNextScreenOverlayIndex[pPlayer.entindex] = iNextOverlay;
 
@@ -1120,9 +1110,9 @@ public MRESReturn Hook_EnvScreenoverlayAcceptInput(int _this, DHookReturn hRetur
 		}
 
 		// Only create timer if not already active
-		if (pScreenOverlay.GetUserData("m_bIsActive") == false && flOverlayDuration >= 0)
+		if (pScreenOverlay.GetUserData("m_bIsEnabled") == false && flOverlayDuration >= 0)
 		{
-			pScreenOverlay.SetUserData("m_bIsActive", true);
+			pScreenOverlay.SetUserData("m_bIsEnabled", true);
 			pScreenOverlay.AddOutput("OnUser4", "!self", "Think", "", 0.01, 1);
 			pScreenOverlay.FireOutput("OnUser4"); //TODO: replace with AddEvent to event queue when we will have everything needed
 		}
@@ -1162,7 +1152,7 @@ public MRESReturn Hook_EnvScreenoverlayAcceptInput(int _this, DHookReturn hRetur
 			}
 		}
 		
-		pScreenOverlay.SetUserData("m_bIsActive", false);
+		pScreenOverlay.SetUserData("m_bIsEnabled", false);
 		DHookSetReturn(hReturn, true);
 		return MRES_Supercede;
 	}
@@ -1213,7 +1203,7 @@ public MRESReturn Hook_EnvScreenoverlayAcceptInput(int _this, DHookReturn hRetur
 	{
 		CEnvScreenOverlay pScreenOverlay = CEnvScreenOverlay(_this);
 
-		if (pScreenOverlay.IsValid() == false || pScreenOverlay.GetUserData("m_bIsActive") == false)
+		if (pScreenOverlay.IsValid() == false || pScreenOverlay.GetUserData("m_bIsEnabled") == false)
 		{
 			DHookSetReturn(hReturn, true);
 			return MRES_Supercede;
@@ -1280,12 +1270,7 @@ public MRESReturn Hook_EnvScreenoverlayAcceptInput(int _this, DHookReturn hRetur
 				if (iNextOverlayIndex <= 9 && iNextOverlayIndex >= 0)
 				{
 					int iTheNextOverlay = iNextOverlay[i] + 1;
-
-					if (iTheNextOverlay < 0)
-						iTheNextOverlay = 0;
-					
-					if (iTheNextOverlay > 9)
-						iTheNextOverlay = 9;
+					iTheNextOverlay = Clamp(iTheNextOverlay, 0, 9);
 
 					g_iNextScreenOverlayIndex[pPlayer.entindex] = iTheNextOverlay;
 					g_flNextOverlayTime[pPlayer.entindex] = flTickedTime + pScreenOverlay.GetOverlayTimes(iNextOverlay[i]);
@@ -1304,7 +1289,7 @@ public MRESReturn Hook_EnvScreenoverlayAcceptInput(int _this, DHookReturn hRetur
 
 //------------------------------------------------------
 // CEnvScreenOverlay - env_screenoverlay
-// Stops overlays for all players before remove this entity.
+// Stops overlays for all players before removing this entity.
 //------------------------------------------------------
 MRESReturn Hook_EnvScreenoverlayUpdateOnRemove(int iEntIndex)
 {
