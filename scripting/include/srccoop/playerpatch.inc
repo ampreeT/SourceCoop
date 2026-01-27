@@ -406,7 +406,7 @@ public void PlayerPatch_OnClientPutInServer(const int iClient)
 	#if defined ENTPATCH_ENV_SCREENOVERLAY
 	if(g_pActiveScreenOverlay[0].entindex != NULL_CBASEENTITY)
 	{
-		g_pActiveScreenOverlay[0].AcceptInput("StartOverlays", iClient, iClient);
+		g_pActiveScreenOverlay[0].AcceptInput("StartOverlays", CBasePlayer(iClient), CBasePlayer(iClient));
 	}
 	#endif
 	
