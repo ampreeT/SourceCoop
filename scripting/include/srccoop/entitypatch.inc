@@ -1233,7 +1233,7 @@ public MRESReturn Hook_EnvScreenoverlayAcceptInput(int _this, DHookReturn hRetur
 		float flTickedTime = GetTickedTime(); //store ingame time in this var so we don't call func every time
 		int iNextOverlayIndex = -1;
 		int iNextOverlay[MAXPLAYERS + 1] = { NULL_CBASEENTITY, ... }; //store next overlays to set for certain players
-		float flNextOverlayStartTime[MAXPLAYERS + 1] = = { -1.0, ... };
+		float flNextOverlayStartTime[MAXPLAYERS + 1] = { -1.0, ... };
 
 		for(int i = 1; i <= MaxClients; i++)
 		{
