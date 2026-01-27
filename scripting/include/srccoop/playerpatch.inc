@@ -628,10 +628,16 @@ public void PlayerPatch_OnClientDisconnect(CBasePlayer pPlayer)
 	{
 		ClearPackedItems(pPlayer);
 		
-		//disable screenoverlay for this client
 		#if defined ENTPATCH_ENV_SCREENOVERLAY
-		if (g_pActiveScreenOverlay[pPlayer.entindex].entindex != NULL_CBASEENTITY)
+		if(g_pActiveScreenOverlay[0].entindex != NULL_CBASEENTITY)
 		{
+			//if my active screenoverlay is global screenoverlay, reset global vars so it works properly when i join again
+			g_iNextScreenOverlayIndex[pPlayer.entindex] = 0;
+			g_flNextOverlayTime[pPlayer.entindex] = 0.0;
+		}
+		else if (g_pActiveScreenOverlay[pPlayer.entindex].entindex != NULL_CBASEENTITY)
+		{
+			//if my screenoverlay isn't global but i have a local one, just stop it for me 
 			g_pActiveScreenOverlay[pPlayer.entindex].AcceptInput("StopOverlays", pPlayer, pPlayer);
 		}
 		#endif

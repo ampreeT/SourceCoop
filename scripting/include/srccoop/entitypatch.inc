@@ -1104,7 +1104,7 @@ public MRESReturn Hook_EnvScreenoverlayAcceptInput(int _this, DHookReturn hRetur
 			// If another overlay is active, stop it first
 			if (g_pActiveScreenOverlay[pPlayer.entindex].entindex != NULL_CBASEENTITY)
 			{
-				g_pActiveScreenOverlay[pPlayer.entindex].AcceptInput("StopOverlaysAll", pPlayer);
+				g_pActiveScreenOverlay[pPlayer.entindex].AcceptInput("StopOverlays", pPlayer);
 			}
 
 			// Send overlay command
