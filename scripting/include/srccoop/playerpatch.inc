@@ -404,9 +404,9 @@ public void PlayerPatch_OnClientPutInServer(const int iClient)
 	
 	//if global overlay is active - start it for this client
 	#if defined ENTPATCH_ENV_SCREENOVERLAY
-	if(g_iActiveScreenOverlayEntity[0] != 0)
+	if(g_pActiveScreenOverlay[0].entindex != NULL_CBASEENTITY)
 	{
-		AcceptEntityInput(g_iActiveScreenOverlayEntity[0], "StartOverlays", iClient);
+		g_pActiveScreenOverlay[0].AcceptInput("StartOverlays", iClient, iClient);
 	}
 	#endif
 	
@@ -638,9 +638,10 @@ public void PlayerPatch_OnClientDisconnect(CBasePlayer pPlayer)
 		
 		//disable screenoverlay for this client
 		#if defined ENTPATCH_ENV_SCREENOVERLAY
-		g_iActiveScreenOverlayEntity[pPlayer.entindex] = 0;
-		g_iNextScreenOverlayIndex[pPlayer.entindex] = 0;
-		g_flNextOverlayTime[pPlayer.entindex] = 0.0;
+		if (g_pActiveScreenOverlay[pPlayer.entindex].entindex != NULL_CBASEENTITY)
+		{
+			g_pActiveScreenOverlay[pPlayer.entindex].AcceptInput("StopOverlays", pPlayer, pPlayer);
+		}
 		#endif
 
 		#if defined SRCCOOP_HL2DM && defined PLAYERPATCH_SERVERSIDE_RAGDOLLS
