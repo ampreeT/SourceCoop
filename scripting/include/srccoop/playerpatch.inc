@@ -402,14 +402,6 @@ public void PlayerPatch_OnClientPutInServer(const int iClient)
 	g_bSetJumpModuleActive[iClient] = false;
 	#endif
 	
-	//if global overlay is active - start it for this client
-	#if defined ENTPATCH_ENV_SCREENOVERLAY
-	if(g_pActiveScreenOverlay[0].entindex != NULL_CBASEENTITY && !IsFakeClient(iClient))
-	{
-		g_pActiveScreenOverlay[0].AcceptInput("StartOverlays", CBasePlayer(iClient), CBasePlayer(iClient));
-	}
-	#endif
-	
 	SendClientConvars(iClient, false);
 }
 
