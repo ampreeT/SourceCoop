@@ -934,7 +934,7 @@ public MRESReturn Hook_EnvScreenoverlayAcceptInput(int _this, DHookReturn hRetur
 		}
 
 		CEnvScreenOverlay pScreenOverlay = CEnvScreenOverlay(_this);
-
+		
 		//don't active me if i'm already active for this player
 		if (g_pActiveScreenOverlay[pPlayer.entindex].entindex == pScreenOverlay.entindex)
 		{
@@ -966,7 +966,7 @@ public MRESReturn Hook_EnvScreenoverlayAcceptInput(int _this, DHookReturn hRetur
 		//if other local screenoverlay is active - stop overlay for it before we use this entity
 		if (g_pActiveScreenOverlay[pPlayer.entindex].entindex != NULL_CBASEENTITY)
 		{
-			AcceptEntityInput(g_pActiveScreenOverlay[pPlayer.entindex].entindex, "StopOverlays", pPlayer.entindex);
+			g_pActiveScreenOverlay[pPlayer.entindex].AcceptInput("StopOverlays", pPlayer);
 		}
 
 		//send command to apply screen overlay
@@ -1104,7 +1104,7 @@ public MRESReturn Hook_EnvScreenoverlayAcceptInput(int _this, DHookReturn hRetur
 			// If another overlay is active, stop it first
 			if (g_pActiveScreenOverlay[pPlayer.entindex].entindex != NULL_CBASEENTITY)
 			{
-				AcceptEntityInput(g_pActiveScreenOverlay[pPlayer.entindex].entindex, "StopOverlaysAll", pPlayer.entindex);
+				g_pActiveScreenOverlay[pPlayer.entindex].AcceptInput("StopOverlaysAll", pPlayer);
 			}
 
 			// Send overlay command
@@ -1195,7 +1195,7 @@ public MRESReturn Hook_EnvScreenoverlayAcceptInput(int _this, DHookReturn hRetur
 		//-1 is also in orig code, cuz for Hammer user everything counts from 1 to 10, while 0 to 9 for programmers
 		int iSwitchOverlayVal = StringToInt(szParam) - 1;
 
-		//following 2 if() mimics orig code behavior
+		//following 2 if() mimics orig code behavior from source sdk
 		if (iSwitchOverlayVal < 0)
 		{
     		iSwitchOverlayVal = -iSwitchOverlayVal;
@@ -1342,7 +1342,6 @@ MRESReturn Hook_EnvScreenoverlayUpdateOnRemove(int _this)
 	{
 		pScreenOverlay.AcceptInput("StopOverlaysAll");
 	}
-
 	else //stop overlays only for players that have me as active overlay entity
 	{
 		CBasePlayer pPlayer;
