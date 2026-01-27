@@ -1124,6 +1124,10 @@ public MRESReturn Hook_EnvScreenoverlayAcceptInput(int _this, DHookReturn hRetur
 			{
 				g_flNextOverlayTime[pPlayer.entindex] = GetTickedTime() + flOverlayDuration;
 			}
+			else
+			{
+				g_flNextOverlayTime[pPlayer.entindex] = 0.0;
+			}
 		}
 
 		// Only create timer if not already active
