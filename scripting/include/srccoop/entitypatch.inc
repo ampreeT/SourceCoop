@@ -1021,7 +1021,7 @@ public MRESReturn Hook_EnvScreenoverlayAcceptInput(int _this, DHookReturn hRetur
 		{
 			pPlayer = CBasePlayer(DHookGetParam(hParams, 2));
 
-			if(!pPlayer.IsPlayer())
+			if(!pPlayer.IsValid() || pPlayer.IsBot())
 			{
 				DHookSetReturn(hReturn, true);
 				return MRES_Supercede;
