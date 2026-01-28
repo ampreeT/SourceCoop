@@ -1112,8 +1112,11 @@ static void ClearNpcMemoryForPlayer(const CBasePlayer pPlayer)
 			pEntity.GetClassname(szClassname, sizeof(szClassname));
 			if (strcmp(szClassname, "npc_abrams") == 0)
 			{
-				// causes a crash in CNPC_Abrams::AimMiniTurret2
-				continue;
+				continue; // causes a crash in CNPC_Abrams::AimMiniTurret2
+			}
+			if (strcmp(szClassname, "npc_nihilanth") == 0)
+			{	
+				continue; // always expects to have an enemy
 			}
 			if (strcmp(szClassname, "npc_human_security") == 0)
 			{
