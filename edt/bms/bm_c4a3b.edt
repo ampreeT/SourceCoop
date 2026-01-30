@@ -51,6 +51,15 @@
 				"wait" "1"
 			}
 		}
+		//unused ents
+		"delete"
+		{
+			"targetname" "healpool_screenoverlay-01
+		}
+		"delete"
+		{
+			"targetname" " healpool_screenoverlay-02"
+		}
 	}
 	"checkpoint"
 	{

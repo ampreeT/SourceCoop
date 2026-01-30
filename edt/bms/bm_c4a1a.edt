@@ -71,6 +71,22 @@
 						"output" "OnIn"
 					}
 				}
+				//set new targetname for the player, so the trigger that will turn off overlay will know what player we need
+				"add"
+				{
+					"output"	"OnIn"
+					"target"	"!activator"
+					"input"		"AddOutput"
+					"parameter" "targetname aboutthatbeerioweya"
+					"delay"		"0.0"
+				}
+				//teleport the player in case if the player will fall out of the island
+				"add"
+				{
+					"output"	"OnIn"
+					"target"	"__srccoop_teleport_telescop"
+					"input"		"Teleport"
+				}
 			}
 		}
 		"modify"
@@ -87,6 +103,13 @@
 						"input" "Unlock"
 					}
 				}
+				//enable the trigger that will disabled the overlay On End Follow
+				"add"
+				{
+					"output"	"OnEndFollow"
+					"target"	"__srccoop_triggermultiple_telescopoverlay"
+					"input"		"Enable"				
+				}
 			}
 		}
 		"modify"
@@ -95,6 +118,113 @@
 			"set"
 			{
 				"spawnflags" "12"
+			}
+		}
+		
+		//Screenoverlay fixes.
+		"modify"
+		{
+			"target" "interdimensional_relay"
+			"input" "StartOverlays"
+			"replace"
+			{
+				"input" "StartOverlaysAll"
+			}
+		}
+
+		"modify"
+		{
+			"target" "towerreveal_relay"
+			"input" "StopOverlays"
+			"replace"
+			{
+				"input" "StopOverlaysAll"
+			}
+		}
+		
+		"modify"
+		{
+			"target" "towerreveal_relay"
+			"input" "StartOverlays"
+			"replace"
+			{
+				"input" "StartOverlaysAll"
+			}
+		}
+		
+		"modify"
+		{
+			"target" "wake_relay"
+			"input" "StopOverlays"
+			"replace"
+			{
+				"input" "StopOverlaysAll"
+			}
+		}
+		
+		//used teleport in case if player will fall out of the island
+		"create"
+		{
+			"classname" 	"point_teleport"
+			"targetname" 	"__srccoop_teleport_telescop"
+			"angles" 		"0 135 0"
+			"origin" 		"-5216 -1712 8800"
+			"target" 		"!activator"
+			"spawnflags" 	"0"	
+		}
+		
+		//filter by targetname for the trigger that turns off overlay
+		"create"
+		{
+			"classname" 	"filter_activator_name"
+			"filtername" 	"aboutthatbeerioweya"
+			"negated" 		"0"
+			"targetname" 	"__srccoop_filteractivatorname_telescopoverlay"
+			"origin" 		"-6008 4 9060"
+		}
+
+		//trigger used to turn off overlay for the filtered player
+		"create"
+		{
+			"targetname"	"__srccoop_triggermultiple_telescopoverlay"
+			"classname"		"trigger_multiple"
+			"startdisabled" "1"
+			"filtername" "__srccoop_filteractivatorname_telescopoverlay"
+			"spawnflags"	"1"
+			"functions"
+			{
+				"set_model"
+				{
+					"from"	"-6677 -504 9776"
+					"to"	"-5147 619 8594"
+				}
+			}
+			"outputs"
+			{
+				//turn off the overlay
+				"add"
+				{
+					"output"	"OnStartTouch"
+					"target"	"scrnoverlay_binoc"
+					"input"		"StopOverlays"
+				}
+				
+				//clears targetname val
+				"add"
+				{
+					"output"	"OnStartTouch"
+					"target"	"!activator"
+					"input"		"AddOutput"
+					"parameter"	"targetname "
+				}
+				
+				//disable self
+				"add"
+				{
+					"output"	"OnStartTouch"
+					"target"	"__srccoop_triggermultiple_telescopoverlay"
+					"input"		"Disable"
+				}
 			}
 		}
 	}

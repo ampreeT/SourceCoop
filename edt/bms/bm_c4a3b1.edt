@@ -171,6 +171,15 @@
 				}
 			}
 		}
+		//unused ents
+		"delete"
+		{
+			"targetname" "AutoInstance1-healpool_screenoverlay"
+		}
+		"delete"
+		{
+			"targetname" "AutoInstance1-healpool_screenoverlay1"
+		}
 	}
 	"checkpoint"
 	{

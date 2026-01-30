@@ -56,6 +56,16 @@
 				}
 			}
 		}
+		//not sure if used, but lets replace, just in case
+		"modify"
+		{
+			"target" "teleport_relay"
+			"input" "StartOverlays"
+			"replace"
+			{
+				"input" "StartOverlaysAll"
+			}
+		}
 	}
 	"checkpoint"
 	{

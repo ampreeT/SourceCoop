@@ -96,6 +96,16 @@
 				}
 			}
 		}
+		
+		"modify"
+		{
+			"target" "teleport_relay"
+			"input" "StartOverlays"
+			"replace"
+			{
+				"input" "StartOverlaysAll"
+			}
+		}
 	}
 	"checkpoint"
 	{

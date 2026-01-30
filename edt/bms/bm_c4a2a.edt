@@ -36,6 +36,27 @@
 		{
 			"targetname" "return_blocker"
 		}
+		
+		//screenoverlay fixes.
+		"modify"
+		{
+			"target" "portal_button"
+			"input" "StartOverlays"
+			"replace"
+			{
+				"input" "StartOverlaysAll"
+			}
+		}
+				
+		"modify"
+		{
+			"target" "gon_impact"
+			"input" "StopOverlays"
+			"replace"
+			{
+				"input" "StopOverlaysAll"
+			}
+		}
 	}
 	"checkpoint"
 	{

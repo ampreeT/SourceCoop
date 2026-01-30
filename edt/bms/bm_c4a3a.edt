@@ -77,6 +77,15 @@
 				}
 			}
 		}
+		//unused ents
+		"delete"
+		{
+			"hammerid"	 "5235121"
+		}
+		"delete"
+		{
+			"hammerid"	 "5234476"
+		}
 	}
 	"checkpoint"
 	{
