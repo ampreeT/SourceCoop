@@ -1,5 +1,4 @@
 #base "base/bm_sp_campaign.edt"
-
 "config"
 {
 	"chapter" "Interloper"
@@ -105,11 +104,17 @@
 		//screenoverlay fixes.
 		"modify"
 		{
-			"target" "teleport_relay"
-			"input" "StartOverlays"
-			"replace"
+			"targetname" "teleport_relay"
+			"outputs"
 			{
-				"input" "StartOverlaysAll"
+				"modify"
+				{
+					"input" "StartOverlays"
+					"replace"
+					{
+						"input" "StartOverlaysAll"
+					}
+				}
 			}
 		}
 	}

@@ -1,5 +1,4 @@
 #base "base/bm_sp_campaign.edt"
-
 "config"
 {
 	"chapter" "Gonarch's Lair"
@@ -40,21 +39,33 @@
 		//screenoverlay fixes.
 		"modify"
 		{
-			"target" "portal_button"
-			"input" "StartOverlays"
-			"replace"
+			"targetname" "portal_button"
+			"outputs"
 			{
-				"input" "StartOverlaysAll"
+				"modify"
+				{
+					"input" "StartOverlays"
+					"replace"
+					{
+						"input" "StartOverlaysAll"
+					}
+				}
 			}
 		}
 				
 		"modify"
 		{
-			"target" "gon_impact"
-			"input" "StopOverlays"
-			"replace"
+			"targetname" "gon_impact"
+			"outputs"
 			{
-				"input" "StopOverlaysAll"
+				"modify"
+				{
+					"input" "StopOverlays"
+					"replace"
+					{
+						"input" "StopOverlaysAll"
+					}
+				}
 			}
 		}
 	}

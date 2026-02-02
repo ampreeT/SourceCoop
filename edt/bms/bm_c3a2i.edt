@@ -1,5 +1,4 @@
 #base "base/bm_sp_campaign.edt"
-
 "config"
 {
 	"chapter" "Lambda Core"
@@ -124,87 +123,127 @@
 						"parameter" "changelevel bm_c3a2i"
 					}
 				}
-				"create"
-				{
-						"classname" "point_servercommand"
-						"targetname" "__srccoop_servercommand"
-				}
-				
-				
-				//Screenoverlay fixes.
+			}
+		}
+		
+		// Create servercommand entity at entity level
+		"create"
+		{
+			"classname" "point_servercommand"
+			"targetname" "__srccoop_servercommand"
+		}
+		
+		//Screenoverlay fixes.
+		"modify"
+		{
+			"targetname" "interdimensional_relay"
+			"outputs"
+			{
 				"modify"
 				{
-					"target" "interdimensional_relay"
 					"input" "StartOverlays"
 					"replace"
 					{
 						"input" "StartOverlaysAll"
 					}
 				}
-				
+			}
+		}
+		
+		"modify"
+		{
+			"targetname" "towerreveal_relay"
+			"outputs"
+			{
 				"modify"
 				{
-					"target" "towerreveal_relay"
 					"input" "StopOverlays"
 					"replace"
 					{
 						"input" "StopOverlaysAll"
 					}
 				}
-				
 				"modify"
 				{
-					"target" "towerreveal_relay"
 					"input" "StartOverlays"
 					"replace"
 					{
 						"input" "StartOverlaysAll"
 					}
 				}
-				
+			}
+		}
+		
+		"modify"
+		{
+			"targetname" "wake_relay"
+			"outputs"
+			{
 				"modify"
 				{
-					"target" "wake_relay"
 					"input" "StopOverlays"
 					"replace"
 					{
 						"input" "StopOverlaysAll"
 					}
 				}
-				
+			}
+		}
+		
+		"modify"
+		{
+			"targetname" "outro"
+			"outputs"
+			{
 				"modify"
 				{
-					"target" "outro"
 					"input" "StopOverlays"
 					"replace"
 					{
 						"input" "StopOverlaysAll"
 					}
 				}
-				
+			}
+		}
+		
+		"modify"
+		{
+			"targetname" "temp"
+			"outputs"
+			{
 				"modify"
 				{
-					"target" "temp"
 					"input" "StartOverlays"
 					"replace"
 					{
 						"input" "StartOverlaysAll"
 					}
 				}
-				
+			}
+		}
+		
+		"modify"
+		{
+			"targetname" "player_push_in"
+			"outputs"
+			{
 				"modify"
 				{
-					"target" "player_push_in"
 					"input" "StartOverlays"
 					"replace"
 					{
 						"input" "StartOverlaysAll"
 					}
-				}	
-
+				}
+			}
+		}
+		"modify"
+		{
+			"targetname" "sound_fade"
+			"outputs"
+			{
 				"modify"
 				{
-					"target" "sound_fade"
 					"input" "StartOverlays"
 					"replace"
 					{

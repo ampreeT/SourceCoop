@@ -1,5 +1,4 @@
 #base "base/bm_sp_campaign.edt"
-
 "config"
 {
 	"chapter" "Interloper"
@@ -54,11 +53,11 @@
 		//unused ents
 		"delete"
 		{
-			"targetname" "healpool_screenoverlay-01
+			"targetname" "healpool_screenoverlay-01"
 		}
 		"delete"
 		{
-			"targetname" " healpool_screenoverlay-02"
+			"targetname" "healpool_screenoverlay-02"
 		}
 	}
 	"checkpoint"

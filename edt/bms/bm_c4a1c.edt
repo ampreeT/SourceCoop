@@ -1,5 +1,4 @@
 #base "base/bm_sp_campaign.edt"
-
 "config"
 {
 	"chapter" "Xen"
@@ -59,11 +58,17 @@
 		//not sure if used, but lets replace, just in case
 		"modify"
 		{
-			"target" "teleport_relay"
-			"input" "StartOverlays"
-			"replace"
+			"targetname" "teleport_relay"
+			"outputs"
 			{
-				"input" "StartOverlaysAll"
+				"modify"
+				{
+					"input" "StartOverlays"
+					"replace"
+					{
+						"input" "StartOverlaysAll"
+					}
+				}
 			}
 		}
 	}
