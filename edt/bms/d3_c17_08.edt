@@ -1,0 +1,105 @@
+// Script for workshop item 2244346638 - Anticitizen One
+
+#base "base/coop_base_sp_conversion.edt"
+
+"config"
+{
+	"campaign" "Workshop maps"
+	"chapter" "Anticitizen One"
+	
+	"features"
+	{
+		"KEEP_EQUIPMENT" "1"
+	}
+	"equipment"
+	{
+		"item" "item_suit"
+		"item" "item_weapon_crowbar"
+		"item" "item_weapon_glock"
+		"item" "item_weapon_357"
+		"item" "item_weapon_mp5"
+		"item" "item_weapon_shotgun"
+		"item" "item_weapon_crossbow"
+		"item" "item_weapon_rpg"
+		"item" "item_weapon_tau"
+		"item" "item_weapon_gluon"
+		"item" "item_weapon_hivehand"
+		"item" "item_weapon_frag"
+		"item" "item_weapon_satchel"
+		"item" "item_weapon_tripmine"
+		"item" "item_weapon_snark"
+	}
+	"entity"
+	{
+		// block off previous map
+		"modify"
+		{
+			"classname" "trigger_changelevel"
+			"map" "d3_c17_07"
+			"set"
+			{
+				"classname" "func_brush"
+				"rendermode" "10"
+			}
+		}
+		// block off ending
+		"modify"
+		{
+			"classname" "trigger_changelevel"
+			"targetname" "end_change"
+			"set"
+			{
+				"classname" "func_brush"
+				"rendermode" "10"
+			}
+		}
+		// remove starting weapons
+		"remove"
+		{
+			"targetname" "player_spawn_items"
+		}
+		// end the game
+		"add"
+		{
+			"classname" "game_end"
+			"targetname" "endgame"
+		}
+		"modify"
+		{
+			"hammerid" "45885"
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnStartTouch"
+					"target" "endgame"
+					"input"	"EndGame"
+					"delay" "10"
+					"timestofire" "-1"
+				}
+			}
+		}
+	}
+	"checkpoint"
+	{
+		"spawn"
+		{
+			"origin"	"-2242 -3239 239"
+			"angles"	"0 90 0"
+		}
+		"doors"
+		{
+			"origin"	"-862 -1440 -180"
+			"angles"	"0 0 0"
+			"triggerid"	"10599"
+			"output"	"OnTrigger"
+		}
+		"platform"
+		{
+			"origin"	"1536 -770 118"
+			"angles"	"0 90 0"
+			"triggerid"	"9643"
+			"output"	"OnTrigger"
+		}
+	}
+}

@@ -69,7 +69,7 @@
 			"set"
 			{
 				"MaxLiveChildren" "1"
-			}			
+			}
 		}
 	}
 	"checkpoint"

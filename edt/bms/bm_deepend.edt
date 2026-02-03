@@ -1,0 +1,187 @@
+// Script for workshop item 1888779772 - Deep End
+
+#base "base/coop_base_sp_conversion.edt"
+
+"config"
+{
+	"campaign" "Workshop maps"
+	"chapter" "Deep End"
+	
+	"intro_type" "fade"
+	
+	"features"
+	{
+		"KEEP_EQUIPMENT" "1"
+	}
+	"equipment"
+	{
+		"item" "item_suit"
+		"item" "item_weapon_crowbar"
+	}
+	"entity"
+	{
+		// delay map start
+		"modify"
+		{
+			"hammerid" "18269"
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnMapSpawn"
+					"target" "intfd1"
+					"input"	"Fade"
+				}
+				"add"
+				{
+					"output" "OnMapSpawn"
+					"target" "intfd2"
+					"input"	"Fade"
+					"delay" "3"
+				}
+				"add"
+				{
+					"output" "OnMapSpawn"
+					"target" "tram1"
+					"input"	"SetSpeed"
+					"parameter" "1"
+					"delay" "2.9"
+				}
+				"add"
+				{
+					"output" "OnMapSpawn"
+					"target" "intpvc"
+					"input"	"Enable"
+				}
+				"add"
+				{
+					"output" "OnMapSpawn"
+					"target" "intpvc"
+					"input"	"Disable"
+					"delay" "2.8"
+				}
+				"add"
+				{
+					"output" "OnMapSpawn"
+					"target" "musint"
+					"input"	"PlaySound"
+					"delay" "5"
+				}
+				"add"
+				{
+					"output" "OnMapSpawn"
+					"target" "title"
+					"input"	"Display"
+					"delay" "10"
+				}
+			}
+			"functions"
+			{
+				"delay_output" "OnMapSpawn"
+			}
+		}
+		"remove"
+		{
+			"hammerid" "49644"
+		}
+		// remove starting weapons
+		"remove"
+		{
+			"hammerid" "1103"
+		}
+		"remove"
+		{
+			"hammerid" "59347"
+		}
+		// last train spawnpoint fix
+		"add"
+		{
+			"classname" "trigger_once"
+			"targetname" "tram2spawn"
+			"origin" "-1632 288 -24"
+		}
+		"modify"
+		{
+			"hammerid" "213412"
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnTrigger"
+					"target" "tram2spawn"
+					"input"	"SetParent"
+					"parameter" "tram2"
+					"delay" "2.1"
+					"timestofire" "-1"
+				}
+			}
+		}
+		// don't close doors during apache battle
+		"modify"
+		{
+			"hammerid" "168525"
+			"outputs"
+			{
+				"remove"
+				{
+					"target" "ldrcloserly"
+				}
+			}
+		}
+	}
+	"checkpoint"
+	{
+		"spawn"
+		{
+			"origin"	"50 0 20"
+			"angles"	"0 0 0"
+			"followid"	"tram1"
+		}
+		"lift"
+		{
+			"origin"	"0 0 0"
+			"angles"	"0 180 0"
+			"followid"	"e"
+			"triggerid"	"37757"
+			"output"	"OnPressed"
+			"bringall"	"1"
+		}
+		"fall"
+		{
+			"origin"	"448 -1776 -284"
+			"angles"	"0 180 0"
+			"triggerid"	"37498"
+			"output"	"OnPass"
+			"delay"		"8"
+		}
+		"zap"
+		{
+			"origin"	"-2394 -1794 100"
+			"angles"	"0 0 0"
+			"triggerid"	"34994"
+			"output"	"OnPressed"
+			"respawn"	"1"
+			"bringall"	"1"
+			"delay"		"1"
+		}
+		"button"
+		{
+			"origin"	"-482 -744 294"
+			"angles"	"0 90 0"
+			"triggerid"	"145405"
+			"output"	"OnPressed"
+			"bringall"	"1"
+			"delay"		"1"
+		}
+		"exit"
+		{
+			"origin"	"50 0 40"
+			"angles"	"0 0 0"
+			"followid"	"tram2spawn"
+			"triggerid"	"208396"
+			"output"	"OnTrigger"
+			"bringall"	"1"
+			"delay"		"1"
+		}
+	}
+}

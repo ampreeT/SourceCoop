@@ -1,0 +1,129 @@
+// Script for workshop item 2244346638 - Anticitizen One
+
+#base "base/coop_base_sp_conversion.edt"
+
+"config"
+{
+	"campaign" "Workshop maps"
+	"chapter" "Anticitizen One"
+	
+	"intro_type" "fade"
+
+	"features"
+	{
+		"KEEP_EQUIPMENT" "1"
+	}	
+	"equipment"
+	{
+		"item" "item_suit"
+		"item" "item_weapon_crowbar"
+		"item" "item_weapon_glock"
+		"item" "item_weapon_357"
+		"item" "item_weapon_mp5"
+		"item" "item_weapon_shotgun"
+		"item" "item_weapon_crossbow"
+		"item" "item_weapon_rpg"
+		"item" "item_weapon_tau"
+		"item" "item_weapon_gluon"
+		"item" "item_weapon_hivehand"
+		"item" "item_weapon_frag"
+		"item" "item_weapon_satchel"
+		"item" "item_weapon_tripmine"
+		"item" "item_weapon_snark"
+	}	
+	"entity"
+	{
+		// delay map start
+		"modify"
+		{
+			"hammerid" "4306"
+			"functions"
+			{
+				"delay_output" "OnMapSpawn"
+			}
+		}
+		"modify"
+		{
+			"hammerid" "4511"
+			"functions"
+			{
+				"delay_output" "OnMapSpawn"
+			}
+		}
+		// remove starting weapons
+		"remove"
+		{
+			"hammerid" "3818"
+		}
+		"remove"
+		{
+			"hammerid" "4308"
+		}
+		"remove"
+		{
+			"hammerid" "9546"
+		}
+		"remove"
+		{
+			"hammerid" "9548"
+		}
+		"remove"
+		{
+			"hammerid" "9554"
+		}
+		"remove"
+		{
+			"hammerid" "9556"
+		}
+		"remove"
+		{
+			"hammerid" "9558"
+		}
+		"remove"
+		{
+			"hammerid" "9560"
+		}
+		"remove"
+		{
+			"hammerid" "9562"
+		}
+		"remove"
+		{
+			"hammerid" "9564"
+		}
+		"remove"
+		{
+			"hammerid" "9566"
+		}
+		"remove"
+		{
+			"hammerid" "9570"
+		}
+		"remove"
+		{
+			"hammerid" "9572"
+		}
+		"remove"
+		{
+			"hammerid" "9574"
+		}
+		"remove"
+		{
+			"hammerid" "9576"
+		}
+	}
+	"checkpoint"
+	{
+		"spawn"
+		{
+			"origin"	"-7426 -1165 -14"
+			"angles"	"0 270 0"
+		}
+		"teleport"
+		{
+			"origin"	"-7202 -1164 24"
+			"angles"	"0 270 0"
+			"triggerid"	"4774"
+			"output"	"OnTrigger"
+		}
+}

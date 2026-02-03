@@ -98,8 +98,8 @@
 		}
 		"train"
 		{
-			"followid"	"finaltrain"
 			"angles"	"0 0 0"
+			"followid"	"finaltrain"
 			"triggerid"	"148771"
 			"output"	"OnPressed"
 			"bringall"	"1"

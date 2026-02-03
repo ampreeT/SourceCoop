@@ -1,0 +1,90 @@
+// Script for workshop item 3092530359 - The Final Expedition
+
+#base "base/coop_base_sp_conversion.edt"
+
+"config"
+{
+	"campaign" "Workshop maps"
+	"chapter" "The Final Expedition"
+	
+	"features"
+	{
+		"KEEP_EQUIPMENT" "1"
+	}
+	"equipment"
+	{
+		"item" "item_suit"
+		"item" "item_longjump"
+		"item" "item_weapon_crowbar"
+		"item" "item_weapon_glock"
+		"item" "item_weapon_357"
+		"item" "item_weapon_mp5"
+		"item" "item_weapon_shotgun"
+		"item" "item_weapon_tau"
+		"item" "item_weapon_rpg"
+		"item" "item_battery"
+		"item" "item_battery"
+		"item" "item_ammo_357"
+		"item" "item_ammo_357"
+		"item" "item_ammo_357"
+		"item" "item_ammo_mp5"
+		"item" "item_ammo_mp5"
+		"item" "item_ammo_mp5"
+		"item" "item_ammo_shotgun"
+		"item" "item_ammo_shotgun"
+		"item" "item_ammo_shotgun"
+		"item" "item_ammo_shotgun"
+		"item" "item_ammo_shotgun"
+		"item" "item_ammo_shotgun"
+		"item" "item_ammo_energy"
+		"item" "item_grenade_rpg"
+		"item" "item_grenade_rpg"
+		"item" "item_grenade_rpg"
+		"item" "item_grenade_frag"
+		"item" "item_grenade_frag"
+	}
+	"entity"
+	{
+		// delay map start
+		"modify"
+		{
+			"hammerid" "168109"
+			"functions"
+			{
+				"delay_output" "OnMapSpawn"
+			}
+		}
+		// only activator has portal fade effect
+		"modify"
+		{
+			"hammerid" "168107"
+			"set"
+			{
+				"spawnflags" "5"
+			}
+		}
+	}
+	"checkpoint"
+	{
+		"spawn"
+		{
+			"origin"	"-598 7475 -913"
+			"angles"	"0 0 0"
+		}
+		"cave"
+		{
+			"origin"	"-4450 -4545 3036"
+			"angles"	"0 0 0"
+			"triggerid"	"256606"
+			"output"	"OnTrigger"
+			"respawn"	"1"
+		}
+		"pad"
+		{
+			"origin"	"2603 -11286 2358"
+			"angles"	"0 135 0"
+			"triggerid"	"172338"
+			"output"	"OnTrigger"
+		}
+	}
+}

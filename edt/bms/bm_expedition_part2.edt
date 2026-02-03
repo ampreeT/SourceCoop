@@ -1,0 +1,288 @@
+// Script for workshop item 3092530359 - The Final Expedition
+
+#base "base/coop_base_sp_conversion.edt"
+
+"config"
+{
+	"campaign" "Workshop maps"
+	"chapter" "The Final Expedition"
+	
+	"features"
+	{
+		"KEEP_EQUIPMENT" "1"
+	}
+	"equipment"
+	{
+		"item" "item_suit"
+		"item" "item_weapon_crowbar"
+		"item" "item_weapon_glock"
+		"item" "item_weapon_mp5"
+		"item" "item_battery"
+		"item" "item_battery"
+		"item" "item_ammo_glock"
+		"item" "item_ammo_glock"
+		"item" "item_ammo_glock"
+		"item" "item_ammo_glock"
+	}
+	"entity"
+	{
+		// block off previous map
+		"modify"
+		{
+			"classname" "trigger_changelevel"
+			"map" "bm_expedition_part1"
+			"set"
+			{
+				"classname" "func_brush"
+				"rendermode" "10"
+			}
+		}
+		"modify"
+		{
+			"hammerid" "874963"
+			"set"
+			{
+				"spawnflags" "2048"
+			}
+		}
+		"modify"
+		{
+			"hammerid" "874968"
+			"set"
+			{
+				"spawnflags" "2048"
+			}
+		}
+		// fix it triggers everytime someone picks up longjump
+		"add"
+		{
+			"classname"	"logic_relay"
+			"targetname" "longjump_relay"
+			"spawnflags" "1"
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnTrigger"
+					"target" "backtrackarena_trigger"
+					"input"	"Enable"
+					"delay" "5"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnTrigger"
+					"target" "hevui_relay_4"
+					"input"	"Trigger"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnTrigger"
+					"target" "longjump_sprite"
+					"input"	"HideSprite"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnTrigger"
+					"target" "longjump_light"
+					"input"	"TurnOff"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnTrigger"
+					"target" "holte_pickup_01"
+					"input"	"PlaySound"
+					"delay" "1"
+					"timestofire" "-1"
+				}
+			}
+		}
+		"modify"
+		{
+			"hammerid" "1040451"
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnPlayerPickup"
+					"target" "longjump_relay"
+					"input"	"Trigger"
+					"timestofire" "-1"
+				}
+				"remove"
+				{
+					"target" "backtrackarena_trigger"
+				}
+				"remove"
+				{
+					"target" "hevui_relay_4"
+				}
+				"remove"
+				{
+					"target" "longjump_sprite"
+				}
+				"remove"
+				{
+					"target" "longjump_light"
+				}
+				"remove"
+				{
+					"target" "holte_pickup_01"
+				}
+			}
+		}
+		// let elevator trigger events rather than players triggering brush
+		"remove"
+		{
+			"hammerid" "1161549"
+		}
+		"modify"
+		{
+			"hammerid" "1104852"
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnPressed"
+					"target" "carparkbattle_spawn_ninja"
+					"input"	"Spawn"
+					"delay" "33"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnPressed"
+					"target" "carparkbattle_spawn_soldierbois"
+					"input"	"Spawn"
+					"delay" "33"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnPressed"
+					"target" "carparkbattle_spawn_randomxenboi1"
+					"input"	"Spawn"
+					"delay" "35"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnPressed"
+					"target" "carparkbattle_spawn_randomxenboi2"
+					"input"	"Enable"
+					"delay" "36.5"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnPressed"
+					"target" "carparkbattle_spawn_randomxenboi3"
+					"input"	"Enable"
+					"delay" "36"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnPressed"
+					"target" "door_slide01a"
+					"input"	"Unlock"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnPressed"
+					"target" "door_slide01b"
+					"input"	"Unlock"
+					"timestofire" "-1"
+				}
+			}
+		}
+		// relations fix
+		"modify"
+		{
+			"hammerid" "1167427"
+			"set"
+			{
+				"targetname" "relationship"
+			}
+		}
+		"modify"
+		{
+			"hammerid" "1167452"
+			"set"
+			{
+				"targetname" "relationship"
+			}
+		}
+		"modify"
+		{
+			"hammerid" "1167473"
+			"set"
+			{
+				"targetname" "relationship"
+			}
+		}
+		"modify"
+		{
+			"hammerid" "1104852"
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnPressed"
+					"target" "relationship"
+					"input"	"ApplyRelationship"
+					"delay" "30"
+					"timestofire" "-1"
+				}
+			}
+		}
+	}
+	"checkpoint"
+	{
+		"spawn"
+		{
+			"origin"	"-729 6080 1404"
+			"angles"	"0 180 0"
+		}
+		"outside"
+		{
+			"origin"	"-5904 5552 1390"
+			"angles"	"0 180 0"
+			"triggerid"	"1579374"
+			"output"	"OnTrigger"
+		}
+		"longjump"
+		{
+			"origin"	"-9160 8210 1580"
+			"angles"	"0 180 0"
+			"triggerid"	"longjump_relay"
+			"output"	"OnTrigger"
+			"respawn"	"1"
+			"bringall"	"1"
+			"bringall_radius" "256"
+			"delay"		"1"
+		}
+		"elevator"
+		{
+			"origin"	"-20 50 0"
+			"angles"	"0 180 0"
+			"followid"	"1056057"
+			"triggerid"	"1104852"
+			"output"	"OnPressed"
+			"respawn"	"1"
+			"bringall"	"1"
+		}
+		"changelevel"
+		{
+			"origin"	"-16075 4922 -508"
+			"angles"	"0 180 0"
+			"triggerid"	"1212981"
+			"output"	"OnTrigger"
+			"bringall"	"1"
+		}
+	}
+}

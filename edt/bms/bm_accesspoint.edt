@@ -5,7 +5,7 @@
 "config"
 {
 	"campaign" "Workshop maps"
-	"chapter" "Access Point"	
+	"chapter" "Access Point"
 	"intro_type" "fade"
 	
 	"features"

@@ -1,0 +1,133 @@
+// Script for workshop item 1850570433 - Intake Prime
+
+#base "base/coop_base_sp_conversion.edt"
+
+"config"
+{
+	"campaign" "Workshop maps"
+	"chapter" "Intake Prime"
+	
+	"features"
+	{
+		"KEEP_EQUIPMENT" "1"
+	}
+	"equipment"
+	{
+		"item" "item_suit"
+		"item" "item_ammo_glock"
+		"item" "item_ammo_glock"
+	}
+	"entity"
+	{
+		// delay map start
+		"modify"
+		{
+			"hammerid" "643392"
+			"functions"
+			{
+				"delay_output" "OnMapSpawn"
+			}
+		}
+		// remove starting weapons
+		"remove"
+		{
+			"hammerid" "240"
+		}
+		"remove"
+		{
+			"hammerid" "1459"
+		}
+		"remove"
+		{
+			"hammerid" "1465"
+		}
+		"remove"
+		{
+			"hammerid" "33476"
+		}
+		// end the game
+		"add"
+		{
+			"classname" "game_end"
+			"targetname" "endgame"
+		}
+		"modify"
+		{
+			"hammerid" "604468"
+			"outputs"
+			{
+				"remove"
+				{
+					"target" "clientcommand"
+				}
+				"add"
+				{
+					"output" "OnTrigger"
+					"target" "endgame"
+					"input"	"EndGame"
+					"delay" "66"
+					"timestofire" "-1"
+				}
+			}
+		}
+	}
+	"checkpoint"
+	{	
+		"spawn"
+		{
+			"origin"	"2897 4080 -12"
+			"angles"	"0 270 0"
+		}
+		"facility"
+		{
+			"origin"	"80 852 166"
+			"angles"	"0 0 0"
+			"triggerid"	"26521"
+			"output"	"OnStartTouch"
+		}
+		"hall"
+		{
+			"origin"	"1874 -66 36"
+			"angles"	"0 270 0"
+			"triggerid"	"381197"
+			"output"	"OnStartTouch"
+		}
+		"power"
+		{
+			"origin"	"-602 -706 550"
+			"angles"	"0 0 0"
+			"triggerid"	"38865"
+			"output"	"OnPressed"
+			"respawn"	"1"
+			"bringall"	"1"
+			"delay"		"1"
+		}
+		"lift"
+		{
+			"origin"	"0 0 0"
+			"angles"	"0 0 0"
+			"followid"	"lift_begin_combat"
+			"triggerid"	"39120"
+			"output"	"OnStartTouch"
+			"bringall"	"1"
+		}
+		"waste"
+		{
+			"origin"	"2814 4450 294"
+			"angles"	"0 180 0"
+			"triggerid"	"58288"
+			"output"	"OnPressed"
+			"bringall"	"1"
+			"delay"		"1"
+		}
+		"cart"
+		{
+			"origin"	"0 0 0"
+			"angles"	"0 90 0"
+			"followid"	"exit_cart"
+			"triggerid"	"604468"
+			"output"	"OnStartTouch"
+			"bringall"	"1"
+		}
+	}
+}
