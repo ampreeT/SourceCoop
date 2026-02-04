@@ -5,15 +5,14 @@
 // The "maps" folder is also scanned from the .bsp if this .edt is packed in it.
 // For more information on map scripts, check the wiki or examine other maps' scripts.
 
-// Script for workshop item <Workshop_id> - <Workshop_name>
-
 #base "base/coop_base_sp_conversion.edt"
 #base "../addons/sourcemod/data/srccoop/base/coop_base_sp_conversion.edt"
 
 "config"
 {
 	"campaign" "Workshop maps"
-	"chapter" "<Workshop_name>"
+	"chapter" "<Workshop title>"
+	"workshop" "<Workshop id>"
 	
 	// Tells the mod to allow any map to be next (using a regex expression).
 	// Depending on the transitions in this map, you can specify nextmap inside the quotes to prevent players from backtracking.
