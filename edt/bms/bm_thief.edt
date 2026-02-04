@@ -1,11 +1,10 @@
-// Script for workshop item 474988822 - Thief
-
 #base "base/coop_base_sp_conversion.edt"
 
 "config"
 {
 	"campaign" "Workshop maps"
 	"chapter" "Thief"
+	"workshop" "474988822"
 	
 	"intro_type" "fade"
 	

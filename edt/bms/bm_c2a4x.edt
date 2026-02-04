@@ -1,11 +1,10 @@
-// Script for workshop item 1086124981 - Superbus Via Inscientiae
-
 #base "base/coop_base_sp_conversion.edt"
 
 "config"
 {
 	"campaign" "Workshop maps"
 	"chapter" "Superbus Via Inscientiae"
+	"workshop" "1086124981"
 	"intro_type" "fade"
 	
 	"features"

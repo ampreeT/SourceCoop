@@ -1,11 +1,10 @@
-// Script for workshop item 2639914442 - Meltdown
-
 #base "base/coop_base_sp_conversion.edt"
 
 "config"
 {
 	"campaign" "Workshop maps"
 	"chapter" "Meltdown"
+	"workshop" "2639914442"
 	
 	"features"
 	{

@@ -1,11 +1,10 @@
-// Script for workshop item 2344380359 - Going Around
-
 #base "base/coop_base_sp_conversion.edt"
 
 "config"
 {
 	"campaign" "Workshop maps"
 	"chapter" "Going Around"
+	"workshop" "2344380359"
 	"intro_type" "fade"
 	
 	"features"

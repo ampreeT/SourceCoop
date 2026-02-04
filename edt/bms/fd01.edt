@@ -1,11 +1,11 @@
-// Script for workshop item 2316239201 - Further Data
-
 #base "base/coop_base_sp_conversion.edt"
 
 "config"
 {
 	"campaign" "Workshop maps"
-	"chapter" "Further Data"	
+	"chapter" "Further Data"
+	"workshop" "2316239201"
+
 	"intro_type" "fade"
 	#if
 	{
