@@ -1,11 +1,10 @@
-// Script for workshop item 550171554 - Communications Detour
-
 #base "base/coop_base_sp_conversion.edt"
 
 "config"
 {
 	"campaign" "Workshop maps"
 	"chapter" "Communications Detour"
+	"workshop" "550171554"
 	
 	"intro_type" "fade"
 	

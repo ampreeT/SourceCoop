@@ -1,11 +1,10 @@
-// Script for workshop item 1888779772 - Deep End
-
 #base "base/coop_base_sp_conversion.edt"
 
 "config"
 {
 	"campaign" "Workshop maps"
 	"chapter" "Deep End"
+	"workshop" "1888779772"
 	
 	"intro_type" "fade"
 	

@@ -1,11 +1,10 @@
-// Script for workshop item 799007153 - Overtime
-
 #base "base/coop_base_sp_conversion.edt"
 
 "config"
 {
 	"campaign" "Workshop maps"
 	"chapter" "Overtime"
+	"workshop" "799007153"
 	
 	"features"
 	{

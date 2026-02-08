@@ -1,11 +1,10 @@
-// Script for workshop item 1850570433 - Intake Prime
-
 #base "base/coop_base_sp_conversion.edt"
 
 "config"
 {
 	"campaign" "Workshop maps"
 	"chapter" "Intake Prime"
+	"workshop" "1850570433"
 	
 	"features"
 	{

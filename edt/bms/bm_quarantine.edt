@@ -1,11 +1,10 @@
-// Script for workshop item 798988742 - Quarantine
-
 #base "base/coop_base_sp_conversion.edt"
 
 "config"
 {
 	"campaign" "Workshop maps"
 	"chapter" "Quarantine"
+	"workshop" "798988742"
 	
 	"features"
 	{

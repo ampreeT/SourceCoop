@@ -1,11 +1,10 @@
-// Script for workshop item 3164506630 - Stadium
-
 #base "base/coop_base_sp_conversion.edt"
 
 "config"
 {
 	"campaign" "Workshop maps"
 	"chapter" "Stadium"
+	"workshop" "3164506630"
 	
 	"equipment"
 	{

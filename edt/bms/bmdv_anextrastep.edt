@@ -1,11 +1,10 @@
-// Script for workshop item 1950564849 - An Extra Step
-
 #base "base/coop_base_sp_conversion.edt"
 
 "config"
 {
 	"campaign" "Workshop maps"
 	"chapter" "An Extra Step"
+	"workshop" "1950564849"
 	
 	"intro_type" "fade"
 	
