@@ -111,14 +111,10 @@
 				}
 			}
 		}
-		//unused ents
+		// unused ents
 		"delete"
 		{
-			"hammerid" "7009849"
-		}
-		"delete"
-		{
-			"hammerid" "7009204"
+			"targetname" "healpool_screenoverlay"
 		}
 	}
 	"checkpoint"

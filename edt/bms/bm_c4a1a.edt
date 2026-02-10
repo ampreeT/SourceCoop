@@ -94,7 +94,6 @@
 						"input" "Unlock"
 					}
 				}
-				//enable the trigger that will disabled the overlay On End Follow
 				"add"
 				{
 					"output"	"OnEndFollow"
@@ -112,44 +111,28 @@
 			}
 		}
 		
-		//Screenoverlay fixes.
+		// Screenoverlay fixes
 		"modify"
 		{
-			"target" "interdimensional_relay"
-			"input" "StartOverlays"
-			"replace"
+			"targetname" "/^(interdimensional_relay|towerreveal_relay|wake_relay)$/"
+			"outputs"
 			{
-				"input" "StartOverlaysAll"
-			}
-		}
-
-		"modify"
-		{
-			"target" "towerreveal_relay"
-			"input" "StopOverlays"
-			"replace"
-			{
-				"input" "StopOverlaysAll"
-			}
-		}
-		
-		"modify"
-		{
-			"target" "towerreveal_relay"
-			"input" "StartOverlays"
-			"replace"
-			{
-				"input" "StartOverlaysAll"
-			}
-		}
-		
-		"modify"
-		{
-			"target" "wake_relay"
-			"input" "StopOverlays"
-			"replace"
-			{
-				"input" "StopOverlaysAll"
+				"modify"
+				{
+					"input" "StopOverlays"
+					"replace"
+					{
+						"input" "StopOverlaysAll"
+					}
+				}
+				"modify"
+				{
+					"input" "StartOverlays"
+					"replace"
+					{
+						"input" "StartOverlaysAll"
+					}
+				}
 			}
 		}
 		

@@ -36,7 +36,7 @@
 			"targetname" "return_blocker"
 		}
 		
-		//screenoverlay fixes.
+		// Screenoverlay fixes
 		"modify"
 		{
 			"targetname" "portal_button"

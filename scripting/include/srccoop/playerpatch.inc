@@ -629,13 +629,13 @@ public void PlayerPatch_OnClientDisconnect(CBasePlayer pPlayer)
 		ClearPackedItems(pPlayer);
 		
 		#if defined ENTPATCH_ENV_SCREENOVERLAY
-		if(g_pActiveScreenOverlay[0].entindex != NULL_CBASEENTITY)
+		if (g_pActiveScreenOverlay[0].IsValid())
 		{
 			//if my active screenoverlay is global screenoverlay, reset global vars so it works properly when i join again
 			g_iNextScreenOverlayIndex[pPlayer.entindex] = 0;
 			g_flNextOverlayTime[pPlayer.entindex] = 0.0;
 		}
-		else if (g_pActiveScreenOverlay[pPlayer.entindex].entindex != NULL_CBASEENTITY)
+		else if (g_pActiveScreenOverlay[pPlayer.entindex].IsValid())
 		{
 			//if my screenoverlay isn't global but i have a local one, just stop it for me 
 			g_pActiveScreenOverlay[pPlayer.entindex].AcceptInput("StopOverlays", pPlayer, pPlayer);
@@ -764,17 +764,12 @@ public MRESReturn Hook_PlayerChangeTeamPost(int iClient, DHookParam hParams)
 			}
 			ClearNpcMemoryForPlayer(pPlayer);
 			ItemInstancingManager.ClearAllPickedUpItemsForPlayer(pPlayer);
-			
-			CBaseEntity pCarriedObject = pPlayer.GetUseEntity();
 				
-			//if joined spectators, force player to drop the carried phys object or dismount used tank entity to fix controlling issues
-			if (pCarriedObject != NULL_CBASEENTITY)
-			{
-				pPlayer.ForceDropOfCarriedPhysObjects();
-			}
+			//force player to drop the carried phys object or dismount used tank entity to fix controlling issues
+			pPlayer.ForceDropOfCarriedPhysObjects();
 
-			//POWER SALO said that sometimes orig code doesn't remove items itself, so I added this line
-			pPlayer.RemoveAllItems();	
+			//POWER SALO said that sometimes orig code doesn't remove items itself
+			pPlayer.RemoveAllItems();
 		}
 
 		SurvivalManager.OnPlayerChangeTeam(pPlayer, iTeam);

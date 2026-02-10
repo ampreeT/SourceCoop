@@ -133,26 +133,10 @@
 			"targetname" "__srccoop_servercommand"
 		}
 		
-		//Screenoverlay fixes.
+		// Screenoverlay fixes
 		"modify"
 		{
-			"targetname" "interdimensional_relay"
-			"outputs"
-			{
-				"modify"
-				{
-					"input" "StartOverlays"
-					"replace"
-					{
-						"input" "StartOverlaysAll"
-					}
-				}
-			}
-		}
-		
-		"modify"
-		{
-			"targetname" "towerreveal_relay"
+			"targetname" "/^(interdimensional_relay|towerreveal_relay|wake_relay|outro|temp|player_push_in|sound_fade)$/"
 			"outputs"
 			{
 				"modify"
@@ -163,85 +147,6 @@
 						"input" "StopOverlaysAll"
 					}
 				}
-				"modify"
-				{
-					"input" "StartOverlays"
-					"replace"
-					{
-						"input" "StartOverlaysAll"
-					}
-				}
-			}
-		}
-		
-		"modify"
-		{
-			"targetname" "wake_relay"
-			"outputs"
-			{
-				"modify"
-				{
-					"input" "StopOverlays"
-					"replace"
-					{
-						"input" "StopOverlaysAll"
-					}
-				}
-			}
-		}
-		
-		"modify"
-		{
-			"targetname" "outro"
-			"outputs"
-			{
-				"modify"
-				{
-					"input" "StopOverlays"
-					"replace"
-					{
-						"input" "StopOverlaysAll"
-					}
-				}
-			}
-		}
-		
-		"modify"
-		{
-			"targetname" "temp"
-			"outputs"
-			{
-				"modify"
-				{
-					"input" "StartOverlays"
-					"replace"
-					{
-						"input" "StartOverlaysAll"
-					}
-				}
-			}
-		}
-		
-		"modify"
-		{
-			"targetname" "player_push_in"
-			"outputs"
-			{
-				"modify"
-				{
-					"input" "StartOverlays"
-					"replace"
-					{
-						"input" "StartOverlaysAll"
-					}
-				}
-			}
-		}
-		"modify"
-		{
-			"targetname" "sound_fade"
-			"outputs"
-			{
 				"modify"
 				{
 					"input" "StartOverlays"
