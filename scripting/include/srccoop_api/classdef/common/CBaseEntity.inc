@@ -529,7 +529,7 @@ methodmap CBaseEntity
 	}
 	public int GetModelIndex()
 	{
-		GetEntProp(this.entindex, Prop_Send, "m_nModelIndex");
+		return GetEntProp(this.entindex, Prop_Send, "m_nModelIndex");
 	}
 	public void SetModelIndex(const int nModelIndex)
 	{
