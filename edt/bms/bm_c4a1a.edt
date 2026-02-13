@@ -71,13 +71,6 @@
 						"output" "OnIn"
 					}
 				}
-				//teleport the player in case if the player will fall out of the island
-				"add"
-				{
-					"output"	"OnIn"
-					"target"	"__srccoop_teleport_telescop"
-					"input"		"Teleport"
-				}
 			}
 		}
 		"modify"
