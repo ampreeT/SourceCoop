@@ -77,6 +77,11 @@
 				}
 			}
 		}
+		// unused ents
+		"delete"
+		{
+			"targetname" "healpool_screenoverlay"
+		}
 	}
 	"checkpoint"
 	{

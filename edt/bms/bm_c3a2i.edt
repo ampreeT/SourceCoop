@@ -1,5 +1,4 @@
 #base "base/bm_sp_campaign.edt"
-
 "config"
 {
 	"chapter" "Lambda Core"
@@ -126,10 +125,37 @@
 				}
 			}
 		}
+		
+		// Create servercommand entity at entity level
 		"create"
 		{
 			"classname" "point_servercommand"
 			"targetname" "__srccoop_servercommand"
+		}
+		
+		// Screenoverlay fixes
+		"modify"
+		{
+			"targetname" "/^(interdimensional_relay|towerreveal_relay|wake_relay|outro|temp|player_push_in|sound_fade)$/"
+			"outputs"
+			{
+				"modify"
+				{
+					"input" "StopOverlays"
+					"replace"
+					{
+						"input" "StopOverlaysAll"
+					}
+				}
+				"modify"
+				{
+					"input" "StartOverlays"
+					"replace"
+					{
+						"input" "StartOverlaysAll"
+					}
+				}
+			}
 		}
 	}
 	"checkpoint"

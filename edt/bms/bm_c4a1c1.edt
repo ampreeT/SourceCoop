@@ -1,5 +1,4 @@
 #base "base/bm_sp_campaign.edt"
-
 "config"
 {
 	"chapter" "Xen"
@@ -92,6 +91,15 @@
 					"replace"
 					{
 						"input" "ChangeLevel"
+					}
+				}
+				// screenoverlay fix
+				"modify"
+				{
+					"input" "StartOverlays"
+					"replace"
+					{
+						"input" "StartOverlaysAll"
 					}
 				}
 			}

@@ -1,5 +1,4 @@
 #base "base/bm_sp_campaign.edt"
-
 "config"
 {
 	"chapter" "Interloper"
@@ -50,6 +49,15 @@
 				"classname" "trigger_multiple"
 				"wait" "1"
 			}
+		}
+		//unused ents
+		"delete"
+		{
+			"targetname" "healpool_screenoverlay-01"
+		}
+		"delete"
+		{
+			"targetname" "healpool_screenoverlay-02"
 		}
 	}
 	"checkpoint"
