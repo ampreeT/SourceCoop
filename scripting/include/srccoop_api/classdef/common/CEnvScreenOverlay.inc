@@ -1,7 +1,7 @@
 #pragma newdecls required
 #pragma semicolon 1
 
-methodmap CEnvScreenOverlay  < CPointEntity
+methodmap CEnvScreenOverlay < CPointEntity
 {
 	public CEnvScreenOverlay(const int iEntIndex = -1)
 	{
