@@ -1,11 +1,10 @@
-// Script for workshop item 1850064669 - Stalwart XT
-
 #base "base/coop_base_sp_conversion.edt"
 
 "config"
 {
 	"campaign" "Workshop maps"
 	"chapter" "Stalwart XT"
+	"workshop" "1850064669"
 	
 	"features"
 	{
@@ -26,7 +25,7 @@
 		"remove"
 		{
 			"hammerid" "258"
-		}		
+		}
 		// rename changelevel map name to small letter, as Linux is case sensitive
 		"modify"
 		{

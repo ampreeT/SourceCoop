@@ -1,11 +1,10 @@
-// Script for workshop item 2161275016 - Access Point
-
 #base "base/coop_base_sp_conversion.edt"
 
 "config"
 {
 	"campaign" "Workshop maps"
-	"chapter" "Access Point"	
+	"chapter" "Access Point"
+	"workshop" "2161275016"
 	"intro_type" "fade"
 	
 	"features"

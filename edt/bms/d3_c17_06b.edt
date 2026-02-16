@@ -3,8 +3,8 @@
 "config"
 {
 	"campaign" "Workshop maps"
-	"chapter" "Emergency 17"
-	"workshop" "934371395"
+	"chapter" "Anticitizen One"
+	"workshop" "2244346638"
 	
 	"features"
 	{
@@ -13,17 +13,20 @@
 	"equipment"
 	{
 		"item" "item_suit"
-		"item" "item_battery"
 		"item" "item_weapon_crowbar"
+		"item" "item_weapon_glock"
 		"item" "item_weapon_357"
 		"item" "item_weapon_mp5"
 		"item" "item_weapon_shotgun"
-		"item" "item_ammo_357"
-		"item" "item_ammo_mp5"
-		"item" "item_grenade_mp5"
-		"item" "item_ammo_shotgun"
-		"item" "item_ammo_shotgun"
+		"item" "item_weapon_crossbow"
+		"item" "item_weapon_rpg"
+		"item" "item_weapon_tau"
+		"item" "item_weapon_gluon"
+		"item" "item_weapon_hivehand"
 		"item" "item_weapon_frag"
+		"item" "item_weapon_satchel"
+		"item" "item_weapon_tripmine"
+		"item" "item_weapon_snark"
 	}
 	"entity"
 	{
@@ -31,7 +34,7 @@
 		"modify"
 		{
 			"classname" "trigger_changelevel"
-			"map" "bm_e17_m1"
+			"map" "d3_c17_06a"
 			"set"
 			{
 				"classname" "func_brush"
@@ -47,49 +50,36 @@
 			{
 				"set_model"
 				{
-					"origin" "-3400 -4064 -512"
-					"size" "16 64 64"
+					"origin" "5380 1732 310"
+					"size" "8 48 108"
 				}
 			}
 		}
-		// music fix
-		"modify"
+		// remove starting weapons
+		"remove"
 		{
-			"targetname" "combatsong1"
-			"set"
-			{
-				"message" "music.rp.rp1"
-			}
-		}
-		// bullsquid fix
-		"modify"
-		{
-			"hammerid" "34435"
-			"set"
-			{
-				"MaxLiveChildren" "1"
-			}
+			"targetname" "player_spawn_items"
 		}
 	}
 	"checkpoint"
 	{
 		"spawn"
 		{
-			"origin"	"-328 -622 149"
-			"angles"	"0 -90 0"
+			"origin"	"1438 1650 -114"
+			"angles"	"0 90 0"
 		}
-		"first fight"
+		"1st apartment"
 		{
-			"origin"	"-928 -1488 37"
-			"angles"	"0 180 0"
-			"triggerid"	"12331"
+			"origin"	"3444 1108 36"
+			"angles"	"0 270 0"
+			"triggerid"	"14118"
 			"output"	"OnTrigger"
 		}
-		"second fight"
+		"2nd apartment"
 		{
-			"origin"	"-2927 -2867 -251"
-			"angles"	"0 -90 0"
-			"triggerid"	"34392"
+			"origin"	"3484 2064 36"
+			"angles"	"0 180 0"
+			"triggerid"	"13774"
 			"output"	"OnTrigger"
 		}
 	}

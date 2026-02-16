@@ -3,8 +3,8 @@
 "config"
 {
 	"campaign" "Workshop maps"
-	"chapter" "Uncharted Territory"
-	"workshop" "1205460043"
+	"chapter" "Overtime"
+	"workshop" "799007153"
 	
 	"features"
 	{
@@ -20,7 +20,7 @@
 		// delay map start
 		"modify"
 		{
-			"hammerid" "1223"
+			"hammerid" "429055"
 			"functions"
 			{
 				"delay_output" "OnMapSpawn"
@@ -29,41 +29,42 @@
 		// remove starting weapons
 		"remove"
 		{
-			"hammerid" "1213"
+			"hammerid" "125229"
 		}
 		"remove"
 		{
-			"hammerid" "1217"
+			"hammerid" "126867"
 		}
 	}
 	"checkpoint"
 	{
 		"spawn"
 		{
-			"origin"	"-2192 3520 162"
-			"angles"	"0 0 0"
+			"origin"	"2352 -2288 -256"
+			"angles"	"0 180 0"
 		}
-		"2nd spawn"
+		"warehouse"
 		{
-			"origin"	"1213 813 -347"
-			"angles"	"0 90 0"
-			"triggerid"	"449866"
-			"output"	"OnStartTouch"
-		}
-		"3rd spawn"
-		{
-			"origin"	"340 1363 229"
+			"origin"	"-1720 -1594 36"
 			"angles"	"0 0 0"
-			"triggerid"	"566322"
+			"triggerid"	"446133"
 			"output"	"OnStartTouch"
 			"respawn"	"1"
 		}
-		"4th spawn"
+		"battle"
 		{
-			"origin"	"-258 -116 420"
+			"origin"	"-172 -886 36"
 			"angles"	"0 180 0"
-			"triggerid"	"693951"
+			"triggerid"	"385633"
 			"output"	"OnStartTouch"
+		}
+		"train"
+		{
+			"origin"	"1990 -1280 -230"
+			"angles"	"0 0 0"
+			"triggerid"	"251900"
+			"output"	"OnStartTouch"
+			"bringall"	"1"
 		}
 	}
 }
