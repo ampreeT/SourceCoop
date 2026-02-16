@@ -1021,6 +1021,16 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 			return;
 		}
 		#endif
+		
+		#if defined ENTPATCH_ENV_SCREENOVERLAY
+		if (strcmp(szClassname, "env_screenoverlay") == 0)
+		{
+			pEntity.SetUserData("m_bIsEnabled", false); //needed to fix not working switching overlays
+			DHookEntity(hkUpdateOnRemove, false, iEntIndex, _, Hook_EnvScreenoverlayUpdateOnRemove);
+			DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_EnvScreenoverlayAcceptInput);
+			return;
+		}
+		#endif
 
 		#if defined ENTPATCH_FUNC_TRACKAUTOCHANGE
 		if (strcmp(szClassname, "func_trackautochange") == 0)

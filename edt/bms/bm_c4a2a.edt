@@ -1,5 +1,4 @@
 #base "base/bm_sp_campaign.edt"
-
 "config"
 {
 	"chapter" "Gonarch's Lair"
@@ -35,6 +34,39 @@
 		"delete"
 		{
 			"targetname" "return_blocker"
+		}
+		
+		// Screenoverlay fixes
+		"modify"
+		{
+			"targetname" "portal_button"
+			"outputs"
+			{
+				"modify"
+				{
+					"input" "StartOverlays"
+					"replace"
+					{
+						"input" "StartOverlaysAll"
+					}
+				}
+			}
+		}
+				
+		"modify"
+		{
+			"targetname" "gon_impact"
+			"outputs"
+			{
+				"modify"
+				{
+					"input" "StopOverlays"
+					"replace"
+					{
+						"input" "StopOverlaysAll"
+					}
+				}
+			}
 		}
 	}
 	"checkpoint"
