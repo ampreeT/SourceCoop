@@ -261,6 +261,16 @@ public Action OnPlayerRunCmd(int iClient, int &iButtons, int &iImpulse, float fV
 	}
 	#endif
 	
+	#if defined SRCCOOP_BLACKMESA
+	if (iWeapon != 0)
+	{
+		if (pPlayer.GetCarriedObject() != NULL_CBASEENTITY)
+		{
+			pPlayer.ForceDropOfCarriedPhysObjects(); //drop object if carrying one to avoid prediction issues
+		}
+	}
+	#endif
+	
 	return Plugin_Continue;
 }
 
