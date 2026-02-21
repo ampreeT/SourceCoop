@@ -1081,7 +1081,6 @@ public void Hook_EntitySpawnPost(int iEntIndex)
 			{
 				pEntity.edictFlags |= FL_EDICT_ALWAYS;
 			}
-			}
 			#endif
 		}
 		#endif // SRCCOOP_BLACKMESA
