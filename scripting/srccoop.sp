@@ -1095,14 +1095,14 @@ static Action Hook_Item_OnSpawn(int iEntIndex)
 {
 	SDKUnhook(iEntIndex, SDKHook_Spawn, Hook_Item_OnSpawn);
 	
+	CItem pItem = CItem(iEntIndex);
+	
 	char szClassname[64];
 	GetEntityClassname(iEntIndex, szClassname, sizeof(szClassname));
 	
 	//allow instancing only for map placed syringe to avoid issues with scientist's syringe
-	if (strcmp(szClassname, "item_syringe", false) == 0 && pEntity.GetHammerID() == 0)
+	if (strcmp(szClassname, "item_syringe", false) == 0 && pItem.GetHammerID() == 0)
 		return;
-		
-	CItem pItem = CItem(iEntIndex);
 	
 	if (g_bMapStarted)
 	{
