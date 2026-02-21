@@ -1102,7 +1102,7 @@ static Action Hook_Item_OnSpawn(int iEntIndex)
 	
 	//allow instancing only for map placed syringe to avoid issues with scientist's syringe
 	if (strcmp(szClassname, "item_syringe", false) == 0 && pItem.GetHammerID() == 0)
-		return;
+		return Plugin_Continue;
 	
 	if (g_bMapStarted)
 	{
