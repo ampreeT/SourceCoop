@@ -722,9 +722,9 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 		#endif
 		
 		#if defined ENTPATCH_BM_SNARK
-		if (strcmp(szClassname, "npc_snark") == 0 && CMultiplayRules.IsTeamplay())
+		if (strcmp(szClassname, "npc_snark") == 0 && CoopManager.IsCoopModeEnabled() && CMultiplayRules.IsTeamplay())
 		{
-			SDKHook(iEntIndex, SDKHook_SpawnPost, Hook_SnarkSpawnPost);
+			RequestFrame(Hook_Snark_OnCreated, iEntIndex);
 			return;
 		}
 		#endif

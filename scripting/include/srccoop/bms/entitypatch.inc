@@ -191,10 +191,10 @@ public MRESReturn Hook_HumanMedicKilled(int _this, DHookParam hParams)
 // npc_snark
 // Make snark aggressive to all players with mp_teamplay 1.
 //------------------------------------------------------
-public void Hook_SnarkSpawnPost(const int iEntIndex)
+public void Hook_Snark_OnCreated(const int iEntIndex)
 {
-	//let map-placed snarks to have any team the mapper want for mapper's goals
-	if (CoopManager.IsCoopModeEnabled() && CBaseEntity(iEntIndex).GetHammerID() == 0)
+	//NOTE: We let map-placed snarks to have any team the mapper want for mapper's goals
+	if (CBaseEntity(iEntIndex).GetHammerID() == 0)
 	{
 		SetEntProp(iEntIndex, Prop_Data, "m_iInitialTeamNum", TEAM_ANY);
 		SetEntProp(iEntIndex, Prop_Data, "m_iTeamNum", TEAM_ANY);
