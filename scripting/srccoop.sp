@@ -720,6 +720,14 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 			return;
 		}
 		#endif
+		
+		#if defined ENTPATCH_BM_SNARK
+		if (strcmp(szClassname, "npc_snark") == 0 && CMultiplayRules.IsTeamplay())
+		{
+			SDKHook(iEntIndex, SDKHook_SpawnPost, Hook_SnarkSpawnPost);
+			return;
+		}
+		#endif
 	}
 	else // !isNPC
 	{
