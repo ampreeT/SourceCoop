@@ -43,17 +43,37 @@
 				"targetname" ""
 			}
 		}
-		"modify"
-		{
-			"targetname" "go_bob_go"
-			"set"
+			"modify"
 			{
-				"classname" "env_xen_portal"
-				"origin" "3773 3804 -927"
-				"NPCType" "npc_bullsquid"
+				"targetname" "go_bob_go"
+				"set"
+				{
+					"classname" "env_xen_portal"
+					"origin" "3773 3804 -927"
+					"NPCType" "npc_bullsquid"
+				}
+			}
+			"modify"
+			{
+				"targetname" "trigger_c1a4a_flickerkill"
+				"set"
+				{
+					"StartDisabled" "1"
+				}
+				"outputs"
+				{
+					"remove" {}
+				}
+			}
+			"modify"
+			{
+				"targetname" "relay_kill_upperlightflickers"
+				"set"
+				{
+					"StartDisabled" "1"
+				}
 			}
 		}
-	}
 	"checkpoint"
 	{
 		"spawn"

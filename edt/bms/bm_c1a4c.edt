@@ -3,6 +3,7 @@
 "config"
 {
 	"chapter" "Blast Pit"
+	"intro_type" "none"
 	"nextmap" "bm_c1a4b"
 	"equipment"
 	{
