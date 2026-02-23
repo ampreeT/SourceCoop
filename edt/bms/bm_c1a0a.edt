@@ -98,6 +98,40 @@
 				}
 			}
 		}
+		"modify"
+		{
+			"targetname" "LCS_AM_Airlock_trigger"
+			"classname"		"trigger_once"
+			"set"
+			{
+				"classname"	"trigger_coop"
+			}
+			"outputs"
+			{
+				"modify"
+				{
+					"output"	"OnTrigger"
+					"replace"
+					{
+						"output"	"OnAllPlayersIn"
+					}
+				}
+				"add"
+				{
+					"output"	"OnAllPlayersIn"
+					"target"	"!self"
+					"input"		"Disable"
+				}
+			}
+			"functions"
+			{
+				"set_model"
+				{
+					"origin" "272 203.64 520"
+					"size" "512 664 768"
+				}
+			}
+		}
 	}
 	"checkpoint"
 	{
@@ -113,7 +147,7 @@
 			"angles"	"0.0 90.0 0.0"
 			"delay"		"0.35"
 			"triggerid"	"LCS_AM_Airlock_trigger"
-			"output"	"OnTrigger"
+			"output"	"OnAllPlayersIn"
 			"bringall"	"1"
 		}
 		"door2"

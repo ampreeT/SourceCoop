@@ -43,6 +43,16 @@
 				"targetname" ""
 			}
 		}
+		"modify"
+		{
+			"targetname" "go_bob_go"
+			"set"
+			{
+				"classname" "env_xen_portal"
+				"origin" "3773 3804 -927"
+				"NPCType" "npc_bullsquid"
+			}
+		}
 	}
 	"checkpoint"
 	{
