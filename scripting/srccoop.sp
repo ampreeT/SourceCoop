@@ -129,7 +129,7 @@ void LoadGameData()
 	#endif
 	
 	#if defined ENTPATCH_BM_SNARK
-	LoadDHookVirtual(pGameConfig_Srccoop, hkIsBaseNPCIsValidEnemy, "CAI_BaseNPC::IsValidEnemy");
+	LoadDHookVirtual(pGameConfig, hkIsBaseNPCIsValidEnemy, "CAI_BaseNPC::IsValidEnemy");
 	#endif
 	
 	#if defined PLAYERPATCH_SUIT_SOUNDS
