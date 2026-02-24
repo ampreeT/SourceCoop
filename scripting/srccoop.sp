@@ -726,7 +726,7 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 		#endif
 		
 		#if defined ENTPATCH_BM_SNARK
-		if (strcmp(szClassname, "npc_snark") == 0 && CoopManager.IsCoopModeEnabled() && CMultiplayRules.IsTeamplay())
+		if (strcmp(szClassname, "npc_snark") == 0 && CoopManager.IsCoopModeEnabled())
 		{
 			RequestFrame(Hook_Snark_OnCreated, iEntIndex);
 			DHookEntity(hkIsBaseNPCIsValidEnemy, false, iEntIndex, _, Hook_SnarkIsValidEnemy);
