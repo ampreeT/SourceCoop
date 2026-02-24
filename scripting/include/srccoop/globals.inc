@@ -204,6 +204,10 @@ DynamicDetour hkTestGroundMove;
 DynamicDetour hkStartLagCompensation;
 #endif
 
+#if defined ENTPATCH_BM_SNARK
+DynamicHook hkIsBaseNPCIsValidEnemy;
+#endif
+
 // ----------------------------
 // MemPatches
 // ----------------------------

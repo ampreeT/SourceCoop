@@ -128,6 +128,10 @@ void LoadGameData()
 	g_iUserCmdOffset = pGameConfig.GetOffset("CBasePlayer::GetCurrentUserCommand");
 	#endif
 	
+	#if defined ENTPATCH_BM_SNARK
+	LoadDHookVirtual(pGameConfig, hkIsBaseNPCIsValidEnemy, "CAI_BaseNPC::IsValidEnemy");
+	#endif
+	
 	#if defined PLAYERPATCH_SUIT_SOUNDS
 	LoadDHookDetour(pGameConfig, hkSetSuitUpdate, "CBasePlayer::SetSuitUpdate", Hook_SetSuitUpdate, Hook_SetSuitUpdatePost);
 	#endif
@@ -717,6 +721,15 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 		if (strcmp(szClassname, "npc_human_medic") == 0)
 		{
 			DHookEntity(hkEvent_Killed, false, iEntIndex, _, Hook_HumanMedicKilled);
+			return;
+		}
+		#endif
+		
+		#if defined ENTPATCH_BM_SNARK
+		if (strcmp(szClassname, "npc_snark") == 0 && CoopManager.IsCoopModeEnabled())
+		{
+			RequestFrame(Hook_Snark_OnCreated, iEntIndex);
+			DHookEntity(hkIsBaseNPCIsValidEnemy, false, iEntIndex, _, Hook_SnarkIsValidEnemy);
 			return;
 		}
 		#endif
