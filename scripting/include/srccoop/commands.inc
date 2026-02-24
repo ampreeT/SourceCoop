@@ -322,6 +322,61 @@ public Action Command_DebugSetPos(int iClient, int iArgs)
 	return Plugin_Handled;
 }
 
+public Action Command_DebugSetAng(int iClient, int iArgs)
+{
+	if (iArgs != 4)
+	{
+		if (iClient)
+			MsgReply(iClient, "Usage: sc_debug_setang <player> <pitch> <yaw> <roll>");
+		else
+			MsgSrv("Usage: sc_debug_setang <player> <pitch> <yaw> <roll>");
+		return Plugin_Handled;
+	}
+	
+	char szTarget[65];
+	GetCmdArg(1, szTarget, sizeof(szTarget));
+
+	float vecAng[3];
+	vecAng[0] = GetCmdArgFloat(2);
+	vecAng[1] = GetCmdArgFloat(3);
+	vecAng[2] = GetCmdArgFloat(4);
+
+	char szTargetName[MAX_TARGET_LENGTH];
+	int iTargets[MAXPLAYERS], iTargetCount;
+	bool bIsML;
+	
+	if ((iTargetCount = ProcessTargetString(
+		szTarget,
+		iClient,
+		iTargets,
+		sizeof(iTargets),
+		COMMAND_FILTER_NO_BOTS,
+		szTargetName,
+		sizeof(szTargetName),
+		bIsML)) <= 0)
+	{
+		ReplyToTargetError(iClient, iTargetCount);
+		return Plugin_Handled;
+	}
+
+	for (int i = 0; i < iTargetCount; i++)
+	{
+		int iTarget = iTargets[i];
+		CBasePlayer pTarget = CBasePlayer(iTarget);
+		if (pTarget.IsValid())
+		{
+			pTarget.Teleport(NULL_VECTOR, vecAng, NULL_VECTOR);
+		}
+	}
+	
+	if (iClient)
+		MsgReply(iClient, "Set %s angles to %.2f %.2f %.2f.", szTargetName, vecAng[0], vecAng[1], vecAng[2]);
+	else
+		MsgSrv("Set %s angles to %.2f %.2f %.2f.", szTargetName, vecAng[0], vecAng[1], vecAng[2]);
+
+	return Plugin_Handled;
+}
+
 public Action Command_DebugGetPos(int iClient, int iArgs)
 {
 	if (iArgs != 1)
@@ -368,6 +423,57 @@ public Action Command_DebugGetPos(int iClient, int iArgs)
 			MsgReply(iClient, "%N => %.2f %.2f %.2f", iTarget, vecPos[0], vecPos[1], vecPos[2]);
 		else
 			MsgSrv("%N => %.2f %.2f %.2f", iTarget, vecPos[0], vecPos[1], vecPos[2]);
+	}
+
+	return Plugin_Handled;
+}
+
+public Action Command_DebugGetAng(int iClient, int iArgs)
+{
+	if (iArgs != 1)
+	{
+		if (iClient)
+			MsgReply(iClient, "Usage: sc_debug_getang <player>");
+		else
+			MsgSrv("Usage: sc_debug_getang <player>");
+		return Plugin_Handled;
+	}
+	
+	char szTarget[65];
+	GetCmdArg(1, szTarget, sizeof(szTarget));
+
+	char szTargetName[MAX_TARGET_LENGTH];
+	int iTargets[MAXPLAYERS], iTargetCount;
+	bool bIsML;
+
+	if ((iTargetCount = ProcessTargetString(
+		szTarget,
+		iClient,
+		iTargets,
+		sizeof(iTargets),
+		COMMAND_FILTER_NO_BOTS,
+		szTargetName,
+		sizeof(szTargetName),
+		bIsML)) <= 0)
+	{
+		ReplyToTargetError(iClient, iTargetCount);
+		return Plugin_Handled;
+	}
+
+	for (int i = 0; i < iTargetCount; i++)
+	{
+		int iTarget = iTargets[i];
+		CBasePlayer pTarget = CBasePlayer(iTarget);
+		if (!pTarget.IsValid())
+			continue;
+
+		float vecAng[3];
+		pTarget.GetEyeAngles(vecAng);
+
+		if (iClient)
+			MsgReply(iClient, "%N => %.2f %.2f %.2f", iTarget, vecAng[0], vecAng[1], vecAng[2]);
+		else
+			MsgSrv("%N => %.2f %.2f %.2f", iTarget, vecAng[0], vecAng[1], vecAng[2]);
 	}
 
 	return Plugin_Handled;

@@ -296,6 +296,8 @@ public void OnPluginStart()
 	RegServerCmd("sc_debug_missing_weapons", Command_Debug_MissingWeapons, "Internal debug command for testing missing weapons on spawn.");
 	RegAdminCmd("sc_debug_setpos", Command_DebugSetPos, ADMFLAG_ROOT, "Teleports target player(s) to an absolute position. Usage: sc_debug_setpos <player> <x> <y> <z>");
 	RegAdminCmd("sc_debug_getpos", Command_DebugGetPos, ADMFLAG_ROOT, "Gets target player(s) absolute position. Usage: sc_debug_getpos <player>");
+	RegAdminCmd("sc_debug_setang", Command_DebugSetAng, ADMFLAG_ROOT, "Sets target player(s) angles. Usage: sc_debug_setang <player> <pitch> <yaw> <roll>");
+	RegAdminCmd("sc_debug_getang", Command_DebugGetAng, ADMFLAG_ROOT, "Gets target player(s) angles. Usage: sc_debug_getang <player>");
 	
 	g_pLevelLump.Initialize();
 	CCoopSpawnSystem.Initialize();

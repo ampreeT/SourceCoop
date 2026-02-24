@@ -182,6 +182,8 @@ The server console and [admins configured within SourceMod](https://wiki.alliedm
 * **`sc_dump`**: Command for dumping map entities to a file
 * **`sc_debug_setpos`**: Teleports target player(s) to an absolute position
 * **`sc_debug_getpos`**: Prints target player(s) absolute position
+* **`sc_debug_setang`**: Sets target player(s) angles
+* **`sc_debug_getang`**: Prints target player(s) angles
 * **`sc_mkconfigs`**: Creates default edt configs for all maps in the maps directory which are missing one
 * **`sc_revive`**: Force respawn player
 * **`sc_reload_maps`**: Reloads all entries in the votemap menu from storage
