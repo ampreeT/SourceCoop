@@ -103,8 +103,8 @@
 		}
 		"goal_switch"
 		{
-			"origin"	"1024 1760 -283"
-			"angles"	"0 90 0"
+			"origin"	"1024.00 1760.00 -319.96"
+			"angles"	"7.22 89.29 0.00"
 			"triggerid" "c2a1b_console_switch_01"
 			"output"	"OnIn"
 			"bringall"	"1"
