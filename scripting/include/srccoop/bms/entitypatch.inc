@@ -189,16 +189,55 @@ public MRESReturn Hook_HumanMedicKilled(int _this, DHookParam hParams)
 
 //------------------------------------------------------
 // npc_snark
-// Make snark aggressive to all players with mp_teamplay 1.
+// Set snark's team to make it evil or peaceful to the players.
 //------------------------------------------------------
 public void Hook_Snark_OnCreated(const int iEntIndex)
 {
-	//NOTE: We let map-placed snarks to have any team the mapper want for mapper's goals
-	if (CBaseEntity(iEntIndex).GetHammerID() == 0)
-	{
-		SetEntProp(iEntIndex, Prop_Data, "m_iInitialTeamNum", TEAM_ANY);
-		SetEntProp(iEntIndex, Prop_Data, "m_iTeamNum", TEAM_ANY);
-	}
+	if (CBaseEntity(iEntIndex).GetHammerID() != 0) //don't for map-placed
+        return;
+    
+    CBasePlayer pPlayer = CBasePlayer(CNpc_Snark(iEntIndex).GetSnarkOwner());
+	
+	//don't if i don't have any owner
+    if (!pPlayer.IsValid())
+        return;
+
+    int iTeam = (mp_friendlyfire.BoolValue) ? TEAM_ANY : pPlayer.GetTeam();
+	SetEntProp(iEntIndex, Prop_Data, "m_iInitialTeamNum", iTeam);
+	SetEntProp(iEntIndex, Prop_Data, "m_iTeamNum", iTeam);
+}
+
+//------------------------------------------------------
+// npc_snark
+// Make snark owned by a player peaceful with mp_friendlyfire, filter players (by teamnum) and ally to owner NPCs
+//------------------------------------------------------
+public MRESReturn Hook_SnarkIsValidEnemy(int _this, DHookReturn hReturn, DHookParam hParams)
+{
+	if (DHookIsNullParam(hParams, 1) ||  mp_friendlyfire.BoolValue)
+        return MRES_Ignored;
+
+
+    CBasePlayer pOwner = CBasePlayer(CNpc_Snark(_this).GetSnarkOwner());
+	
+	//check if i have owner
+    if (!pOwner.IsValid())
+        return MRES_Ignored;
+		
+    CAI_BaseNPC pEnemy = CAI_BaseNPC(DHookGetParam(hParams, 1));
+	
+	//check if the targer plr/npc is valid for me
+    if (!pEnemy.IsValid())
+        return MRES_Ignored;
+    
+	//check if in my owner's team or if is owner's ally
+    if (pEnemy.GetTeam() == pOwner.GetTeam() || pEnemy.IsPlayerAlly(pOwner))
+    {
+		//not valid enemy
+        DHookSetReturn(hReturn, false);
+        return MRES_Supercede;
+    }
+
+	return MRES_Ignored;
 }
 
 //------------------------------------------------------
