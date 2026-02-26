@@ -184,6 +184,7 @@ The server console and [admins configured within SourceMod](https://wiki.alliedm
 * **`sc_debug_getpos`**: Prints target player(s) absolute position
 * **`sc_debug_setang`**: Sets target player(s) angles
 * **`sc_debug_getang`**: Prints target player(s) angles
+* **`sc_debug_traceray`**: Tracerays target player(s) and prints the hit classname, targetname, and address
 * **`sc_mkconfigs`**: Creates default edt configs for all maps in the maps directory which are missing one
 * **`sc_revive`**: Force respawn player
 * **`sc_reload_maps`**: Reloads all entries in the votemap menu from storage

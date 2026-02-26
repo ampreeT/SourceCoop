@@ -1158,3 +1158,38 @@ stock bool RemovePlayerFromSoundListener(const int iClientIndex, int iClients[MA
 	}
 	return false;
 }
+
+#if defined GAMEPATCH_FILL_SERVER_INFO
+//------------------------------------------------------
+// Overrides gamedir to `bshift` for server browser compatibility.
+//
+// This hook requires the `bshift` game mod to be installed as `bms`.
+// Gameinfo.txt modifications must also be made.
+// TODO: Don't hardcode gamedir
+//------------------------------------------------------
+public MRESReturn Hook_FillServerInfoPost(Address _this, DHookParam hParams)
+{
+	static MemoryBlock s_pGameDir;
+
+	Address pInfo = hParams.GetAddress(1);
+	if (pInfo == Address_Null)
+	{
+		return MRES_Ignored;
+	}
+
+	if (!s_pGameDir)
+	{
+		char szGameDir[] = "bshift";
+		s_pGameDir = new MemoryBlock(sizeof(szGameDir));
+		for (int i = 0; i < sizeof(szGameDir); ++i)
+		{
+			s_pGameDir.StoreToOffset(i, szGameDir[i], NumberType_Int8);
+		}
+	}
+
+	SVC_ServerInfo info = SVC_ServerInfo.FromAddress(pInfo);
+	info.SetGameDirFromPtr(s_pGameDir.Address);
+
+	return MRES_Ignored;
+}
+#endif

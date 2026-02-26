@@ -181,6 +181,10 @@ void LoadGameData()
 	LoadDHookDetour(pGameConfig, hkScriptedSequenceStartScript, "CAI_ScriptedSequence::StartScript", Hook_ScriptedSequenceStartScript);
 	#endif
 
+	#if defined GAMEPATCH_FILL_SERVER_INFO
+	LoadDHookDetour(pGameConfig, hkFillServerInfo, "CBaseServer::FillServerInfo", _, Hook_FillServerInfoPost);
+	#endif
+
 	#if defined GAMEPATCH_PREDICTED_EFFECTS
 	LoadDHookDetour(pGameConfig, hkIgnorePredictionCull, "CRecipientFilter::IgnorePredictionCull", Hook_IgnorePredictionCull);
 	LoadDHookVirtual(pGameConfig, hkDispatchEffect, "CTempEntsSystem::DispatchEffect");
@@ -298,7 +302,8 @@ public void OnPluginStart()
 	RegAdminCmd("sc_debug_getpos", Command_DebugGetPos, ADMFLAG_ROOT, "Gets target player(s) absolute position. Usage: sc_debug_getpos <player>");
 	RegAdminCmd("sc_debug_setang", Command_DebugSetAng, ADMFLAG_ROOT, "Sets target player(s) angles. Usage: sc_debug_setang <player> <pitch> <yaw> <roll>");
 	RegAdminCmd("sc_debug_getang", Command_DebugGetAng, ADMFLAG_ROOT, "Gets target player(s) angles. Usage: sc_debug_getang <player>");
-	
+	RegAdminCmd("sc_debug_traceray", Command_DebugTraceRay, ADMFLAG_ROOT, "Tracerays target player(s) and reports the hit entity classname, targetname, and address. Usage: sc_debug_traceray <player>");
+
 	g_pLevelLump.Initialize();
 	CCoopSpawnSystem.Initialize();
 	CoopManager.Initialize();

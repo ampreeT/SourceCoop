@@ -204,6 +204,10 @@ DynamicDetour hkTestGroundMove;
 DynamicDetour hkStartLagCompensation;
 #endif
 
+#if defined GAMEPATCH_FILL_SERVER_INFO
+DynamicDetour hkFillServerInfo;
+#endif
+
 // ----------------------------
 // MemPatches
 // ----------------------------
