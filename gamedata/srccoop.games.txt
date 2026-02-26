@@ -31,6 +31,11 @@
 				"windows"	"PlayerInfoManager002"
 				"linux"		"PlayerInfoManager002"
 			}
+			"SVC_ServerInfo::m_szGameDir"
+			{
+				"windows"	"64"
+				"linux"		"64"
+			}
 		}
 		"Offsets"
 		{
@@ -603,6 +608,20 @@
 					{
 						"type"	"objectptr"
 						"flags"	"byref"
+					}
+				}
+			}
+			"CBaseServer::FillServerInfo"
+			{
+				"signature"	"CBaseServer::FillServerInfo"
+				"callconv"	"thiscall"
+				"return"	"void"
+				"this"		"address"
+				"arguments"
+				{
+					"info"
+					{
+						"type"	"objectptr"
 					}
 				}
 			}
@@ -1228,6 +1247,12 @@
 				// str: "script \"%s\" kicking script \"%s\" out of the queue\n"
 				"windows"	"\x55\x8B\xEC\x83\xEC\x10\x53\x8B\xD9\x8B\x8B\x2A\x2A\x00\x00"
 				"linux"		"@_ZN20CAI_ScriptedSequence11StartScriptEv"
+			}
+			"CBaseServer::FillServerInfo"	// void CBaseServer::FillServerInfo(SVC_ServerInfo&)
+			{
+				"library"	"engine"
+				// TODO: Windows signature
+				"linux"		"@_ZN11CBaseServer14FillServerInfoER14SVC_ServerInfo"
 			}
 		}
 
@@ -2006,4 +2031,3 @@
 		}
 	}
 }
-

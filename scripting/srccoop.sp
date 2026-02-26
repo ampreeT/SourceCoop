@@ -181,6 +181,10 @@ void LoadGameData()
 	LoadDHookDetour(pGameConfig, hkScriptedSequenceStartScript, "CAI_ScriptedSequence::StartScript", Hook_ScriptedSequenceStartScript);
 	#endif
 
+	#if defined GAMEPATCH_FILL_SERVER_INFO
+	LoadDHookDetour(pGameConfig, hkFillServerInfo, "CBaseServer::FillServerInfo", _, Hook_FillServerInfoPost);
+	#endif
+
 	#if defined GAMEPATCH_PREDICTED_EFFECTS
 	LoadDHookDetour(pGameConfig, hkIgnorePredictionCull, "CRecipientFilter::IgnorePredictionCull", Hook_IgnorePredictionCull);
 	LoadDHookVirtual(pGameConfig, hkDispatchEffect, "CTempEntsSystem::DispatchEffect");
@@ -294,7 +298,12 @@ public void OnPluginStart()
 	RegServerCmd("sc_mkconfigs", Command_MakeConfigs, "Creates default SourceCoop configs for maps found in the maps directory, which are missing one.\n - Note: Please disable \"SlowScriptTimeout\" in SourceMod core.cfg beforehand as this could run for long time! (Restart required after editing)\n - Format: sc_mkconfigs <MAPFILTER> [CONFIRM]\n  MAPFILTER:\n    - filters the map names to include; use * for all; supports wildcards with * such as coop_*\n  CONFIRM:\n    - [0 = dry run, 1 = live run]");
 	RegServerCmd("sc_importconfigs", Command_ImportConfigs, "Imports other formats of map configs into SourceCoop configs.\n - Note: Please disable \"SlowScriptTimeout\" in SourceMod core.cfg beforehand as this could run for long time! (Restart required after editing)\n - Format: sc_importconfigs <TYPE> <MAPFILTER> <UPDATE> <CREATE> [CONFIRM]\n  TYPE:\n    - The type of configs to import\n    - [stripper = Stripper:source]\n  MAPFILTER:\n    - filters the map names to import; use * for all; supports wildcards with * such as coop_*\n  UPDATE:\n    - [1 = allow updating SourceCoop configs that already exist, 0 = skips existing configs]\n  CREATE:\n    - [1 = attempts to create default SourceCoop config for a map if it's missing, 0 = prints a warning and skips if missing]\n  CONFIRM:\n    - [0 = dry run, 1 = live run]");
 	RegServerCmd("sc_debug_missing_weapons", Command_Debug_MissingWeapons, "Internal debug command for testing missing weapons on spawn.");
-	
+	RegAdminCmd("sc_debug_setpos", Command_DebugSetPos, ADMFLAG_ROOT, "Teleports target player(s) to an absolute position. Usage: sc_debug_setpos <player> <x> <y> <z>");
+	RegAdminCmd("sc_debug_getpos", Command_DebugGetPos, ADMFLAG_ROOT, "Gets target player(s) absolute position. Usage: sc_debug_getpos <player>");
+	RegAdminCmd("sc_debug_setang", Command_DebugSetAng, ADMFLAG_ROOT, "Sets target player(s) angles. Usage: sc_debug_setang <player> <pitch> <yaw> <roll>");
+	RegAdminCmd("sc_debug_getang", Command_DebugGetAng, ADMFLAG_ROOT, "Gets target player(s) angles. Usage: sc_debug_getang <player>");
+	RegAdminCmd("sc_debug_traceray", Command_DebugTraceRay, ADMFLAG_ROOT, "Tracerays target player(s) and reports the hit entity classname, targetname, and address. Usage: sc_debug_traceray <player>");
+
 	g_pLevelLump.Initialize();
 	CCoopSpawnSystem.Initialize();
 	CoopManager.Initialize();

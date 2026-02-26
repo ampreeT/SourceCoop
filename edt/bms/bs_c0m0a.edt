@@ -1,0 +1,44 @@
+#base "base/coop_base_sp_conversion.edt"
+
+"config"
+{
+	"campaign" "Black Mesa: Blue Shift"
+	"chapter" "Living Quarters Outbound"
+	"nextmap" "bs_c0m0b"
+	"intro_type" "fade"
+	"features"
+	{
+		"KEEP_EQUIPMENT" "0"
+		"TRANSFER_PLAYER_STATE" "0"
+	}
+	"console"
+	{
+		// prevents players falling out of trains
+		"sv_turbophysics" "~L 1"
+	}
+	"equipment"
+	{
+	}
+	"entity"
+	{
+		// delay tram intro start until SourceCoop starts the map
+		"modify"
+		{
+			"classname" "logic_auto"
+			"hammerid" "1295308"
+			"functions"
+			{
+				"delay_output" "OnMapSpawn"
+			}
+		}
+	}
+	"checkpoint"
+	{
+		"spawn"
+		{
+			"origin"	"0 0 -40"
+			"angles"	"0 90 0"
+			"followid"	"train_model"
+		}
+	}
+}
