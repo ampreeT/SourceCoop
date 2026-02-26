@@ -25,20 +25,6 @@
 	}
 	"entity"
 	{
-		// block off next map
-		"add"
-		{
-			"classname" "func_brush"
-			"rendermode" "10"
-			"functions"
-			{
-				"set_model"
-				{
-					"origin" "6812 -7040 -304"
-					"size" "8 256 224"
-				}
-			}
-		}
 		// block off previous map and open elevator doors
 		"modify"
 		{
@@ -65,6 +51,21 @@
 					"output" "OnMapSpawn"
 					"target" "lcb_to_ucb_elevator_button"
 					"input" "Lock"
+				}
+			}
+		}
+		// block off next map
+		"add"
+		{
+			"classname" "func_brush"
+			"rendermode" "10"
+			"spawnflags" "2"
+			"functions"
+			{
+				"set_model"
+				{
+					"origin" "6812 -7040 -304"
+					"size" "8 256 224"
 				}
 			}
 		}

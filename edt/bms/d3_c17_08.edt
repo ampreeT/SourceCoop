@@ -39,6 +39,7 @@
 			{
 				"classname" "func_brush"
 				"rendermode" "10"
+				"spawnflags" "2"
 			}
 		}
 		// block off ending
@@ -50,6 +51,7 @@
 			{
 				"classname" "func_brush"
 				"rendermode" "10"
+				"spawnflags" "2"
 			}
 		}
 		// remove starting weapons

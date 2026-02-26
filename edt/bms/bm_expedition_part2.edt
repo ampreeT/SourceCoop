@@ -52,6 +52,14 @@
 				"spawnflags" "2048"
 			}
 		}
+		"remove"
+		{
+			"hammerid" "875033"
+		}
+		"remove"
+		{
+			"hammerid" "723778"
+		}
 		// fix it triggers everytime someone picks up longjump
 		"add"
 		{
@@ -269,7 +277,7 @@
 		{
 			"origin"	"-20 50 0"
 			"angles"	"0 180 0"
-			"followid"	"1056057"
+			"followid"	"vehiclelift_base"
 			"triggerid"	"1104852"
 			"output"	"OnPressed"
 			"respawn"	"1"

@@ -99,8 +99,8 @@
 		{
 			"classname"	"func_brush"
 			"targetname" "elevator_block"
-			"StartDisabled" "1"
 			"spawnflags" "2"
+			"StartDisabled" "1"
 			"functions"
 			{
 				"set_model"
@@ -232,6 +232,23 @@
 				{
 					"origin" "2808 5824 534"
 					"size" "8 80 108"
+				}
+			}
+		}
+		// trigger_hurt fall to include NPCs
+		"add"
+		{
+			"classname"	"trigger_hurt"
+			"spawnflags" "3"
+			"damagetype" "32"
+			"damagecap" "1000"
+			"damage" "1000"
+			"functions"
+			{
+				"set_model"
+				{
+					"origin" "-736 1152 -1314"
+					"size" "2112 4352 192"
 				}
 			}
 		}

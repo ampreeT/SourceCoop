@@ -57,6 +57,41 @@
 		{
 			"hammerid" "514048"
 		}
+		// fix music keeps playing when rpg been picked up repeatedly
+		"add"
+		{
+			"classname"	"logic_relay"
+			"targetname" "rpg_relay"
+			"spawnflags" "1"
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnTrigger"
+					"target" "Helimusic"
+					"input"	"PlaySound"
+					"timestofire" "-1"
+				}
+			}
+		}
+		"modify"
+		{
+			"hammerid" "532845"
+			"outputs"
+			{
+				"remove"
+				{
+					"target" "Helimusic"
+				}
+				"add"
+				{
+					"output" "OnPlayerPickup"
+					"target" "rpg_relay"
+					"input"	"Trigger"
+					"timestofire" "-1"
+				}
+			}
+		}
 	}
 	"checkpoint"
 	{

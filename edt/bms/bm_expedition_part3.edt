@@ -46,6 +46,23 @@
 			{
 				"delay_output" "OnMapSpawn"
 			}
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnMapSpawn"
+					"target" "gravity"
+					"input"	"SetFallDamageScale"
+					"parameter" "0"
+					"timestofire" "-1"
+				}
+			}
+		}
+		// implement long jump landing jet features
+		"add"
+		{
+			"classname" "env_gravity"
+			"targetname" "gravity"
 		}
 	}
 	"checkpoint"
