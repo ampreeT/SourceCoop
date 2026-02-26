@@ -1,11 +1,10 @@
-// Script for workshop item 2904429204 - Surface Contamination
-
 #base "base/coop_base_sp_conversion.edt"
 
 "config"
 {
 	"campaign" "Workshop maps"
 	"chapter" "Surface Contamination"
+	"workshop" "2904429204"
 	
 	"features"
 	{

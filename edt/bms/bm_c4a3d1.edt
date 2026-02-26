@@ -1,5 +1,4 @@
 #base "base/bm_sp_campaign.edt"
-
 "config"
 {
 	"chapter" "Interloper"
@@ -98,6 +97,23 @@
 					"output" "OnTrigger"
 					"target" "info_particle_system006"
 					"input" "Start"
+				}
+			}
+		}
+		
+		//screenoverlay fixes.
+		"modify"
+		{
+			"targetname" "teleport_relay"
+			"outputs"
+			{
+				"modify"
+				{
+					"input" "StartOverlays"
+					"replace"
+					{
+						"input" "StartOverlaysAll"
+					}
 				}
 			}
 		}

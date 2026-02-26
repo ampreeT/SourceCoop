@@ -1,5 +1,3 @@
-// Script for workshop item 2775454271 - Pipeline
-
 #base "base/coop_base_sp_conversion.edt"
 
 "config"
@@ -7,6 +5,7 @@
 	"campaign" "Workshop maps"
 	"chapter" "Pipeline"
 	"intro_type" "fade"
+	"workshop" "2775454271"
 	
 	"features"
 	{

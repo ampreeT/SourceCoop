@@ -1,11 +1,10 @@
-// Script for workshop item 1641976639 - Power Shortage
-
 #base "base/coop_base_sp_conversion.edt"
 
 "config"
 {
 	"campaign" "Workshop maps"
 	"chapter" "Power Shortage"
+	"workshop" "1641976639"
 	
 	"features"
 	{

@@ -261,6 +261,16 @@ public Action OnPlayerRunCmd(int iClient, int &iButtons, int &iImpulse, float fV
 	}
 	#endif
 	
+	#if defined SRCCOOP_BLACKMESA
+	if (iWeapon != 0)
+	{
+		if (pPlayer.GetCarriedObject() != NULL_CBASEENTITY)
+		{
+			pPlayer.ForceDropOfCarriedPhysObjects(); //drop object if carrying one to avoid prediction issues
+		}
+	}
+	#endif
+	
 	return Plugin_Continue;
 }
 
@@ -627,6 +637,20 @@ public void PlayerPatch_OnClientDisconnect(CBasePlayer pPlayer)
 	if (pPlayer.IsValid())
 	{
 		ClearPackedItems(pPlayer);
+		
+		#if defined ENTPATCH_ENV_SCREENOVERLAY
+		if (g_pActiveScreenOverlay[0].IsValid())
+		{
+			//if my active screenoverlay is global screenoverlay, reset global vars so it works properly when i join again
+			g_iNextScreenOverlayIndex[pPlayer.entindex] = 0;
+			g_flNextOverlayTime[pPlayer.entindex] = 0.0;
+		}
+		else if (g_pActiveScreenOverlay[pPlayer.entindex].IsValid())
+		{
+			//if my screenoverlay isn't global but i have a local one, just stop it for me 
+			g_pActiveScreenOverlay[pPlayer.entindex].AcceptInput("StopOverlays", pPlayer, pPlayer);
+		}
+		#endif
 
 		#if defined SRCCOOP_HL2DM && defined PLAYERPATCH_SERVERSIDE_RAGDOLLS
 		// prevent hl2dm crash with serverside ragdolls
@@ -750,6 +774,12 @@ public MRESReturn Hook_PlayerChangeTeamPost(int iClient, DHookParam hParams)
 			}
 			ClearNpcMemoryForPlayer(pPlayer);
 			ItemInstancingManager.ClearAllPickedUpItemsForPlayer(pPlayer);
+				
+			//force player to drop the carried phys object or dismount used tank entity to fix controlling issues
+			pPlayer.ForceDropOfCarriedPhysObjects();
+
+			//POWER SALO said that sometimes orig code doesn't remove items itself
+			pPlayer.RemoveAllItems();
 		}
 
 		SurvivalManager.OnPlayerChangeTeam(pPlayer, iTeam);
@@ -1087,8 +1117,11 @@ static void ClearNpcMemoryForPlayer(const CBasePlayer pPlayer)
 			pEntity.GetClassname(szClassname, sizeof(szClassname));
 			if (strcmp(szClassname, "npc_abrams") == 0)
 			{
-				// causes a crash in CNPC_Abrams::AimMiniTurret2
-				continue;
+				continue; // causes a crash in CNPC_Abrams::AimMiniTurret2
+			}
+			if (strcmp(szClassname, "npc_nihilanth") == 0)
+			{	
+				continue; // always expects to have an enemy
 			}
 			if (strcmp(szClassname, "npc_human_security") == 0)
 			{

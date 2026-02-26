@@ -541,7 +541,6 @@ public void OnClientDisconnect(int client)
 	
 	CBasePlayer pPlayer = CBasePlayer(client);
 	PlayerPatch_OnClientDisconnect(pPlayer);
-	ItemInstancingManager.OnClientDisconnect(client);
 }
 
 public void OnClientDisconnect_Post(int client)
@@ -560,6 +559,7 @@ public void OnClientDisconnect_Post(int client)
 	}
 	SurvivalManager.OnClientDisconnectPost(client);
 	CoopManager.OnClientDisconnectPost(client);
+	ItemInstancingManager.OnClientDisconnectPost(client);
 	g_szSteamIds[client] = "";
 	g_bPostTeamSelect[client] = false;
 	g_iAddButtons[client] = 0;
@@ -945,7 +945,7 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 			if (pEntity.IsPickupItem())
 			{
 				if (CoopManager.IsCoopModeEnabled())
-				{
+				{					
 					SDKHook(iEntIndex, SDKHook_Spawn, Hook_Item_OnSpawn);
 					
 					#if defined ENTPATCH_BM_BATTERY_DLIGHT
@@ -1021,6 +1021,16 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 			return;
 		}
 		#endif
+		
+		#if defined ENTPATCH_ENV_SCREENOVERLAY
+		if (strcmp(szClassname, "env_screenoverlay") == 0)
+		{
+			pEntity.SetUserData("m_bIsEnabled", false); //needed to fix not working switching overlays
+			DHookEntity(hkUpdateOnRemove, false, iEntIndex, _, Hook_EnvScreenoverlayUpdateOnRemove);
+			DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_EnvScreenoverlayAcceptInput);
+			return;
+		}
+		#endif
 
 		#if defined ENTPATCH_FUNC_TRACKAUTOCHANGE
 		if (strcmp(szClassname, "func_trackautochange") == 0)
@@ -1086,6 +1096,14 @@ static Action Hook_Item_OnSpawn(int iEntIndex)
 	SDKUnhook(iEntIndex, SDKHook_Spawn, Hook_Item_OnSpawn);
 	
 	CItem pItem = CItem(iEntIndex);
+	
+	char szClassname[64];
+	GetEntityClassname(iEntIndex, szClassname, sizeof(szClassname));
+	
+	//allow instancing only for map placed syringe to avoid issues with scientist's syringe
+	if (strcmp(szClassname, "item_syringe", false) == 0 && pItem.GetHammerID() == 0)
+		return Plugin_Continue;
+	
 	if (g_bMapStarted)
 	{
 		RequestFrame(SpawnPostponedItem, pItem);

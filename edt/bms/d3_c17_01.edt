@@ -1,11 +1,10 @@
-// Script for workshop item 2244346638 - Anticitizen One
-
 #base "base/coop_base_sp_conversion.edt"
 
 "config"
 {
 	"campaign" "Workshop maps"
 	"chapter" "Anticitizen One"
+	"workshop" "2244346638"
 	
 	"intro_type" "fade"
 

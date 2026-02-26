@@ -1,11 +1,10 @@
-// Script for workshop item 1205460043 - Uncharted Territory
-
 #base "base/coop_base_sp_conversion.edt"
 
 "config"
 {
 	"campaign" "Workshop maps"
 	"chapter" "Uncharted Territory"
+	"workshop" "1205460043"
 	
 	"features"
 	{

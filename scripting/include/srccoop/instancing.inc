@@ -14,7 +14,7 @@ methodmap ItemInstancingManager
 	{
 		g_pPickedUpItems[iClient] = new StringMap();
 	}
-	public static void OnClientDisconnect(const int iClient)
+	public static void OnClientDisconnectPost(const int iClient)
 	{
 		delete g_pPickedUpItems[iClient];
 	}
@@ -67,12 +67,13 @@ methodmap ItemInstancingManager
 	}
 	public static bool HasPickedUpItem(const CBasePlayer pPlayer, const CBaseEntity pItem)
 	{
-		if (!g_pPickedUpItems[pPlayer.entindex]) // filter sourceTV
+		int iClient = pPlayer.entindex;
+		if (!g_pPickedUpItems[iClient]) // filter sourceTV
 			return false;
 		
 		char szKey[MAX_CHARS_INT(INT_MIN)];
 		IntToString(pItem.entref, szKey, sizeof(szKey));
-		return g_pPickedUpItems[pPlayer.entindex].ContainsKey(szKey);
+		return g_pPickedUpItems[iClient].ContainsKey(szKey);
 	}
 	public static void ClearPickedUpItem(const CBaseEntity pItem)
 	{
@@ -88,9 +89,14 @@ methodmap ItemInstancingManager
 	}
 	public static void ClearAllPickedUpItemsForPlayer(const CBasePlayer pPlayer)
 	{
-		if (CoopManager.IsFeatureEnabled(FT_INSTANCE_ITEMS_NORESET))
-			return;
-		g_pPickedUpItems[pPlayer.entindex].Clear();
+		if (!CoopManager.IsFeatureEnabled(FT_INSTANCE_ITEMS_NORESET))
+		{
+			int iClient = pPlayer.entindex;
+			if (g_pPickedUpItems[iClient])
+			{
+				g_pPickedUpItems[iClient].Clear();
+			}
+		}
 	}
 }
 

@@ -1,11 +1,10 @@
-// Script for workshop item 3092530359 - The Final Expedition
-
 #base "base/coop_base_sp_conversion.edt"
 
 "config"
 {
 	"campaign" "Workshop maps"
 	"chapter" "The Final Expedition"
+	"workshop" "3092530359"
 	
 	"features"
 	{

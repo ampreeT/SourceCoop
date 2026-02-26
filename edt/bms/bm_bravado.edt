@@ -1,11 +1,10 @@
-// Script for workshop item 449141574 - Bravado
-
 #base "base/coop_base_sp_conversion.edt"
 
 "config"
 {
 	"campaign" "Workshop maps"
 	"chapter" "Bravado"
+	"workshop" "449141574"
 	
 	"intro_type" "fade"
 	

@@ -222,6 +222,22 @@ methodmap CBaseEntity
 	{
 		return SetEntPropString(this.entindex, Prop_Data, "m_target", szTarget); 
 	}
+	public bool GetResponseContext(char[] szBuffer, const int iMaxLength)
+	{
+		return GetEntPropString(this.entindex, Prop_Data, "m_iszResponseContext", szBuffer, iMaxLength) != 0;
+	}
+	public int SetResponseContext(const char[] szResponseContext)
+	{
+		return SetEntPropString(this.entindex, Prop_Data, "m_iszResponseContext", szResponseContext); 
+	}
+	public int GetTextureFrameIndex()
+	{
+		return GetEntProp(this.entindex, Prop_Data, "m_iTextureFrameIndex");
+	}
+	public void SetTextureFrameIndex(const int iTextureFrameIndex)
+	{
+		SetEntProp(this.entindex, Prop_Data, "m_iTextureFrameIndex", iTextureFrameIndex);
+	}
 	public bool IsClassname(const char[] szClassname)
 	{
 		static char szBuffer[MAX_CLASSNAME];
@@ -529,7 +545,7 @@ methodmap CBaseEntity
 	}
 	public int GetModelIndex()
 	{
-		GetEntProp(this.entindex, Prop_Send, "m_nModelIndex");
+		return GetEntProp(this.entindex, Prop_Send, "m_nModelIndex");
 	}
 	public void SetModelIndex(const int nModelIndex)
 	{

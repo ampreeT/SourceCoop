@@ -1993,6 +1993,11 @@
 				"windows"	"206"
 				"linux"		"207"
 			}
+			"CBaseEntity::Touch"	// CBaseEntity::Touch(CBaseEntity*)
+			{
+				"windows"	"101"
+				"linux"		"102"
+			}
 			"CBaseCombatCharacter::IRelationType" // CBaseCombatCharacter::IRelationType(CBaseEntity*)
 			{
 				"windows"	"303"

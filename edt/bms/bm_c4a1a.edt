@@ -87,6 +87,13 @@
 						"input" "Unlock"
 					}
 				}
+				"add"
+				{
+					"output" "OnEndFollow"
+					"target" "scrnoverlay_binoc"
+					"input" "StopOverlaysAll"
+					"timestofire" "-1"
+				}
 			}
 		}
 		"modify"
@@ -95,6 +102,31 @@
 			"set"
 			{
 				"spawnflags" "12"
+			}
+		}
+		
+		// Screenoverlay fixes
+		"modify"
+		{
+			"targetname" "/^(interdimensional_relay|towerreveal_relay|wake_relay)$/"
+			"outputs"
+			{
+				"modify"
+				{
+					"input" "StopOverlays"
+					"replace"
+					{
+						"input" "StopOverlaysAll"
+					}
+				}
+				"modify"
+				{
+					"input" "StartOverlays"
+					"replace"
+					{
+						"input" "StartOverlaysAll"
+					}
+				}
 			}
 		}
 	}

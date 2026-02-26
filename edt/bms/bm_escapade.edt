@@ -1,11 +1,10 @@
-// Script for workshop item 873700194 - Escapade
-
 #base "base/coop_base_sp_conversion.edt"
 
 "config"
 {
 	"campaign" "Workshop maps"
 	"chapter" "Escapade"
+	"workshop" "873700194"
 	
 	"features"
 	{

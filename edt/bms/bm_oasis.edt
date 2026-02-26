@@ -1,11 +1,10 @@
-// Script for workshop item 1361283891 - Oasis
-
 #base "base/coop_base_sp_conversion.edt"
 
 "config"
 {
 	"campaign" "Workshop maps"
 	"chapter" "Oasis"
+	"workshop" "1361283891"
 	
 	"intro_type" "fade"
 	
