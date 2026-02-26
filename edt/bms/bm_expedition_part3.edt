@@ -1,0 +1,93 @@
+// Script for workshop item 3092530359 - The Final Expedition
+
+#base "base/coop_base_sp_conversion.edt"
+
+"config"
+{
+	"campaign" "Workshop maps"
+	"chapter" "The Final Expedition"
+	
+	"features"
+	{
+		"KEEP_EQUIPMENT" "1"
+	}
+	"equipment"
+	{
+		"item" "item_suit"
+		"item" "item_longjump"
+		"item" "item_weapon_crowbar"
+		"item" "item_weapon_glock"
+		"item" "item_weapon_357"
+		"item" "item_weapon_mp5"
+		"item" "item_weapon_shotgun"
+		"item" "item_weapon_rpg"
+		"item" "item_battery"
+		"item" "item_battery"
+		"item" "item_ammo_glock"
+		"item" "item_ammo_glock"
+		"item" "item_ammo_357"
+		"item" "item_ammo_357"
+		"item" "item_ammo_mp5"
+		"item" "item_ammo_mp5"
+		"item" "item_ammo_shotgun"
+		"item" "item_ammo_shotgun"
+		"item" "item_ammo_shotgun"
+		"item" "item_ammo_shotgun"
+		"item" "item_grenade_rpg"
+		"item" "item_grenade_rpg"
+		"item" "item_grenade_frag"
+	}
+	"entity"
+	{
+		// delay map start
+		"modify"
+		{
+			"hammerid" "50745"
+			"functions"
+			{
+				"delay_output" "OnMapSpawn"
+			}
+		}
+	}
+	"checkpoint"
+	{
+		"spawn"
+		{
+			"origin"	"9192 448 240"
+			"angles"	"0 180 0"
+		}
+		"down"
+		{
+			"origin"	"4910 -468 164"
+			"angles"	"0 180 0"
+			"triggerid"	"526598"
+			"output"	"OnBreak"
+		}
+		"coolant tank"
+		{
+			"origin"	"3784 96 -1692"
+			"angles"	"0 180 0"
+			"triggerid"	"150070"
+			"output"	"OnTrigger"
+		}
+		"elevator"
+		{
+			"origin"	"50 -70 0"
+			"angles"	"0 0 0"
+			"followid"	"102304"
+			"triggerid"	"102338"
+			"output"	"OnPressed"
+			"respawn"	"1"
+			"bringall"	"1"
+		}
+		"portal"
+		{
+			"origin"	"3020 100 356"
+			"angles"	"0 180 0"
+			"triggerid"	"334303"
+			"output"	"OnIn"
+			"bringall"	"1"
+			"delay"		"1"
+		}
+	}
+}

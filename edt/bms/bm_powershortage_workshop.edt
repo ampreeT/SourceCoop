@@ -1,0 +1,152 @@
+// Script for workshop item 1641976639 - Power Shortage
+
+#base "base/coop_base_sp_conversion.edt"
+
+"config"
+{
+	"campaign" "Workshop maps"
+	"chapter" "Power Shortage"
+	
+	"features"
+	{
+		"KEEP_EQUIPMENT" "1"
+	}
+	"equipment"
+	{
+		"item" "item_suit"
+	}
+	"entity"
+	{
+		// delay map start
+		"modify"
+		{
+			"hammerid" "94860"
+			"functions"
+			{
+				"delay_output" "OnMapSpawn"
+			}
+		}
+		"modify"
+		{
+			"hammerid" "361686"
+			"functions"
+			{
+				"delay_output" "OnMapSpawn"
+			}
+		}
+		// remove starting weapons
+		"remove"
+		{
+			"hammerid" "298498"
+		}
+		//music fix
+		"modify"
+		{
+			"targetname" "song1"
+			"set"
+			{
+				"message" "music.oc.a_intro"
+			}
+		}
+		"modify"
+		{
+			"targetname" "song2"
+			"set"
+			{
+				"message" "music.faf1"
+			}
+		}
+		//fix door button sound
+		"modify"
+		{
+			"hammerid" "204896"
+			"set"
+			{
+				"sounds" "3"
+			}
+		}
+		//fix sliding doors slide still need USE key
+		"modify"
+		{
+			"hammerid" "79652"
+			"set"
+			{
+				"spawnflags" "1024"
+			}
+		}
+		"modify"
+		{
+			"hammerid" "88663"
+			"set"
+			{
+				"spawnflags" "1024"
+			}
+		}
+		"modify"
+		{
+			"hammerid" "88670"
+			"set"
+			{
+				"spawnflags" "1024"
+			}
+		}
+		// fix gman and train inpenetrating each other
+		"modify"
+		{
+			"hammerid" "70223"
+			"set"
+			{
+				"origin" "2340 3533 -80"
+			}
+		}
+	}
+	"checkpoint"
+	{	
+		"spawn"
+		{
+			"origin"	"2560 3024 -144"
+			"angles"	"0 180 0"
+		}
+		"office"
+		{
+			"origin"	"1540 1482 -90"
+			"angles"	"0 0 0"
+			"triggerid"	"209340"
+			"output"	"OnStartTouch"
+		}
+		"vent"
+		{
+			"origin"	"46 780 36"
+			"angles"	"0 270 0"
+			"triggerid"	"94833"
+			"output"	"OnStartTouch"
+		}
+		"platform"
+		{
+			"origin"	"-1216 -1060 36"
+			"angles"	"0 90 0"
+			"triggerid"	"476993"
+			"output"	"OnStartTouch"
+			"respawn"	"1"
+		}
+		"security"
+		{
+			"origin"	"1230 -75 36"
+			"angles"	"0 90 0"
+			"triggerid"	"228266"
+			"output"	"OnPressed"
+			"bringall"	"1"
+			"delay"		"1"
+		}
+		"exit"
+		{
+			"origin"	"0 0 -100"
+			"angles"	"0 90 0"
+			"followid"	"exit_tram"
+			"triggerid"	"431587"
+			"output"	"OnTrigger"
+			"bringall"	"1"
+			"delay"		"1"
+		}
+	}
+}

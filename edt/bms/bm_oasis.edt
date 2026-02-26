@@ -1,0 +1,150 @@
+// Script for workshop item 1361283891 - Oasis
+
+#base "base/coop_base_sp_conversion.edt"
+
+"config"
+{
+	"campaign" "Workshop maps"
+	"chapter" "Oasis"
+	
+	"intro_type" "fade"
+	
+	"features"
+	{
+		"KEEP_EQUIPMENT" "1"
+	}
+	"equipment"
+	{
+		"item" "item_suit"
+		"item" "item_weapon_crowbar"
+	}
+	"entity"
+	{
+		// delay map start
+		"modify"
+		{
+			"hammerid" "43266"
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnMapSpawn"
+					"target" "intrly"
+					"input"	"Trigger"
+				}
+			}
+			"functions"
+			{
+				"delay_output" "OnMapSpawn"
+			}
+		}
+		"remove"
+		{
+			"hammerid" "234089"
+		}
+		"modify"
+		{
+			"hammerid" "234099"
+			"outputs"
+			{
+				"remove"
+				{
+					"target" "psm"
+				}
+			}
+		}
+		// remove starting weapons
+		"remove"
+		{
+			"hammerid" "1422"
+		}
+		"remove"
+		{
+			"hammerid" "1578"
+		}
+		// don't close front doors during osprey fight
+		"modify"
+		{
+			"hammerid" "266344"
+			"outputs"
+			{
+				"remove"
+				{
+					"target" "dr1a"
+				}
+				"remove"
+				{
+					"target" "dr1b"
+				}
+				"remove"
+				{
+					"target" "dr1br"
+				}
+				"remove"
+				{
+					"target" "dr1t"
+				}
+				"remove"
+				{
+					"target" "dr1innerdr"
+				}
+			}
+		}
+		"remove"
+		{
+			"hammerid" "266306"
+		}
+	}
+	"checkpoint"
+	{
+		"spawn"
+		{
+			"origin"	"-872 72 88"
+			"angles"	"0 90 0"
+		}
+		"lift"
+		{
+			"origin"	"0 0 0"
+			"angles"	"0 90 0"
+			"followid"	"e"
+			"triggerid"	"4736"
+			"output"	"OnPressed"
+			"bringall"	"1"
+		}
+		"release"
+		{
+			"origin"	"1088 -2388 164"
+			"angles"	"0 90 0"
+			"triggerid"	"93793"
+			"output"	"OnPressed"
+			"respawn"	"1"
+			"bringall"	"1"
+			"delay"		"1"
+		}
+		"office"
+		{
+			"origin"	"1844 -1535 100"
+			"angles"	"0 0 0"
+			"triggerid"	"98718"
+			"output"	"OnTrigger"
+			"portal"	"1750 -1535 100"
+		}
+		"security"
+		{
+			"origin"	"1504 -830 230"
+			"angles"	"0 180 0"
+			"triggerid"	"164049"
+			"output"	"OnTrigger"
+			"portal"	"1600 -830 230"
+		}
+		"exit"
+		{
+			"origin"	"0 0 0"
+			"angles"	"0 180 0"
+			"followid"	"endtt"
+			"triggerid"	"256047"
+			"output"	"OnTrigger"
+			"bringall"	"1"
+		}
+	}
+}

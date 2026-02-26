@@ -1,0 +1,347 @@
+// Script for workshop item 3092530359 - The Final Expedition
+
+#base "base/coop_base_sp_conversion.edt"
+
+"config"
+{
+	"campaign" "Workshop maps"
+	"chapter" "The Final Expedition"
+	
+	"intro_type" "fade"
+	
+	"features"
+	{
+		"KEEP_EQUIPMENT" "1"
+	}
+	"equipment"
+	{
+	}
+	"entity"
+	{
+		// delay map start
+		"modify"
+		{
+			"hammerid" "625648"
+			"functions"
+			{
+				"delay_output" "OnMapSpawn"
+			}
+		}
+		// fix it triggers everytime someone picks up suit
+		"add"
+		{
+			"classname"	"logic_relay"
+			"targetname" "suit_relay"
+			"spawnflags" "1"
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnTrigger"
+					"target" "suit_helmeted"
+					"input"	"TurnOff"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnTrigger"
+					"target" "suit_takeon0"
+					"input"	"PlaySound"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnTrigger"
+					"target" "mus_hevup"
+					"input"	"PlaySound"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnTrigger"
+					"target" "door_lock01_lightA"
+					"input"	"TurnOff"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnTrigger"
+					"target" "door_lock01_lightB"
+					"input"	"TurnOn"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnTrigger"
+					"target" "door_lock01_proplight"
+					"input"	"Skin"
+					"delay" "3"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnTrigger"
+					"target" "door_lock01_sprite"
+					"input"	"Color"
+					"parameter" "163 171 143"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnTrigger"
+					"target" "door_lock01_trgr"
+					"input"	"Enable"
+					"delay" "1"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnTrigger"
+					"target" "door_slide01a"
+					"input"	"Unlock"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnTrigger"
+					"target" "door_slide01b"
+					"input"	"Unlock"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnTrigger"
+					"target" "holte_vo1"
+					"input"	"PlaySound"
+					"delay" "2"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnTrigger"
+					"target" "holte_vo2"
+					"input"	"PlaySound"
+					"delay" "23"
+					"timestofire" "-1"
+				}
+			}
+		}
+		"modify"
+		{
+			"hammerid" "1250"
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnPlayerPickup"
+					"target" "suit_relay"
+					"input"	"Trigger"
+					"timestofire" "-1"
+				}
+				"remove"
+				{
+					"target" "suit_helmeted"
+				}
+				"remove"
+				{
+					"target" "suit_takeon0"
+				}
+				"remove"
+				{
+					"target" "mus_hevup"
+				}
+				"remove"
+				{
+					"target" "door_lock01_lightA"
+				}
+				"remove"
+				{
+					"target" "door_lock01_lightB"
+				}
+				"remove"
+				{
+					"target" "door_lock01_proplight"
+				}
+				"remove"
+				{
+					"target" "door_lock01_sprite"
+				}
+				"remove"
+				{
+					"target" "door_lock01_trgr"
+				}
+				"remove"
+				{
+					"target" "door_slide01a"
+				}
+				"remove"
+				{
+					"target" "door_slide01b"
+				}
+				"remove"
+				{
+					"target" "holte_vo1"
+				}
+				"remove"
+				{
+					"target" "holte_vo2"
+				}
+			}
+		}
+		// trigger_hurt fall to include NPCs
+		"modify"
+		{
+			"hammerid" "951605"
+			"set"
+			{
+				"spawnflags" "3"
+			}
+		}
+		"modify"
+		{
+			"hammerid" "951608"
+			"set"
+			{
+				"spawnflags" "3"
+			}
+		}
+		// door fixes
+		"remove"
+		{
+			"hammerid" "1295728"
+		}
+		// elevator fixes
+		"remove"
+		{
+			"hammerid" "1064192"
+		}
+		"remove"
+		{
+			"hammerid" "953596"
+		}
+		// spawnpoint fixes
+		"modify"
+		{
+			"hammerid" "949147"
+			"outputs"
+			{
+				"remove"
+				{
+					"target" "door_blast03"
+				}
+				"remove"
+				{
+					"target" "door_blast03_grns"
+				}
+				"remove"
+				{
+					"target" "door_blast03_reds"
+				}
+			}
+		}
+		"modify"
+		{
+			"hammerid" "953478"
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnPressed"
+					"target" "holte_vo5"
+					"input"	"PlaySound"
+					"delay" "4"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnPressed"
+					"target" "door_slide08a"
+					"input"	"Open"
+					"delay" "17"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnPressed"
+					"target" "door_slide08b"
+					"input"	"Open"
+					"delay" "17"
+					"timestofire" "-1"
+				}
+			}
+		}
+		"modify"
+		{
+			"hammerid" "953695"
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnTrigger"
+					"target" "door_blast03"
+					"input"	"Close"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnTrigger"
+					"target" "door_blast03"
+					"input"	"Lock"
+					"delay" "0.01"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnTrigger"
+					"target" "door_blast03_grns"
+					"input"	"HideSprite"
+					"delay" "1"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnTrigger"
+					"target" "door_blast03_reds"
+					"input"	"ShowSprite"
+					"delay" "1"
+					"timestofire" "-1"
+				}
+			}
+		}
+	}
+	"checkpoint"
+	{
+		"spawn"
+		{
+			"origin"	"3591 -798 -128"
+			"angles"	"0 120 0"
+		}
+		"crowbar"
+		{
+			"origin"	"1260 3884 -90"
+			"angles"	"0 90 0"
+			"triggerid"	"953695"
+			"output"	"OnTrigger"
+			"portal"	"1260 3790 -90"
+		}
+		"power"
+		{
+			"origin"	"2071 9536 54"
+			"angles"	"0 180 0"
+			"triggerid"	"952201"
+			"output"	"OnPressed"
+			"respawn"	"1"
+			"bringall"	"1"
+			"delay"		"2"
+		}
+		"elevator"
+		{
+			"origin"	"20 40 0"
+			"angles"	"0 270 0"
+			"followid"	"949630"
+			"triggerid"	"953478"
+			"output"	"OnPressed"
+			"bringall"	"1"
+		}
+	}
+}

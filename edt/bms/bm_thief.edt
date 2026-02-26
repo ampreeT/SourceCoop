@@ -1,0 +1,497 @@
+// Script for workshop item 474988822 - Thief
+
+#base "base/coop_base_sp_conversion.edt"
+
+"config"
+{
+	"campaign" "Workshop maps"
+	"chapter" "Thief"
+	
+	"intro_type" "fade"
+	
+	"features"
+	{
+		"KEEP_EQUIPMENT" "1"
+	}
+	"equipment"
+	{
+		"item" "item_suit"
+		"item" "item_weapon_crowbar"
+		"item" "item_weapon_frag"
+		"item" "item_weapon_frag"
+		"item" "item_weapon_frag"
+		"item" "item_weapon_frag"
+		"item" "item_weapon_frag"
+		"item" "item_weapon_frag"
+		"item" "item_weapon_frag"
+		"item" "item_weapon_frag"
+	}
+	"entity"
+	{
+		// delay map start
+		"remove"
+		{
+			"hammerid" "66428"
+		}
+		"add"
+		{
+			"classname" "logic_auto"
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnMapSpawn"
+					"target" "start_fade"
+					"input"	"Fade"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnMapSpawn"
+					"target" "intro_txt1"
+					"input"	"Display"
+					"delay" "0.5"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnMapSpawn"
+					"target" "intro_txt2"
+					"input"	"Display"
+					"delay" "6.6"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnMapSpawn"
+					"target" "intro_txt3"
+					"input"	"Display"
+					"delay" "14.3"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnMapSpawn"
+					"target" "intro_txt4"
+					"input"	"Display"
+					"delay" "21.0"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnMapSpawn"
+					"target" "intro_txt5"
+					"input"	"Display"
+					"delay" "21.5"
+					"timestofire" "-1"
+				}
+			}
+			"functions"
+			{	
+				"delay_output" "OnMapSpawn"
+			}
+		}
+		// decrease intro black screen time
+		"modify"
+		{
+			"hammerid" "66406"
+			"set"
+			{
+				"holdtime" "2"
+			}
+		}
+		// remove starting weapons
+		"remove"
+		{
+			"hammerid" "53112"
+		}
+		"remove"
+		{
+			"hammerid" "53178"
+		}
+		"remove"
+		{
+			"classname" "item_weapon_frag"
+		}
+		// end the game
+		"add"
+		{
+			"classname" "game_end"
+			"targetname" "endgame"
+		}
+		"modify"
+		{
+			"hammerid" "66167"
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnStartTouch"
+					"target" "endgame"
+					"input"	"EndGame"
+					"delay" "17"
+					"timestofire" "-1"
+				}
+			}
+		}
+		// slight game text fix
+		"modify"
+		{
+			"targetname" "sample_txt"
+			"set"
+			{
+				"channel" "2"
+			}
+		}
+		// don't close doors when alarm tripped
+		"modify"
+		{
+			"hammerid" "45139"
+			"outputs"
+			{
+				"remove"
+				{
+					"target" "lab_door1"
+				}
+				"remove"
+				{
+					"target" "lab_door2"
+				}
+				"remove"
+				{
+					"target" "lab_door3"
+				}
+				"remove"
+				{
+					"target" "lab_door4"
+				}
+				"remove"
+				{
+					"target" "lab_door6"
+				}
+			}
+		}
+		// fix secondary emergency doors
+		"modify"
+		{
+			"hammerid" "48629"
+			"set"
+			{
+				"classname" "trigger_once"
+			}
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnStartTouch"
+					"target" "lab_door5"
+					"input"	"Close"
+					"delay" "2"
+					"timestofire" "-1"
+				}
+			}
+		}
+		// picking up all data chips does nothing, can we turn its achievement into something more fun?
+		// strengthen their heart, recharge their energy, and boost their agility!
+		"modify"
+		{
+			"targetname" "data1"
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnPressed"
+					"target" "bonus_count"
+					"input"	"Add"
+					"parameter" "1"
+					"timestofire" "-1"
+				}
+			}
+		}
+		"modify"
+		{
+			"targetname" "data2"
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnPressed"
+					"target" "bonus_count"
+					"input"	"Add"
+					"parameter" "1"
+					"timestofire" "-1"
+				}
+			}
+		}
+		"modify"
+		{
+			"targetname" "data3"
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnPressed"
+					"target" "bonus_count"
+					"input"	"Add"
+					"parameter" "1"
+					"timestofire" "-1"
+				}
+			}
+		}
+		"modify"
+		{
+			"targetname" "data4"
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnPressed"
+					"target" "bonus_count"
+					"input"	"Add"
+					"parameter" "1"
+					"timestofire" "-1"
+				}
+			}
+		}
+		"modify"
+		{
+			"targetname" "data5"
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnPressed"
+					"target" "bonus_count"
+					"input"	"Add"
+					"parameter" "1"
+					"timestofire" "-1"
+				}
+			}
+		}
+		"modify"
+		{
+			"targetname" "data6"
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnPressed"
+					"target" "bonus_count"
+					"input"	"Add"
+					"parameter" "1"
+					"timestofire" "-1"
+				}
+			}
+		}
+		"modify"
+		{
+			"targetname" "data7"
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnPressed"
+					"target" "bonus_count"
+					"input"	"Add"
+					"parameter" "1"
+					"timestofire" "-1"
+				}
+			}
+		}
+		"modify"
+		{
+			"targetname" "data8"
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnPressed"
+					"target" "bonus_count"
+					"input"	"Add"
+					"parameter" "1"
+					"timestofire" "-1"
+				}
+			}
+		}
+		"add"
+		{
+			"classname" "point_clientcommand"
+			"targetname" "bonus"
+		}
+		"add"
+		{
+			"classname" "game_text"
+			"targetname" "bonus_text"
+			"x" "-1"
+			"y" "-1"
+			"color" "0 255 255"
+			"color2" "128 255 255"
+			"effect" "2"
+			"fadein" "0.1"
+			"fxtime" "0.1"
+			"holdtime" "2"
+			"channel" "3"
+			"message" "You have found all data chips. Enjoy your reward!"
+		}
+		"add"
+		{
+			"classname" "ambient_generic"
+			"targetname" "bonus_music"
+			"spawnflags" "49"
+			"message" "music.am.suittrack"	
+		}
+		"add"
+		{
+			"classname" "math_counter"
+			"targetname" "bonus_count"
+			"max" "8"
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnHitMax"
+					"target" "bonus"
+					"input"	"Command"
+					"parameter" "give item_longjump"
+					"delay" "1"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnHitMax"
+					"target" "bonus"
+					"input"	"Command"
+					"parameter" "give item_battery"
+					"delay" "1"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnHitMax"
+					"target" "bonus"
+					"input"	"Command"
+					"parameter" "give item_battery"
+					"delay" "1"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnHitMax"
+					"target" "bonus"
+					"input"	"Command"
+					"parameter" "give item_battery"
+					"delay" "1"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnHitMax"
+					"target" "bonus"
+					"input"	"Command"
+					"parameter" "give item_battery"
+					"delay" "1"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnHitMax"
+					"target" "bonus"
+					"input"	"Command"
+					"parameter" "give item_battery"
+					"delay" "1"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnHitMax"
+					"target" "bonus"
+					"input"	"Command"
+					"parameter" "give item_battery"
+					"delay" "1"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnHitMax"
+					"target" "bonus"
+					"input"	"Command"
+					"parameter" "give item_battery"
+					"delay" "1"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnHitMax"
+					"target" "!player"
+					"input"	"SetHealth"
+					"parameter" "100"
+					"delay" "1"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnHitMax"
+					"target" "bonus_music"
+					"input"	"PlaySound"
+					"delay" "3"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnHitMax"
+					"target" "bonus_text"
+					"input"	"Display"
+					"delay" "5"
+					"timestofire" "-1"
+				}
+			}
+		}
+	}
+	"checkpoint"
+	{
+		"spawn"
+		{
+			"origin"	"-896 0 36"
+			"angles"	"0 0 0"
+		}
+		"inside"
+		{
+			"origin"	"508 80 -27"
+			"angles"	"0 90 0"
+			"triggerid"	"61893"
+			"output"	"OnStartTouch"
+		}
+		"lab"
+		{
+			"origin"	"2060 44 420"
+			"angles"	"0 90 0"
+			"triggerid"	"61935"
+			"output"	"OnStartTouch"
+		}
+		"escape"
+		{
+			"origin"	"4544 -640 420"
+			"angles"	"0 180 0"
+			"triggerid"	"45139"
+			"output"	"OnStartTouch"
+			"bringall"	"1"
+			"delay"		"1"
+		}
+		"emergency"
+		{
+			"origin"	"2848 1688 420"
+			"angles"	"0 90 0"
+			"triggerid"	"48560"
+			"output"	"OnFullyOpen"
+			"portal"	"2855 670 420"
+		}
+		"vent"
+		{
+			"origin"	"2848 1688 420"
+			"angles"	"0 90 0"
+			"triggerid"	"64043"
+			"output"	"OnStartTouch"
+			"bringall"	"1"
+		}
+	}
+}

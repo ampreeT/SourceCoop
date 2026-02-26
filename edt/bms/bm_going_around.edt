@@ -40,6 +40,62 @@
 		{
 			"hammerid" "50571"
 		}
+		// delay closing first blast door
+		"remove"
+		{
+			"hammerid" "51559"
+		}
+		"modify"
+		{
+			"hammerid" "23460"
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnPressed"
+					"target" "quara_door_6"
+					"input"	"Close"
+					"timestofire" "-1"
+				}
+			}
+		}
+		// delay closing last elevator door
+		"modify"
+		{
+			"hammerid" "3191723"
+			"outputs"
+			{
+				"remove"
+				{
+					"target" "ele_door_1"
+				}
+				"remove"
+				{
+					"target" "ele_door_2"
+				}
+			}
+		}
+		"modify"
+		{
+			"hammerid" "2220264"
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnTrigger"
+					"target" "ele_door_1"
+					"input"	"Close"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnTrigger"
+					"target" "ele_door_2"
+					"input"	"Close"
+					"timestofire" "-1"
+				}
+			}
+		}
 	}
 	"checkpoint"
 	{

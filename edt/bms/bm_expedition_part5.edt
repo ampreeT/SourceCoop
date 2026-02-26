@@ -1,0 +1,404 @@
+// Script for workshop item 3092530359 - The Final Expedition
+
+#base "base/coop_base_sp_conversion.edt"
+
+"config"
+{
+	"campaign" "Workshop maps"
+	"chapter" "The Final Expedition"
+	
+	"features"
+	{
+		"KEEP_EQUIPMENT" "1"
+	}
+	"equipment"
+	{
+		"item" "item_suit"
+		"item" "item_longjump"
+		"item" "item_weapon_crowbar"
+		"item" "item_weapon_glock"
+		"item" "item_weapon_357"
+		"item" "item_weapon_mp5"
+		"item" "item_weapon_shotgun"
+		"item" "item_weapon_tau"
+		"item" "item_weapon_rpg"
+		"item" "item_battery"
+		"item" "item_battery"
+		"item" "item_battery"
+		"item" "item_battery"
+		"item" "item_ammo_357"
+		"item" "item_ammo_357"
+		"item" "item_ammo_357"
+		"item" "item_ammo_mp5"
+		"item" "item_ammo_mp5"
+		"item" "item_ammo_mp5"
+		"item" "item_ammo_shotgun"
+		"item" "item_ammo_shotgun"
+		"item" "item_ammo_shotgun"
+		"item" "item_ammo_shotgun"
+		"item" "item_ammo_shotgun"
+		"item" "item_ammo_shotgun"
+		"item" "item_ammo_shotgun"
+		"item" "item_ammo_shotgun"
+		"item" "item_ammo_energy"
+		"item" "item_grenade_rpg"
+		"item" "item_grenade_rpg"
+		"item" "item_grenade_rpg"
+		"item" "item_grenade_frag"
+		"item" "item_grenade_frag"
+	}
+	"entity"
+	{
+		// delay map start
+		"modify"
+		{
+			"hammerid" "263650"
+			"functions"
+			{
+				"delay_output" "OnMapSpawn"
+			}
+		}
+		// only activator has portal fade effect
+		"modify"
+		{
+			"hammerid" "316828"
+			"set"
+			{
+				"spawnflags" "5"
+			}
+		}
+		"modify"
+		{
+			"hammerid" "316828"
+			"set"
+			{
+				"spawnflags" "5"
+			}
+		}
+		// fixing crystal battle time!
+		// first, the main crystal part
+		"modify"
+		{
+			"hammerid" "742211"
+			"set"
+			{
+				"health" "0"
+			}
+		}
+		"modify"
+		{
+			"hammerid" "672511"
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnHitMax"
+					"target" "mastercrystal_hitbox"
+					"input"	"SetHealth"
+					"parameter" "45"
+					"timestofire" "-1"
+				}
+			}
+		}
+		"add"
+		{
+			"classname"	"logic_relay"
+			"targetname" "spawnport_relay"
+			"spawnflags" "1"
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnTrigger"
+					"target" "spawnporter_fade"
+					"input"	"Fade"
+				}
+				"add"
+				{
+					"output" "OnTrigger"
+					"target" "hub_godrays"
+					"input"	"TurnOff"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnTrigger"
+					"target" "hub_fog"
+					"input"	"TurnOn"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnTrigger"
+					"target" "mus_gauntlet1"
+					"input"	"PlaySound"
+					"delay" "3.5"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnTrigger"
+					"target" "introcam_camera2"
+					"input"	"Enable"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnTrigger"
+					"target" "introcam_camera1"
+					"input"	"Enable"
+					"delay" "4"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnTrigger"
+					"target" "introcam_camera3"
+					"input"	"Enable"
+					"delay" "7"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnTrigger"
+					"target" "introcam_target3"
+					"input"	"Open"
+					"delay" "7"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnTrigger"
+					"target" "clientcmd"
+					"input"	"Command"
+					"parameter" "cl_drawhud 0"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnTrigger"
+					"target" "clientcmd"
+					"input"	"Command"
+					"parameter" "cl_drawhud 1"
+					"delay" "10"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnTrigger"
+					"target" "hub_spawn_xontroller1b"
+					"input"	"Enable"
+					"delay" "9.8"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnTrigger"
+					"target" "hub_spawn_xontroller1a"
+					"input"	"Enable"
+					"delay" "10.4"
+					"timestofire" "-1"
+				}
+			}
+		}
+		"modify"
+		{
+			"hammerid" "263645"
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnStartTouch"
+					"target" "spawnport_relay"
+					"input"	"Trigger"
+					"timestofire" "-1"
+				}
+				"remove"
+				{
+					"target" "spawnporter_fade"
+				}
+				"remove"
+				{
+					"target" "hub_fog"
+				}
+				"remove"
+				{
+					"target" "mus_gauntlet1"
+				}
+				"remove"
+				{
+					"target" "introcam_camera2"
+				}
+				"remove"
+				{
+					"target" "introcam_camera1"
+				}
+				"remove"
+				{
+					"target" "introcam_camera3"
+				}
+				"remove"
+				{
+					"target" "introcam_target3"
+				}
+				"remove"
+				{
+					"target" "clientcmd"
+				}
+				"remove"
+				{
+					"target" "hub_spawn_xontroller1a"
+				}
+				"remove"
+				{
+					"target" "hub_spawn_xontroller1b"
+				}
+			}
+		}
+		"remove"
+		{
+			"hammerid" "754596"
+		}
+		"remove"
+		{
+			"hammerid" "925965"
+		}
+		"remove"
+		{
+			"hammerid" "754596"
+		}
+		// second, the space part
+		"modify"
+		{
+			"hammerid" "259629"
+			"outputs"
+			{
+				"remove"
+				{
+					"target" "hub_fog"
+				}
+			}
+		}
+		"modify"
+		{
+			"hammerid" "649958"
+			"outputs"
+			{
+				"remove"
+				{
+					"target" "telespawnthing_space_tele"
+				}
+				"remove"
+				{
+					"target" "telespawnthing_space_light"
+				}
+				"remove"
+				{
+					"target" "space_portal_particle"
+				}
+				"remove"
+				{
+					"target" "space_portal_particlebeams"
+				}
+			}
+		}
+		// third, the water part
+		"modify"
+		{
+			"hammerid" "259786"
+			"outputs"
+			{
+				"remove"
+				{
+					"target" "hub_fog"
+				}
+			}
+		}
+		// fourth, the tunnel part
+		"modify"
+		{
+			"hammerid" "257528"
+			"outputs"
+			{
+				"remove"
+				{
+					"target" "hub_fog"
+				}
+			}
+		}
+		// finished, lets remove all enemies
+		"modify"
+		{
+			"targetname" "hub_spawn_xontroller1a"
+			"set"
+			{
+				"NPCTargetname" "xontroller2"
+			}
+		}
+		"modify"
+		{
+			"targetname" "hub_spawn_xontroller1b"
+			"set"
+			{
+				"NPCTargetname" "xontroller2"
+			}
+		}
+		"modify"
+		{
+			"targetname" "hub_spawn_xontroller2"
+			"set"
+			{
+				"NPCTargetname" "xontroller2"
+			}
+		}
+		"modify"
+		{
+			"hammerid" "742211"
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnBreak"
+					"target" "xontroller2"
+					"input"	"Kill"
+					"timestofire" "-1"
+				}
+			}
+		}
+	}
+	"checkpoint"
+	{
+		"spawn"
+		{
+			"origin"	"-1250 3806 -1"
+			"angles"	"0 0 0"
+		}
+		"space"
+		{
+			"origin"	"-3408 -184 -24"
+			"angles"	"0 0 0"
+			"triggerid"	"292797"
+			"output"	"OnHitMax"
+			"respawn"	"1"
+			"delay"		"2"
+		}
+		"earth"
+		{
+			"origin"	"-464 -1992 -192"
+			"angles"	"0 120 0"
+			"triggerid"	"205572"
+			"output"	"OnHitMax"
+			"respawn"	"1"
+			"delay"		"2"
+		}
+		"earth"
+		{
+			"origin"	"728 575 -165"
+			"angles"	"0 210 0"
+			"triggerid"	"272871"
+			"output"	"OnHitMax"
+			"respawn"	"1"
+			"delay"		"2"
+		}
+	}
+}

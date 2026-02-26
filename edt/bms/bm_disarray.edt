@@ -1,0 +1,94 @@
+// Script for workshop item 1586650960 - Disarray
+
+#base "base/coop_base_sp_conversion.edt"
+
+"config"
+{
+	"campaign" "Workshop maps"
+	"chapter" "Disarray"
+	
+	"intro_type" "fade"
+	
+	"features"
+	{
+		"KEEP_EQUIPMENT" "1"
+	}
+	"equipment"
+	{
+		"item" "item_suit"
+	}
+	"entity"
+	{
+		// delay map start
+		"modify"
+		{
+			"hammerid" "96675"
+			"functions"
+			{
+				"delay_output" "OnMapSpawn"
+			}
+		}
+		// remove starting weapons
+		"remove"
+		{
+			"hammerid" "338390"
+		}
+		// don't close doors
+		"remove"
+		{
+			"hammerid" "362069"
+		}
+		"modify"
+		{
+			"hammerid" "532726"
+			"outputs"
+			{
+				"remove"
+				{
+					"target" "Waredoor"
+				}
+			}
+		}
+		"remove"
+		{
+			"hammerid" "625492"
+		}
+		// fixing crash due to apache aiming at Vort
+		"remove"
+		{
+			"hammerid" "514048"
+		}
+	}
+	"checkpoint"
+	{
+		"spawn"
+		{
+			"origin"	"-4352 -6208 -511"
+			"angles"	"0 270 0"
+		}
+		"outside"
+		{
+			"origin"	"-2632 -4260 36"
+			"angles"	"0 90 0"
+			"triggerid"	"509047"
+			"output"	"OnStartTouch"
+		}
+		"warehouse"
+		{
+			"origin"	"-4176 -4848 36"
+			"angles"	"0 180 0"
+			"triggerid"	"532604"
+			"output"	"OnStartTouch"
+			"respawn"	"1"
+		}
+		"control"
+		{
+			"origin"	"-4700 -2870 180"
+			"angles"	"0 0 0"
+			"triggerid"	"446685"
+			"output"	"OnPressed"
+			"bringall"	"1"
+			"delay"		"1"
+		}
+	}
+}

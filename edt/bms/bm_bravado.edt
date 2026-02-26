@@ -1,0 +1,125 @@
+// Script for workshop item 449141574 - Bravado
+
+#base "base/coop_base_sp_conversion.edt"
+
+"config"
+{
+	"campaign" "Workshop maps"
+	"chapter" "Bravado"
+	
+	"intro_type" "fade"
+	
+	"features"
+	{
+		"KEEP_EQUIPMENT" "1"
+	}
+	"equipment"
+	{
+		"item" "item_suit"
+		"item" "item_weapon_crowbar"
+	}
+	"entity"
+	{
+		// delay map start
+		"modify"
+		{
+			"hammerid" "86941"
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnMapSpawn"
+					"target" "introrly"
+					"input"	"Trigger"
+				}
+			}
+			"functions"
+			{
+				"delay_output" "OnMapSpawn"
+			}
+		}
+		"remove"
+		{
+			"hammerid" "255777"
+		}
+		"modify"
+		{
+			"hammerid" "136174"
+			"outputs"
+			{
+				"remove"
+				{
+					"target" "psm"
+				}
+			}
+		}
+		// remove starting weapons
+		"remove"
+		{
+			"hammerid" "2859"
+		}
+		"remove"
+		{
+			"hammerid" "2869"
+		}
+		// last train spawnpoint fix
+		"add"
+		{
+			"classname" "trigger_once"
+			"targetname" "tram2spawn"
+			"origin" "1216 -1792 16"
+		}
+		"modify"
+		{
+			"hammerid" "136700"
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnTrigger"
+					"target" "tram2spawn"
+					"input"	"SetParent"
+					"parameter" "tram2tt"
+					"delay" "3.1"
+					"timestofire" "-1"
+				}
+			}
+		}
+	}
+	"checkpoint"
+	{
+		"spawn"
+		{
+			"origin"	"0 0 -100"
+			"angles"	"0 0 0"
+			"followid"	"tram1tt"
+		}
+		"office"
+		{
+			"origin"	"914 2012 420"
+			"angles"	"0 180 0"
+			"triggerid"	"153129"
+			"output"	"OnTrigger"
+		}
+		"button"
+		{
+			"origin"	"-880 -110 294"
+			"angles"	"0 0 0"
+			"triggerid"	"94341"
+			"output"	"OnPressed"
+			"respawn"	"1"
+			"bringall"	"1"
+			"delay"		"1"
+		}
+		"exit"
+		{
+			"origin"	"0 0 -100"
+			"angles"	"0 180 0"
+			"followid"	"tram2spawn"
+			"triggerid"	"136878"
+			"output"	"OnTrigger"
+			"bringall"	"1"
+			"delay"		"1"
+		}
+	}
+}

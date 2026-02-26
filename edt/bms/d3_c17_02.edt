@@ -1,0 +1,76 @@
+// Script for workshop item 2244346638 - Anticitizen One
+
+#base "base/coop_base_sp_conversion.edt"
+
+"config"
+{
+	"campaign" "Workshop maps"
+	"chapter" "Anticitizen One"
+	
+	"features"
+	{
+		"KEEP_EQUIPMENT" "1"
+	}
+	"equipment"
+	{
+		"item" "item_suit"
+		"item" "item_weapon_crowbar"
+		"item" "item_weapon_glock"
+		"item" "item_weapon_357"
+		"item" "item_weapon_mp5"
+		"item" "item_weapon_shotgun"
+		"item" "item_weapon_crossbow"
+		"item" "item_weapon_rpg"
+		"item" "item_weapon_tau"
+		"item" "item_weapon_gluon"
+		"item" "item_weapon_hivehand"
+		"item" "item_weapon_frag"
+		"item" "item_weapon_satchel"
+		"item" "item_weapon_tripmine"
+		"item" "item_weapon_snark"
+	}
+	"entity"
+	{
+		// block off previous map
+		"modify"
+		{
+			"classname" "trigger_changelevel"
+			"map" "d3_c17_01"
+			"set"
+			{
+				"classname" "func_brush"
+				"rendermode" "10"
+			}
+		}
+		// block off next map
+		"add"
+		{
+			"classname" "func_brush"
+			"rendermode" "10"
+			"functions"
+			{
+				"set_model"
+				{
+					"origin" "-5176 -4496 64"
+					"size" "72 32 128"
+				}
+			}
+		}
+		// remove starting weapons
+		"remove"
+		{
+			"targetname" "/^(global_newgame_spawner_suit|global_newgame_spawner_shotgun|global_newgame_spawner_smg1|global_newgame_spawner_357|global_newgame_spawner_crossbow|global_newgame_spawner_bugbait|global_newgame_spawner_rpg|global_newgame_spawner_ammo|global_newgame_spawner_pistol|global_newgame_spawner_crowbar|global_newgame_spawner_physcannon)$/"
+		}
+		"remove"
+		{
+			"hammerid" "13518"
+		}
+	}
+	"checkpoint"
+	{
+		"spawn"
+		{
+			"origin"	"-10507 -5313 -26"
+			"angles"	"0 0 0"
+		}
+}

@@ -1,0 +1,283 @@
+// Script for workshop item 550171554 - Communications Detour
+
+#base "base/coop_base_sp_conversion.edt"
+
+"config"
+{
+	"campaign" "Workshop maps"
+	"chapter" "Communications Detour"
+	
+	"intro_type" "fade"
+	
+	"features"
+	{
+		"KEEP_EQUIPMENT" "1"
+	}
+	"equipment"
+	{
+		"item" "item_suit"
+	}
+	"entity"
+	{
+		// delay map start
+		"modify"
+		{
+			"hammerid" "118961"
+			"functions"
+			{
+				"delay_output" "OnMapSpawn"
+			}
+		}
+		"modify"
+		{
+			"hammerid" "359869"
+			"functions"
+			{
+				"delay_output" "OnMapSpawn"
+			}
+		}
+		"modify"
+		{
+			"hammerid" "388665"
+			"functions"
+			{
+				"delay_output" "OnMapSpawn"
+			}
+		}
+		// remove starting weapons
+		"remove"
+		{
+			"hammerid" "361654"
+		}
+		//music fix
+		"modify"
+		{
+			"targetname" "entrance_music"
+			"set"
+			{
+				"message" "music.bms.mscl_amb2"
+				"spawnflags" "49"
+			}
+		}
+		"modify"
+		{
+			"targetname" "boss_music"
+			"set"
+			{
+				"message" "music.st.4"
+				"spawnflags" "49"
+			}
+		}
+		"modify"
+		{
+			"targetname" "end_credits_music"
+			"set"
+			{
+				"message" "music.bms.endcredits"
+				"spawnflags" "49"
+			}
+		}
+		"modify"
+		{
+			"targetname" "grunt_fight_music"
+			"set"
+			{
+				"message" "music.oar.c_rocketpadbattle"
+				"spawnflags" "49"
+			}
+		}
+		"modify"
+		{
+			"targetname" "intro_sound"
+			"set"
+			{
+				"message" "music.c.opening_ambience"
+				"spawnflags" "49"
+			}
+		}
+		// lift block
+		"add"
+		{
+			"classname"	"func_brush"
+			"targetname" "elevator_block"
+			"StartDisabled" "1"
+			"spawnflags" "2"
+			"functions"
+			{
+				"set_model"
+				{
+					"origin" "896 6152 152"
+					"size" "104 16 112"
+				}
+			}
+		}
+		"modify"
+		{
+			"hammerid" "115751"
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnPressed"
+					"target" "elevator_block"
+					"input"	"Enable"
+					"timestofire" "-1"
+				}
+			}
+		}
+		// speed up long intro logo
+		"modify"
+		{
+			"hammerid" "388569"
+			"set"
+			{
+				"startspeed" "16"
+			}
+		}
+		"modify"
+		{
+			"hammerid" "388585"
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnPass"
+					"target" "introfnlfad"
+					"input"	"Fade"
+					"delay" "10"
+					"timestofire" "-1"
+				}
+				"modify"
+				{
+					"target" "intro_speed"
+					"replace"
+					{
+						"delay" "13"
+					}
+				}
+				"modify"
+				{
+					"target" "view_cont"
+					"replace"
+					{
+						"delay" "13"
+					}
+				}
+				"modify"
+				{
+					"target" "fade2"
+					"replace"
+					{
+						"delay" "13"
+					}
+				}
+			}
+		}
+		// just end it without touching brush trigger
+		"remove"
+		{
+			"hammerid" "402603"
+		}
+		"modify"
+		{
+			"hammerid" "402518"
+			"outputs"
+			{
+				"remove"
+				{
+					"target" "fnl_trig"
+				}
+				"add"
+				{
+					"output" "OnPressed"
+					"target" "fnl_fade"
+					"input"	"Fade"
+					"delay" "2"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnPressed"
+					"target" "end_credits_music"
+					"input"	"PlaySound"
+					"delay" "4"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnPressed"
+					"target" "fnl_txt"
+					"input"	"Display"
+					"delay" "7"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnPressed"
+					"target" "menu"
+					"input"	"Command"
+					"parameter" "startupmenu force"
+					"delay" "22"
+					"timestofire" "-1"
+				}
+			}
+		}
+		// fix doors that clipped through
+		"add"
+		{
+			"classname" "func_brush"
+			"spawnflags" "2"
+			"functions"
+			{
+				"set_model"
+				{
+					"origin" "2808 5824 534"
+					"size" "8 80 108"
+				}
+			}
+		}
+	}
+	"checkpoint"
+	{
+		"spawn"
+		{
+			"origin"	"-1311 -728 0"
+			"angles"	"0 0 0"
+		}
+		"inside"
+		{
+			"origin"	"1016 3406 132"
+			"angles"	"0 180 0"
+			"triggerid"	"313571"
+			"output"	"OnTrigger"
+		}
+		"lift"
+		{
+			"origin"	"0 0 10"
+			"angles"	"0 270 0"
+			"followid"	"elevator_train"
+			"triggerid"	"115751"
+			"output"	"OnPressed"
+			"respawn"	"1"
+			"bringall"	"1"
+		}
+		"apache"
+		{
+			"origin"	"2114 6336 1190"
+			"angles"	"0 0 0"
+			"triggerid"	"203708"
+			"output"	"OnPressed"
+			"bringall"	"1"
+			"delay"		"1"
+		}
+		"end"
+		{
+			"origin"	"-1326 -900 36"
+			"angles"	"0 90 0"
+			"triggerid"	"402518"
+			"output"	"OnPressed"
+			"bringall"	"1"
+			"delay"		"1"
+		}
+	}
+}
