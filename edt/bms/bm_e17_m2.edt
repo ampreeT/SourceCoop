@@ -36,6 +36,15 @@
 			{
 				"classname" "func_brush"
 				"rendermode" "10"
+				"spawnflags" "2"
+			}
+		}
+		"modify"
+		{
+			"hammerid" "186"
+			"set"
+			{
+				"spawnflags" "3840"
 			}
 		}
 		// block off next map
@@ -43,6 +52,7 @@
 		{
 			"classname" "func_brush"
 			"rendermode" "10"
+			"spawnflags" "2"
 			"functions"
 			{
 				"set_model"

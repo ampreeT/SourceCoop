@@ -49,6 +49,7 @@
 			{
 				"classname" "func_brush"
 				"rendermode" "10"
+				"spawnflags" "2"
 			}
 		}
 		// siren follows cargo
@@ -360,9 +361,26 @@
 						"remove" {}
 					}
 				}
+				// block off next map
+				"modify"
+				{
+					"hammerid" "1020168"
+					"set"
+					{
+						"spawnflags" "2048"
+					}
+				}
+				"modify"
+				{
+					"hammerid" "1020163"
+					"set"
+					{
+						"spawnflags" "2048"
+					}
+				}
 			}
 		}
-	}		
+	}
 	"checkpoint"
 	{
 		#if

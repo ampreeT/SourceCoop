@@ -61,6 +61,18 @@
 		{
 			"hammerid" "2869"
 		}
+		// don't close doors
+		"modify"
+		{
+			"hammerid" "5250"
+			"outputs"
+			{
+				"remove"
+				{
+					"target" "odr1rly"
+				}
+			}
+		}
 		// last train spawnpoint fix
 		"add"
 		{
