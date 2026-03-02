@@ -256,11 +256,6 @@
 				}
 			}
 		}
-		// env_screenoverlay shows to all players once activated - remove it until a solution is found
-		"delete"
-		{
-			"classname" "env_screenoverlay"
-		}
 		// we never want player_speedmod to suppress HUD in MP as this hides chat and even the main menu
 		"modify"
 		{
