@@ -205,7 +205,7 @@ DynamicDetour hkStartLagCompensation;
 #endif
 
 #if defined ENTPATCH_BM_SNARK
-DynamicHook hkIsBaseNPCIsValidEnemy;
+DynamicHook hkIsValidEnemy;
 #endif
 
 // ----------------------------

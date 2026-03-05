@@ -129,7 +129,7 @@ void LoadGameData()
 	#endif
 	
 	#if defined ENTPATCH_BM_SNARK
-	LoadDHookVirtual(pGameConfig, hkIsBaseNPCIsValidEnemy, "CAI_BaseNPC::IsValidEnemy");
+	LoadDHookVirtual(pGameConfig, hkIsValidEnemy, "CAI_BaseNPC::IsValidEnemy");
 	#endif
 	
 	#if defined PLAYERPATCH_SUIT_SOUNDS
@@ -644,8 +644,8 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 		#endif
 
 		#if defined SRCCOOP_BLACKMESA
-
-		if (strncmp(szClassname, "npc_human_scientist", 19) == 0)
+		if (strncmp(szClassname, "npc_human_scientist", 19) == 0 || strcmp(szClassname, "npc_human_security") == 0 ||
+			strcmp(szClassname, "npc_human_eli") == 0 || strcmp(szClassname, "npc_human_kleiner") == 0 || strcmp(szClassname, "npc_gman") == 0)
 		{
 			#if defined ENTPATCH_PLAYER_ALLY
 			DHookEntity(hkIsPlayerAlly, false, iEntIndex, _, Hook_IsPlayerAlly);
@@ -655,24 +655,12 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 			DHookEntity(hkIsNavigationUrgent, false, iEntIndex, _, Hook_IsNavigationUrgent);
 			#endif
 
-			return;
-		}
-
-		#if defined ENTPATCH_PLAYER_ALLY
-		if (strcmp(szClassname, "npc_human_security") == 0)
-		{
-			#if defined ENTPATCH_PLAYER_ALLY
-			DHookEntity(hkIsPlayerAlly, false, iEntIndex, _, Hook_IsPlayerAlly);
-			#endif
-
-			#if defined ENTPATCH_NAVIGATION_URGENT
-			DHookEntity(hkIsNavigationUrgent, false, iEntIndex, _, Hook_IsNavigationUrgent);
+			#if defined ENTPATCH_BM_SNARK
+			DHookEntity(hkIsValidEnemy, false, iEntIndex, _, Hook_PlayerCompanionIsValidEnemy);
 			#endif
 
 			return;
 		}
-		#endif
-		
 		#endif // SRCCOOP_BLACKMESA
 
 		#if defined ENTPATCH_BM_XENTURRET
@@ -730,6 +718,7 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 		{
 			RequestFrame(Hook_Snark_OnCreated, iEntIndex);
 			DHookEntity(hkIsBaseNPCIsValidEnemy, false, iEntIndex, _, Hook_SnarkIsValidEnemy);
+			DHookEntity(hkIsPlayerAlly, false, iEntIndex, _, Hook_SnarkIsPlayerAlly);
 			return;
 		}
 		#endif
