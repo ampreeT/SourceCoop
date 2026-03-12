@@ -187,6 +187,10 @@ void LoadGameData()
 	if (hkDispatchEffect.HookRaw(Hook_Pre, IServerTools.Get().GetTempEntsSystem(), Hook_DispatchEffect) == INVALID_HOOK_ID)
 		SetFailState("Could not hook CTempEntsSystem::DispatchEffect");
 	#endif
+	
+	#if defined SRCCOOP_BLACKMESA //todo: hl2dm support
+	LoadDHookDetour(pGameConfig, hkKeyValue, "CBaseEntity::KeyValue", Hook_BaseEntityKeyValue);
+	#endif
 
 	#if defined SRCCOOP_BLACKMESA
 	if (g_serverOS == OS_Linux)
@@ -844,6 +848,14 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 		if (strcmp(szClassname, "env_credits") == 0)
 		{
 			DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_EnvCreditsAcceptInput);
+			return;
+		}
+		#endif
+		
+		#if defined ENTPATCH_BM_CASCADELIGHT
+		if (strcmp(szClassname, "env_cascade_light") == 0)
+		{
+			DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_EnvCascadeLightAcceptInput);
 			return;
 		}
 		#endif

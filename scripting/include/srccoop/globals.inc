@@ -59,6 +59,10 @@ DynamicHook hkEvent_Killed;
 DynamicHook hkKeyValue_char;
 
 #if defined SRCCOOP_BLACKMESA
+DynamicDetour hkKeyValue;
+#endif
+
+#if defined SRCCOOP_BLACKMESA
 DynamicDetour hkGiveDefaultItems;
 #endif
 

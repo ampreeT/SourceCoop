@@ -169,6 +169,83 @@ public MRESReturn Hook_IsMultiplayer(DHookReturn hReturn)
 }
 
 //------------------------------------------------------
+// CBaseEntity - KeyValue(char)
+// Adds support for custom keyvalues and fixes for already existing
+//------------------------------------------------------
+public MRESReturn Hook_BaseEntityKeyValue(int iEntIndex, DHookReturn hReturn, DHookParam hParams)
+{
+	if (g_bTempDontHookEnts)
+	{
+		DHookSetReturn(hReturn, true);
+		return MRES_Ignored;
+	}
+
+	CBaseEntity pEntity = CBaseEntity(iEntIndex);
+	if (pEntity == NULL_CBASEENTITY)
+	{
+		DHookSetReturn(hReturn, true);
+		return MRES_Ignored;
+	}
+
+	bool bIsNPC = pEntity.IsNPC();
+
+	char szClassname[64];
+	GetEntityClassname(iEntIndex, szClassname, sizeof(szClassname));
+
+	if (bIsNPC)
+	{
+		static char szKey[MAX_FORMAT];
+		DHookGetParamString(hParams, 1, szKey, sizeof(szKey));
+
+		#if defined ENTPATCH_CUSTOM_NPC_MODELS
+		//note: it may not work on npcs with character manifest support due to timing issues
+		if (StrEqual(szKey, "custommodel"))
+		{
+			static char szVal[MAX_VALUE];
+			DHookGetParamString(hParams, 2, szVal, sizeof(szVal));
+			int iModelIndex = PrecacheModel(szVal);
+			if (iModelIndex)
+			{
+				pEntity.SetModel(szVal);
+				pEntity.SetModelIndex(iModelIndex);
+				DHookEntity(hkSetModel, false, iEntIndex, _, BaseNPCSetModelBlock);
+			}
+		}
+		#endif
+
+		return MRES_Ignored;
+	}
+	else // !isNPC 
+	{
+		#if defined ENTPATCH_BM_CASCADELIGHT
+		if (strcmp(szClassname, "env_cascade_light", false) == 0 && GetConVarBool(g_ConvarNecroForceAutoModeForCSM))
+		{
+			char szKeyName[MAX_FORMAT];
+			DHookGetParamString(hParams, 1, szKeyName, sizeof(szKeyName));
+
+			//check if it wants manual mode to prevent broken csm in mp
+			//it's important to fix here because resetting or recreating doesn't work and client will always use manual mode even if false for cascade light ent
+			if (StrEqual(szKeyName, "CSMVolumeMode", false))
+			{
+				char szValue[MAX_VALUE];
+				DHookGetParamString(hParams, 2, szValue, sizeof(szValue));
+				if (StrEqual(szValue, "1", false))
+				{
+					//HACK! This is illegal (although doesn't cause any issues), but also the only consistent way,
+					//returning false/true doesn't work consistently (tones of tests was done)
+					return MRES_Supercede;
+				}
+			}
+
+			return MRES_Ignored;
+		}
+		#endif
+	}
+
+	return MRES_Ignored;
+}
+
+//------------------------------------------------------
 // CAI_BaseNPC - KeyValue(char)
 // Lets mappers use custom npc models
 // (Using keyvalues proves most reliable against BM overriding models with its character manifest file before Spawn())
