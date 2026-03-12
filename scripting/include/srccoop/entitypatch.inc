@@ -218,7 +218,7 @@ public MRESReturn Hook_BaseEntityKeyValue(int iEntIndex, DHookReturn hReturn, DH
 	else // !isNPC 
 	{
 		#if defined ENTPATCH_BM_CASCADELIGHT
-		if (strcmp(szClassname, "env_cascade_light", false) == 0 && GetConVarBool(g_ConvarNecroForceAutoModeForCSM))
+		if (strcmp(szClassname, "env_cascade_light", false) == 0)
 		{
 			char szKeyName[MAX_FORMAT];
 			DHookGetParamString(hParams, 1, szKeyName, sizeof(szKeyName));
