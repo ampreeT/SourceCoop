@@ -931,6 +931,39 @@ public MRESReturn Hook_EnvCreditsAcceptInput(int _this, DHookReturn hReturn, DHo
 }
 
 //------------------------------------------------------
+// env_cascade_light
+// block SetCSMVolume* inputs to prevent heavy console spam "YOU SH ALL BURN IN HELL" msg (while we have no client code XD)
+//------------------------------------------------------
+public MRESReturn Hook_EnvCascadeLightAcceptInput(int _this, DHookReturn hReturn, DHookParam hParams)
+{
+	if (!DHookIsNullParam(hParams, 1))
+	{
+		char szInputType[MAX_FORMAT];
+		DHookGetParamString(hParams, 1, szInputType, sizeof(szInputType));
+		
+		if (strcmp(szInputType, "SetCSMVolume", false) == 0)
+		{
+            DHookSetReturn(hReturn, true);
+			return MRES_Supercede;
+        }
+
+        if (strcmp(szInputType, "SetCSMVolumeToSceneBounds", false) == 0)
+		{
+            DHookSetReturn(hReturn, true);
+			return MRES_Supercede;
+        }
+
+        if (strcmp(szInputType, "SetCSMVolumeViaCSMVolumeEntity", false) == 0)
+		{
+            DHookSetReturn(hReturn, true);
+			return MRES_Supercede;
+        }
+    }
+
+    return MRES_Ignored;
+}
+
+//------------------------------------------------------
 // env_sprite
 // fix m_flGlowProxySize out of bounds console spam
 //------------------------------------------------------
