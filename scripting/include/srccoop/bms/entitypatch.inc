@@ -85,7 +85,7 @@ public MRESReturn Hook_UpdateEnemyMemory(int _this, DHookReturn hReturn, DHookPa
 //------------------------------------------------------
 bool IsEnemyFriendlySnark(int _this, DHookParam hParams)
 {
-	if (!g_ConvarNecroCoopSnarks.BoolValue || DHookIsNullParam(hParams, 1) ||  mp_friendlyfire.BoolValue)
+	if (DHookIsNullParam(hParams, 1) ||  mp_friendlyfire.BoolValue)
         return false;
 
     CAI_BaseNPC pEnemy = CAI_BaseNPC(DHookGetParam(hParams, 1));
