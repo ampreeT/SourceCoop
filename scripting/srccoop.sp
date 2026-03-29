@@ -130,6 +130,7 @@ void LoadGameData()
 	
 	#if defined ENTPATCH_BM_SNARK
 	LoadDHookVirtual(pGameConfig, hkIsValidEnemy, "CAI_BaseNPC::IsValidEnemy");
+	LoadDHookVirtual(pGameConfig, hkUpdateEnemyMemory, "CAI_BaseNPC::UpdateEnemyMemory");
 	#endif
 	
 	#if defined PLAYERPATCH_SUIT_SOUNDS
@@ -657,6 +658,7 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 
 			#if defined ENTPATCH_BM_SNARK
 			DHookEntity(hkIsValidEnemy, false, iEntIndex, _, Hook_PlayerCompanionIsValidEnemy);
+			DHookEntity(hkUpdateEnemyMemory, false, iEntIndex, _, Hook_UpdateEnemyMemory);
 			#endif
 
 			return;
@@ -717,6 +719,7 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 		if (strcmp(szClassname, "npc_snark") == 0 && CoopManager.IsCoopModeEnabled())
 		{
 			RequestFrame(Hook_Snark_OnCreated, iEntIndex);
+			SDKHook(iEntIndex, SDKHook_SpawnPost, Hook_SnarkSpawnPost);
 			DHookEntity(hkIsValidEnemy, false, iEntIndex, _, Hook_SnarkIsValidEnemy);
 			DHookEntity(hkIsPlayerAlly, false, iEntIndex, _, Hook_SnarkIsPlayerAlly);
 			return;

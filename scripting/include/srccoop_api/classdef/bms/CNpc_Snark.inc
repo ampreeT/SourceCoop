@@ -22,13 +22,13 @@ methodmap CNpc_Snark < CBaseCombatCharacter
 		SetEntPropFloat(this.entindex, Prop_Data, "m_fLifeTime", flLifeTime);
 	}
 
-	public int GetSnarkOwner()
+	public CBaseEntity GetSnarkOwner()
 	{
-		return GetEntPropEnt(this.entindex, Prop_Data, "m_hOwner");
+		return CBaseEntity(GetEntPropEnt(this.entindex, Prop_Data, "m_hOwner"));
 	}
 
-	public void SetSnarkOwner(int iEntIndex)
+	public void SetSnarkOwner(const CBaseEntity pOwner)
 	{
-		SetEntPropEnt(this.entindex, Prop_Data, "m_hOwner", iEntIndex);
+		SetEntPropEnt(this.entindex, Prop_Data, "m_hOwner", pOwner.entindex);
 	}
 }
