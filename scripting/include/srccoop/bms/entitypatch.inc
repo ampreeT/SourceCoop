@@ -338,13 +338,15 @@ public MRESReturn Hook_SnarkIsPlayerAlly(int _this, DHookReturn hReturn, DHookPa
     if (!pPlayer.IsValid())
         return MRES_Ignored;
 
-    CBlackMesaPlayer pOwner = CBlackMesaPlayer(CNpc_Snark(_this).GetSnarkOwner());
+    CBaseEntity pOwner = CNpc_Snark(_this).GetSnarkOwner();
 
     if (!pOwner.IsValid())
         return MRES_Ignored;
+		
+	CBlackMesaPlayer pPlayerOwner = CBlackMesaPlayer(pOwner);
     
     //i'm ally if this player is my owner
-    if (pPlayer == pOwner)
+    if (pPlayerOwner.IsValid() && pOwner.IsPlayer() && pPlayer == pOwner)
 	{
 		DHookSetReturn(hReturn, true);
 		return MRES_Supercede;
