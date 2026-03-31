@@ -52,10 +52,30 @@
 		{
 			"hammerid" "625492"
 		}
-		// fixing crash due to apache aiming at Vort
-		"remove"
+		// fixing tank doesn't gets destroyed due to increase HP when more players join
+		"modify"
+		{
+			"hammerid" "379902"
+			"outputs"
+			{
+				"modify"
+				{
+					"target" "Tank1"
+					"replace"
+					{
+						"input" "Break"
+					}
+				}
+			}
+		}
+		// fixing client crash due to apache aiming at an invisible bullseye
+		"modify"
 		{
 			"hammerid" "514048"
+			"set"
+			{
+				"goalent" ""
+			}
 		}
 		// fix music keeps playing when rpg been picked up repeatedly
 		"add"

@@ -64,6 +64,30 @@
 				"delay_output" "OnMapSpawn"
 			}
 		}
+		// screenoverlay fixes
+		"modify"
+		{
+			"hammerid" "4511"
+			"outputs"
+			{
+				"modify"
+				{
+					"input" "StartOverlays"
+					"replace"
+					{
+						"input" "StartOverlaysAll"
+					}
+				}
+				"modify"
+				{
+					"input" "StopOverlays"
+					"replace"
+					{
+						"input" "StopOverlaysAll"
+					}
+				}
+			}
+		}
 		// remove starting weapons
 		"remove"
 		{

@@ -48,7 +48,7 @@
 		"remove"
 		{
 			"hammerid" "5331322"
-		}		
+		}
 		"add"
 		{
 			"classname" "trigger_multiple"

@@ -59,6 +59,11 @@
 		{
 			"targetname" "player_spawn_items"
 		}
+		// remove fence because you already can go through it
+		"remove"
+		{
+			"hammerid" "10869"
+		}
 		// end the game
 		"add"
 		{

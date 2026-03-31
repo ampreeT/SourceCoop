@@ -286,14 +286,12 @@
 			"bringall"	"1"
 			"delay"		"1"
 		}
-		"end"
+		"return"
 		{
-			"origin"	"-1326 -900 36"
-			"angles"	"0 90 0"
-			"triggerid"	"402518"
-			"output"	"OnPressed"
-			"bringall"	"1"
-			"delay"		"1"
+			"origin"	"348 2243 132"
+			"angles"	"0 180 0"
+			"triggerid"	"445802"
+			"output"	"OnTrigger"
 		}
 	}
 }
