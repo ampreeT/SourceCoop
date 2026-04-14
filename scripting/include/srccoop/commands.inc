@@ -267,6 +267,288 @@ public Action Command_Debug_MissingWeapons(int iArgs)
 	return Plugin_Handled;
 }
 
+public Action Command_DebugSetPos(int iClient, int iArgs)
+{
+	if (iArgs != 4)
+	{
+		if (iClient)
+			MsgReply(iClient, "Usage: sc_debug_setpos <player> <x> <y> <z>");
+		else
+			MsgSrv("Usage: sc_debug_setpos <player> <x> <y> <z>");
+		return Plugin_Handled;
+	}
+	
+	char szTarget[65];
+	GetCmdArg(1, szTarget, sizeof(szTarget));
+
+	float vecPos[3];
+	vecPos[0] = GetCmdArgFloat(2);
+	vecPos[1] = GetCmdArgFloat(3);
+	vecPos[2] = GetCmdArgFloat(4);
+
+	char szTargetName[MAX_TARGET_LENGTH];
+	int iTargets[MAXPLAYERS], iTargetCount;
+	bool bIsML;
+	
+	if ((iTargetCount = ProcessTargetString(
+		szTarget,
+		iClient,
+		iTargets,
+		sizeof(iTargets),
+		COMMAND_FILTER_NO_BOTS,
+		szTargetName,
+		sizeof(szTargetName),
+		bIsML)) <= 0)
+	{
+		ReplyToTargetError(iClient, iTargetCount);
+		return Plugin_Handled;
+	}
+
+	for (int i = 0; i < iTargetCount; ++i)
+	{
+		int iTarget = iTargets[i];
+		CBasePlayer pTarget = CBasePlayer(iTarget);
+		if (pTarget.IsValid())
+		{
+			pTarget.Teleport(vecPos, NULL_VECTOR, NULL_VECTOR);
+		}
+	}
+	
+	if (iClient)
+		MsgReply(iClient, "Teleported %s to %.2f %.2f %.2f.", szTargetName, vecPos[0], vecPos[1], vecPos[2]);
+	else
+		MsgSrv("Teleported %s to %.2f %.2f %.2f.", szTargetName, vecPos[0], vecPos[1], vecPos[2]);
+
+	return Plugin_Handled;
+}
+
+public Action Command_DebugSetAng(int iClient, int iArgs)
+{
+	if (iArgs != 4)
+	{
+		if (iClient)
+			MsgReply(iClient, "Usage: sc_debug_setang <player> <pitch> <yaw> <roll>");
+		else
+			MsgSrv("Usage: sc_debug_setang <player> <pitch> <yaw> <roll>");
+		return Plugin_Handled;
+	}
+	
+	char szTarget[65];
+	GetCmdArg(1, szTarget, sizeof(szTarget));
+
+	float vec3Angle[3];
+	vec3Angle[0] = GetCmdArgFloat(2);
+	vec3Angle[1] = GetCmdArgFloat(3);
+	vec3Angle[2] = GetCmdArgFloat(4);
+
+	char szTargetName[MAX_TARGET_LENGTH];
+	int iTargets[MAXPLAYERS], iTargetCount;
+	bool bIsML;
+	
+	if ((iTargetCount = ProcessTargetString(
+		szTarget,
+		iClient,
+		iTargets,
+		sizeof(iTargets),
+		COMMAND_FILTER_NO_BOTS,
+		szTargetName,
+		sizeof(szTargetName),
+		bIsML)) <= 0)
+	{
+		ReplyToTargetError(iClient, iTargetCount);
+		return Plugin_Handled;
+	}
+
+	for (int i = 0; i < iTargetCount; ++i)
+	{
+		int iTarget = iTargets[i];
+		CBasePlayer pTarget = CBasePlayer(iTarget);
+		if (pTarget.IsValid())
+		{
+			pTarget.Teleport(NULL_VECTOR, vec3Angle, NULL_VECTOR);
+		}
+	}
+	
+	if (iClient)
+		MsgReply(iClient, "Set %s angles to %.2f %.2f %.2f.", szTargetName, vec3Angle[0], vec3Angle[1], vec3Angle[2]);
+	else
+		MsgSrv("Set %s angles to %.2f %.2f %.2f.", szTargetName, vec3Angle[0], vec3Angle[1], vec3Angle[2]);
+
+	return Plugin_Handled;
+}
+
+public Action Command_DebugGetPos(int iClient, int iArgs)
+{
+	if (iArgs != 1)
+	{
+		if (iClient)
+			MsgReply(iClient, "Usage: sc_debug_getpos <player>");
+		else
+			MsgSrv("Usage: sc_debug_getpos <player>");
+		return Plugin_Handled;
+	}
+	
+	char szTarget[65];
+	GetCmdArg(1, szTarget, sizeof(szTarget));
+
+	char szTargetName[MAX_TARGET_LENGTH];
+	int iTargets[MAXPLAYERS], iTargetCount;
+	bool bIsML;
+
+	if ((iTargetCount = ProcessTargetString(
+		szTarget,
+		iClient,
+		iTargets,
+		sizeof(iTargets),
+		COMMAND_FILTER_NO_BOTS,
+		szTargetName,
+		sizeof(szTargetName),
+		bIsML)) <= 0)
+	{
+		ReplyToTargetError(iClient, iTargetCount);
+		return Plugin_Handled;
+	}
+
+	for (int i = 0; i < iTargetCount; ++i)
+	{
+		int iTarget = iTargets[i];
+		CBasePlayer pTarget = CBasePlayer(iTarget);
+		if (!pTarget.IsValid())
+			continue;
+
+		float vecPos[3];
+		pTarget.GetAbsOrigin(vecPos);
+
+		if (iClient)
+			MsgReply(iClient, "%N => %.2f %.2f %.2f", iTarget, vecPos[0], vecPos[1], vecPos[2]);
+		else
+			MsgSrv("%N => %.2f %.2f %.2f", iTarget, vecPos[0], vecPos[1], vecPos[2]);
+	}
+
+	return Plugin_Handled;
+}
+
+public Action Command_DebugGetAng(int iClient, int iArgs)
+{
+	if (iArgs != 1)
+	{
+		if (iClient)
+			MsgReply(iClient, "Usage: sc_debug_getang <player>");
+		else
+			MsgSrv("Usage: sc_debug_getang <player>");
+		return Plugin_Handled;
+	}
+	
+	char szTarget[65];
+	GetCmdArg(1, szTarget, sizeof(szTarget));
+
+	char szTargetName[MAX_TARGET_LENGTH];
+	int iTargets[MAXPLAYERS], iTargetCount;
+	bool bIsML;
+
+	if ((iTargetCount = ProcessTargetString(
+		szTarget,
+		iClient,
+		iTargets,
+		sizeof(iTargets),
+		COMMAND_FILTER_NO_BOTS,
+		szTargetName,
+		sizeof(szTargetName),
+		bIsML)) <= 0)
+	{
+		ReplyToTargetError(iClient, iTargetCount);
+		return Plugin_Handled;
+	}
+
+	for (int i = 0; i < iTargetCount; ++i)
+	{
+		int iTarget = iTargets[i];
+		CBasePlayer pTarget = CBasePlayer(iTarget);
+		if (!pTarget.IsValid())
+			continue;
+
+		float vec3Angle[3];
+		pTarget.GetEyeAngles(vec3Angle);
+
+		if (iClient)
+			MsgReply(iClient, "%N => %.2f %.2f %.2f", iTarget, vec3Angle[0], vec3Angle[1], vec3Angle[2]);
+		else
+			MsgSrv("%N => %.2f %.2f %.2f", iTarget, vec3Angle[0], vec3Angle[1], vec3Angle[2]);
+	}
+
+	return Plugin_Handled;
+}
+
+public Action Command_DebugTraceRay(int iClient, int iArgs)
+{
+	if (iArgs != 1)
+	{
+		if (iClient)
+			MsgReply(iClient, "Usage: sc_debug_traceray <player>");
+		else
+			MsgSrv("Usage: sc_debug_traceray <player>");
+		return Plugin_Handled;
+	}
+
+	char szTarget[65];
+	GetCmdArg(1, szTarget, sizeof(szTarget));
+
+	char szTargetName[MAX_TARGET_LENGTH];
+	int iTargets[MAXPLAYERS], iTargetCount;
+	bool bIsML;
+
+	if ((iTargetCount = ProcessTargetString(
+		szTarget,
+		iClient,
+		iTargets,
+		sizeof(iTargets),
+		COMMAND_FILTER_NO_BOTS,
+		szTargetName,
+		sizeof(szTargetName),
+		bIsML)) <= 0)
+	{
+		ReplyToTargetError(iClient, iTargetCount);
+		return Plugin_Handled;
+	}
+
+	for (int i = 0; i < iTargetCount; i++)
+	{
+		int iTarget = iTargets[i];
+		CBasePlayer pTarget = CBasePlayer(iTarget);
+		if (!pTarget.IsValid())
+			continue;
+
+		float vecEyePos[3], vec3EyeAngles[3];
+		pTarget.GetEyePosition(vecEyePos);
+		pTarget.GetEyeAngles(vec3EyeAngles);
+
+		CTraceRay pTraceRay = new CTraceRay(vecEyePos, vec3EyeAngles, MASK_SHOT, RayType_Infinite, TraceEntityFilter_IgnoreData, iTarget);
+		CBaseEntity pHitEntity = pTraceRay.GetEntity();
+		pTraceRay.Close();
+
+		char szClassname[MAX_CLASSNAME] = "<none>";
+		char szHitTargetname[MAX_CLASSNAME] = "<none>";
+		Address pAddress = Address_Null;
+
+		if (pHitEntity != NULL_CBASEENTITY)
+		{
+			pHitEntity.GetClassname(szClassname, sizeof(szClassname));
+			if (!pHitEntity.GetTargetname(szHitTargetname, sizeof(szHitTargetname)) || szHitTargetname[0] == '\0')
+			{
+				strcopy(szHitTargetname, sizeof(szHitTargetname), "<none>");
+			}
+			pAddress = pHitEntity.address;
+		}
+
+		if (iClient)
+			MsgReply(iClient, "%N -> hit=%d classname=\"%s\" targetname=\"%s\" address=0x%x", iTarget, pHitEntity.entindex, szClassname, szHitTargetname, view_as<int>(pAddress));
+		else
+			MsgSrv("%N -> hit=%d classname=\"%s\" targetname=\"%s\" address=0x%x", iTarget, pHitEntity.entindex, szClassname, szHitTargetname, view_as<int>(pAddress));
+	}
+
+	return Plugin_Handled;
+}
+
 static Action Timer_Debug_MissingWeapons(Handle hTimer)
 {
 	for (int i = 1; i <= MaxClients; ++i)

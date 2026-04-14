@@ -7,10 +7,32 @@
 	"intro_type" "none"
 	"equipment"
 	{
-		"lookup"
-		{
-			"targetname" "c2a2a_equipment"
-		}
+		"item"	"item_suit"
+		"item"	"item_weapon_crowbar"
+		"item"	"item_weapon_glock"
+		"item"	"item_ammo_glock"
+		"item"	"item_ammo_glock"
+		"item"	"item_ammo_glock"
+		"item"	"item_weapon_shotgun"
+		"item"	"item_ammo_shotgun"
+		"item"	"item_ammo_shotgun"
+		"item"	"item_ammo_shotgun"
+		"item"	"item_weapon_mp5"
+		"item"	"item_grenade_mp5"
+		"item"	"item_battery"
+		"item"	"item_battery"
+		"item"	"item_battery"
+		"item"	"item_battery"
+		"item"	"item_weapon_357"
+		"item"	"item_weapon_satchel"
+		"item"	"item_weapon_satchel"
+		"item"	"item_weapon_satchel"
+		"item"	"item_weapon_tripmine"
+		"item"	"item_weapon_tripmine"
+		"item"	"item_weapon_tripmine"
+		"item"	"item_weapon_frag"
+		"item"	"item_weapon_frag"
+		"item"	"item_weapon_frag"
 	}
 	"console"
 	{
@@ -18,6 +40,10 @@
 	}
 	"entity"
 	{
+		"delete"
+		{
+			"targetname" "c2a2a_equipment"
+		}
 		// delay map start
 		"modify"
 		{
