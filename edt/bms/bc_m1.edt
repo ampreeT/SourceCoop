@@ -5,6 +5,7 @@
 	"campaign" "Workshop maps"
 	"chapter" "Surface Contamination"
 	"workshop" "2904429204"
+	
 	"intro_type" "fade"
 	
 	"features"
@@ -27,6 +28,20 @@
 			}
 		}
 		// block off next map
+		"add"
+		{
+			"classname" "func_brush"
+			"rendermode" "10"
+			"spawnflags" "2"
+			"functions"
+			{
+				"set_model"
+				{
+					"origin" "-7216 -5792 472"
+					"size" "32 192 144"
+				}
+			}
+		}
 		"modify"
 		{
 			"hammerid" "1051114"

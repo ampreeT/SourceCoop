@@ -5,14 +5,14 @@
 	"campaign" "Workshop maps"
 	"chapter" "Further Data"
 	"workshop" "2316239201"
-
+	
 	"intro_type" "fade"
 	#if
 	{
 		"globalstate" "backtrack"
 		#then
 		{
-			"intro_type" "none"
+			"intro_type" "freeze"
 		}
 	}
 

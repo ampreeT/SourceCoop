@@ -38,6 +38,7 @@
 			{
 				"classname" "func_brush"
 				"rendermode" "10"
+				"spawnflags" "2"
 			}
 		}
 		//music fix

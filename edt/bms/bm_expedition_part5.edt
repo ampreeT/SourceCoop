@@ -56,6 +56,23 @@
 			{
 				"delay_output" "OnMapSpawn"
 			}
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnMapSpawn"
+					"target" "gravity"
+					"input"	"SetFallDamageScale"
+					"parameter" "0"
+					"timestofire" "-1"
+				}
+			}
+		}
+		// implement long jump landing jet features
+		"add"
+		{
+			"classname" "env_gravity"
+			"targetname" "gravity"
 		}
 		// only activator has portal fade effect
 		"modify"
@@ -72,6 +89,31 @@
 			"set"
 			{
 				"spawnflags" "5"
+			}
+		}
+		// fix players stuck at camera scene after ended
+		"modify"
+		{
+			"hammerid" "987937"
+			"set"
+			{
+				"spawnflags" "12"
+			}
+		}
+		"modify"
+		{
+			"hammerid" "988028"
+			"set"
+			{
+				"spawnflags" "12"
+			}
+		}
+		"modify"
+		{
+			"hammerid" "995046"
+			"set"
+			{
+				"spawnflags" "12"
 			}
 		}
 		// fixing crystal battle time!
@@ -144,6 +186,14 @@
 				"add"
 				{
 					"output" "OnTrigger"
+					"target" "introcam_camera2"
+					"input"	"Disable"
+					"delay" "4"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnTrigger"
 					"target" "introcam_camera1"
 					"input"	"Enable"
 					"delay" "4"
@@ -152,9 +202,25 @@
 				"add"
 				{
 					"output" "OnTrigger"
+					"target" "introcam_camera1"
+					"input"	"Disable"
+					"delay" "7"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnTrigger"
 					"target" "introcam_camera3"
 					"input"	"Enable"
 					"delay" "7"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnTrigger"
+					"target" "introcam_camera3"
+					"input"	"Disable"
+					"delay" "10"
 					"timestofire" "-1"
 				}
 				"add"
@@ -267,6 +333,100 @@
 			"hammerid" "754596"
 		}
 		// second, the space part
+		"remove"
+		{
+			"hammerid" "457630"
+		}
+		"add"
+		{
+			"classname" "trigger_teleport"
+			"targetname" "spacevoid_crystals_teleport1"
+			"target" "telespawnthing_space_after"
+			"StartDisabled" "1"
+			"spawnflags" "1"
+			"functions"
+			{
+				"set_model"
+				{
+					"origin" "-1536 -9216 4528"
+					"size" "10240 10240 13472"
+				}
+			}
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnStartTouch"
+					"target" "telespawnthing_space_tele"
+					"input"	"Disable"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnStartTouch"
+					"target" "telespawnthing_space_light"
+					"input"	"TurnOff"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnStartTouch"
+					"target" "space_portal_particle"
+					"input"	"Stop"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnStartTouch"
+					"target" "space_portal_particlebeams"
+					"input"	"TurnOff"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnStartTouch"
+					"target" "spacerays"
+					"input"	"TurnOff"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnStartTouch"
+					"target" "space_portal_crystalbeam"
+					"input"	"TurnOff"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnStartTouch"
+					"target" "space_portal_crystalsprite"
+					"input"	"HideSprite"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnStartTouch"
+					"target" "fakesky_togglablable"
+					"input"	"Toggle"
+					"timestofire" "-1"
+				}
+			}
+		}
+		"modify"
+		{
+			"hammerid" "292797"
+			"outputs"
+			{
+				"modify"
+				{
+					"target" "spacevoid_crystals_teleport"
+					"replace"
+					{
+						"target" "spacevoid_crystals_teleport1"
+					}
+				}
+			}
+		}
 		"modify"
 		{
 			"hammerid" "259629"
@@ -302,6 +462,93 @@
 			}
 		}
 		// third, the water part
+		"remove"
+		{
+			"hammerid" "571883"
+		}
+		"add"
+		{
+			"classname" "trigger_teleport"
+			"targetname" "waterdeep_crystals_teleport1"
+			"target" "telespawnthing_waterdeep_after"
+			"StartDisabled" "1"
+			"spawnflags" "1"
+			"functions"
+			{
+				"set_model"
+				{
+					"origin" "7718 6840 -2312"
+					"size" "11212 8080 3344"
+				}
+			}
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnStartTouch"
+					"target" "waterdeep_portal_particle"
+					"input"	"Stop"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnStartTouch"
+					"target" "waterdeep_portal_particlebeams"
+					"input"	"TurnOff"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnStartTouch"
+					"target" "telespawnthing_waterdeep_light"
+					"input"	"TurnOff"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnStartTouch"
+					"target" "telespawnthing_waterdeep_tele"
+					"input"	"Disable"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnStartTouch"
+					"target" "hub_fog"
+					"input"	"TurnOn"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnStartTouch"
+					"target" "waterdeep_portal_crystalbeam"
+					"input"	"TurnOff"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnStartTouch"
+					"target" "waterdeep_portal_crystalsprite"
+					"input"	"HideSprite"
+					"timestofire" "-1"
+				}
+			}
+		}
+		"modify"
+		{
+			"hammerid" "272871"
+			"outputs"
+			{
+				"modify"
+				{
+					"target" "waterdeep_crystals_teleport"
+					"replace"
+					{
+						"target" "waterdeep_crystals_teleport1"
+					}
+				}
+			}
+		}
 		"modify"
 		{
 			"hammerid" "259786"
@@ -314,6 +561,86 @@
 			}
 		}
 		// fourth, the tunnel part
+		"remove"
+		{
+			"hammerid" "205735"
+		}
+		"add"
+		{
+			"classname" "trigger_teleport"
+			"targetname" "earth_crystals_teleport1"
+			"target" "telespawnthing_tunnels_after"
+			"StartDisabled" "1"
+			"spawnflags" "1"
+			"functions"
+			{
+				"set_model"
+				{
+					"origin" "-9016 7328 186"
+					"size" "11174 8768 1448"
+				}
+			}
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnStartTouch"
+					"target" "telespawnthing_tunnels_tele"
+					"input"	"Disable"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnStartTouch"
+					"target" "telespawnthing_tunnels_light"
+					"input"	"TurnOff"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnStartTouch"
+					"target" "earth_portal_particle"
+					"input"	"Stop"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnStartTouch"
+					"target" "earth_portal_particlebeams"
+					"input"	"TurnOff"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnStartTouch"
+					"target" "tunnels_portal_crystalbeam"
+					"input"	"TurnOff"
+					"timestofire" "-1"
+				}
+				"add"
+				{
+					"output" "OnStartTouch"
+					"target" "tunnels_portal_crystalsprite"
+					"input"	"HideSprite"
+					"timestofire" "-1"
+				}
+			}
+		}
+		"modify"
+		{
+			"hammerid" "205572"
+			"outputs"
+			{
+				"modify"
+				{
+					"target" "earth_crystals_teleport"
+					"replace"
+					{
+						"target" "earth_crystals_teleport1"
+					}
+				}
+			}
+		}
 		"modify"
 		{
 			"hammerid" "257528"
@@ -360,6 +687,63 @@
 					"output" "OnBreak"
 					"target" "xontroller2"
 					"input"	"Kill"
+					"timestofire" "-1"
+				}
+			}
+		}
+		// game text fix
+		"add"
+		{
+			"classname"	"game_text"
+			"targetname" "ending_text4d"
+			"y" "0.55"
+			"x" "-1"
+			"spawnflags" "0"
+			"message" "AND HIS FATE REMAINS A MYSTERY"
+			"holdtime" "2"
+			"fxtime" "0.25"
+			"fadeout" "1"
+			"fadein" "1.5"
+			"color2" "255 255 255"
+			"color" "255 255 255"
+			"channel" "4"
+		}
+		"modify"
+		{
+			"targetname" "ending_text4a"
+			"set"
+			{
+				"y" "0.4"
+			}
+		}
+		"modify"
+		{
+			"targetname" "ending_text4b"
+			"set"
+			{
+				"y" "0.45"
+			}
+		}
+		"modify"
+		{
+			"targetname" "ending_text4c"
+			"set"
+			{
+				"y" "0.5"
+				"message" "...THE EXPEDITIONER NEVER RETURNED HOME"
+			}
+		}
+		"modify"
+		{
+			"hammerid" "885272"
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnTrigger"
+					"target" "ending_text4d"
+					"input"	"Display"
+					"delay" "10.75"
 					"timestofire" "-1"
 				}
 			}
