@@ -533,16 +533,8 @@ public MRESReturn Hook_PlayerSpawnPost(int iClient, DHookReturn hReturn, DHookPa
 // Player death hooks
 // - Force serverside ragdolls
 //------------------------------------------------------
-#if defined PLAYERPATCH_SERVERSIDE_RAGDOLLS
-bool g_bServerRagdoll[MAXPLAYERS + 1];
-#endif
-
 public MRESReturn Hook_PlayerKilled(int _this, DHookParam hParams)
 {
-	#if defined PLAYERPATCH_SERVERSIDE_RAGDOLLS
-	g_bServerRagdoll[_this] = false;
-	#endif
-
 	if (!CoopManager.IsCoopModeEnabled())
 		return MRES_Ignored;
 	
@@ -577,7 +569,7 @@ void PlayerPatch_ApplyServerRagdoll(const CBasePlayer pPlayer, const CTakeDamage
 	int iDamageType = pTakeDamageInfo.GetDamageType();
 	if (iDamageType & DMG_DISSOLVE)
 	{
-		// dont bother
+		// leave ragdoll dissolving to client
 		return;
 	}
 
@@ -605,7 +597,6 @@ void PlayerPatch_ApplyServerRagdoll(const CBasePlayer pPlayer, const CTakeDamage
 		pPlayer.SetRagdoll(pRagdoll);
 		pPlayer.SetObserverMode(OBS_MODE_CHASE);
 		pPlayer.SetObserverTarget(pRagdoll);
-		g_bServerRagdoll[pPlayer.entindex] = true;
 
 		Call_StartForward(g_OnPlayerRagdollCreatedFwd);
 		Call_PushCell(pPlayer);
@@ -613,17 +604,6 @@ void PlayerPatch_ApplyServerRagdoll(const CBasePlayer pPlayer, const CTakeDamage
 		Call_Finish();
 	}
 }
-
-public MRESReturn Hook_CreateRagdollEntity(int _this)
-{
-	// avoid invalid cast on m_hRagdoll in hl2mp with the serverside ragdolls
-	if (g_bServerRagdoll[_this])
-		return MRES_Supercede;
-	
-	return MRES_Ignored;
-
-}
-
 #endif // PLAYERPATCH_SERVERSIDE_RAGDOLLS
 
 //------------------------------------------------------

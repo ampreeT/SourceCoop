@@ -94,10 +94,6 @@ void LoadGameData()
 	#if defined ENTPATCH_BM_PROP_CHARGERS
 	LoadDHookVirtual(pGameConfig, hkPropChargerThink, "CPropChargerBase::ChargerThink");
 	#endif
-	
-	#if defined SRCCOOP_HL2DM && defined PLAYERPATCH_SERVERSIDE_RAGDOLLS
-	LoadDHookVirtual(pGameConfig, hkCreateRagdollEntity, "CBasePlayer::CreateRagdollEntity");
-	#endif
 
 	#if defined PLAYERPATCH_RESTORE_MP_FORCERESPAWN
 	LoadDHookVirtual(pGameConfig, hkForceRespawn, "CBasePlayer::ForceRespawn");
@@ -509,10 +505,6 @@ public void OnClientPutInServer(int client)
 
 	#if defined PLAYERPATCH_OVERRIDE_DEATH_OBSMODE
 	DHookEntity(hkStartObserverMode, false, client, _, Hook_PlayerStartObserverMode);
-	#endif
-	
-	#if defined SRCCOOP_HL2DM && defined PLAYERPATCH_SERVERSIDE_RAGDOLLS
-	DHookEntity(hkCreateRagdollEntity, false, client, _, Hook_CreateRagdollEntity);
 	#endif
 
 	// `item_ammo_canister` has a client side dlight that will
