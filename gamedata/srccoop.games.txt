@@ -627,7 +627,6 @@
 					}
 				}
 			}
-			
 			"CWeapon_Crossbow::FireBolt"
 			{
 				"offset"	"CWeapon_Crossbow::FireBolt"
@@ -639,37 +638,6 @@
 					"bUnknown"
 					{
 						"type"	"bool"
-					}
-				}
-			}
-			
-			"CLagCompensationManager::StartLagCompensation"	//void CLagCompensationManager::StartLagCompensation( CBasePlayer *player, LagCompensationType lagCompensationType, const Vector& weaponPos, const QAngle &weaponAngles, float weaponRange )
-			{
-				"signature"		"CLagCompensationManager::StartLagCompensation"
-				"callconv"		"thiscall"
-				"return"		"void"
-				"this"			"address"
-				"arguments"
-				{
-					"CBasePlayer"
-					{
-						"type"		"cbaseentity"
-					}
-					"LagCompensationType"
-					{
-						"type"		"int"
-					}
-					"weaponPos"
-					{
-						"type"		"vectorptr"
-					}
-					"weaponAngles"
-					{
-						"type"		"vectorptr"
-					}
-					"weaponRange"
-					{
-						"type"		"float"
 					}
 				}
 			}
@@ -1005,6 +973,36 @@
 				"callconv"	"thiscall"
 				"return"	"void"
 				"this"		"entity"
+			}
+			"CLagCompensationManager::StartLagCompensation"	//void CLagCompensationManager::StartLagCompensation( CBasePlayer *player, LagCompensationType lagCompensationType, const Vector& weaponPos, const QAngle &weaponAngles, float weaponRange )
+			{
+				"signature"		"CLagCompensationManager::StartLagCompensation"
+				"callconv"		"thiscall"
+				"return"		"void"
+				"this"			"address"
+				"arguments"
+				{
+					"CBasePlayer"
+					{
+						"type"		"cbaseentity"
+					}
+					"LagCompensationType"
+					{
+						"type"		"int"
+					}
+					"weaponPos"
+					{
+						"type"		"vectorptr"
+					}
+					"weaponAngles"
+					{
+						"type"		"vectorptr"
+					}
+					"weaponRange"
+					{
+						"type"		"float"
+					}
+				}
 			}
 		}
 	}
