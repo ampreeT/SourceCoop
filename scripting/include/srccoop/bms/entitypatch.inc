@@ -526,7 +526,7 @@ public MRESReturn Hook_CascadeLightKeyValueHACK(int _this, DHookReturn hReturn, 
 // env_cascade_light
 // block SetCSMVolume* inputs to prevent heavy console spam "YOU SH ALL BURN IN HELL" msg (while we have no client code XD)
 //------------------------------------------------------
-public MRESReturn Hook_EnvCascadeLightAcceptInput(int _this, DHookReturn hReturn, DHookParam hParams)
+public MRESReturn Hook_CascadeLightAcceptInput(int _this, DHookReturn hReturn, DHookParam hParams)
 {
 	if (!DHookIsNullParam(hParams, 1))
 	{

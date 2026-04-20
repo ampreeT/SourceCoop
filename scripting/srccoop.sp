@@ -852,7 +852,7 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 		if (strcmp(szClassname, "env_cascade_light") == 0)
 		{
 			DHookEntity(hkKeyValue_char, false, iEntIndex, _, Hook_CascadeLightKeyValueHACK);
-			DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_EnvCascadeLightAcceptInput);
+			DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_CascadeLightAcceptInput);
 			return;
 		}
 		#endif
