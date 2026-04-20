@@ -49,6 +49,69 @@ public MRESReturn Hook_IsNavigationUrgent(int _this, DHookReturn hReturn, DHookP
 }
 
 //------------------------------------------------------
+// CNPC_PlayerCompanion
+// Ignore player's snarks without mp_friendlyfire unless this player is not my friend  
+//------------------------------------------------------
+public MRESReturn Hook_PlayerCompanionIsValidEnemy(int _this, DHookReturn hReturn, DHookParam hParams)
+{
+	if (IsEnemyFriendlySnark(_this, hParams))
+	{
+		DHookSetReturn(hReturn, false);
+		return MRES_Supercede;		
+	}
+	else
+		return MRES_Ignored;
+}
+
+//------------------------------------------------------
+// CAI_BaseNPC
+// This hook is used by CNPC_PlayerCompanion to filter player's snarks as not enemies
+// so a security guard won't ask for help when see friendly snarks
+//------------------------------------------------------
+public MRESReturn Hook_UpdateEnemyMemory(int _this, DHookReturn hReturn, DHookParam hParams)
+{
+	if (IsEnemyFriendlySnark(_this, hParams))
+	{
+		DHookSetReturn(hReturn, false);
+		return MRES_Supercede;		
+	}
+	else
+		return MRES_Ignored;
+}
+
+//------------------------------------------------------
+// CNPC_PlayerCompanion
+// This func containы an algorithm that is used in several places to filter the friendly snark
+//------------------------------------------------------
+bool IsEnemyFriendlySnark(int _this, DHookParam hParams)
+{
+	if (DHookIsNullParam(hParams, 1) ||  mp_friendlyfire.BoolValue)
+        return false;
+
+    CAI_BaseNPC pEnemy = CAI_BaseNPC(DHookGetParam(hParams, 1));
+    if (pEnemy == NULL_CBASEENTITY)
+        return false;
+
+	char szClassname[MAX_CLASSNAME];
+	pEnemy.GetClassname(szClassname, sizeof(szClassname));
+
+	if (strcmp(szClassname, "npc_snark") == 0)
+	{
+		CNpc_Snark pSnark = view_as<CNpc_Snark>(pEnemy);
+		CBaseEntity pOwner = pSnark.GetSnarkOwner();
+		CAI_BaseNPC pThis = CAI_BaseNPC(_this);
+
+		//not valid OR owner is not player (f. e. npc_maker) OR i don't like the player OR not player's snark
+		if (!pOwner.IsValid() || !pOwner.IsPlayer() || (pThis.m_afMemory & bits_MEMORY_PROVOKED || pThis.IRelationType(pOwner) == D_HT) || pEnemy.GetTeam() != pOwner.GetTeam())
+			return false;
+		
+		return true;
+	}
+
+	return false;
+}
+
+//------------------------------------------------------
 // CAI_BaseNPC - npc_lav
 // fixes the client crash seen in bm_c2a5g related to LAV npc
 //------------------------------------------------------
@@ -185,6 +248,115 @@ public MRESReturn Hook_HumanMedicKilled(int _this, DHookParam hParams)
     }
 
     return MRES_Ignored;
+}
+
+//------------------------------------------------------
+// npc_snark
+// Set snark's team to make it evil or peaceful to the players.
+//------------------------------------------------------
+public void Hook_Snark_OnCreated(const int iEntIndex)
+{
+    CNpc_Snark pSnark = CNpc_Snark(iEntIndex);
+    if (!pSnark.IsValid() || pSnark.GetHammerID() != 0) //don't for map-placed
+        return;
+    
+    CBaseEntity pOwner = pSnark.GetSnarkOwner();
+    if (!pOwner.IsValid()|| !pOwner.IsPlayer()) //it can have other owners, tmp maker f. i.
+        return;
+
+    CBasePlayer pPlayer = view_as<CBasePlayer>(pOwner);
+    if (!pPlayer.IsValid())
+        return;
+
+    int iTeam = (mp_friendlyfire.BoolValue) ? TEAM_ANY : pPlayer.GetTeam();
+    pSnark.SetInitialTeam(iTeam);
+    pSnark.SetTeam(iTeam);
+}
+
+//------------------------------------------------------
+// npc_snark
+// Make snark owned by a player peaceful without mp_friendlyfire, filter players (by teamnum) and ally to owner NPCs
+//------------------------------------------------------
+public MRESReturn Hook_SnarkIsValidEnemy(int _this, DHookReturn hReturn, DHookParam hParams)
+{
+	if (DHookIsNullParam(hParams, 1) ||  mp_friendlyfire.BoolValue)
+        return MRES_Ignored;
+    
+    CAI_BaseNPC pEnemy = CAI_BaseNPC(DHookGetParam(hParams, 1));
+
+    //not valid enemy
+    if (!pEnemy.IsValid())
+        return MRES_Ignored;
+
+    CNpc_Snark pSnark = CNpc_Snark(_this);
+    CBaseEntity pOwner = pSnark.GetSnarkOwner();
+
+    //i don't have owner or the owner is not a player
+    if (!pOwner.IsValid() || !pOwner.IsPlayer())
+        return MRES_Ignored;
+        
+    CBasePlayer pPlayer = view_as<CBasePlayer>(pOwner);
+    if (!pPlayer.IsValid())
+        return MRES_Ignored;
+		
+	//filter players only by their team, nothing else needed, in srccoop, we using forced teams anyway
+	if (pEnemy.IsPlayer())
+	{
+		if (pEnemy.GetTeam() == pOwner.GetTeam())
+		{
+			DHookSetReturn(hReturn, false);
+			return MRES_Supercede;
+		}
+		return MRES_Ignored;
+	}
+	
+	//i'm not sure if this can happen, but this method takes cbasecombatcharacter as param
+	//the class doesn't have m_afMemory, unlike npcs, so this prevents possible issues
+	if (!pEnemy.IsNPC())
+		return MRES_Ignored;
+	
+    //is this npc PROVOKED (security) ? 
+    if (pEnemy.m_afMemory & bits_MEMORY_PROVOKED)
+        return MRES_Ignored;
+
+    //target hates my owner
+    if (pEnemy.IRelationType(pOwner) == D_HT)
+        return MRES_Ignored;
+
+    //Does it targets my owner ? 
+    bool bMyOwnerIsTargetEnemy = (HasEntProp(pEnemy.entindex, Prop_Data, "m_hEnemy")) ? (pEnemy.GetEnemy() == pOwner) : false;
+    
+	//is ally that doesn't target my owner ?
+    if (pEnemy.IsPlayerAlly(pPlayer) && !bMyOwnerIsTargetEnemy)
+    {       
+        DHookSetReturn(hReturn, false);
+        return MRES_Supercede;
+    }
+
+	return MRES_Ignored;
+}
+
+//------------------------------------------------------
+// npc_snark
+// Make everyone think i'm ally under certain conditions.
+// TODO: Make sure it doesn't break anything.
+//------------------------------------------------------
+public MRESReturn Hook_SnarkIsPlayerAlly(int _this, DHookReturn hReturn, DHookParam hParams)
+{
+	if (mp_friendlyfire.BoolValue || hParams.IsNull(1))
+        return MRES_Ignored;
+
+    CBlackMesaPlayer pPlayer = CBlackMesaPlayer(DHookGetParam(hParams, 1));
+	CNpc_Snark pSnark = CNpc_Snark(_this);
+    
+    //ally if we are in the same team
+    if (pPlayer.IsValid() && pPlayer.GetTeam() == pSnark.GetTeam())
+	{
+		DHookSetReturn(hReturn, true);
+		return MRES_Supercede;
+	}
+
+	return MRES_Ignored;
 }
 
 //------------------------------------------------------
