@@ -347,6 +347,7 @@ public MRESReturn Hook_SnarkIsPlayerAlly(int _this, DHookReturn hReturn, DHookPa
         return MRES_Ignored;
 
     CBlackMesaPlayer pPlayer = CBlackMesaPlayer(DHookGetParam(hParams, 1));
+	CNpc_Snark pSnark = CNpc_Snark(_this);
     
     //ally if we are in the same team
     if (pPlayer.IsValid() && pPlayer.GetTeam() == pSnark.GetTeam())
