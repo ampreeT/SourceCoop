@@ -188,6 +188,28 @@
 					}
 				}
 			}
+			"CAI_BaseNPC::UpdateEnemyMemory" // bool CAI_BaseNPC::UpdateEnemyMemory( CBaseEntity *pEnemy, const Vector &position, CBaseEntity *pInformer )
+			{
+				"offset"	"CAI_BaseNPC::UpdateEnemyMemory"
+				"hooktype"	"entity"
+				"return"	"bool"
+				"this"		"entity"
+				"arguments"
+				{
+					"pEnemy"
+					{
+						"type"	"cbaseentity"
+					}
+					"position"
+					{
+						"type"	"vectorptr"
+					}
+					"pInformer"
+					{
+						"type"	"cbaseentity"
+					}
+				}
+			}
 			"CAI_BaseNPC::IsNavigationUrgent"
 			{
 				"offset"	"CAI_BaseNPC::IsNavigationUrgent"

@@ -298,23 +298,36 @@ public MRESReturn Hook_SnarkIsValidEnemy(int _this, DHookReturn hReturn, DHookPa
     CBasePlayer pPlayer = view_as<CBasePlayer>(pOwner);
     if (!pPlayer.IsValid())
         return MRES_Ignored;
-
-    //before we check if potential guard is PROVOKED, we also should if the enemy has the field, or it cause errors
-    //caused by players not having it
-    if (HasEntProp(pEnemy.entindex, Prop_Data, "m_afMemory") && pEnemy.m_afMemory & bits_MEMORY_PROVOKED)
+		
+	//filter players only by their team, nothing else needed, in srccoop, we using forced teams anyway
+	if (pEnemy.IsPlayer())
+	{
+		if (pEnemy.GetTeam() == pOwner.GetTeam())
+		{
+			DHookSetReturn(hReturn, false);
+			return MRES_Supercede;
+		}
+		return MRES_Ignored;
+	}
+	
+	//i'm not sure if this can happen, but this method takes cbasecombatcharacter as param
+	//the class doesn't have m_afMemory, unlike npcs, so this prevents possible issues
+	if (!pEnemy.IsNPC())
+		return MRES_Ignored;
+	
+    //is this npc PROVOKED (security) ? 
+    if (pEnemy.m_afMemory & bits_MEMORY_PROVOKED)
         return MRES_Ignored;
 
     //target hates my owner
     if (pEnemy.IRelationType(pOwner) == D_HT)
         return MRES_Ignored;
 
-    //Is it owner's friend player ? 
-    bool bIsAllyPlayer = (pEnemy.IsPlayer()) ? (pEnemy.GetTeam() == pOwner.GetTeam()) : false;
-
     //Does it targets my owner ? 
     bool bMyOwnerIsTargetEnemy = (HasEntProp(pEnemy.entindex, Prop_Data, "m_hEnemy")) ? (pEnemy.GetEnemy() == pOwner) : false;
     
-    if (bIsAllyPlayer || pEnemy.IsPlayerAlly(pPlayer) || !bMyOwnerIsTargetEnemy)
+	//is ally that doesn't target my owner ?
+    if (pEnemy.IsPlayerAlly(pPlayer) && !bMyOwnerIsTargetEnemy)
     {       
         DHookSetReturn(hReturn, false);
         return MRES_Supercede;
