@@ -803,7 +803,8 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 		#if defined ENTPATCH_PLAYER_SPEEDMOD
 		if (strcmp(szClassname, "player_speedmod") == 0)
 		{
-			DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_SpeedmodAcceptInput);
+			SDKHook(iEntIndex, SDKHook_SpawnPost, Hook_PlayerSpeedmodSpawnPost);
+			DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_PlayerSpeedmodAcceptInput);
 			return;
 		}
 		#endif

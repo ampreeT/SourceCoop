@@ -152,6 +152,7 @@
 			}
 		}
 		// player_speedmod normally accepts the activator. In maps made for SP, we want all players to be affected. New input ModifySpeedAll has been added for that purpose.
+		//todo: it might be better to replace inputs per map, so custom maps can use per client player_speedmod
 		#if
 		{
 			"speedmod_allplayers" "1"
@@ -253,18 +254,6 @@
 							"add" "1"
 						}
 					}
-				}
-			}
-		}
-		// we never want player_speedmod to suppress HUD in MP as this hides chat and even the main menu
-		"modify"
-		{
-			"classname" "player_speedmod"
-			"flags"
-			{
-				"spawnflags"
-				{
-					"remove" "2" // Suppress HUD
 				}
 			}
 		}
