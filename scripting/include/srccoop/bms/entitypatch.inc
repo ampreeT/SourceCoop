@@ -273,8 +273,11 @@ public MRESReturn Hook_TankStopControl(int _this, DHookParam hParams)
 	//set team (not sure for what the same does Weapon_Equip())
 	SetEntProp(pNewWeapon.entindex, Prop_Send, "m_iTeamNum", pController.GetTeam()); //todo: replace with methodmap
 	
-	SetEntPropFloat(pNewWeapon.entindex, Prop_Data, "m_fMaxRange1", 999999999.0);
-	SetEntPropFloat(pNewWeapon.entindex, Prop_Data, "m_fMaxRange2", 999999999.0);
+	if (pController.m_spawnflags & SF_NPC_LONG_RANGE)
+	{
+		SetEntPropFloat(pNewWeapon.entindex, Prop_Data, "m_fMaxRange1", 999999999.0);
+		SetEntPropFloat(pNewWeapon.entindex, Prop_Data, "m_fMaxRange2", 999999999.0);
+	}
 	
 	SetEntPropEnt(pNewWeapon.entindex, Prop_Send, "m_hLightingOriginRelative", pController.entindex); //todo: method
   
