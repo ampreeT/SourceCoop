@@ -1013,6 +1013,13 @@
 				"return"	"void"
 				"this"		"entity"
 			}
+			"CFuncTank::StopControl"
+			{
+				"offset"	"CFuncTank::StopControl"
+				"hooktype"	"entity"
+				"return"	"void"
+				"this"		"entity"
+			}
 		}
 	}
 	
@@ -1596,6 +1603,11 @@
 			{
 				"windows"	"318"
 				"linux"		"319"
+			}
+			"CFuncTank::StopControl"
+			{
+				"windows"	"205"
+				"linux"		"206"
 			}
 		}
 	}
