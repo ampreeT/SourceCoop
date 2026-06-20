@@ -271,7 +271,7 @@ public MRESReturn Hook_TankStopControl(int _this, DHookParam hParams)
 	pNewWeapon.SetMoveType(MOVETYPE_NONE);
 	
 	//set team (not sure for what the same does Weapon_Equip()
-	SetEntProp(pNewWeapon, Prop_Send, "m_iTeamNum", pController.GetTeam()); //todo: replace with methodmap
+	SetEntProp(pNewWeapon.entindex, Prop_Send, "m_iTeamNum", pController.GetTeam()); //todo: replace with methodmap
 	
 	//todo: add methods
 	//also, check if bms code also do this (probably do)
