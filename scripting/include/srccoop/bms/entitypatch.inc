@@ -191,141 +191,26 @@ public MRESReturn Hook_HumanMedicKilled(int _this, DHookParam hParams)
 // CFuncTank - func_50cal, func_tank, func_tank_combine_cannon, func_tankairboatgun, func_tanklaser,
 //			   func_tankmortar, func_tankphyscannister, func_tow, func_tow_mp
 // Marines lose their guns after a tank control (actually the weapon becomes broken).
-// This hook gives a new instance of the weapon entity, so the marine can shoot again.
+// This hook sets back proper desired weapon state and visibility for it.
 //------------------------------------------------------
 public MRESReturn Hook_TankStopControl(int _this, DHookParam hParams)
 {
     CBaseCombatCharacter pController = CBaseCombatCharacter(GetEntPropEnt(_this, Prop_Data, "m_hController"));  
   
-	//i didn't have a controller
-    if (!pController.IsValid())  
+	//no controller or controller is not an npc
+    if (!pController.IsValid() || pController.IsPlayer())  
         return MRES_Ignored;  
-  
-	char szClassname[MAX_CLASSNAME];
-	pController.GetClassname(szClassname, sizeof(szClassname));
-	
-	//not sure if player is the only other entity that can control a tank,
-	//marines are the only NPCs with such ability, but still, let's be safe
-	bool bIsMarine =
-		strcmp(szClassname, "npc_human_commander") == 0 ||
-		strcmp(szClassname, "npc_human_grenadier") == 0 ||
-		strcmp(szClassname, "npc_human_grunt") == 0 ||
-		strcmp(szClassname, "npc_human_medic") == 0;
-
-	if (!bIsMarine)
-	{
-		return MRES_Ignored;
-	}
 		
-	//TODO: it's better to replace with our version of Weapon_Equip() and Equip()
-	
     CBaseCombatWeapon pWeapon = pController.GetActiveWeapon();  
   
 	//we don't have a weapon
     if (!pWeapon.IsValid())  
-        return MRES_Ignored;  
-  
-	//save old weapon classname
-    pWeapon.GetClassname(szClassname, sizeof(szClassname));
+        return MRES_Ignored;
+		
+	SetEntProp(pController.entindex, Prop_Data, "m_iDesiredWeaponState", DESIREDWEAPONSTATE_IGNORE); //restores shooting ability
+	pWeapon.m_fEffects &= ~EF_NODRAW; //restores weapon visibility
 	
-	//create and spawn new weapon
-    CBaseCombatWeapon pNewWeapon = CBaseCombatWeapon(CreateEntityByName(szClassname));
-    if (pNewWeapon  == NULL_CBASEENTITY)  
-        return MRES_Ignored;  
-	
-	//we should spawn wpn before we do anything, othewise bugs
-	pNewWeapon.Spawn(); 
-  
-    //save old weapon clips
-    int iClip1 = pWeapon.GetPrimaryAmmo();  
-    int iClip2 = pWeapon.GetSecondaryAmmo();
-	
-	//set old wpn clip vals
-	pNewWeapon.SetPrimaryAmmo(iClip1);
-	pNewWeapon.SetSecondaryAmmo(iClip2);
-  
-    //detach old weapon from marine, m_hMyWeapons is an array (MAX_WEAPONS slots), must find the right index  
-    int iWeaponCount = GetEntPropArraySize(pController.entindex, Prop_Data, "m_hMyWeapons");  
-    int iWeaponSlot = -1;  
-    for (int i = 0; i < iWeaponCount; i++)  
-    {  
-        if (pController.GetWeaponFromIndex(i) == pWeapon)  
-        {  
-            iWeaponSlot = i;  
-			pController.SetWeaponAtIndex(i, CBaseCombatWeapon(-1));
-            break;  
-        }  
-    }  
-  
-    //clear owner references on old weapon before killing it
-    SetEntPropEnt(pWeapon.entindex, Prop_Data, "m_hOwner", -1); //todo: methodmap
-	pWeapon.SetOwner(CBaseEntity(-1));
-	pWeapon.Kill();
-  
-    //attach new weapon to NPC
-    SetEntPropEnt(pNewWeapon.entindex, Prop_Data, "m_hOwner", pController.entindex); //todo: methodmap 
-	pNewWeapon.SetOwner(pController);
-  
-    // replicate FollowEntity(pOwner)
-	pNewWeapon.SetParent(pController);
-	pNewWeapon.SetMoveType(MOVETYPE_NONE);
-	
-	//set team (not sure for what the same does Weapon_Equip())
-	SetEntProp(pNewWeapon.entindex, Prop_Send, "m_iTeamNum", pController.GetTeam()); //todo: replace with methodmap
-	
-	if (pController.m_spawnflags & view_as<int>(SF_NPC_LONG_RANGE))
-	{
-		SetEntPropFloat(pNewWeapon.entindex, Prop_Data, "m_fMaxRange1", 999999999.0);
-		SetEntPropFloat(pNewWeapon.entindex, Prop_Data, "m_fMaxRange2", 999999999.0);
-	}
-	
-	SetEntPropEnt(pNewWeapon.entindex, Prop_Send, "m_hLightingOriginRelative", pController.entindex); //todo: method
-  
-    //place new weapon in the same slot the old one occupied (or first free slot)  
-    if (iWeaponSlot != -1)
-	{
-		pController.SetWeaponAtIndex(iWeaponSlot, pNewWeapon);
-	}
-    else  
-    {  
-        for (int i = 0; i < iWeaponCount; i++)  
-        {  
-            if (pController.GetWeaponFromIndex(i) == NULL_CBASEENTITY)  
-            {  
-                pController.SetWeaponAtIndex(i, pNewWeapon);
-                break;  
-            }  
-        }  
-    }  
-  
-    //set as active weapon  
-	pController.SetActiveWeapon(pNewWeapon);
-  
-    //set weapon state to WEAPON_IS_ACTIVE (2), 
-	//StopControl() will call Deploy() on m_hActiveWeapon (now the new weapon), which is correct  
-    SetEntProp(pNewWeapon.entindex, Prop_Send, "m_iState", 2);  
-	
-	//set not solid flag so bullet doesn't collide with weapon
-	pNewWeapon.m_usSolidFlags |= FSOLID_NOT_SOLID;
-	
-	//bonemerge effect, so it is attached to the hand
-	pNewWeapon.m_fEffects |= EF_BONEMERGE;
-	
-	//for medic, it's 0, for the rest - 1
-	int iProficiency = (strcmp(szClassname, "npc_human_medic") == 0) ? 0 : 1;
-	SetEntProp(pController.entindex, Prop_Data, "m_CurrentWeaponProficiency", iProficiency);  
-	
-	//set name in the same way the GiveWeapon() method does, so the mappers can still refer to it
-	char szControllerTargetname[MAX_FORMAT];
-	pController.GetTargetname(szControllerTargetname, sizeof(szControllerTargetname));
-	if (szControllerTargetname[0] != '\0')  
-	{  
-		char szNewWeaponTargetname[MAX_FORMAT];  
-		FormatEx(szNewWeaponTargetname, sizeof(szNewWeaponTargetname), "%s_weapon", szControllerTargetname);  
-		pNewWeapon.SetTargetname(szNewWeaponTargetname);
-	}
-  
-    return MRES_Ignored;  
+	return MRES_Ignored;
 }
 
 //------------------------------------------------------

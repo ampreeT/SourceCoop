@@ -43,6 +43,16 @@ enum CAI_BaseNPC_Memory
 	bits_MEMORY_HAD_LOS			= ( 1 << 17 ) // Had LOS to enemy
 }
 
+enum CAI_BaseNPC_DesiredWeaponState_t
+{
+	DESIREDWEAPONSTATE_IGNORE = 0,
+	DESIREDWEAPONSTATE_HOLSTERED,
+	DESIREDWEAPONSTATE_HOLSTERED_DESTROYED, // Put the weapon away, then destroy it.
+	DESIREDWEAPONSTATE_UNHOLSTERED,
+	DESIREDWEAPONSTATE_CHANGING,
+	DESIREDWEAPONSTATE_CHANGING_DESTROY,	// Destroy the weapon when this change is complete.
+};
+
 methodmap CAI_BaseNPC < CBaseCombatCharacter
 {
 	public static void InitClassdef(const GameData hGameConfig)
