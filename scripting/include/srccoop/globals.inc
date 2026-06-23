@@ -191,10 +191,6 @@ DynamicHook hkDispatchEffect;
 DynamicHook hkPropChargerThink;
 #endif
 
-#if defined SRCCOOP_HL2DM && defined PLAYERPATCH_SERVERSIDE_RAGDOLLS
-DynamicHook hkCreateRagdollEntity;
-#endif
-
 #if defined SRCCOOP_BLACKMESA
 DynamicDetour hkAccumulatePose;
 DynamicDetour hkTestGroundMove;

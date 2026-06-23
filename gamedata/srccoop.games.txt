@@ -510,13 +510,6 @@
 					}
 				}
 			}
-			"CBasePlayer::CreateRagdollEntity"
-			{
-				"offset"	"CBasePlayer::CreateRagdollEntity"
-				"hooktype"	"entity"
-				"return"	"void"
-				"this"		"entity"
-			}
 			"CBasePlayer::ForceRespawn"
 			{
 				"offset"	"CBasePlayer::ForceRespawn"
@@ -634,7 +627,6 @@
 					}
 				}
 			}
-			
 			"CWeapon_Crossbow::FireBolt"
 			{
 				"offset"	"CWeapon_Crossbow::FireBolt"
@@ -646,37 +638,6 @@
 					"bUnknown"
 					{
 						"type"	"bool"
-					}
-				}
-			}
-			
-			"CLagCompensationManager::StartLagCompensation"	//void CLagCompensationManager::StartLagCompensation( CBasePlayer *player, LagCompensationType lagCompensationType, const Vector& weaponPos, const QAngle &weaponAngles, float weaponRange )
-			{
-				"signature"		"CLagCompensationManager::StartLagCompensation"
-				"callconv"		"thiscall"
-				"return"		"void"
-				"this"			"address"
-				"arguments"
-				{
-					"CBasePlayer"
-					{
-						"type"		"cbaseentity"
-					}
-					"LagCompensationType"
-					{
-						"type"		"int"
-					}
-					"weaponPos"
-					{
-						"type"		"vectorptr"
-					}
-					"weaponAngles"
-					{
-						"type"		"vectorptr"
-					}
-					"weaponRange"
-					{
-						"type"		"float"
 					}
 				}
 			}
@@ -1019,6 +980,36 @@
 				"hooktype"	"entity"
 				"return"	"void"
 				"this"		"entity"
+      }
+			"CLagCompensationManager::StartLagCompensation"	//void CLagCompensationManager::StartLagCompensation( CBasePlayer *player, LagCompensationType lagCompensationType, const Vector& weaponPos, const QAngle &weaponAngles, float weaponRange )
+			{
+				"signature"		"CLagCompensationManager::StartLagCompensation"
+				"callconv"		"thiscall"
+				"return"		"void"
+				"this"			"address"
+				"arguments"
+				{
+					"CBasePlayer"
+					{
+						"type"		"cbaseentity"
+					}
+					"LagCompensationType"
+					{
+						"type"		"int"
+					}
+					"weaponPos"
+					{
+						"type"		"vectorptr"
+					}
+					"weaponAngles"
+					{
+						"type"		"vectorptr"
+					}
+					"weaponRange"
+					{
+						"type"		"float"
+					}
+				}
 			}
 		}
 	}
@@ -1667,11 +1658,11 @@
 			"SetMinMaxSize" // void SetMinMaxSize(CBaseEntity *, Vector const&, Vector const&)
 			{
 				"windows"	"\x55\x8B\xEC\x8B\x55\x0C\x33\xC9" // str: "%s: backwards mins/maxs"
-				"linux"		"@_ZL13SetMinMaxSizeP11CBaseEntityRK6VectorS3_"
+				"linux"		"@_Z12UTIL_SetSizeP11CBaseEntityRK6VectorS3_" // Linux uses parent "UTIL_SetSize" to avoid a crash!
 			}
 			"CBaseEntity::SetNextThink" // void SetNextThink( float nextThinkTime, const char *szContext = NULL );
 			{
-				"windows"	"\x55\x8B\xEC\x51\xF3\x0F\x10\x45\x08\x0F\x2E\x05\x2A\x2A\x2A\x2A" // str: "Doing partial rebuild of Node Graph..."
+				"windows"	"\x55\x8B\xEC\xF3\x0F\x10\x45\x08\x0F\x2E\x05\x2A\x2A\x2A\x2A\x53" // str: "Doing partial rebuild of Node Graph..."
 				"linux"		"@_ZN11CBaseEntity12SetNextThinkEfPKc"
 			}
 			"CreateServerRagdoll" // CBaseEntity CreateServerRagdoll(CBaseAnimating *, int, const CTakeDamageInfo *, int, bool)
@@ -1707,7 +1698,7 @@
 			}
 			"CAI_BaseNPC::SetPlayerAvoidState" // void CAI_BaseNPC::SetPlayerAvoidState()
 			{
-				"windows"	"\x55\x8B\xEC\x83\xEC\x5C\x53\x57"
+				"windows"	"\x55\x8B\xEC\x83\xEC\x58\x8D\x45\xD8"
 				"linux" 	"@_ZN11CAI_BaseNPC19SetPlayerAvoidStateEv"
 			}
 			"CAI_BaseNPC::UpdateSleepState"	// void CAI_BaseNPC::UpdateSleepState( bool bInPVS )
@@ -1800,11 +1791,6 @@
 		
 		"Offsets"
 		{
-			"CBasePlayer::CreateRagdollEntity" // void CBasePlayer::CreateRagdollEntity()
-			{
-				"windows"	"431"
-				"linux"		"432"
-			}
 			"CBasePlayer::ChangeTeam" // CBasePlayer::ChangeTeam(int, bool, bool, bool)
 			{
 				"windows"	"426"

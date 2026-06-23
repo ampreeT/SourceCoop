@@ -94,10 +94,6 @@ void LoadGameData()
 	#if defined ENTPATCH_BM_PROP_CHARGERS
 	LoadDHookVirtual(pGameConfig, hkPropChargerThink, "CPropChargerBase::ChargerThink");
 	#endif
-	
-	#if defined SRCCOOP_HL2DM && defined PLAYERPATCH_SERVERSIDE_RAGDOLLS
-	LoadDHookVirtual(pGameConfig, hkCreateRagdollEntity, "CBasePlayer::CreateRagdollEntity");
-	#endif
 
 	#if defined PLAYERPATCH_RESTORE_MP_FORCERESPAWN
 	LoadDHookVirtual(pGameConfig, hkForceRespawn, "CBasePlayer::ForceRespawn");
@@ -514,10 +510,6 @@ public void OnClientPutInServer(int client)
 	#if defined PLAYERPATCH_OVERRIDE_DEATH_OBSMODE
 	DHookEntity(hkStartObserverMode, false, client, _, Hook_PlayerStartObserverMode);
 	#endif
-	
-	#if defined SRCCOOP_HL2DM && defined PLAYERPATCH_SERVERSIDE_RAGDOLLS
-	DHookEntity(hkCreateRagdollEntity, false, client, _, Hook_CreateRagdollEntity);
-	#endif
 
 	// `item_ammo_canister` has a client side dlight that will
 	// always appear even if the ammo canister is not being transmitted.
@@ -848,6 +840,15 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 		if (strcmp(szClassname, "env_credits") == 0)
 		{
 			DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_EnvCreditsAcceptInput);
+			return;
+		}
+		#endif
+		
+		#if defined ENTPATCH_BM_CASCADELIGHT
+		if (strcmp(szClassname, "env_cascade_light") == 0)
+		{
+			DHookEntity(hkKeyValue_char, false, iEntIndex, _, Hook_CascadeLightKeyValueHACK);
+			DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_CascadeLightAcceptInput);
 			return;
 		}
 		#endif
