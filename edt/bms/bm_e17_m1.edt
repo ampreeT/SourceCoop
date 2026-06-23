@@ -15,6 +15,21 @@
 	}
 	"entity"
 	{
+		// block off next map
+		"add"
+		{
+			"classname" "func_brush"
+			"rendermode" "10"
+			"spawnflags" "2"
+			"functions"
+			{
+				"set_model"
+				{
+					"origin" "-188 -432 320"
+					"size" "344 32 288"
+				}
+			}
+		}
 		//music fix
 		//actually there are two ambient_generics responsible for music
 		//on the map, but only one has output for playing, so I fix only it

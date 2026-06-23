@@ -99,8 +99,8 @@
 		{
 			"classname"	"func_brush"
 			"targetname" "elevator_block"
-			"StartDisabled" "1"
 			"spawnflags" "2"
+			"StartDisabled" "1"
 			"functions"
 			{
 				"set_model"
@@ -235,6 +235,23 @@
 				}
 			}
 		}
+		// trigger_hurt fall to include NPCs
+		"add"
+		{
+			"classname"	"trigger_hurt"
+			"spawnflags" "3"
+			"damagetype" "32"
+			"damagecap" "1000"
+			"damage" "1000"
+			"functions"
+			{
+				"set_model"
+				{
+					"origin" "-736 1152 -1314"
+					"size" "2112 4352 192"
+				}
+			}
+		}
 	}
 	"checkpoint"
 	{
@@ -269,14 +286,12 @@
 			"bringall"	"1"
 			"delay"		"1"
 		}
-		"end"
+		"return"
 		{
-			"origin"	"-1326 -900 36"
-			"angles"	"0 90 0"
-			"triggerid"	"402518"
-			"output"	"OnPressed"
-			"bringall"	"1"
-			"delay"		"1"
+			"origin"	"348 2243 132"
+			"angles"	"0 180 0"
+			"triggerid"	"445802"
+			"output"	"OnTrigger"
 		}
 	}
 }

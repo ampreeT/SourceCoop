@@ -17,6 +17,21 @@
 	}
 	"entity"
 	{
+		// block off next map
+		"add"
+		{
+			"classname" "func_brush"
+			"rendermode" "10"
+			"spawnflags" "2"
+			"functions"
+			{
+				"set_model"
+				{
+					"origin" "-780 6072 1476"
+					"size" "8 160 216"
+				}
+			}
+		}
 		// delay map start
 		"modify"
 		{
@@ -312,7 +327,7 @@
 	{
 		"spawn"
 		{
-			"origin"	"3591 -798 -128"
+			"origin"	"3590 -796 -104"
 			"angles"	"0 120 0"
 		}
 		"crowbar"

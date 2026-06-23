@@ -39,6 +39,7 @@
 			{
 				"classname" "func_brush"
 				"rendermode" "10"
+				"spawnflags" "2"
 			}
 		}
 		// block off ending
@@ -50,12 +51,18 @@
 			{
 				"classname" "func_brush"
 				"rendermode" "10"
+				"spawnflags" "2"
 			}
 		}
 		// remove starting weapons
 		"remove"
 		{
 			"targetname" "player_spawn_items"
+		}
+		// remove fence because you already can go through it
+		"remove"
+		{
+			"hammerid" "10869"
 		}
 		// end the game
 		"add"

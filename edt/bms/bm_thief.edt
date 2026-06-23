@@ -164,10 +164,6 @@
 				{
 					"target" "lab_door4"
 				}
-				"remove"
-				{
-					"target" "lab_door6"
-				}
 			}
 		}
 		// fix secondary emergency doors

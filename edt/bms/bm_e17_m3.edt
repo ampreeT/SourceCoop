@@ -27,6 +27,33 @@
 	}
 	"entity"
 	{
+		// block off previous map
+		"modify"
+		{
+			"classname" "trigger_changelevel"
+			"map" "bm_e17_m2"
+			"set"
+			{
+				"classname" "func_brush"
+				"rendermode" "10"
+				"spawnflags" "2"
+			}
+		}
+		// block off next map
+		"add"
+		{
+			"classname" "func_brush"
+			"rendermode" "10"
+			"spawnflags" "2"
+			"functions"
+			{
+				"set_model"
+				{
+					"origin" "4006 -3232 98"
+					"size" "12 304 188"
+				}
+			}
+		}
 		//music fix
 		"modify"
 		{

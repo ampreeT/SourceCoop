@@ -46,6 +46,73 @@
 			{
 				"delay_output" "OnMapSpawn"
 			}
+			"outputs"
+			{
+				"add"
+				{
+					"output" "OnMapSpawn"
+					"target" "platform_teleport"
+					"input"	"SetParent"
+					"parameter" "plat02"
+					"timestofire" "-1"
+				}
+			}
+		}
+		// only alien slave can kill that Dr Siggard
+		"modify"
+		{
+			"hammerid" "579951"
+			"set"
+			{
+				"damagefilter" "filter_siggard"
+			}
+		}
+		"add"
+		{
+			"classname" "filter_damage_class"
+			"targetname" "filter_siggard"
+			"filterclass" "npc_alien_slave"
+			"spawnflags" "1"
+		}
+		// brush to teleport players to the platform for anti-troll purpose
+		"add"
+		{
+			"classname" "trigger_once"
+			"targetname" "platform_teleport"
+			"spawnflags" "1"
+			"functions"
+			{
+				"set_model"
+				{
+					"origin" "2256 1484 -1422"
+					"size" "144 128 50"
+				}
+			}
+		}
+		// headcrabs & bullsquid won't fight each other until seen
+		"modify"
+		{
+			"hammerid" "558457"
+			"set"
+			{
+				"spawnflags" "1"
+			}
+		}
+		"modify"
+		{
+			"hammerid" "124851"
+			"set"
+			{
+				"spawnflags" "1"
+			}
+		}
+		"modify"
+		{
+			"hammerid" "124857"
+			"set"
+			{
+				"spawnflags" "1"
+			}
 		}
 	}
 	"checkpoint"
@@ -68,6 +135,16 @@
 			"angles"	"0 180 0"
 			"triggerid"	"150070"
 			"output"	"OnTrigger"
+		}
+		"platform"
+		{
+			"origin"	"0 -80 30"
+			"angles"	"0 270 0"
+			"followid"	"148955"
+			"triggerid"	"platform_teleport"
+			"output"	"OnTrigger"
+			"portal"	"2255 850 -1884"
+			"delay"		"1"
 		}
 		"elevator"
 		{

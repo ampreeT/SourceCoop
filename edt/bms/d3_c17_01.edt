@@ -32,6 +32,21 @@
 	}	
 	"entity"
 	{
+		// block off next map
+		"add"
+		{
+			"classname" "func_brush"
+			"rendermode" "10"
+			"spawnflags" "2"
+			"functions"
+			{
+				"set_model"
+				{
+					"origin" "-6596 -832 -192"
+					"size" "8 144 128"
+				}
+			}
+		}
 		// delay map start
 		"modify"
 		{
@@ -47,6 +62,30 @@
 			"functions"
 			{
 				"delay_output" "OnMapSpawn"
+			}
+		}
+		// screenoverlay fixes
+		"modify"
+		{
+			"hammerid" "4511"
+			"outputs"
+			{
+				"modify"
+				{
+					"input" "StartOverlays"
+					"replace"
+					{
+						"input" "StartOverlaysAll"
+					}
+				}
+				"modify"
+				{
+					"input" "StopOverlays"
+					"replace"
+					{
+						"input" "StopOverlaysAll"
+					}
+				}
 			}
 		}
 		// remove starting weapons
