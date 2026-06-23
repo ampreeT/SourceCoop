@@ -286,7 +286,7 @@ public MRESReturn Hook_SnarkIsValidEnemy(int _this, DHookReturn hReturn, DHookPa
     CAI_BaseNPC pEnemy = CAI_BaseNPC(DHookGetParam(hParams, 1));
 
     //not valid enemy
-    if (!pEnemy.IsValid())
+    if (pEnemy == NULL_CBASEENTITY)
         return MRES_Ignored;
 
     CNpc_Snark pSnark = CNpc_Snark(_this);
