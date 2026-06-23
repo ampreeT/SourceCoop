@@ -840,6 +840,15 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 		}
 		#endif
 		
+		#if defined ENTPATCH_BM_CASCADELIGHT
+		if (strcmp(szClassname, "env_cascade_light") == 0)
+		{
+			DHookEntity(hkKeyValue_char, false, iEntIndex, _, Hook_CascadeLightKeyValueHACK);
+			DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_CascadeLightAcceptInput);
+			return;
+		}
+		#endif
+		
 		if (strcmp(szClassname, "env_sprite") == 0)
 		{
 			#if defined ENTPATCH_ENV_SPRITE
