@@ -81,7 +81,7 @@ public MRESReturn Hook_UpdateEnemyMemory(int _this, DHookReturn hReturn, DHookPa
 
 //------------------------------------------------------
 // CNPC_PlayerCompanion
-// This func containы an algorithm that is used in several places to filter the friendly snark
+// Returns true if enemy is a player snark and it's friendly to given NPC.
 //------------------------------------------------------
 bool IsEnemyFriendlySnark(int _this, DHookParam hParams)
 {
@@ -102,7 +102,8 @@ bool IsEnemyFriendlySnark(int _this, DHookParam hParams)
 		CAI_BaseNPC pThis = CAI_BaseNPC(_this);
 
 		//not valid OR owner is not player (f. e. npc_maker) OR i don't like the player OR not player's snark
-		if (!pOwner.IsValid() || !pOwner.IsPlayer() || (pThis.m_afMemory & bits_MEMORY_PROVOKED || pThis.IRelationType(pOwner) == D_HT) || pEnemy.GetTeam() != pOwner.GetTeam())
+		if (!pOwner.IsValid() || !pOwner.IsPlayer() || pEnemy.GetTeam() != pOwner.GetTeam() ||
+			(pThis.m_afMemory & bits_MEMORY_PROVOKED || pThis.IRelationType(pOwner) == D_HT))
 			return false;
 		
 		return true;
