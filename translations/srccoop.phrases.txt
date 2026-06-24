@@ -13,6 +13,7 @@
 		"en"			"This server runs {ter}SourceCoop v{1}{pri}\nPress {sec}={pri} or type {sec}/{ter}coopmenu{pri} for extra options."
 		"ru"			"Сервер использует {ter}SourceCoop v{1}{pri}\nНажмите {sec}={pri} или введите {sec}/{ter}coopmenu{pri} для дополнительных функций."
 		"zho"			"此伺服器運作 {ter}SourceCoop v{1}{pri}\n按下 {sec}={pri} 或輸入 {sec}/{ter}coopmenu{pri} 以顯示額外選項。"
+		"ua"			"Цей сервер використовує {ter}SourceCoop v{1}{pri}\nНатисніть {sec}={pri} або напишіть {sec}/{ter}coopmenu{pri} для додаткового функціоналу."
 	}
 
 	"map start"
@@ -21,6 +22,7 @@
 		"en"			"Co-op map {1} has begun"
 		"ru"			"Начался кооператив на уровне {1}"
 		"zho"			"合作模式地圖 {1} 已開始。"
+		"ua"			"Кооперативний рівень {1} почався"
 	}
 
 	"changing map"
@@ -28,6 +30,7 @@
 		"en"			"Changing map"
 		"ru"			"Смена уровня"
 		"zho"			"正在更換地圖。"
+		"ua"			"Зміна рівня"
 	}
 
 	"player"
@@ -35,6 +38,7 @@
 		"en"			"player"
 		"ru"			"игрок"
 		"zho"			"玩家"
+		"ua"			"гравець"
 	}
 
 	"players"
@@ -42,6 +46,7 @@
 		"en"			"players"
 		"ru"			"игроков"
 		"zho"			"玩家們"
+		"ua"			"гравців"
 	}
 
 	"feature enabled"
@@ -50,6 +55,7 @@
 		"en"			"Enabled feature {1}"
 		"ru"			"Включена опция {1}"
 		"zho"			"已啟用功能 {1}"
+		"ua"			"Увімкнена функція {1}"
 	}
 
 	"feature disabled"
@@ -58,6 +64,7 @@
 		"en"			"Disabled feature {1}"
 		"ru"			"Выключена опция {1}"
 		"zho"			"已停用功能 {1}"
+		"ua"			"Вимкнута функція {1}"
 	}
 
 	"feature unknown"
@@ -66,6 +73,7 @@
 		"en"			"Unknown feature: {1}"
 		"ru"			"Неизвестная опция: {1}"
 		"zho"			"未知功能: {1}"
+		"ua"			"Невідома функція: {1}"
 	}
 
 	"menu unavailable"
@@ -73,6 +81,7 @@
 		"en"			"Coop menu is currently unavailable."
 		"ru"			"Кооперативное меню сейчас недоступно."
 		"zho"			"合作模式選單目前無法使用。"
+		"ua"			"Кооперативне меню наразі недоступне."
 	}
 
 	"menu title"
@@ -80,6 +89,7 @@
 		"en"			"SourceCoop Menu"
 		"ru"			"SourceCoop Меню"
 		"zho"			"SourceCoop 選單"
+		"ua"			"SourceCoop Меню"
 	}
 
 	"menu category player"
@@ -87,6 +97,7 @@
 		"en"			"Player settings"
 		"ru"			"Настройки игрока"
 		"zho"			"玩家設定"
+		"ua"			"Налаштування гравця"
 	}
 
 	"menu category sounds"
@@ -94,6 +105,7 @@
 		"en"			"Sound settings"
 		"ru"			"Настройки звука"
 		"zho"			"聲音設定"
+		"ua"			"Налаштування звуку"
 	}
 
 	"menu category votes"
@@ -101,6 +113,7 @@
 		"en"			"Votes"
 		"ru"			"Голосование"
 		"zho"			"投票"
+		"ua"			"Голосування"
 	}
 
 	"menu category other"
@@ -108,6 +121,7 @@
 		"en"			"Other"
 		"ru"			"Прочее"
 		"zho"			"其他"
+		"ua"			"Інше"
 	}
 
 	"checkpoint reached"
@@ -115,6 +129,7 @@
 		"en"			"Checkpoint reached"
 		"ru"			"Контрольная точка достигнута"
 		"zho"			"已到達檢查點"
+		"ua"			"Контрольну точку досягнуто"
 	}
 
 	"survival respawn hint checkpoint"
@@ -122,6 +137,7 @@
 		"en"			"You will respawn at the next survival checkpoint"
 		"ru"			"Вы возродитесь на следующей контрольной точке"
 		"zho"			"你將在下一個生存檢查點重生。"
+		"ua"			"Ви відродитеся у наступній контрольній точці виживання"
 	}
 
 	"survival respawn hint no checkpoint"
@@ -129,6 +145,7 @@
 		"en"			"You will respawn once everyone is dead"
 		"ru"			"Вы возродитесь, как только все погибнут"
 		"zho"			"當所有人都死亡後，你將重生。"
+		"ua"			"Ви відродитесь, коли всі помруть"
 	}
 
 	"survival restart last checkpoint"
@@ -136,6 +153,7 @@
 		"en"			"Try again! Starting at last checkpoint..."
 		"ru"			"Попробуйте еще раз! Запуск последней контрольной точки..."
 		"zho"			"再試一次！從最後一個檢查點開始..."
+		"ua"			"Спробуйте ще раз! Починаємо у останній контрольній точці..."
 	}
 
 	"survival game over"
@@ -143,6 +161,7 @@
 		"en"			"ASSIGNMENT: TERMINATED\nSUBJECT: FREEMAN\nREASON: FAILURE TO PRESERVE MISSION-CRITICAL PERSONNEL"
 		"ru"			"ЗАДАНИЕ: ПРЕРВАНО\nСУБЪЕКТ: ФРИМЕН\nПРИЧИНА: ГИБЕЛЬ ЛЮДЕЙ,\nНЕОБХОДИМЫХ ДЛЯ ВЫПОЛНЕНИЯ ЗАДАНИЯ"
 		"zho"			"任務：終止\n目標：弗里曼\n原因：未能保護任務關鍵人員"
+		"ua"			"ЗАВДАННЯ: СКАСОВАНО\nс\СУБ'ЄКТ: ФРІМЕН\ПРИЧИНА: НЕ ВДАЛОСЬ ВБЕРЕГТИ КРИТИЧНО ВАЖЛИВИХ ОСІБ"
 	}
 
 	"equipment saved"
@@ -150,6 +169,7 @@
 		"en"			"Saved equipment successfully."
 		"ru"			"Снаряжение успешно сохранено."
 		"zho"			"設備已成功儲存。"
+		"ua"			"Екіпірування успішно збережено."
 	}
 
 	"equipment export fail"
@@ -158,6 +178,7 @@
 		"en"			"Issue occurred when saving equipment to file: {1}"
 		"ru"			"Возникла ошибка при сохранении снаряжения в файл: {1}"
 		"zho"			"儲存設備到檔案時發生錯誤: {1}"
+		"ua"			"Виникла проблема при зберіганні екіпірування у файлі: {1}"
 	}
 
 	"equipment export no players"
@@ -165,6 +186,7 @@
 		"en"			"No valid players found. Save cancelled."
 		"ru"			"Не найдено ни одного действующего игрока. Сохранение отменено."
 		"zho"			"未找到有效的玩家，儲存已取消。"
+		"ua"			"Відсутні дійсні гравці. Зберігання відхілено."
 	}
 
 	"equipment import file not found"
@@ -173,6 +195,7 @@
 		"en"			"Could not find specified save file: {1}"
 		"ru"			"Невозможно найти указанный файл сохранения: {1}"
 		"zho"			"無法找到指定的儲存檔案: {1}"
+		"ua"			"Не вдалося знайти вказаний файл збереження: {1}"
 	}
 
 	"equipment import fail"
@@ -181,6 +204,7 @@
 		"en"			"The save file is in incorrect format: {1}"
 		"ru"			"Файл сохранения имеет неверный формат: {1}"
 		"zho"			"儲存檔案格式不正確: {1}"
+		"ua"			"Цей файл збереження у некоректному форматі: {1}"
 	}
 
 	"equipment loaded"
@@ -189,6 +213,7 @@
 		"en"			"Loaded player state for: {1}"
 		"ru"			"Загружено состояние игрока: {1}"
 		"zho"			"已載入玩家狀態: {1}"
+		"ua"			"Завантажено стан для гравця: {1}"
 	}
 
 	"equipment not loaded"
@@ -197,6 +222,7 @@
 		"en"			"Failed to load data for player: {1}. {2}"
 		"ru"			"Не удалось загрузить данные игрока: {1}. {2}"
 		"zho"			"無法載入玩家資料: {1}. {2}"
+		"ua"			"Не вдалося завантажити дані для гравця: {1}. {2}"
 	}
 
 	"equipment load unknown steamid"
@@ -204,6 +230,7 @@
 		"en"			"SteamID is unknown."
 		"ru"			"SteamID неизвестен."
 		"zho"			"SteamID 未知。"
+		"ua"			"SteamID невідомий."
 	}
 
 	"equipment load player not found"
@@ -212,6 +239,7 @@
 		"en"			"Save data not found for SteamID: {1}"
 		"ru"			"Не найдены сохраненные данные для SteamID: {1}"
 		"zho"			"未找到該 SteamID 的儲存資料: {1}"
+		"ua"			"Не вдалося знайти збережені дані для SteamID: {1}"
 	}
 
 	"equipment load missing section"
@@ -220,6 +248,7 @@
 		"en"			"Missing section \"{1}\" in save file!"
 		"ru"			"Отсутствует секция \"{1}\" в файле сохранения!"
 		"zho"			"在儲存檔案中 \"{1}\" 缺少區段!"
+		"ua"			"Відсутня секція \"{1}\" у файлі збереження!"
 	}
 
 	"equipment cleared"
@@ -227,6 +256,7 @@
 		"en"			"Cleared player state successfully."
 		"ru"			"Состояние игрока успешно очищено."
 		"zho"			"成功清除玩家狀態。"
+		"ua"			"Стан гравця очищено успішно."
 	}
 
 	"entity suicided"
@@ -235,6 +265,7 @@
 		"en"			"{1} suicided!"
 		"ru"			"{1} покончил(а) с собой!"
 		"zho"			"{1} 自殺了！"
+		"ua"			"Здійснилось самогубство гравцем {1}!"
 	}
 	
 	"entity killed entity with weapon"
@@ -243,6 +274,7 @@
 		"en"			"{1} killed {2} with {3}!"
 		"ru"			"{1} убил {2} с помощью {3}!"
 		"zho"			"{1} 用 {2} 殺死了 {3}!"
+		"ua"			"{1} вбито {2} завдяки {3}!"
 	}
 
 	"entity killed entity"
@@ -251,5 +283,6 @@
 		"en"			"{1} killed {2}!"
 		"ru"			"{1} убил {2}!"
 		"zho"			"{1} 殺死 {2}!"
+		"ua"			"{1} вбито {2}!"
 	}
 }

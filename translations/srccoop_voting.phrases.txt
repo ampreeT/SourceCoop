@@ -14,6 +14,7 @@
 		"en"			"Skip intro"
 		"ru"			"Пропуск интро"
 		"zho"			"跳過介紹動畫"
+		"ua"			"Пропустити вступ"
 	}
 
 	"RestartMapVote"
@@ -21,6 +22,7 @@
 		"en"			"Restart current map"
 		"ru"			"Рестарт текущего уровня"
 		"zho"			"重新開始目前地圖"
+		"ua"			"Перезапустити поточний рівень"
 	}
 
 	"MapVote"
@@ -28,6 +30,7 @@
 		"en"			"Change map"
 		"ru"			"Сменить уровень"
 		"zho"			"更換地圖"
+		"ua"			"Змінити рівень"
 	}
 
 	"SurvivalVote"
@@ -35,6 +38,7 @@
 		"en"			"Survival mode"
 		"ru"			"Режим выживания"
 		"zho"			"生存模式"
+		"ua"			"Режим виживання"
 	}
 
 	"start disable vote"
@@ -43,6 +47,7 @@
 		"en"			"Disable {1}"
 		"ru"			"Отключить {1}"
 		"zho"			"關閉 {1}"
+		"ua"			"Вимкнути {1}"
 	}
 
 	"start enable vote"
@@ -51,6 +56,7 @@
 		"en"			"Enable {1}"
 		"ru"			"Включить {1}"
 		"zho"			"開啟 {1}"
+		"ua"			"Увімкнути {1}"
 	}
 
 	"select a map"
@@ -58,6 +64,7 @@
 		"en"			"Select a map:"
 		"ru"			"Выбрать уровень:"
 		"zho"			"選擇一張地圖:"
+		"ua"			"Обрати рівень:"
 	}
 
 	"change map to?"
@@ -66,6 +73,7 @@
 		"en"			"Change map to {1}?"
 		"ru"			"Сменить уровень на {1}?"
 		"zho"			"更換地圖至 {1}?"
+		"ua"			"Змінити рівень на {1}?"
 	}
 
 	/* chat / console */
@@ -75,6 +83,7 @@
 		"en"			"Reloading maps."
 		"ru"			"Перезагрузка уровней."
 		"zho"			"重新載入地圖。"
+		"ua"			"Перезавантаження рівнів."
 	}
 
 	"scanned maps"
@@ -83,6 +92,7 @@
 		"en"			"Scanned {1} maps for voting in {2} seconds."
 		"ru"			"Просканировано {1} уровней для голосования за {2} сек."
 		"zho"			"在 {2} 秒內掃描了 {1} 張地圖以供投票。"
+		"ua"			"Проскановано {1} рівнів для голосування за {2} секунд."
 	}
 
 	"changing map to"
@@ -91,6 +101,7 @@
 		"en"			"Changing map to {ter}{1}{pri}..."
 		"ru"			"Смена уровня на {ter}{1}{pri}..."
 		"zho"			"正在更換地圖至 {ter}{1}{pri}..."
+		"ua"			"Зміна рівня на {ter}{1}{pri}..."
 	}
 
 	"restarting map"
@@ -98,6 +109,7 @@
 		"en"			"Restarting map..."
 		"ru"			"Рестарт уровня..."
 		"zho"			"正在重新開始地圖..."
+		"ua"			"Перезапуск рівня..."
 	}
 
 	"not intro map"
@@ -105,6 +117,7 @@
 		"en"			"This is not an intro map."
 		"ru"			"Это уже не уровень интро."
 		"zho"			"這不是介紹地圖。"
+		"ua"			"Цей рівень не належить до розділу \"ПРИБУТТЯ ДО ЧОРНОЇ МЕЗИ\"."
 	}
 
 	"vote disabled"
@@ -113,6 +126,7 @@
 		"en"			"{ter}{1}{pri} vote is disabled on this server."
 		"ru"			"{ter}{1}{pri} голосование отключено на этом сервере."
 		"zho"			"{ter}{1}{pri} 投票在此伺服器上已關閉。"
+		"ua"			"{ter}{1}{pri} голосування вимкнено на цьому сервері."
 	}
 
 	"vote cooldown"
@@ -121,6 +135,7 @@
 		"en"			"{ter}{1}{pri} vote is not available for another {ter}{2}."
 		"ru"			"{ter}{1}{pri} голосование недоступно следующие {ter}{2}."
 		"zho"			"{ter}{1}{pri} 投票在 {ter}{2} 後才能使用。"
+		"ua"			"{ter}{1}{pri} голосування недоступне протягом {ter}{2}."
 	}
 
 	"vote started"
@@ -129,6 +144,7 @@
 		"en"			"{ter}{1}{pri} vote has started!"
 		"ru"			"{ter}{1}{pri} голосование началось!"
 		"zho"			"{ter}{1}{pri} 投票已開始！"
+		"ua"			"{ter}{1}{pri} голосування почалось!"
 	}
 
 	"vote started by player"
@@ -137,6 +153,7 @@
 		"en"			"{ter}{2}{pri} vote has been started by {ter}{1}{pri}!"
 		"ru"			"{ter}{2}{pri} голосование запущено игроком {ter}{1}{pri}!"
 		"zho"			"{ter}{2}{pri} 投票已由 {ter}{1}{pri} 發起！"
+		"ua"			"{ter}{2}{pri} почалось голосування гравцем {ter}{1}{pri}!"
 	}
 
 	"player voted"
@@ -145,6 +162,7 @@
 		"en"			"{1} voted{ter}"
 		"ru"			"{1} проголосовал{ter}"
 		"zho"			"{1} 已投票{ter}"
+		"ua"			"{1} проголосував{ter}"
 	}
 
 	"vote successful"
@@ -152,6 +170,7 @@
 		"en"			"Vote successful!"
 		"ru"			"Голосование успешно!"
 		"zho"			"投票成功！"
+		"ua"			"Голосування успішне!"
 	}
 
 	"vote unsuccessful"
@@ -159,6 +178,7 @@
 		"en"			"Vote failed."
 		"ru"			"Голосование не удалось."
 		"zho"			"投票失敗。"
+		"ua"			"Голосування не вдалось."
 	}
 
 	"disable vote successful"
@@ -167,6 +187,7 @@
 		"en"			"{ter}{1}{pri} disabled!"
 		"ru"			"{ter}{1}{pri} отключен!"
 		"zho"			"{ter}{1}{pri} 關閉！"
+		"ua"			"{ter}{1}{pri} вимкнено!"
 	}
 
 	"enable vote successful"
@@ -175,6 +196,7 @@
 		"en"			"{ter}{1}{pri} enabled!"
 		"ru"			"{ter}{1}{pri} включен!"
 		"zho"			"{ter}{1}{pri} 開啟！"
+		"ua"			"{ter}{1}{pri} увімкнено!"
 	}
 
 }

@@ -13,6 +13,7 @@
 		"en"			"Difficulty has changed to {ter}{1}"
 		"ru"			"Сложность изменена на {ter}{1}"
 		"zho"			"難度已變更為 {ter}{1}"
+		"ua"			"Складність змінено на {ter}{1}"
 	}
 
 	"current difficulty"
@@ -21,6 +22,7 @@
 		"en"			"Current difficulty: {ter}{1}"
 		"ru"			"Текущая сложность: {ter}{1}"
 		"zho"			"目前難度: {ter}{1}"
+		"ua"			"Поточна складність: {ter}{1}"
 	}
 
 	"unable to set"
@@ -28,6 +30,7 @@
 		"en"			"Unable to set difficulty: sourcecoop_difficulty_auto_max is lower than sourcecoop_difficulty_auto_min"
 		"ru"			"Невозможно установить сложность: sourcecoop_difficulty_auto_max ниже чем sourcecoop_difficulty_auto_min"
 		"zho"			"無法設定難度: sourcecoop_difficulty_auto_max 低於 sourcecoop_difficulty_auto_min"
+		"ua"			"Неможливо змінити складність: sourcecoop_difficulty_auto_max нижче ніж sourcecoop_difficulty_auto_min"
 	}
 	
 }
