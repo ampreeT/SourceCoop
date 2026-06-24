@@ -102,7 +102,7 @@ bool IsEnemyFriendlySnark(int _this, DHookParam hParams)
 		CAI_BaseNPC pThis = CAI_BaseNPC(_this);
 
 		//not valid OR owner is not player (f. e. npc_maker) OR i don't like the player OR not player's snark
-		if (!pOwner.IsValid() || !pOwner.IsPlayer() || pEnemy.GetTeam() != pOwner.GetTeam() ||
+		if (pOwner == NULL_CBASEENTITY || !pOwner.IsPlayer() || pEnemy.GetTeam() != pOwner.GetTeam() ||
 			(pThis.m_afMemory & bits_MEMORY_PROVOKED || pThis.IRelationType(pOwner) == D_HT))
 			return false;
 		
@@ -258,11 +258,11 @@ public MRESReturn Hook_HumanMedicKilled(int _this, DHookParam hParams)
 public void Hook_Snark_OnCreated(const int iEntIndex)
 {
     CNpc_Snark pSnark = CNpc_Snark(iEntIndex);
-    if (!pSnark.IsValid() || pSnark.GetHammerID() != 0) //don't for map-placed
+    if (pSnark == NULL_CBASEENTITY || pSnark.GetHammerID() != 0) //don't for map-placed
         return;
     
     CBaseEntity pOwner = pSnark.GetSnarkOwner();
-    if (!pOwner.IsValid()|| !pOwner.IsPlayer()) //it can have other owners, tmp maker f. i.
+    if (pOwner == NULL_CBASEENTITY || !pOwner.IsPlayer()) //it can have other owners, tmp maker f. i.
         return;
 
     CBasePlayer pPlayer = view_as<CBasePlayer>(pOwner);
@@ -293,7 +293,7 @@ public MRESReturn Hook_SnarkIsValidEnemy(int _this, DHookReturn hReturn, DHookPa
     CBaseEntity pOwner = pSnark.GetSnarkOwner();
 
     //i don't have owner or the owner is not a player
-    if (!pOwner.IsValid() || !pOwner.IsPlayer())
+    if (pOwner == NULL_CBASEENTITY || !pOwner.IsPlayer())
         return MRES_Ignored;
         
     CBasePlayer pPlayer = view_as<CBasePlayer>(pOwner);
