@@ -188,6 +188,32 @@ public MRESReturn Hook_HumanMedicKilled(int _this, DHookParam hParams)
 }
 
 //------------------------------------------------------
+// CFuncTank - func_50cal, func_tank, func_tank_combine_cannon, func_tankairboatgun, func_tanklaser,
+//			   func_tankmortar, func_tankphyscannister, func_tow, func_tow_mp
+// Marines lose their guns after a tank control (actually the weapon becomes broken).
+// This hook sets back proper desired weapon state and visibility for it.
+//------------------------------------------------------
+public MRESReturn Hook_TankStopControl(int _this, DHookParam hParams)
+{
+    CBaseCombatCharacter pController = CBaseCombatCharacter(GetEntPropEnt(_this, Prop_Data, "m_hController"));  
+  
+	//no controller or controller is not an npc
+    if (!pController.IsValid() || pController.IsPlayer())  
+        return MRES_Ignored;  
+		
+    CBaseCombatWeapon pWeapon = pController.GetActiveWeapon();  
+  
+	//we don't have a weapon
+    if (!pWeapon.IsValid())  
+        return MRES_Ignored;
+		
+	SetEntProp(pController.entindex, Prop_Data, "m_iDesiredWeaponState", DESIREDWEAPONSTATE_IGNORE); //restores shooting ability
+	pWeapon.m_fEffects &= ~EF_NODRAW; //restores weapon visibility
+	
+	return MRES_Ignored;
+}
+
+//------------------------------------------------------
 // CPropRadiationCharger - prop_radiation_charger
 //
 // # TODO

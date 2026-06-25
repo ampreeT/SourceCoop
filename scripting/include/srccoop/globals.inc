@@ -200,6 +200,10 @@ DynamicDetour hkTestGroundMove;
 DynamicDetour hkStartLagCompensation;
 #endif
 
+#if defined ENTPATCH_BM_FUNCBASETANK
+DynamicHook hkFuncTankStopControl;
+#endif
+
 // ----------------------------
 // MemPatches
 // ----------------------------

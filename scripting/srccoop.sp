@@ -106,6 +106,10 @@ void LoadGameData()
 	#if defined PLAYERPATCH_HITREG
 	LoadDHookVirtual(pGameConfig, hkPlayerWeaponShootPosition, "CBasePlayer::Weapon_ShootPosition");
 	#endif
+	
+	#if defined ENTPATCH_BM_FUNCBASETANK
+	LoadDHookVirtual(pGameConfig, hkFuncTankStopControl, "CFuncTank::StopControl");
+	#endif	
 
 	#if defined ENTPATCH_BM_SP_WEAPONS
 	LoadDHookVirtual(pGameConfig, hkBaseCombatWeaponDeploy, "CBaseCombatWeapon::Deploy");
@@ -1045,6 +1049,22 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 		if (strcmp(szClassname, "func_tracktrain") == 0)
 		{
 			DHookEntity(hkBlocked, false, iEntIndex, _, Hook_TrackTrainBlocked);
+			return;
+		}
+		#endif
+		
+		#if defined ENTPATCH_BM_FUNCBASETANK
+		if (strcmp(szClassname, "func_50cal") == 0 ||
+			strcmp(szClassname, "func_tank") == 0 ||
+			strcmp(szClassname, "func_tank_combine_cannon") == 0 ||
+			strcmp(szClassname, "func_tankairboatgun") == 0 ||
+			strcmp(szClassname, "func_tanklaser") == 0 ||
+			strcmp(szClassname, "func_tankmortar") == 0 ||
+			strcmp(szClassname, "func_tankphyscannister") == 0 ||
+			strcmp(szClassname, "func_tow") == 0 ||
+			strcmp(szClassname, "func_tow_mp") == 0)
+		{
+			DHookEntity(hkFuncTankStopControl, false, iEntIndex, _, Hook_TankStopControl);
 			return;
 		}
 		#endif

@@ -974,6 +974,13 @@
 				"return"	"void"
 				"this"		"entity"
 			}
+			"CFuncTank::StopControl"
+			{
+				"offset"	"CFuncTank::StopControl"
+				"hooktype"	"entity"
+				"return"	"void"
+				"this"		"entity"
+      }
 			"CLagCompensationManager::StartLagCompensation"	//void CLagCompensationManager::StartLagCompensation( CBasePlayer *player, LagCompensationType lagCompensationType, const Vector& weaponPos, const QAngle &weaponAngles, float weaponRange )
 			{
 				"signature"		"CLagCompensationManager::StartLagCompensation"
@@ -1587,6 +1594,11 @@
 			{
 				"windows"	"318"
 				"linux"		"319"
+			}
+			"CFuncTank::StopControl"
+			{
+				"windows"	"205"
+				"linux"		"206"
 			}
 		}
 	}
