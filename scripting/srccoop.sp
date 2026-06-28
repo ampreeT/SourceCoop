@@ -124,6 +124,11 @@ void LoadGameData()
 	g_iUserCmdOffset = pGameConfig.GetOffset("CBasePlayer::GetCurrentUserCommand");
 	#endif
 	
+	#if defined ENTPATCH_BM_SNARK
+	LoadDHookVirtual(pGameConfig, hkIsValidEnemy, "CAI_BaseNPC::IsValidEnemy");
+	LoadDHookVirtual(pGameConfig, hkUpdateEnemyMemory, "CAI_BaseNPC::UpdateEnemyMemory");
+	#endif
+	
 	#if defined PLAYERPATCH_SUIT_SOUNDS
 	LoadDHookDetour(pGameConfig, hkSetSuitUpdate, "CBasePlayer::SetSuitUpdate", Hook_SetSuitUpdate, Hook_SetSuitUpdatePost);
 	#endif
@@ -632,8 +637,8 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 		#endif
 
 		#if defined SRCCOOP_BLACKMESA
-
-		if (strncmp(szClassname, "npc_human_scientist", 19) == 0)
+		if (strncmp(szClassname, "npc_human_scientist", 19) == 0 || strcmp(szClassname, "npc_human_security") == 0 ||
+			strcmp(szClassname, "npc_human_eli") == 0 || strcmp(szClassname, "npc_human_kleiner") == 0 || strcmp(szClassname, "npc_gman") == 0)
 		{
 			#if defined ENTPATCH_PLAYER_ALLY
 			DHookEntity(hkIsPlayerAlly, false, iEntIndex, _, Hook_IsPlayerAlly);
@@ -643,24 +648,13 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 			DHookEntity(hkIsNavigationUrgent, false, iEntIndex, _, Hook_IsNavigationUrgent);
 			#endif
 
-			return;
-		}
-
-		#if defined ENTPATCH_PLAYER_ALLY
-		if (strcmp(szClassname, "npc_human_security") == 0)
-		{
-			#if defined ENTPATCH_PLAYER_ALLY
-			DHookEntity(hkIsPlayerAlly, false, iEntIndex, _, Hook_IsPlayerAlly);
-			#endif
-
-			#if defined ENTPATCH_NAVIGATION_URGENT
-			DHookEntity(hkIsNavigationUrgent, false, iEntIndex, _, Hook_IsNavigationUrgent);
+			#if defined ENTPATCH_BM_SNARK
+			DHookEntity(hkIsValidEnemy, false, iEntIndex, _, Hook_PlayerCompanionIsValidEnemy);
+			DHookEntity(hkUpdateEnemyMemory, false, iEntIndex, _, Hook_UpdateEnemyMemory);
 			#endif
 
 			return;
 		}
-		#endif
-		
 		#endif // SRCCOOP_BLACKMESA
 
 		#if defined ENTPATCH_BM_XENTURRET
@@ -709,6 +703,16 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 		if (strcmp(szClassname, "npc_human_medic") == 0)
 		{
 			DHookEntity(hkEvent_Killed, false, iEntIndex, _, Hook_HumanMedicKilled);
+			return;
+		}
+		#endif
+		
+		#if defined ENTPATCH_BM_SNARK
+		if (strcmp(szClassname, "npc_snark") == 0 && CoopManager.IsCoopModeEnabled())
+		{
+			RequestFrame(Hook_Snark_OnCreated, iEntIndex);
+			DHookEntity(hkIsValidEnemy, false, iEntIndex, _, Hook_SnarkIsValidEnemy);
+			DHookEntity(hkIsPlayerAlly, false, iEntIndex, _, Hook_SnarkIsPlayerAlly);
 			return;
 		}
 		#endif
