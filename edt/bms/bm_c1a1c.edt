@@ -66,12 +66,24 @@
 		"modify"
 		{
 			"hammerid" "8498057" // elevator fall trigger
+			"set"
+			{
+				"classname" "trigger_coop"
+			}
 			"outputs"
 			{
+				"modify"
+				{
+					"output" "OnTrigger"
+					"replace"
+					{
+						"output" "OnAllPlayersIn"
+					}
+				}
 				// kill blocking player
 				"add"
 				{
-					"output" "OnTrigger"
+					"output" "OnAllPlayersIn"
 					"target" "_coop_elevator_hurt"
 					"input" "Hurt"
 					"delay" "9.20"
@@ -89,10 +101,16 @@
 				// disable door trigger_push
 				"add"
 				{
-					"output" "OnTrigger"
+					"output" "OnAllPlayersIn"
 					"target" "_coop_elevator_push"
 					"input" "Kill"
 					"delay" "9.20"
+				}
+				"add"
+				{
+					"output" "OnAllPlayersIn"
+					"target" "!self"
+					"input" "Disable"
 				}
 			}
 		}
