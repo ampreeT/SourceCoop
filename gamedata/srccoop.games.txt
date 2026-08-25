@@ -1782,8 +1782,8 @@
 		{
 			"CBasePlayer::ChangeTeam" // CBasePlayer::ChangeTeam(int, bool, bool, bool)
 			{
-				"windows"	"426"
-				"linux"		"427"
+				"windows"	"427"
+				"linux"		"428"
 			}
 			"CBasePlayer::Spawn" // CBasePlayer::Spawn()
 			{
@@ -1792,8 +1792,8 @@
 			}
 			"CBaseCombatWeapon::SendWeaponAnim" // CBaseCombatWeapon::SendWeaponAnim(int)
 			{
-				"windows"	"242"
-				"linux"		"243"
+				"windows"	"243"
+				"linux"		"244"
 			}
 			"CBaseEntity::ShouldCollide" // CBaseEntity::ShouldCollide
 			{
@@ -1802,13 +1802,13 @@
 			}
 			"CAI_BaseNPC::ShouldPlayerAvoid" // CAI_BaseNPC::ShouldPlayerAvoid()
 			{
-				"windows"	"355" // Vtable dumper may get this wrong! This is just before "CAI_BaseNPC::SetPlayerAvoidState", which we have a sig for.
-				"linux"		"354"
+				"windows"	"356" // Vtable dumper may get this wrong! This is just before "CAI_BaseNPC::SetPlayerAvoidState", which we have a sig for.
+				"linux"		"355"
 			}
 			"CBasePlayer::RemoveAllItems" // CBasePlayer::RemoveAllItems(bool)
 			{
-				"windows"	"348"
-				"linux"		"349"
+				"windows"	"349"
+				"linux"		"350"
 			}
 			"CBaseEntity::IsNPC" // CBaseEntity::IsNPC() const
 			{
@@ -1832,18 +1832,18 @@
 			}
 			"CAI_BaseNPC::RunTask" // CAI_BaseNPC::RunTask(Task_t const*)
 			{
-				"windows"	"352" // Vtable dumper may get this wrong!! XREF: "No RunTask entry for %s\n"
-				"linux"		"351"
+				"windows"	"353" // Vtable dumper may get this wrong!! XREF: "No RunTask entry for %s\n"
+				"linux"		"352"
 			}
 			"CSceneEntity::FindNamedEntity" // CSceneEntity::FindNamedEntity(char const*, CBaseEntity*, bool, bool)
 			{
-				"windows"	"239"
-				"linux"		"244"
+				"windows"	"240"
+				"linux"		"245"
 			}
 			"CSceneEntity::FindNamedEntityClosest" // CSceneEntity::FindNamedEntityClosest(char const*, CBaseEntity*, bool, bool, char const*)
 			{
-				"windows"	"240"
-				"linux"		"245"
+				"windows"	"241"
+				"linux"		"246"
 			}
 			"CBaseEntity::SetModel" // CBaseEntity::SetModel(char const*)
 			{
@@ -1872,78 +1872,78 @@
 			}
 			"CAI_BaseNPC::QueryHearSound"	// bool CAI_BaseNPC::QueryHearSound(CSound*)
 			{
-				"windows"	"393"
-				"linux"		"394"
+				"windows"	"394"
+				"linux"		"395"
 			}
 			"CAI_BaseNPC::GetSoundInterests"	// int CAI_BaseNPC::GetSoundInterests( void )
 			{
-				"windows"	"399"
-				"linux"		"400"
+				"windows"	"400"
+				"linux"		"401"
 			}
 			"CAI_BaseNPC::HearingSensitivity"	// float CAI_BaseNPC::HearingSensitivity()
 			{
-				"windows"	"403"
-				"linux"		"404"
+				"windows"	"404"
+				"linux"		"405"
 			}
 			"CAI_BaseNPC::UpdateEnemyMemory" // CAI_BaseNPC::UpdateEnemyMemory(CBaseEntity*, Vector const&, CBaseEntity*)
 			{
-				"windows"	"502"
-				"linux"		"506"
+				"windows"	"503"
+				"linux"		"507"
 			}
 			"CBaseEntity::Blocked" // bool CBaseEntity::Blocked(CBaseEntity*)
 			{
-				"windows"	"104"
-				"linux"		"105"
+				"windows"	"105"
+				"linux"		"106"
 			}
 			"CBaseCombatCharacter::Weapon_Switch" // CBaseCombatCharacter::Weapon_Switch( CBaseCombatWeapon *pWeapon, int viewmodelindex /*=0*/ )
 			{
-				"windows"	"270"
-				"linux"		"271"
+				"windows"	"271"
+				"linux"		"272"
 			}
 			"CBaseEntity::UpdateOnRemove" // void CBaseEntity::UpdateOnRemove( void )
 			{
-				"windows"	"107"
-				"linux"		"108"
+				"windows"	"108"
+				"linux"		"109"
 			}
 			"CBaseEntity::WorldSpaceCenter" // const Vector& CBaseEntity::WorldSpaceCenter( ) const
 			{
-				"windows"	"152"
-				"linux"		"153"
+				"windows"	"153"
+				"linux"		"154"
 			}
 			"CBasePlayer::CreateViewModel" // CBasePlayer::CreateViewModel(int)
 			{
-				"windows"	"327"
-				"linux"		"328"
+				"windows"	"328"
+				"linux"		"329"
 			}
 			"CBaseCombatWeapon::Deploy"	// CBaseCombatWeapon::Deploy()
 			{
-				"windows"	"254"
-				"linux"		"255"
+				"windows"	"255"
+				"linux"		"256"
 			}
 			"CBaseCombatWeapon::ItemPostFrame"	// CBaseCombatWeapon::ItemPostFrame()
 			{
-				"windows"	"265"
-				"linux"		"266"
+				"windows"	"266"
+				"linux"		"267"
 			}
 			"CBaseCombatWeapon::PrimaryAttack"	// CBaseCombatWeapon::PrimaryAttack()
 			{
-				"windows"	"279"
-				"linux"		"280"
+				"windows"	"280"
+				"linux"		"281"
 			}
 			"CBaseCombatWeapon::GetPrimaryAttackActivity"	// CBaseCombatWeapon::GetPrimaryAttackActivity()
 			{
-				"windows"	"281"
-				"linux"		"282"
+				"windows"	"282"
+				"linux"		"283"
 			}
 			"CBaseCombatWeapon::GetDrawActivity"	// CBaseCombatWeapon::GetDrawActivity() const
 			{
-				"windows"	"283"
-				"linux"		"284"
+				"windows"	"284"
+				"linux"		"285"
 			}
 			"CBaseViewModel::SendViewModelMatchingSequence"	// CBaseViewModel::SendViewModelMatchingSequence(int)
 			{
-				"windows"	"222"
-				"linux"		"223"
+				"windows"	"223"
+				"linux"		"224"
 			}
 			"CPlayerInfoManager::GetGlobalVars"	// CPlayerInfoManager::GetGlobalVars()
 			{
@@ -1972,23 +1972,23 @@
 			}
 			"CBasePlayer::Weapon_ShootPosition"	// CBasePlayer::Weapon_ShootPosition()
 			{
-				"windows"	"271"
-				"linux"		"272"
+				"windows"	"272"
+				"linux"		"273"
 			}
 			"CBaseTrigger::IsTouching"	// CBaseTrigger::IsTouching(const CBaseEntity *pOther)
 			{
-				"windows"	"206"
-				"linux"		"207"
+				"windows"	"207"
+				"linux"		"208"
 			}
 			"CBaseEntity::Touch"	// CBaseEntity::Touch(CBaseEntity*)
 			{
-				"windows"	"101"
-				"linux"		"102"
+				"windows"	"102"
+				"linux"		"103"
 			}
 			"CBaseCombatCharacter::IRelationType" // CBaseCombatCharacter::IRelationType(CBaseEntity*)
 			{
-				"windows"	"303"
-				"linux"		"304"
+				"windows"	"304"
+				"linux"		"305"
 			}
 		}
 	}
