@@ -72,6 +72,7 @@
 #include <srccoop_api/classdef/common/IServerGameDLL.inc>
 #include <srccoop_api/classdef/common/IServerTools.inc>
 #include <srccoop_api/classdef/common/Task_t.inc>
+#include <srccoop_api/classdef/common/SVC_ServerInfo.inc>
 
 #if defined SRCCOOP_BLACKMESA
 #include <srccoop_api/classdef/bms/CAI_BaseColleague.inc>
@@ -115,6 +116,7 @@ stock void InitClassdef(const GameData hGameConfig)
 	CNPC_Barnacle.InitClassdef(hGameConfig);
 	CBaseTrigger.InitClassdef(hGameConfig);
 	CEntityFactoryDictionary.InitClassdef(hGameConfig);
+	SVC_ServerInfo.InitClassdef(hGameConfig);
 
 	// Always last.
 	CGlobalVars.InitClassdef(hGameConfig);

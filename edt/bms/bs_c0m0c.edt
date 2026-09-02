@@ -1,0 +1,89 @@
+#base "base/coop_base_sp_conversion.edt"
+
+"config"
+{
+	"campaign" "Black Mesa: Blue Shift"
+	"chapter" "Living Quarters Outbound"
+	"nextmap" "bs_c1m0a"
+	"intro_type" "none"
+	"features"
+	{
+		"KEEP_EQUIPMENT" "0"
+		"TRANSFER_PLAYER_STATE" "0"
+	}
+	"console"
+	{
+		// prevents players falling out of trains
+		"sv_turbophysics" "~L 1"
+	}
+
+	"equipment"
+	{
+	}
+	"entity"
+	{
+		// delay tram start until SourceCoop map start gate completes
+		"modify"
+		{
+			"classname" "logic_auto"
+			"hammerid" "1555747"
+			"functions"
+			{
+				"delay_output" "OnMapSpawn"
+			}
+		}
+		// turn intro exit trigger into direct changelevel trigger
+		"modify"
+		{
+			"hammerid" "1679803"
+			"classname" "trigger_once"
+			"outputs"
+			{
+				"remove" {}
+			}
+		}
+		// replacement touch trigger for map transition using same brush volume
+		"add"
+		{
+			"classname" "trigger_changelevel"
+			"targetname" "srccoop_intro_changelevel"
+			"map" "bs_c1m0a"
+			"landmark" "bs_cl3_lm"
+			"StartDisabled" "0"
+			"spawnflags" "1"
+			"functions"
+			{
+				"copy_model"
+				{
+					"hammerid" "1679803"
+					"classname" "trigger_once"
+				}
+			}
+		}
+	}
+	"checkpoint"
+	{
+		"spawn"
+		{
+			"origin"	"0 0 -40"
+			"angles"	"0 270 0"
+			"followid"	"train_model"
+		}
+		"post_train"
+		{
+			"origin"	"2040.66 6083.40 -127.96"
+			"angles"	"4.71 -0.71 0.00"
+			"triggerid"	"1647860"
+			"output"	"OnTrigger"
+			"bringall"	"1"
+		}
+		"introdoor_continue"
+		{
+			"origin"	"2218.34 6170.93 -127.96"
+			"angles"	"7.74 74.03 0.00"
+			"portal"	"2222.84 6086.93 -91.96"
+			"triggerid"	"trig_introdoorscene_continue"
+			"output"	"OnTrigger"
+		}
+	}
+}

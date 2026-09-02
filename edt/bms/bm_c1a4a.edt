@@ -6,13 +6,35 @@
 	"nextmap" "bm_c1a4b"
 	"equipment"
 	{
-		"lookup"
-		{
-			"targetname" "c1a4a_equipment"
-		}
+		"item"	"item_suit"
+		"item"	"item_weapon_crowbar"
+		"item"	"item_weapon_glock"
+		"item"	"item_ammo_glock"
+		"item"	"item_ammo_glock"
+		"item"	"item_ammo_glock"
+		"item"	"item_weapon_shotgun"
+		"item"	"item_ammo_shotgun"
+		"item"	"item_ammo_shotgun"
+		"item"	"item_ammo_shotgun"
+		"item"	"item_weapon_mp5"
+		"item"	"item_battery"
+		"item"	"item_battery"
+		"item"	"item_battery"
+		"item"	"item_weapon_frag"
+		"item"	"item_weapon_frag"
 	}
 	"entity"
 	{
+		// destroy old starting equipment entities
+		"delete"
+		{
+			"targetname" "c1a4a_equipment"
+		}
+		"delete"
+		{
+			"targetname" "/^(suit|weapons|ammo)$/"
+		}
+
 		// dont kill stuff
 		"modify"
 		{
@@ -43,7 +65,37 @@
 				"targetname" ""
 			}
 		}
-	}
+			"modify"
+			{
+				"targetname" "go_bob_go"
+				"set"
+				{
+					"classname" "env_xen_portal"
+					"origin" "3773 3804 -927"
+					"NPCType" "npc_bullsquid"
+				}
+			}
+			"modify"
+			{
+				"targetname" "trigger_c1a4a_flickerkill"
+				"set"
+				{
+					"StartDisabled" "1"
+				}
+				"outputs"
+				{
+					"remove" {}
+				}
+			}
+			"modify"
+			{
+				"targetname" "relay_kill_upperlightflickers"
+				"set"
+				{
+					"StartDisabled" "1"
+				}
+			}
+		}
 	"checkpoint"
 	{
 		"spawn"
