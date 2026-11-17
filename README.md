@@ -113,7 +113,7 @@ The script installation will automatically go through the process of installing 
     quit
     ```
 - Install [Metamod:Source](https://www.sourcemm.net/downloads.php?branch=stable) (latest tested build ➤ __1155__) onto the server.
-- Install [SourceMod](https://www.sourcemod.net/downloads.php?branch=stable) (latest tested build ➤ __7163__) onto the server.
+- Install [SourceMod](https://www.sourcemod.net/downloads.php?branch=stable) (latest tested build ➤ __7260__) onto the server.
 - Install [the latest SourceCoop release](https://github.com/ampreeT/SourceCoop/releases) onto the server.
 - [Forward the server ports](#port-forwarding).
 
