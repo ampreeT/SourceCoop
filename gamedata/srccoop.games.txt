@@ -79,12 +79,6 @@
 				"windows"	"52"
 				"linux"		"52"
 			}
-			//It is "const CUserCmd *cmd = player->GetCurrentUserCommand()" in orig code, W - 0xE14 (hex) L - 0xE1C (hex)
-			"CBasePlayer::GetCurrentUserCommand"	//TODO: Give a better name ?
-			{
-				"linux"		"3612"
-				"windows"	"3604"
-			}
 		}
 		"Signatures"
 		{
@@ -1294,6 +1288,12 @@
 		
 		"Offsets"
 		{
+			// It is "const CUserCmd *cmd = player->GetCurrentUserCommand()" in orig code, W - 0xE14 (hex) L - 0xE28 (hex)
+			"CBasePlayer::GetCurrentUserCommand"
+			{
+				"linux"		"3624"
+				"windows"	"3604"
+			}
 			"CBlackMesaPlayer::PickupObject" // CBlackMesaPlayer::PickupObject(CBaseEntity*, bool)
 			{
 				"windows"	"433"
@@ -1316,8 +1316,8 @@
 			}
 			"CMultiplayRules::FAllowFlashlight" // CMultiplayRules::FAllowFlashlight()
 			{
-				"windows"	"56"
-				"linux"		"57"
+				"windows"	"60"
+				"linux"		"61"
 			}
 			"CMultiplayRules::IsMultiplayer" // CMultiplayRules::IsMultiplayer()
 			{
@@ -1326,18 +1326,18 @@
 			}
 			"CMultiplayRules::IsDeathmatch" // CMultiplayRules::IsDeathmatch()
 			{
-				"windows"	"58"
-				"linux"		"59"
+				"windows"	"62"
+				"linux"		"63"
 			}
 			"CBM_MP_GameRules::RestoreWorld" // CBM_MP_GameRules::RestoreWorld()
 			{
-				"windows"	"159"
-				"linux"		"160"
+				"windows"	"163"
+				"linux"		"164"
 			}
 			"CBM_MP_GameRules::RespawnPlayers" // CBM_MP_GameRules::RespawnPlayers()
 			{
-				"windows"	"167"
-				"linux"		"168"
+				"windows"	"171"
+				"linux"		"172"
 			}
 			"CAI_BaseNPC::RunTask"	// CAI_BaseNPC::RunTask(Task_t const*)
 			{
@@ -1346,13 +1346,13 @@
 			}
 			"CAI_BaseNPC::IsPlayerAlly" // CAI_BaseNPC::IsPlayerAlly(CBasePlayer*)
 			{
-				"windows"	"445"
-				"linux"		"446"
+				"windows"	"446"
+				"linux"		"447"
 			}
 			"CAI_BaseNPC::IsNavigationUrgent"	// CAI_BaseNPC::IsNavigationUrgent()
 			{
-				"windows"	"482"
-				"linux"		"483"
+				"windows"	"483"
+				"linux"		"484"
 			}
 			"CProtoSniper::SelectSchedule" // CProtoSniper::SelectSchedule()
 			{
@@ -1401,28 +1401,28 @@
 			}
 			"CNPC_Ichthyosaur::IdleSound" // CNPC_Ichthyosaur::IdleSound()
 			{
-				"windows"	"468"
-				"linux"		"469"
+				"windows"	"469"
+				"linux"		"470"
 			}
 			"CAI_BaseNPC::QueryHearSound"	// bool CAI_BaseNPC::QueryHearSound(CSound*)
 			{
-				"windows"	"420"
-				"linux"		"421"
+				"windows"	"421"
+				"linux"		"422"
 			}
 			"CAI_BaseNPC::GetSoundInterests"	// int CAI_BaseNPC::GetSoundInterests( void )
 			{
-				"windows"	"426"
-				"linux"		"427"
+				"windows"	"427"
+				"linux"		"428"
 			}
 			"CAI_BaseNPC::HearingSensitivity"	// float CAI_BaseNPC::HearingSensitivity()
 			{
-				"windows"	"430"
-				"linux"		"431"
+				"windows"	"431"
+				"linux"		"432"
 			}
 			"CAI_BaseNPC::UpdateEnemyMemory" // CAI_BaseNPC::UpdateEnemyMemory(CBaseEntity*, Vector const&, CBaseEntity*)
 			{
-				"windows"	"529"
-				"linux"		"533"
+				"windows"	"530"
+				"linux"		"534"
 			}
 			"CBaseAnimating::HandleAnimEvent" // CBaseAnimating::HandleAnimEvent(animevent_t*)
 			{
