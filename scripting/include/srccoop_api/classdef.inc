@@ -112,7 +112,7 @@ stock void InitClassdef(const GameData hGameConfig)
 	CVEngineServer.InitClassdef(hGameConfig);
 	CSoundEnt.InitClassdef(hGameConfig);
 	CPlayerState.InitClassdef(hGameConfig);
-	CNPC_Barnacle.InitClassdef(hGameConfig);
+	// CNPC_Barnacle.InitClassdef(hGameConfig);
 	CBaseTrigger.InitClassdef(hGameConfig);
 	CEntityFactoryDictionary.InitClassdef(hGameConfig);
 

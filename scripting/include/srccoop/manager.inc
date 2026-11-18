@@ -331,6 +331,8 @@ methodmap CoopManager
 	
 	public static void OnClientDisconnectPost(const int iClient)
 	{
+		#pragma unused iClient
+		
 		if (!data.m_bStarted && !g_iPlayerCount)
 		{
 			delete data.m_hStartTimer;

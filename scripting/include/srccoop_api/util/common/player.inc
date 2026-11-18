@@ -112,6 +112,8 @@ enum CanTeleportResult
 
 stock CanTeleportResult CanTeleportPlayer(CBasePlayer pPlayer, float vecOrigin[3], bool bExact = false, bool bDuckCheck = true, bool bOnlyVaried = false)
 {
+	#pragma unused pPlayer
+	
 	if (!bOnlyVaried)
 	{
 		bool bDidHit;
