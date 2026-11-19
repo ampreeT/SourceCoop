@@ -24,11 +24,15 @@ methodmap CTraceRay < Handle
 
 stock bool TraceEntityFilter_IgnoreData(int iEntIndex, int iMask, any pData)
 {
+	#pragma unused iMask
+	
 	return (iEntIndex != pData);
 }
 
 stock bool TraceEntityFilter_IgnorePlayers(int iEntIndex, int iMask, any pData)
 {
+	#pragma unused iMask
+
 	CBasePlayer pPlayer = CBasePlayer(iEntIndex);
 	if (pPlayer.IsValid())
 		return false;

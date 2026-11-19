@@ -26,6 +26,8 @@ methodmap CGlobalVars < CGlobalVarsBase
 {
 	public static void InitClassdef(const GameData hGameConfig)
 	{
+		#pragma unused hGameConfig
+		
 		if (!(gpGlobals = CPlayerInfoManager.Get().GetGlobalVars()))
 			SetFailState("Could not get `gpGlobals` from `PlayerInfoManager`");
 	}

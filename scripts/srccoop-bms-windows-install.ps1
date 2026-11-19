@@ -16,17 +16,9 @@ Invoke-WebRequest -OutFile ".tmp.zip" -Uri (((Invoke-WebRequest -Uri "https://ww
 Expand-Archive -LiteralPath ".tmp.zip" -DestinationPath "./Black Mesa Dedicated Server/bms" -Force
 Remove-Item -Path ".tmp.zip" -Force
 
-# Commented out temporarily due to needing SourceMod version 7163.
-# The newer SourceMod versions have a regression within their detour hooking utilities.
 ## Install the latest version of SourceMod.
-#Invoke-WebRequest -OutFile ".tmp.zip" -Uri (((Invoke-WebRequest -Uri "https://www.sourcemod.net/downloads.php").Links | Where-Object { $_.href -like "*-windows.zip" }).href | Select-Object -First 1)
-#Expand-Archive -LiteralPath ".tmp.zip" -DestinationPath "./Black Mesa Dedicated Server/bms"
-#Remove-Item -Path ".tmp.zip" -Force
-
-# Install SourceMod version 7163.
-# The newer SourceMod versions have a regression within their detour hooking utilities.
-Invoke-WebRequest -OutFile ".tmp.zip" -Uri "https://sm.alliedmods.net/smdrop/1.12/sourcemod-1.12.0-git7163-windows.zip"
-Expand-Archive -LiteralPath ".tmp.zip" -DestinationPath "./Black Mesa Dedicated Server/bms" -Force
+Invoke-WebRequest -OutFile ".tmp.zip" -Uri (((Invoke-WebRequest -Uri "https://www.sourcemod.net/downloads.php").Links | Where-Object { $_.href -like "*-windows.zip" }).href | Select-Object -First 1)
+Expand-Archive -LiteralPath ".tmp.zip" -DestinationPath "./Black Mesa Dedicated Server/bms"
 Remove-Item -Path ".tmp.zip" -Force
 
 # Install the latest version of Accelerator.

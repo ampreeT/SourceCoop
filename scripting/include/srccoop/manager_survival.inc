@@ -163,6 +163,8 @@ methodmap SurvivalManager {
 	
 	public static void OnPlayerChangeTeam(const CBasePlayer pPlayer, const int iTeam)
 	{
+		#pragma unused iTeam
+		
 		if (SurvivalManager.GetMode())
 		{
 			data.m_bSpecInit[pPlayer.entindex] = false;

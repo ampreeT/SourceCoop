@@ -11,9 +11,9 @@
 #pragma semicolon 1
 
 #if defined NO_DEBUG
- stock void InitDebugLog(const char[] convarName, const char[] debugTag, int adminFlags = ADMFLAG_GENERIC, const char timeFormat[64] = "") { }
- stock bool LogDebug(const char[] format, any ...) { return false; }
- #endinput
+stock void InitDebugLog(any ...) {}
+stock bool LogDebug(any ...) { return false; }
+#endinput
 #endif
 
 #define DEBUG

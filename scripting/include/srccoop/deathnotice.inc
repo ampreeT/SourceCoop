@@ -163,12 +163,16 @@ methodmap DnManager
 	//
 	public static Action TextMsg(BfRead bf)
     {
+		#pragma unused bf
+
 		return (g_sDnData.m_bChangingBotName) ? Plugin_Stop : Plugin_Continue;
 	}
 	// Hook callback to hide the player death displays unless this plugin's features are enabled.
 	//
 	public static Action PlayerDeath(Event hEvent)
     {
+		#pragma unused hEvent
+		
 		if (!CoopManager.IsCoopModeEnabled())
 			return Plugin_Continue;
 

@@ -38,9 +38,10 @@ static int sizeof_CAnimationLayer = 76;     //0x004C
 
 methodmap CAnimationLayer
 {
+	// ToDo: Implement if necessary
 	public static void InitClassdef(const GameData hGameConfig)
 	{
-		// ToDo: Implement if necessary
+		#pragma unused hGameConfig
 	}
 	public CAnimationLayer(Address pAddress)
 	{

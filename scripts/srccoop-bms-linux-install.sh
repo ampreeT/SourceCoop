@@ -27,16 +27,8 @@ wget $(wget -qO- "https://www.sourcemm.net/downloads.php" | grep "<a class='quic
 tar -xf ".tmp.tar.gz" -C "./Black Mesa Dedicated Server/bms"
 rm ".tmp.tar.gz"
 
-# Commented out temporarily due to needing SourceMod version 7163.
-# The newer SourceMod versions have a regression within their detour hooking utilities.
 ## Install the latest version of SourceMod.
-#wget $(wget -qO- "https://www.sourcemod.net/downloads.php" | grep "<a class='quick-download download-link'" | grep -m1 "linux.tar.gz" | sed -n 's/.*href='\''//; s/'\''.*//p') -O ".tmp.tar.gz"
-#tar -xf ".tmp.tar.gz" -C "./Black Mesa Dedicated Server/bms"
-#rm ".tmp.tar.gz"
-
-# Install SourceMod version 7163.
-# The newer SourceMod versions have a regression within their detour hooking utilities.
-wget "https://sm.alliedmods.net/smdrop/1.12/sourcemod-1.12.0-git7163-linux.tar.gz" -O ".tmp.tar.gz"
+wget $(wget -qO- "https://www.sourcemod.net/downloads.php" | grep "<a class='quick-download download-link'" | grep -m1 "linux.tar.gz" | sed -n 's/.*href='\''//; s/'\''.*//p') -O ".tmp.tar.gz"
 tar -xf ".tmp.tar.gz" -C "./Black Mesa Dedicated Server/bms"
 rm ".tmp.tar.gz"
 

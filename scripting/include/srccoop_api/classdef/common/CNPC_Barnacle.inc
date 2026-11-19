@@ -3,9 +3,9 @@
 
 methodmap CNPC_Barnacle < CAI_BaseNPC
 {
+    /*
     public static void InitClassdef(const GameData hGameConfig)
     {
-        /*
 		char szAttachTongueToTarget[] = "CNPC_Barnacle::AttachTongueToTarget";
 	    StartPrepSDKCall(SDKCall_Entity);
 		if (!PrepSDKCall_SetFromConf(hGameConfig, SDKConf_Signature, szAttachTongueToTarget))
@@ -16,8 +16,8 @@ methodmap CNPC_Barnacle < CAI_BaseNPC
 			PrepSDKCall_AddParameter(SDKType_Vector, SDKPass_Plain);    // TODO: Probably wrong SDKPass?
 			if (!(g_pAttachTongueToTarget = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szAttachTongueToTarget);
 		}
-        */
     }
+    */
 	public CNPC_Barnacle(const int iEntIndex = -1)
 	{
 		return view_as<CNPC_Barnacle>(CAI_BaseNPC(iEntIndex));
