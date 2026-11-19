@@ -571,38 +571,125 @@ public Action OnEndFollowBlocker(const char[] output, int caller, int activator,
 	return Plugin_Stop;
 }
 
+#define SF_SPEED_MOD_SUPPRESS_HUD		(1<<1)
+#define SF_SPEED_MOD_SUPPRESS_ATTACK	(1<<6)
+
 //------------------------------------------------------
 // CMovementSpeedMod - player_speedmod
-// multiplayer support
+// remove flags ''Suppress HUD'' with ''Suppress attack'' and replace with custom user data that we'll use for the input
 //------------------------------------------------------
-public MRESReturn Hook_SpeedmodAcceptInput(int _this, DHookReturn hReturn, DHookParam hParams)
+public void Hook_PlayerSpeedmodSpawnPost(int iEntIndex)
 {
-	static bool bHookSkip = false;
-	if (!bHookSkip)
+	CBaseEntity pEntity = CBaseEntity(iEntIndex);
+
+	if (pEntity.m_spawnflags & SF_SPEED_MOD_SUPPRESS_HUD)
 	{
-		if (!DHookIsNullParam(hParams, 1))
+		pEntity.m_spawnflags &= ~SF_SPEED_MOD_SUPPRESS_HUD; //remove the flag so it can't hide the parts we don't want
+		pEntity.SetUserData("m_bSuppressHud", true);
+	}
+
+	if (pEntity.m_spawnflags & SF_SPEED_MOD_SUPPRESS_ATTACK)
+	{
+		//pEntity.m_spawnflags &= ~SF_SPEED_MOD_SUPPRESS_ATTACK;
+		pEntity.SetUserData("m_bSuppressAttack", true);
+	}
+}
+
+//------------------------------------------------------
+// CMovementSpeedMod - player_speedmod
+// Inputs hook for custom logic.
+//------------------------------------------------------
+public MRESReturn Hook_PlayerSpeedmodAcceptInput(int _this, DHookReturn hReturn, DHookParam hParams)
+{
+	if (DHookIsNullParam(hParams, 1))
+		return MRES_Ignored;
+
+	char szInputType[MAX_FORMAT];
+	DHookGetParamString(hParams, 1, szInputType, sizeof(szInputType));
+	
+
+
+	//==================================================
+	//ModifySpeedAll input (CUSTOM INPUT), apply speed modify for all clients
+	//==================================================
+	if (strcmp(szInputType, "ModifySpeedAll", false) == 0) // new input
+	{
+		char szParam[32];
+		DHookGetParamObjectPtrString(hParams, 4, 0, ObjectValueType_String, szParam, sizeof(szParam));
+
+		for (int i = 1; i <= MaxClients; i++)
 		{
-			char szInputType[MAX_FORMAT];
-			DHookGetParamString(hParams, 1, szInputType, sizeof(szInputType));
-			if (strcmp(szInputType, "ModifySpeedAll", false) == 0) // new input
+			if (IsClientInGame(i))
 			{
-				char szParam[32];
-				DHookGetParamObjectPtrString(hParams, 4, 0, ObjectValueType_String, szParam, sizeof(szParam));
-				bHookSkip = true;
-				for (int i = 1; i <= MaxClients; i++)
+				SetVariantString(szParam);
+				AcceptEntityInput(_this, "ModifySpeed", i);
+			}
+		}
+		DHookSetReturn(hReturn, true);
+		return MRES_Supercede;
+	}
+		
+
+
+	//==================================================
+	//ModifySpeed input
+	//==================================================
+	else if (strcmp(szInputType, "ModifySpeed", false) == 0)
+	{
+		char szParam[32];
+		DHookGetParamObjectPtrString(hParams, 4, 0, ObjectValueType_String, szParam, sizeof(szParam));
+
+		bool bEnable = (StringToFloat(szParam) != 1.0); //1.0 means the speed modify will be disabled
+		CBasePlayer pPlayer;
+		CBaseEntity pEntity = CBaseEntity(_this);
+
+		for (int i = 1; i <= MaxClients; i++)
+		{
+			pPlayer = CBasePlayer(i);
+
+			if (!pPlayer.IsValid())
+				continue;
+
+			//i contain Suppress Attack flag
+			//prevents wpn fire prediction glitch by setting a very long attack delay 
+			if (pEntity.GetUserData("m_bSuppressAttack") == true)
+			{
+				CBaseCombatWeapon pWeapon = pPlayer.GetActiveWeapon();
+				if (pWeapon.IsValid())
 				{
-					if (IsClientInGame(i))
+					if (bEnable) //apply
 					{
-						SetVariantString(szParam);
-						AcceptEntityInput(_this, "ModifySpeed", i);
+						pWeapon.SetNextPrimaryAttack(FLT_MAX);
+						pWeapon.SetNextSecondaryAttack(FLT_MAX);
+					}
+					else //remove
+					{
+						pWeapon.SetNextPrimaryAttack(GetGameTime());
+						pWeapon.SetNextSecondaryAttack(GetGameTime());					
 					}
 				}
-				bHookSkip = false;
-				DHookSetReturn(hReturn, true);
-				return MRES_Supercede;
+			}
+
+			//i contain Suppress Hud flag
+			//orig code hides most of the elements, including chat
+			//we hide only what needed by removing the flag in spawn hook and using other here
+			//bots not allowed (no need)
+			if (pEntity.GetUserData("m_bSuppressHud") == true && !pPlayer.IsBot())
+			{
+				HideHudFlags_t hdtFlags = pPlayer.GetHideHud();
+
+				if (bEnable)
+				{
+					hdtFlags |= HIDEHUD_PLAYERDEAD;	
+				}
+				else
+					hdtFlags &= ~HIDEHUD_PLAYERDEAD;
+
+				pPlayer.SetHideHud(hdtFlags);
 			}
 		}
 	}
+
 	return MRES_Ignored;
 }
 
