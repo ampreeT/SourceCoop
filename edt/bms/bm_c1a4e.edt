@@ -6,13 +6,47 @@
 	"nextmap" "bm_c2a1a"
 	"equipment"
 	{
-		"lookup"
-		{
-			"targetname" "c1a4e_equipment"
-		}
+		"item"	"item_suit"
+		"item"	"item_weapon_crowbar"
+		"item"	"item_weapon_glock"
+		"item"	"item_ammo_glock"
+		"item"	"item_ammo_glock"
+		"item"	"item_ammo_glock"
+		"item"	"item_weapon_shotgun"
+		"item"	"item_ammo_shotgun"
+		"item"	"item_ammo_shotgun"
+		"item"	"item_ammo_shotgun"
+		"item"	"item_weapon_mp5"
+		"item"	"item_battery"
+		"item"	"item_battery"
+		"item"	"item_battery"
+		"item"	"item_weapon_357"
+		"item"	"item_weapon_satchel"
+		"item"	"item_weapon_satchel"
+		"item"	"item_weapon_tripmine"
+		"item"	"item_weapon_tripmine"
+		"item"	"item_weapon_frag"
+		"item"	"item_weapon_frag"
 	}
 	"entity"
 	{
+		// remove old c1a4e equipment entities
+		"delete"
+		{
+			"targetname" "c1a4e_equipment"
+		}
+		"delete"
+		{
+			"targetname" "/^(suit|weapons|ammo)$/"
+		}
+		"delete"
+		{
+			"classname" "item_weapon_357"
+		}
+		"delete"
+		{
+			"classname" "item_ammo_357"
+		}
 	}
 	"checkpoint"
 	{

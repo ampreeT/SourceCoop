@@ -3,16 +3,43 @@
 "config"
 {
 	"chapter" "On A Rail"
+	"intro_type" "none"
 	"nextmap" "bm_c2a3a"
 	"equipment"
 	{
-		"lookup"
-		{
-			"targetname" "/^(c2a2c_equipment|c2a2c_equipment_suit)$/"
-		}
+		"item"	"item_suit"
+		"item"	"item_weapon_crowbar"
+		"item"	"item_weapon_glock"
+		"item"	"item_ammo_glock"
+		"item"	"item_ammo_glock"
+		"item"	"item_ammo_glock"
+		"item"	"item_weapon_shotgun"
+		"item"	"item_ammo_shotgun"
+		"item"	"item_ammo_shotgun"
+		"item"	"item_ammo_shotgun"
+		"item"	"item_weapon_mp5"
+		"item"	"item_grenade_mp5"
+		"item"	"item_battery"
+		"item"	"item_battery"
+		"item"	"item_battery"
+		"item"	"item_battery"
+		"item"	"item_weapon_357"
+		"item"	"item_weapon_satchel"
+		"item"	"item_weapon_satchel"
+		"item"	"item_weapon_satchel"
+		"item"	"item_weapon_tripmine"
+		"item"	"item_weapon_tripmine"
+		"item"	"item_weapon_tripmine"
+		"item"	"item_weapon_frag"
+		"item"	"item_weapon_frag"
+		"item"	"item_weapon_frag"
 	}
 	"entity"
 	{
+		"delete"
+		{
+			"targetname" "/^(c2a2c_equipment|c2a2c_equipment_suit)$/"
+		}
 		// closing portals not suitable for mp
 		"modify"
 		{
@@ -57,8 +84,8 @@
 		}
 		"outside"
 		{
-			"origin" "-536 -2688 108"
-			"angles" "0 90 0"
+			"origin" "-776.46 -2991.61 40.03"
+			"angles" "-1.12 35.30 0.00"
 			"triggerid" "c2a2c_exit_door"
 			"output" "OnOpen"
 		}

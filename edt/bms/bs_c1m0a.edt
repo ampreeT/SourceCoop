@@ -1,0 +1,78 @@
+#base "base/coop_base_sp_conversion.edt"
+
+"config"
+{
+	"campaign" "Black Mesa: Blue Shift"
+	"chapter" "Insecurity"
+	"nextmap" "bs_c1m0b"
+	"intro_type" "none"
+
+	"equipment"
+	{
+	}
+	"entity"
+	{
+		// close intro doors at start
+		"modify"
+		{
+			"classname" "func_door"
+			"targetname" "intro_doors"
+			"flags"
+			{
+				"spawnflags"
+				{
+					"remove" "1"
+				}
+			}
+		}
+		"modify"
+		{
+			"classname" "logic_auto"
+			"hammerid" "3040234"
+			"functions"
+			{
+				"delay_output" "OnMapSpawn"
+			}
+		}
+		// play suit animation
+		"modify"
+		{
+			"classname" "item_suit"
+			"targetname" "Suit"
+			"set"
+			{
+				"spawnflags" "131075"
+			}
+		}
+		// disable game over message
+		"delete"
+		{
+			"classname" "logic_playerproxy"
+			"hammerid" "4499048"
+		}
+	}
+	"checkpoint"
+	{
+		"spawn"
+		{
+			"origin" "-736 -24 -120"
+			"angles" "0 0 0"
+		}
+		"intro_doors_trigger"
+		{
+			"origin" "-602.88 -13.53 -127.96"
+			"angles" "11.86 11.46 0.00"
+			"portal" "-687.47 -18.10 -91.96"
+			"triggerid" "intro_doors_trigger"
+			"output" "OnTrigger"
+		}
+		"suit_pickup"
+		{
+			"origin" "855.18 -838.52 -711.96"
+			"angles" "9.32 179.65 0.00"
+			"triggerid" "Calhoun_uniform_btn"
+			"output" "OnPressed"
+			"bringall" "1"
+		}
+	}
+}
